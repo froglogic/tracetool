@@ -1,3 +1,4 @@
+#include "tracelib.h"
 #include <string>
 
 class Person
@@ -7,9 +8,11 @@ public:
         : m_firstName( firstName ),
         m_lastName( lastName )
     {
+        TRACELIB_BEACON(1)
     }
 
     std::string toString() const {
+        TRACELIB_BEACON(1)
         return m_lastName + ", " + m_firstName;
     }
 
@@ -23,6 +26,7 @@ namespace ACME
 
 std::string f( int v1, int v2 )
 {
+    TRACELIB_BEACON(1)
     Person p( "John", "Doe" );
     return p.toString();
 }
@@ -34,6 +38,7 @@ class Widget
 {
 public:
     void repaint( bool onlyVisible = true ) {
+        TRACELIB_BEACON(1)
         f( 1313, -2 );
     }
 };
@@ -44,6 +49,8 @@ public:
 
 int main()
 {
+    tracelib_set_entry_handler(&tracelib_entry_handler_stdout);
+    TRACELIB_BEACON(1)
     ACME::GUI::Widget w;
     w.repaint( false );
 }
