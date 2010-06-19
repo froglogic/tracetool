@@ -38,7 +38,7 @@ void TRACELIB_EXPORT tracelib_add_entry(tracelib_trace *trace,
                                         const char *fn,
                                         unsigned int lineno,
                                         const char *function);
-void TRACELIB_EXPORT tracelib_set_verbosity(unsigned short verbosity);
+void TRACELIB_EXPORT tracelib_set_verbosity(tracelib_trace *trace, unsigned short verbosity);
 
 void TRACELIB_EXPORT tracelib_set_entry_serializer(TraceLib_Entry_Serializer fn);
 void TRACELIB_EXPORT tracelib_set_output_writer(TraceLib_Output_Writer fn);
