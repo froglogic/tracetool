@@ -2,6 +2,7 @@
 #define TRACELIB_H
 
 #include <stddef.h>
+#include <stdio.h>
 
 #ifdef _MSC_VER
 #  define TRACELIB_BEACON(verbosity) tracelib_trace_add_entry(tracelib_get_default_trace(), (verbosity), __FILE__, __LINE__, __FUNCSIG__ );
@@ -73,6 +74,14 @@ size_t TRACELIB_EXPORT tracelib_plaintext_serializer(void *data,
 TRACELIB_EXPORT void tracelib_stdout_writer(void *data,
                                             const char *buf,
                                             size_t bufsize);
+
+typedef struct {
+    int fd;
+} tracelib_file_writer_args;
+
+TRACELIB_EXPORT void tracelib_file_writer(void *data,
+                                          const char *buf,
+                                          size_t bufsize);
 #ifdef __cplusplus
 }
 #endif

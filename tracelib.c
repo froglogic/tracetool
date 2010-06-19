@@ -1,8 +1,12 @@
 #include "tracelib.h"
 #include <assert.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+
+#ifdef _WIN32
+#  include <io.h> // for write()
+#  define write _write
+#endif
 
 static tracelib_trace *g_default_trace = 0;
 
@@ -129,5 +133,16 @@ size_t tracelib_plaintext_serializer(void *data,
 void tracelib_stdout_writer(void *data, const char *buf, size_t bufsize)
 {
     fprintf(stdout, buf); /* XXX don't ignore bufsize */
+}
+
+void tracelib_file_writer(void *data, const char *buf, size_t bufsize)
+{
+    int nwritten = 0;
+    tracelib_file_writer_args *args = (tracelib_file_writer_args *)data;
+    assert(args);
+
+    while (bufsize > 0 && (nwritten = write(args->fd, buf + nwritten, bufsize)) != -1) {
+        bufsize -= nwritten;
+    }
 }
 
