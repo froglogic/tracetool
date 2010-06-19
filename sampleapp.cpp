@@ -49,7 +49,8 @@ public:
 
 int main()
 {
-    tracelib_set_entry_handler(&tracelib_entry_handler_stdout);
+    tracelib_set_entry_serializer(&tracelib_plaintext_serializer);
+    tracelib_set_output_writer(&tracelib_stdout_writer);
     TRACELIB_BEACON(1)
     ACME::GUI::Widget w;
     w.repaint( false );

@@ -1,6 +1,8 @@
 #ifndef TRACELIB_H
 #define TRACELIB_H
 
+#include <stddef.h>
+
 #ifdef _MSC_VER
 #  define TRACELIB_BEACON(verbosity) tracelib_add_entry((verbosity), __FILE__, __LINE__, __FUNCSIG__ );
 #  ifdef TRACELIB_MAKEDLL
@@ -16,9 +18,13 @@
 extern "C" {
 #endif
 
-typedef void(*TraceLib_Entry_Handler)(const char *filename,
-                                      unsigned int lineno,
-                                      const char *function);
+typedef size_t(*TraceLib_Entry_Serializer)(const char *filename,
+                                           unsigned int lineno,
+                                           const char *function,
+                                           char *buf,
+                                           size_t bufsize);
+typedef void(*TraceLib_Output_Writer)(const char *buf,
+                                      size_t bufsize); 
 
 void TRACELIB_EXPORT tracelib_add_entry(unsigned short verbosity,
                                         const char *fn,
@@ -26,14 +32,24 @@ void TRACELIB_EXPORT tracelib_add_entry(unsigned short verbosity,
                                         const char *function);
 void TRACELIB_EXPORT tracelib_set_verbosity(unsigned short verbosity);
 
-void TRACELIB_EXPORT tracelib_set_entry_handler(TraceLib_Entry_Handler handlerFn);
+void TRACELIB_EXPORT tracelib_set_entry_serializer(TraceLib_Entry_Serializer fn);
+void TRACELIB_EXPORT tracelib_set_output_writer(TraceLib_Output_Writer fn);
 
-void TRACELIB_EXPORT tracelib_entry_handler_null(const char *filename,
-                                                 unsigned int lineno,
-                                                 const char *function);
-void TRACELIB_EXPORT tracelib_entry_handler_stdout(const char *filename,
-                                                   unsigned int lineno,
-                                                   const char *function);
+size_t TRACELIB_EXPORT tracelib_null_serializer(const char *filename,
+                                                unsigned int lineno,
+                                                const char *function,
+                                                char *buf,
+                                                size_t bufsize);
+void TRACELIB_EXPORT tracelib_null_writer(const char *buf,
+                                          size_t bufsize);
+
+size_t TRACELIB_EXPORT tracelib_plaintext_serializer(const char *filename,
+                                                     unsigned int lineno,
+                                                     const char *function,
+                                                     char *buf,
+                                                     size_t bufsize);
+void TRACELIB_EXPORT tracelib_stdout_writer(const char *buf,
+                                            size_t bufsize);
 #ifdef __cplusplus
 }
 #endif
