@@ -55,7 +55,7 @@ int main()
     tracelib_plaintext_serializer_args serializer_args = {
         1 // show timestamps
     };
-    tracelib_trace_set_entry_serializer( trace, &tracelib_plaintext_serializer, &args );
+    tracelib_trace_set_entry_serializer( trace, &tracelib_plaintext_serializer, &serializer_args );
     tracelib_trace_set_output_writer( trace, &tracelib_stdout_writer, NULL );
     TRACELIB_BEACON(1)
     ACME::GUI::Widget w;

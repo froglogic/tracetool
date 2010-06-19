@@ -141,6 +141,7 @@ void tracelib_file_writer(void *data, const char *buf, size_t bufsize)
     tracelib_file_writer_args *args = (tracelib_file_writer_args *)data;
     assert(args);
 
+    // XXX Error handling!
     while (bufsize > 0 && (nwritten = write(args->fd, buf + nwritten, bufsize)) != -1) {
         bufsize -= nwritten;
     }
