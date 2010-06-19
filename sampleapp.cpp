@@ -52,8 +52,8 @@ int main()
     tracelib_trace *trace;
     tracelib_create_trace( &trace );
     tracelib_set_default_trace( trace );
-    tracelib_trace_set_entry_serializer( trace, &tracelib_plaintext_serializer );
-    tracelib_trace_set_output_writer( trace, &tracelib_stdout_writer );
+    tracelib_trace_set_entry_serializer( trace, &tracelib_plaintext_serializer, NULL );
+    tracelib_trace_set_output_writer( trace, &tracelib_stdout_writer, NULL );
     TRACELIB_BEACON(1)
     ACME::GUI::Widget w;
     w.repaint( false );

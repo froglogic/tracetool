@@ -18,12 +18,14 @@
 extern "C" {
 #endif
 
-typedef size_t(*tracelib_entry_serializer_fn)(const char *filename,
+typedef size_t(*tracelib_entry_serializer_fn)(void *data,
+                                              const char *filename,
                                               unsigned int lineno,
                                               const char *function,
                                               char *buf,
                                               size_t bufsize);
-typedef void(*tracelib_output_writer_fn)(const char *buf,
+typedef void(*tracelib_output_writer_fn)(void *data,
+                                         const char *buf,
                                          size_t bufsize); 
 
 typedef struct tracelib_trace tracelib_trace;
@@ -42,24 +44,30 @@ void TRACELIB_EXPORT tracelib_trace_add_entry(tracelib_trace *trace,
 void TRACELIB_EXPORT tracelib_trace_set_verbosity(tracelib_trace *trace,
                                                   unsigned short verbosity);
 void TRACELIB_EXPORT tracelib_trace_set_entry_serializer(tracelib_trace *trace,
-                                                         tracelib_entry_serializer_fn fn);
+                                                         tracelib_entry_serializer_fn fn,
+                                                         void *data);
 void TRACELIB_EXPORT tracelib_trace_set_output_writer(tracelib_trace *trace,
-                                                      tracelib_output_writer_fn fn);
+                                                      tracelib_output_writer_fn fn,
+                                                      void *data);
 
-size_t TRACELIB_EXPORT tracelib_null_serializer(const char *filename,
+size_t TRACELIB_EXPORT tracelib_null_serializer(void *data,
+                                                const char *filename,
                                                 unsigned int lineno,
                                                 const char *function,
                                                 char *buf,
                                                 size_t bufsize);
-void TRACELIB_EXPORT tracelib_null_writer(const char *buf,
+void TRACELIB_EXPORT tracelib_null_writer(void *data,
+                                          const char *buf,
                                           size_t bufsize);
 
-size_t TRACELIB_EXPORT tracelib_plaintext_serializer(const char *filename,
+size_t TRACELIB_EXPORT tracelib_plaintext_serializer(void *data,
+                                                     const char *filename,
                                                      unsigned int lineno,
                                                      const char *function,
                                                      char *buf,
                                                      size_t bufsize);
-void TRACELIB_EXPORT tracelib_stdout_writer(const char *buf,
+void TRACELIB_EXPORT tracelib_stdout_writer(void *data,
+                                            const char *buf,
                                             size_t bufsize);
 #ifdef __cplusplus
 }
