@@ -4,7 +4,7 @@
 #include <stddef.h>
 
 #ifdef _MSC_VER
-#  define TRACELIB_BEACON(verbosity) tracelib_add_entry(tracelib_get_default_trace(), (verbosity), __FILE__, __LINE__, __FUNCSIG__ );
+#  define TRACELIB_BEACON(verbosity) tracelib_trace_add_entry(tracelib_get_default_trace(), (verbosity), __FILE__, __LINE__, __FUNCSIG__ );
 #  ifdef TRACELIB_MAKEDLL
 #    define TRACELIB_EXPORT __declspec(dllexport)
 #  else
@@ -18,30 +18,33 @@
 extern "C" {
 #endif
 
-typedef size_t(*TraceLib_Entry_Serializer)(const char *filename,
-                                           unsigned int lineno,
-                                           const char *function,
-                                           char *buf,
-                                           size_t bufsize);
-typedef void(*TraceLib_Output_Writer)(const char *buf,
-                                      size_t bufsize); 
+typedef size_t(*tracelib_entry_serializer_fn)(const char *filename,
+                                              unsigned int lineno,
+                                              const char *function,
+                                              char *buf,
+                                              size_t bufsize);
+typedef void(*tracelib_output_writer_fn)(const char *buf,
+                                         size_t bufsize); 
 
 typedef struct tracelib_trace tracelib_trace;
 
 void TRACELIB_EXPORT tracelib_create_trace( tracelib_trace **trace );
 void TRACELIB_EXPORT tracelib_destroy_trace( tracelib_trace *trace );
+
 void TRACELIB_EXPORT tracelib_set_default_trace( tracelib_trace *trace );
 TRACELIB_EXPORT tracelib_trace *tracelib_get_default_trace();
 
-void TRACELIB_EXPORT tracelib_add_entry(tracelib_trace *trace,
-                                        unsigned short verbosity,
-                                        const char *fn,
-                                        unsigned int lineno,
-                                        const char *function);
-void TRACELIB_EXPORT tracelib_set_verbosity(tracelib_trace *trace, unsigned short verbosity);
-
-void TRACELIB_EXPORT tracelib_set_entry_serializer(TraceLib_Entry_Serializer fn);
-void TRACELIB_EXPORT tracelib_set_output_writer(TraceLib_Output_Writer fn);
+void TRACELIB_EXPORT tracelib_trace_add_entry(tracelib_trace *trace,
+                                              unsigned short verbosity,
+                                              const char *fn,
+                                              unsigned int lineno,
+                                              const char *function);
+void TRACELIB_EXPORT tracelib_trace_set_verbosity(tracelib_trace *trace,
+                                                  unsigned short verbosity);
+void TRACELIB_EXPORT tracelib_trace_set_entry_serializer(tracelib_trace *trace,
+                                                         tracelib_entry_serializer_fn fn);
+void TRACELIB_EXPORT tracelib_trace_set_output_writer(tracelib_trace *trace,
+                                                      tracelib_output_writer_fn fn);
 
 size_t TRACELIB_EXPORT tracelib_null_serializer(const char *filename,
                                                 unsigned int lineno,

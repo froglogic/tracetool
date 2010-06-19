@@ -5,29 +5,30 @@
 #include <time.h>
 
 static tracelib_trace *g_default_trace = 0;
-static TraceLib_Entry_Serializer g_serializerFn = &tracelib_null_serializer;
-static TraceLib_Output_Writer g_outputFn = &tracelib_stdout_writer;
 
 struct tracelib_trace
 {
     unsigned short verbosity;
+    tracelib_entry_serializer_fn serializerFn;
+    tracelib_output_writer_fn outputFn;
 };
 
-void tracelib_create_trace( tracelib_trace **trace )
+void tracelib_create_trace(tracelib_trace **trace)
 {
-    assert( trace );
-    assert( *trace );
+    assert(trace);
     *trace = (tracelib_trace *)malloc(sizeof(tracelib_trace));
-    ( *trace )->verbosity = 1;
+    (*trace)->verbosity = 1;
+    (*trace)->serializerFn = &tracelib_null_serializer;
+    (*trace)->outputFn = &tracelib_null_writer;
 }
 
-void tracelib_destroy_trace( tracelib_trace *trace )
+void tracelib_destroy_trace(tracelib_trace *trace)
 {
-    assert( trace );
-    free( trace );
+    assert(trace);
+    free(trace);
 }
 
-void tracelib_set_default_trace( tracelib_trace *trace )
+void tracelib_set_default_trace(tracelib_trace *trace)
 {
     g_default_trace = trace;
 }
@@ -37,33 +38,36 @@ tracelib_trace *tracelib_get_default_trace()
     return g_default_trace;
 }
 
-void tracelib_add_entry(tracelib_trace *trace, unsigned short verbosity, const char *fn, unsigned int lineno, const char *function)
+void tracelib_trace_add_entry(tracelib_trace *trace, unsigned short verbosity, const char *fn, unsigned int lineno, const char *function)
 {
+    assert(trace);
     if (verbosity <= trace->verbosity) {
         char buf[ 1024 ]; /* XXX Avoid fixed buffer size */
-        size_t bufsize = g_serializerFn(fn, lineno, function, buf, sizeof(buf));
+        size_t bufsize = trace->serializerFn(fn, lineno, function, buf, sizeof(buf));
         if (bufsize > 0) {
-            g_outputFn(buf, bufsize);
+            trace->outputFn(buf, bufsize);
         }
     }
 }
 
-void tracelib_set_verbosity(tracelib_trace *trace, unsigned short verbosity)
+void tracelib_trace_set_verbosity(tracelib_trace *trace, unsigned short verbosity)
 {
-    assert( trace );
+    assert(trace);
     trace->verbosity = verbosity;
 }
 
-void tracelib_set_entry_serializer(TraceLib_Entry_Serializer fn)
+void tracelib_trace_set_entry_serializer(tracelib_trace *trace, tracelib_entry_serializer_fn fn)
 {
-    assert(fn != 0);
-    g_serializerFn = fn;
+    assert(trace);
+    assert(fn);
+    trace->serializerFn = fn;
 }
 
-void tracelib_set_output_writer(TraceLib_Output_Writer fn)
+void tracelib_trace_set_output_writer(tracelib_trace *trace, tracelib_output_writer_fn fn)
 {
-    assert(fn != 0);
-    g_outputFn = fn;
+    assert(trace);
+    assert(fn);
+    trace->outputFn = fn;
 }
 
 size_t tracelib_null_serializer(const char *filename,
@@ -92,14 +96,14 @@ size_t tracelib_plaintext_serializer(const char *filename,
                                      char *buf,
                                      size_t bufsize)
 {
-    char timestamp[ 64 ];
-    time_t t = time( NULL );
+    char timestamp[64];
+    time_t t = time(NULL);
     int nwritten;
 
-    strftime( timestamp, sizeof( timestamp ), "%d.%m.%Y %H:%M:%S:", localtime( &t) );
+    strftime(timestamp, sizeof(timestamp), "%d.%m.%Y %H:%M:%S:", localtime(&t));
 
     nwritten = _snprintf(buf, bufsize, "%s %s:%d: %s\n", timestamp, filename, lineno, function);
-    if ( nwritten >= 0 && (size_t)nwritten < bufsize ) {
+    if (nwritten >= 0 && (size_t)nwritten < bufsize) {
         return (size_t)nwritten;
     }
     return 0;
@@ -107,6 +111,6 @@ size_t tracelib_plaintext_serializer(const char *filename,
 
 void tracelib_stdout_writer(const char *buf, size_t bufsize)
 {
-    fprintf( stdout, buf ); /* XXX don't ignore bufsize */
+    fprintf(stdout, buf); /* XXX don't ignore bufsize */
 }
 
