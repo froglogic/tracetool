@@ -57,5 +57,6 @@ int main()
     TRACELIB_BEACON(1)
     ACME::GUI::Widget w;
     w.repaint( false );
+    tracelib_destroy_trace( trace );
 }
 
