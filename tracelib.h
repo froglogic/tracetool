@@ -30,6 +30,8 @@ typedef struct tracelib_trace tracelib_trace;
 
 void TRACELIB_EXPORT tracelib_create_trace( tracelib_trace **trace );
 void TRACELIB_EXPORT tracelib_destroy_trace( tracelib_trace *trace );
+void TRACELIB_EXPORT tracelib_set_default_trace( tracelib_trace *trace );
+TRACELIB_EXPORT tracelib_trace *tracelib_get_default_trace();
 
 void TRACELIB_EXPORT tracelib_add_entry(unsigned short verbosity,
                                         const char *fn,

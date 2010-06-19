@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <time.h>
 
+static tracelib_trace *g_default_trace = 0;
 static unsigned short g_verbosity = 1;
 static TraceLib_Entry_Serializer g_serializerFn = &tracelib_null_serializer;
 static TraceLib_Output_Writer g_outputFn = &tracelib_stdout_writer;
@@ -25,6 +26,16 @@ void tracelib_destroy_trace( tracelib_trace *trace )
 {
     assert( trace );
     free( trace );
+}
+
+void tracelib_set_default_trace( tracelib_trace *trace )
+{
+    g_default_trace = trace;
+}
+
+tracelib_trace *tracelib_get_default_trace()
+{
+    return g_default_trace;
 }
 
 void tracelib_add_entry(unsigned short verbosity, const char *fn, unsigned int lineno, const char *function)
