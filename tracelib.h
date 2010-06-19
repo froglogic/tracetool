@@ -60,6 +60,10 @@ void TRACELIB_EXPORT tracelib_null_writer(void *data,
                                           const char *buf,
                                           size_t bufsize);
 
+typedef struct {
+    int show_timestamp;
+} tracelib_plaintext_serializer_args;
+
 size_t TRACELIB_EXPORT tracelib_plaintext_serializer(void *data,
                                                      const char *filename,
                                                      unsigned int lineno,

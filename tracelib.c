@@ -110,13 +110,16 @@ size_t tracelib_plaintext_serializer(void *data,
                                      char *buf,
                                      size_t bufsize)
 {
-    char timestamp[64];
-    time_t t = time(NULL);
     int nwritten;
+    char timestamp[64] = { '\0' };
 
-    strftime(timestamp, sizeof(timestamp), "%d.%m.%Y %H:%M:%S:", localtime(&t));
+    tracelib_plaintext_serializer_args *args = (tracelib_plaintext_serializer_args *)data;
+    if (args && args->show_timestamp) {
+        time_t t = time(NULL);
+        strftime(timestamp, sizeof(timestamp), "%d.%m.%Y %H:%M:%S: ", localtime(&t));
+    }
 
-    nwritten = _snprintf(buf, bufsize, "%s %s:%d: %s\n", timestamp, filename, lineno, function);
+    nwritten = _snprintf(buf, bufsize, "%s%s:%d: %s\n", timestamp, filename, lineno, function);
     if (nwritten >= 0 && (size_t)nwritten < bufsize) {
         return (size_t)nwritten;
     }
