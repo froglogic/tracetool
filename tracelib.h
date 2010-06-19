@@ -65,7 +65,7 @@ typedef struct {
     int show_timestamp;
 } tracelib_plaintext_serializer_args;
 
-size_t TRACELIB_EXPORT tracelib_plaintext_serializer(void *data,
+TRACELIB_EXPORT size_t tracelib_plaintext_serializer(void *data,
                                                      const char *filename,
                                                      unsigned int lineno,
                                                      const char *function,
