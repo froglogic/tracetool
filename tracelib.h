@@ -26,6 +26,11 @@ typedef size_t(*TraceLib_Entry_Serializer)(const char *filename,
 typedef void(*TraceLib_Output_Writer)(const char *buf,
                                       size_t bufsize); 
 
+typedef struct tracelib_trace tracelib_trace;
+
+void TRACELIB_EXPORT tracelib_create_trace( tracelib_trace **trace );
+void TRACELIB_EXPORT tracelib_destroy_trace( tracelib_trace *trace );
+
 void TRACELIB_EXPORT tracelib_add_entry(unsigned short verbosity,
                                         const char *fn,
                                         unsigned int lineno,

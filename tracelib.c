@@ -1,11 +1,31 @@
 #include "tracelib.h"
 #include <assert.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <time.h>
 
 static unsigned short g_verbosity = 1;
 static TraceLib_Entry_Serializer g_serializerFn = &tracelib_null_serializer;
 static TraceLib_Output_Writer g_outputFn = &tracelib_stdout_writer;
+
+struct tracelib_trace
+{
+    unsigned short verbosity;
+};
+
+void tracelib_create_trace( tracelib_trace **trace )
+{
+    assert( trace );
+    assert( *trace );
+    *trace = (tracelib_trace *)malloc(sizeof(tracelib_trace));
+    ( *trace )->verbosity = 1;
+}
+
+void tracelib_destroy_trace( tracelib_trace *trace )
+{
+    assert( trace );
+    free( trace );
+}
 
 void tracelib_add_entry(unsigned short verbosity, const char *fn, unsigned int lineno, const char *function)
 {
