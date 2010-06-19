@@ -4,7 +4,7 @@
 #include <stddef.h>
 
 #ifdef _MSC_VER
-#  define TRACELIB_BEACON(verbosity) tracelib_add_entry((verbosity), __FILE__, __LINE__, __FUNCSIG__ );
+#  define TRACELIB_BEACON(verbosity) tracelib_add_entry(tracelib_get_default_trace(), (verbosity), __FILE__, __LINE__, __FUNCSIG__ );
 #  ifdef TRACELIB_MAKEDLL
 #    define TRACELIB_EXPORT __declspec(dllexport)
 #  else
@@ -33,7 +33,8 @@ void TRACELIB_EXPORT tracelib_destroy_trace( tracelib_trace *trace );
 void TRACELIB_EXPORT tracelib_set_default_trace( tracelib_trace *trace );
 TRACELIB_EXPORT tracelib_trace *tracelib_get_default_trace();
 
-void TRACELIB_EXPORT tracelib_add_entry(unsigned short verbosity,
+void TRACELIB_EXPORT tracelib_add_entry(tracelib_trace *trace,
+                                        unsigned short verbosity,
                                         const char *fn,
                                         unsigned int lineno,
                                         const char *function);

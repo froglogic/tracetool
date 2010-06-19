@@ -49,6 +49,9 @@ public:
 
 int main()
 {
+    tracelib_trace *trace;
+    tracelib_create_trace( &trace );
+    tracelib_set_default_trace( trace );
     tracelib_set_entry_serializer(&tracelib_plaintext_serializer);
     tracelib_set_output_writer(&tracelib_stdout_writer);
     TRACELIB_BEACON(1)

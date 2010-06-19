@@ -38,9 +38,9 @@ tracelib_trace *tracelib_get_default_trace()
     return g_default_trace;
 }
 
-void tracelib_add_entry(unsigned short verbosity, const char *fn, unsigned int lineno, const char *function)
+void tracelib_add_entry(tracelib_trace *trace, unsigned short verbosity, const char *fn, unsigned int lineno, const char *function)
 {
-    if (verbosity <= g_verbosity) {
+    if (verbosity <= trace->verbosity) {
         char buf[ 1024 ]; /* XXX Avoid fixed buffer size */
         size_t bufsize = g_serializerFn(fn, lineno, function, buf, sizeof(buf));
         if (bufsize > 0) {
