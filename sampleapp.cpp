@@ -52,8 +52,8 @@ int main()
     tracelib_trace *trace;
     tracelib_create_trace( &trace );
     tracelib_set_default_trace( trace );
-    tracelib_plaintext_serializer_args args = {
-        1, // show timestamps
+    tracelib_plaintext_serializer_args serializer_args = {
+        1 // show timestamps
     };
     tracelib_trace_set_entry_serializer( trace, &tracelib_plaintext_serializer, &args );
     tracelib_trace_set_output_writer( trace, &tracelib_stdout_writer, NULL );
