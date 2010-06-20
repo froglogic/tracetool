@@ -19,6 +19,19 @@ private:
     unsigned short m_maxVerbosity;
 };
 
+class TRACELIB_EXPORT SourceFilePathFilter : public Filter
+{
+public:
+    SourceFilePathFilter();
+
+    void addAcceptablePath( const std::string &path );
+
+    virtual bool acceptsEntry( unsigned short verbosity, const char *sourceFile, unsigned int lineno, const char *functionName );
+
+private:
+    std::vector<std::string> m_acceptablePaths;
+};
+
 }
 
 #endif // !defined(FILTER_H)
