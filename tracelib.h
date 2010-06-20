@@ -1,11 +1,10 @@
 #ifndef TRACELIB_H
 #define TRACELIB_H
 
-#include <stddef.h>
-#include <stdio.h>
+#include <vector>
 
 #ifdef _MSC_VER
-#  define TRACELIB_BEACON(verbosity) tracelib_trace_add_entry(tracelib_get_default_trace(), (verbosity), __FILE__, __LINE__, __FUNCSIG__ );
+#  define TRACELIB_BEACON(verbosity) if (Tracelib::getActiveTrace()) Tracelib::getActiveTrace()->addEntry((verbosity), __FILE__, __LINE__, __FUNCSIG__);
 #  ifdef TRACELIB_MAKEDLL
 #    define TRACELIB_EXPORT __declspec(dllexport)
 #  else
@@ -15,75 +14,77 @@
 #  error "Unsupported compiler!"
 #endif
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace Tracelib
+{
 
-typedef size_t(*tracelib_entry_serializer_fn)(void *data,
-                                              const char *filename,
-                                              unsigned int lineno,
-                                              const char *function,
-                                              char *buf,
-                                              size_t bufsize);
-typedef void(*tracelib_output_writer_fn)(void *data,
-                                         const char *buf,
-                                         size_t bufsize); 
+class TRACELIB_EXPORT Output
+{
+public:
+    virtual ~Output();
 
-typedef struct tracelib_trace tracelib_trace;
+    virtual void write( const std::vector<char> &data ) = 0;
 
-TRACELIB_EXPORT void tracelib_create_trace( tracelib_trace **trace );
-TRACELIB_EXPORT void tracelib_destroy_trace( tracelib_trace *trace );
+protected:
+    Output();
 
-TRACELIB_EXPORT void tracelib_set_default_trace( tracelib_trace *trace );
-TRACELIB_EXPORT tracelib_trace *tracelib_get_default_trace();
+private:
+    Output( const Output &rhs );
+    void operator=( const Output &other );
+};
 
-TRACELIB_EXPORT void tracelib_trace_add_entry(tracelib_trace *trace,
-                                              unsigned short verbosity,
-                                              const char *fn,
-                                              unsigned int lineno,
-                                              const char *function);
-TRACELIB_EXPORT void tracelib_trace_set_verbosity(tracelib_trace *trace,
-                                                  unsigned short verbosity);
-TRACELIB_EXPORT void tracelib_trace_set_entry_serializer(tracelib_trace *trace,
-                                                         tracelib_entry_serializer_fn fn,
-                                                         void *data);
-TRACELIB_EXPORT void tracelib_trace_set_output_writer(tracelib_trace *trace,
-                                                      tracelib_output_writer_fn fn,
-                                                      void *data);
+class TRACELIB_EXPORT Serializer
+{
+public:
+    virtual ~Serializer();
 
-TRACELIB_EXPORT size_t tracelib_null_serializer(void *data,
-                                                const char *filename,
-                                                unsigned int lineno,
-                                                const char *function,
-                                                char *buf,
-                                                size_t bufsize);
-TRACELIB_EXPORT void tracelib_null_writer(void *data,
-                                          const char *buf,
-                                          size_t bufsize);
+    virtual std::vector<char> serialize( unsigned short verbosity, const char *sourceFile, unsigned int lineno, const char *functionName ) = 0;
 
-typedef struct {
-    int show_timestamp;
-} tracelib_plaintext_serializer_args;
+protected:
+    Serializer();
 
-TRACELIB_EXPORT size_t tracelib_plaintext_serializer(void *data,
-                                                     const char *filename,
-                                                     unsigned int lineno,
-                                                     const char *function,
-                                                     char *buf,
-                                                     size_t bufsize);
-TRACELIB_EXPORT void tracelib_stdout_writer(void *data,
-                                            const char *buf,
-                                            size_t bufsize);
+private:
+    Serializer( const Serializer &rhs );
+    void operator=( const Serializer &other );
+};
 
-typedef struct {
-    int fd;
-} tracelib_file_writer_args;
+class TRACELIB_EXPORT Filter
+{
+public:
+    virtual ~Filter();
 
-TRACELIB_EXPORT void tracelib_file_writer(void *data,
-                                          const char *buf,
-                                          size_t bufsize);
-#ifdef __cplusplus
+    virtual bool acceptsEntry( unsigned short verbosity, const char *sourceFile, unsigned int lineno, const char *functionName ) = 0;
+
+protected:
+    Filter();
+
+private:
+    Filter( const Filter &rhs );
+    void operator=( const Filter &other );
+};
+
+class TRACELIB_EXPORT Trace
+{
+public:
+    Trace();
+    ~Trace();
+
+    void addEntry( unsigned short verbosity, const char *sourceFile, unsigned int lineno, const char *functionName );
+    void setSerializer( Serializer *serializer );
+    void setOutput( Output *output );
+    void addFilter( Filter *filter );
+
+private:
+    Trace( const Trace &trace );
+    void operator=( const Trace &trace );
+
+    Serializer *m_serializer;
+    Output *m_output;
+    std::vector<Filter *> m_filters;
+};
+
+TRACELIB_EXPORT Trace *getActiveTrace();
+TRACELIB_EXPORT void setActiveTrace( Trace *trace );
+
 }
-#endif
 
 #endif // !defined(TRACELIB_H)

@@ -49,6 +49,7 @@ public:
 
 int main()
 {
+#if 0
     tracelib_trace *trace;
     tracelib_create_trace( &trace );
     tracelib_set_default_trace( trace );
@@ -57,9 +58,12 @@ int main()
     };
     tracelib_trace_set_entry_serializer( trace, &tracelib_plaintext_serializer, &serializer_args );
     tracelib_trace_set_output_writer( trace, &tracelib_stdout_writer, NULL );
+#endif
     TRACELIB_BEACON(1)
     ACME::GUI::Widget w;
     w.repaint( false );
+#if 0
     tracelib_destroy_trace( trace );
+#endif
 }
 
