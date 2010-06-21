@@ -5,6 +5,8 @@
 
 #ifdef _MSC_VER
 #  define TRACELIB_BEACON(verbosity) if (Tracelib::getActiveTrace()) Tracelib::getActiveTrace()->addEntry((verbosity), __FILE__, __LINE__, __FUNCSIG__);
+#  define TRACELIB_SNAPSHOT(verbosity) if (Tracelib::getActiveTrace()) Tracelib::SnapshotCreator(Tracelib::getActiveTrace(), (verbosity), __FILE__, __LINE__, __FUNCSIG__)
+#  define TRACELIB_VAR(v) Tracelib::makeConverter(#v, v)
 #  ifdef TRACELIB_MAKEDLL
 #    define TRACELIB_EXPORT __declspec(dllexport)
 #  else
@@ -94,6 +96,25 @@ template <typename T>
 AbstractVariableConverter *makeConverter(const char *name, const T &o) {
     return new VariableConverter<T>( name, o );
 }
+
+class Trace;
+
+class TRACELIB_EXPORT SnapshotCreator
+{
+public:
+    SnapshotCreator( Trace *trace, unsigned short verbosity, const char *sourceFile, unsigned int lineno, const char *functionName );
+    ~SnapshotCreator();
+
+    SnapshotCreator &operator<<( AbstractVariableConverter *converter );
+
+private:
+    Trace *m_trace;
+    const unsigned short m_verbosity;
+    const char * const m_sourceFile;
+    const unsigned int m_lineno;
+    const char * const m_functionName;
+    std::vector<AbstractVariableConverter *> m_variables;
+};
 
 class TRACELIB_EXPORT Trace
 {

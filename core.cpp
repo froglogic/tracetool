@@ -27,6 +27,26 @@ Filter::~Filter()
 {
 }
 
+SnapshotCreator::SnapshotCreator( Trace *trace, unsigned short verbosity, const char *sourceFile, unsigned int lineno, const char *functionName )
+    : m_trace( trace ),
+    m_verbosity( verbosity ),
+    m_sourceFile( sourceFile ),
+    m_lineno( lineno ),
+    m_functionName( functionName )
+{
+}
+
+SnapshotCreator::~SnapshotCreator()
+{
+    m_trace->addEntry( m_verbosity, m_sourceFile, m_lineno, m_functionName, m_variables );
+}
+
+SnapshotCreator &SnapshotCreator::operator<<( AbstractVariableConverter *converter )
+{
+    m_variables.push_back( converter );
+    return *this;
+}
+
 Trace::Trace()
     : m_serializer( 0 ),
     m_output( 0 )
