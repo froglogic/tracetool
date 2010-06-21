@@ -71,7 +71,7 @@ void Trace::addEntry( unsigned short verbosity, const char *sourceFile, unsigned
             return;
         }
     }
-    m_output->write( m_serializer->serialize( verbosity, sourceFile, lineno, functionName ) );
+    m_output->write( m_serializer->serialize( verbosity, sourceFile, lineno, functionName, variables ) );
 }
 
 void Trace::setSerializer( Serializer *serializer )

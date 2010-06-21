@@ -19,51 +19,6 @@
 namespace Tracelib
 {
 
-class TRACELIB_EXPORT Output
-{
-public:
-    virtual ~Output();
-
-    virtual void write( const std::vector<char> &data ) = 0;
-
-protected:
-    Output();
-
-private:
-    Output( const Output &rhs );
-    void operator=( const Output &other );
-};
-
-class TRACELIB_EXPORT Serializer
-{
-public:
-    virtual ~Serializer();
-
-    virtual std::vector<char> serialize( unsigned short verbosity, const char *sourceFile, unsigned int lineno, const char *functionName ) = 0;
-
-protected:
-    Serializer();
-
-private:
-    Serializer( const Serializer &rhs );
-    void operator=( const Serializer &other );
-};
-
-class TRACELIB_EXPORT Filter
-{
-public:
-    virtual ~Filter();
-
-    virtual bool acceptsEntry( unsigned short verbosity, const char *sourceFile, unsigned int lineno, const char *functionName ) = 0;
-
-protected:
-    Filter();
-
-private:
-    Filter( const Filter &rhs );
-    void operator=( const Filter &other );
-};
-
 template <typename T>
 std::string convertVariable( T o );
 
@@ -95,6 +50,51 @@ template <typename T>
 AbstractVariableConverter *makeConverter(const char *name, const T &o) {
     return new VariableConverter<T>( name, o );
 }
+
+class TRACELIB_EXPORT Output
+{
+public:
+    virtual ~Output();
+
+    virtual void write( const std::vector<char> &data ) = 0;
+
+protected:
+    Output();
+
+private:
+    Output( const Output &rhs );
+    void operator=( const Output &other );
+};
+
+class TRACELIB_EXPORT Serializer
+{
+public:
+    virtual ~Serializer();
+
+    virtual std::vector<char> serialize( unsigned short verbosity, const char *sourceFile, unsigned int lineno, const char *functionName, const std::vector<AbstractVariableConverter *> &variables ) = 0;
+
+protected:
+    Serializer();
+
+private:
+    Serializer( const Serializer &rhs );
+    void operator=( const Serializer &other );
+};
+
+class TRACELIB_EXPORT Filter
+{
+public:
+    virtual ~Filter();
+
+    virtual bool acceptsEntry( unsigned short verbosity, const char *sourceFile, unsigned int lineno, const char *functionName ) = 0;
+
+protected:
+    Filter();
+
+private:
+    Filter( const Filter &rhs );
+    void operator=( const Filter &other );
+};
 
 class Trace;
 
