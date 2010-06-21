@@ -4,6 +4,7 @@
 #include "filter.h"
 
 #include <string>
+#include <sstream>
 
 class Person
 {
@@ -31,6 +32,7 @@ namespace ACME
 std::string f( int v1, int v2 )
 {
     TRACELIB_BEACON(1)
+    TRACELIB_SNAPSHOT(1) << TRACELIB_VAR(v1) << TRACELIB_VAR(v2);
     Person p( "John", "Doe" );
     return p.toString();
 }
@@ -49,6 +51,16 @@ public:
 
 }
 
+}
+
+namespace Tracelib
+{
+    template <>
+    std::string convertVariable<int>( int i ) {
+        std::ostringstream str;
+        str << i;
+        return str.str();
+    }
 }
 
 int main()
