@@ -43,7 +43,7 @@ Trace::~Trace()
     }
 }
 
-void Trace::addEntry( unsigned short verbosity, const char *sourceFile, unsigned int lineno, const char *functionName )
+void Trace::addEntry( unsigned short verbosity, const char *sourceFile, unsigned int lineno, const char *functionName, const vector<AbstractVariableConverter *> &variables )
 {
     vector<Filter *>::const_iterator it, end = m_filters.end();
     for ( it = m_filters.begin(); it != end; ++it ) {

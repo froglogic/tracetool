@@ -62,13 +62,46 @@ private:
     void operator=( const Filter &other );
 };
 
+template <typename T>
+std::string convertVariable( T o );
+
+class AbstractVariableConverter
+{
+public:
+    virtual std::string toString() const = 0;
+};
+
+template <typename T>
+class VariableConverter : public AbstractVariableConverter
+{
+public:
+    VariableConverter( const char *name, const T &o ) : m_name( name ), m_o( o ) { }
+
+    virtual std::string toString() const {
+        std::string s = "Variable ";
+        s += m_name;
+        s += " = ";
+        s += convertVariable( m_o );
+        return s;
+    }
+
+private:
+    const char *m_name;
+    const T &m_o;
+};
+
+template <typename T>
+AbstractVariableConverter *makeConverter(const char *name, const T &o) {
+    return new VariableConverter<T>( name, o );
+}
+
 class TRACELIB_EXPORT Trace
 {
 public:
     Trace();
     ~Trace();
 
-    void addEntry( unsigned short verbosity, const char *sourceFile, unsigned int lineno, const char *functionName );
+    void addEntry( unsigned short verbosity, const char *sourceFile, unsigned int lineno, const char *functionName, const std::vector<AbstractVariableConverter *> &variables = std::vector<AbstractVariableConverter *>() );
     void setSerializer( Serializer *serializer );
     void setOutput( Output *output );
     void addFilter( Filter *filter );
