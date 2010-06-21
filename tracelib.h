@@ -70,6 +70,7 @@ std::string convertVariable( T o );
 class AbstractVariableConverter
 {
 public:
+    virtual const char *name() const = 0;
     virtual std::string toString() const = 0;
 };
 
@@ -79,12 +80,10 @@ class VariableConverter : public AbstractVariableConverter
 public:
     VariableConverter( const char *name, const T &o ) : m_name( name ), m_o( o ) { }
 
+    const char *name() const { return m_name; }
+
     virtual std::string toString() const {
-        std::string s = "Variable ";
-        s += m_name;
-        s += " = ";
-        s += convertVariable( m_o );
-        return s;
+        return convertVariable( m_o );
     }
 
 private:
