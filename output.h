@@ -12,6 +12,17 @@ public:
     virtual void write( const std::vector<char> &data );
 };
 
+class MultiplexingOutput : public Output
+{
+public:
+    void addOutput( Output *output );
+
+    virtual void write( const std::vector<char> &data );
+
+private:
+    std::vector<Output *> m_outputs;
+};
+
 }
 
 #endif // !defined(OUTPUT_H)
