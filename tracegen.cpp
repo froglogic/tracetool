@@ -19,7 +19,7 @@ int main()
 {
     using namespace Tracelib;
     Trace *trace = new Trace;
-    trace->setSerializer( new PlaintextSerializer );
+    trace->setSerializer( new CSVSerializer );
     trace->setOutput( new StdoutOutput );
     trace->addFilter( new VerbosityFilter );
     setActiveTrace( trace );
