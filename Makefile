@@ -1,6 +1,6 @@
 CPPFLAGS=/nologo /W3 /EHsc /D_CRT_SECURE_NO_WARNINGS
 
-all: sampleapp.exe
+all: sampleapp.exe tracegen.exe
 
 tracelib.lib: core.obj serializer.obj output.obj filter.obj
 	lib /nologo /OUT:tracelib.lib core.obj serializer.obj output.obj filter.obj
@@ -11,9 +11,13 @@ filter.obj: filter.cpp tracelib.h
 
 sampleapp.exe: sampleapp.obj tracelib.lib
 	link /nologo /OUT:sampleapp.exe sampleapp.obj tracelib.lib
-
 sampleapp.obj: sampleapp.cpp tracelib.h
 	cl /nologo /W3 /EHsc /c sampleapp.cpp $(CL_DEBUGFLAGS) /FC
+
+tracegen.exe: tracegen.obj tracelib.lib
+	link /nologo /OUT:tracegen.exe tracegen.obj tracelib.lib
+tracegen.obj: tracegen.cpp tracelib.h
+	cl /nologo /W3 /EHsc /c tracegen.cpp $(CL_DEBUGFLAGS) /FC
 
 clean:
 	del *.obj *.exe *.lib *.pdb
