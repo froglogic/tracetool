@@ -39,6 +39,10 @@ SnapshotCreator::SnapshotCreator( Trace *trace, unsigned short verbosity, const 
 SnapshotCreator::~SnapshotCreator()
 {
     m_trace->addEntry( m_verbosity, m_sourceFile, m_lineno, m_functionName, m_variables );
+    vector<AbstractVariableConverter *>::iterator it, end = m_variables.end();
+    for ( it = m_variables.begin(); it != end; ++it ) {
+        delete *it;
+    }
 }
 
 SnapshotCreator &SnapshotCreator::operator<<( AbstractVariableConverter *converter )
