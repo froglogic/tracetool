@@ -18,6 +18,9 @@ public:
 
     std::string toString() const {
         TRACELIB_BEACON(1)
+        TRACELIB_SNAPSHOT(1) << TRACELIB_VAR(this)
+                             << TRACELIB_VAR(m_firstName)
+                             << TRACELIB_VAR(m_lastName);
         return m_lastName + ", " + m_firstName;
     }
 
@@ -60,6 +63,18 @@ namespace Tracelib
         std::ostringstream str;
         str << i;
         return str.str();
+    }
+
+    template <>
+    std::string convertVariable<std::string>( std::string s ) {
+        return s;
+    }
+
+    template <>
+    std::string convertVariable<const Person *>( const Person *p ) {
+        char buf[ 32 ];
+        sprintf( buf, "0x%08x", p );
+        return &buf[0];
     }
 }
 
