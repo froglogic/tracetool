@@ -1,5 +1,6 @@
 #include "serializer.h"
 #include <ctime>
+#include <sstream>
 
 using namespace Tracelib;
 using namespace std;
@@ -43,5 +44,39 @@ vector<char> PlaintextSerializer::serialize( unsigned short verbosity,
     vector<char> buf( 1024, '\0' ); // XXX don't hardcode buffer size
     _snprintf(&buf[0], buf.size(), "%s%s:%d: %s%s", timestamp, sourceFile, lineno, functionName, variableDump.c_str() );
     return buf;
+}
+
+vector<char> CSVSerializer::serialize( unsigned short verbosity, const char *sourceFile, unsigned int lineno, const char *functionName, const vector<AbstractVariableConverter *> &variables )
+{
+    ostringstream str;
+    str << verbosity << "," << escape( sourceFile ) << "," << lineno << "," << escape( functionName );
+
+    vector<AbstractVariableConverter *>::const_iterator it, end = variables.end();
+    for ( it = variables.begin(); it != end; ++it ) {
+        str << "," << escape( ( *it )->name() ) << "," << escape( ( *it )->toString() );
+    }
+
+    const string result = str.str();
+    return vector<char>( result.begin(), result.end() );
+}
+
+string CSVSerializer::escape( const string &s ) const
+{
+    string v;
+    v.reserve( s.size() );
+    for ( string::size_type i = 0; i < s.size(); ++i ) {
+        switch ( s[i] ) {
+            case ',':
+                v += "\\,";
+                break;
+            case '\\':
+                v += "\\\\";
+                break;
+            default:
+                v += s[i];
+                break;
+        }
+    }
+    return v;
 }
 
