@@ -7,11 +7,6 @@
 #  define TRACELIB_BEACON(verbosity) if (Tracelib::getActiveTrace()) Tracelib::getActiveTrace()->addEntry((verbosity), __FILE__, __LINE__, __FUNCSIG__);
 #  define TRACELIB_SNAPSHOT(verbosity) if (Tracelib::getActiveTrace()) Tracelib::SnapshotCreator(Tracelib::getActiveTrace(), (verbosity), __FILE__, __LINE__, __FUNCSIG__)
 #  define TRACELIB_VAR(v) Tracelib::makeConverter(#v, v)
-#  ifdef TRACELIB_MAKEDLL
-#    define TRACELIB_EXPORT __declspec(dllexport)
-#  else
-#    define TRACELIB_EXPORT __declspec(dllimport)
-#  endif
 #else
 #  error "Unsupported compiler!"
 #endif
@@ -51,7 +46,7 @@ AbstractVariableConverter *makeConverter(const char *name, const T &o) {
     return new VariableConverter<T>( name, o );
 }
 
-class TRACELIB_EXPORT Output
+class Output
 {
 public:
     virtual ~Output();
@@ -66,7 +61,7 @@ private:
     void operator=( const Output &other );
 };
 
-class TRACELIB_EXPORT Serializer
+class Serializer
 {
 public:
     virtual ~Serializer();
@@ -81,7 +76,7 @@ private:
     void operator=( const Serializer &other );
 };
 
-class TRACELIB_EXPORT Filter
+class Filter
 {
 public:
     virtual ~Filter();
@@ -98,7 +93,7 @@ private:
 
 class Trace;
 
-class TRACELIB_EXPORT SnapshotCreator
+class SnapshotCreator
 {
 public:
     SnapshotCreator( Trace *trace, unsigned short verbosity, const char *sourceFile, unsigned int lineno, const char *functionName );
@@ -115,7 +110,7 @@ private:
     std::vector<AbstractVariableConverter *> m_variables;
 };
 
-class TRACELIB_EXPORT Trace
+class Trace
 {
 public:
     Trace();
@@ -135,8 +130,8 @@ private:
     std::vector<Filter *> m_filters;
 };
 
-TRACELIB_EXPORT Trace *getActiveTrace();
-TRACELIB_EXPORT void setActiveTrace( Trace *trace );
+Trace *getActiveTrace();
+void setActiveTrace( Trace *trace );
 
 }
 

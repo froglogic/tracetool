@@ -6,7 +6,7 @@
 namespace Tracelib
 {
 
-class TRACELIB_EXPORT StdoutOutput : public Output
+class StdoutOutput : public Output
 {
 public:
     virtual void write( const std::vector<char> &data );

@@ -1,24 +1,19 @@
-CL_DEBUGFLAGS=/Zi
-LINK_DEBUGFLAGS=/DEBUG
+CPPFLAGS=/nologo /W3 /EHsc /D_CRT_SECURE_NO_WARNINGS
 
 all: sampleapp.exe
 
-tracelib.dll: core.obj serializer.obj output.obj filter.obj
-	link /nologo /DLL $(LINK_DEBUGFLAGS) /OUT:tracelib.dll core.obj serializer.obj output.obj filter.obj
+tracelib.lib: core.obj serializer.obj output.obj filter.obj
+	lib /nologo /OUT:tracelib.lib core.obj serializer.obj output.obj filter.obj
 core.obj: core.cpp tracelib.h
-	cl /nologo /W3 /c core.cpp $(CL_DEBUGFLAGS) /EHsc /DTRACELIB_MAKEDLL /D_CRT_SECURE_NO_WARNINGS
 serializer.obj: serializer.cpp tracelib.h
-	cl /nologo /W3 /c serializer.cpp $(CL_DEBUGFLAGS) /EHsc /DTRACELIB_MAKEDLL /D_CRT_SECURE_NO_WARNINGS
 output.obj: output.cpp tracelib.h
-	cl /nologo /W3 /c output.cpp $(CL_DEBUGFLAGS) /EHsc /DTRACELIB_MAKEDLL /D_CRT_SECURE_NO_WARNINGS
 filter.obj: filter.cpp tracelib.h
-	cl /nologo /W3 /c filter.cpp $(CL_DEBUGFLAGS) /EHsc /DTRACELIB_MAKEDLL /D_CRT_SECURE_NO_WARNINGS
 
-sampleapp.exe: sampleapp.obj tracelib.dll
-	link /nologo $(LINK_DEBUGFLAGS) /OUT:sampleapp.exe sampleapp.obj tracelib.lib
+sampleapp.exe: sampleapp.obj tracelib.lib
+	link /nologo /OUT:sampleapp.exe sampleapp.obj tracelib.lib
 
 sampleapp.obj: sampleapp.cpp tracelib.h
 	cl /nologo /W3 /EHsc /c sampleapp.cpp $(CL_DEBUGFLAGS) /FC
 
 clean:
-	del *.obj *.exe *.lib *.exp *.dll *.ilk *.pdb
+	del *.obj *.exe *.lib *.exp *.ilk *.pdb

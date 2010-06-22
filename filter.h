@@ -6,7 +6,7 @@
 namespace Tracelib
 {
 
-class TRACELIB_EXPORT VerbosityFilter : public Filter
+class VerbosityFilter : public Filter
 {
 public:
     VerbosityFilter();
@@ -19,7 +19,7 @@ private:
     unsigned short m_maxVerbosity;
 };
 
-class TRACELIB_EXPORT SourceFilePathFilter : public Filter
+class SourceFilePathFilter : public Filter
 {
 public:
     SourceFilePathFilter();

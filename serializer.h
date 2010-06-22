@@ -6,7 +6,7 @@
 namespace Tracelib
 {
 
-class TRACELIB_EXPORT PlaintextSerializer : public Serializer
+class PlaintextSerializer : public Serializer
 {
 public:
     PlaintextSerializer();
