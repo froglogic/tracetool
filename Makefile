@@ -16,4 +16,4 @@ sampleapp.obj: sampleapp.cpp tracelib.h
 	cl /nologo /W3 /EHsc /c sampleapp.cpp $(CL_DEBUGFLAGS) /FC
 
 clean:
-	del *.obj *.exe *.lib *.exp *.ilk *.pdb
+	del *.obj *.exe *.lib *.pdb
