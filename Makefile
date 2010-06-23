@@ -12,12 +12,12 @@ filter.obj: filter.cpp tracelib.h
 sampleapp.exe: sampleapp.obj tracelib.lib
 	link /nologo /OUT:sampleapp.exe sampleapp.obj tracelib.lib
 sampleapp.obj: sampleapp.cpp tracelib.h
-	cl /nologo /W3 /EHsc /c sampleapp.cpp $(CL_DEBUGFLAGS) /FC
+	cl $(CPPFLAGS) /c sampleapp.cpp /FC
 
 tracegen.exe: tracegen.obj tracelib.lib
 	link /nologo /OUT:tracegen.exe tracegen.obj tracelib.lib
 tracegen.obj: tracegen.cpp tracelib.h
-	cl /nologo /W3 /EHsc /c tracegen.cpp $(CL_DEBUGFLAGS) /FC
+	cl $(CPPFLAGS) /c tracegen.cpp /FC
 
 clean:
 	del *.obj *.exe *.lib *.pdb
