@@ -36,9 +36,12 @@ MultiplexingOutput::~MultiplexingOutput()
 
 static map<SOCKET, NetworkOutput *> *g_networkOutputs = 0;
 
-NetworkOutput::NetworkOutput()
-    : m_commWindow( 0 ),
-    m_socket( 0 )
+NetworkOutput::NetworkOutput( const char *remoteHost, unsigned short remotePort )
+    : m_remoteHost( remoteHost ),
+    m_remotePort( remotePort ),
+    m_commWindow( 0 ),
+    m_socket( 0 ),
+    m_connected( false )
 {
     static HINSTANCE programInstance = ::GetModuleHandle( NULL );
     if ( !programInstance ) {
@@ -118,16 +121,16 @@ void NetworkOutput::setupSocket()
 
 void NetworkOutput::tryToConnect()
 {
-    hostent *localHost = gethostbyname( "" );
+    hostent *localHost = gethostbyname( m_remoteHost );
     char *localIP = inet_ntoa (*(struct in_addr *)*localHost->h_addr_list);
-    struct sockaddr_in viewerAddr;
-    viewerAddr.sin_family = AF_INET;
-    viewerAddr.sin_addr.s_addr = inet_addr( localIP );
-    viewerAddr.sin_port = htons(44123);
+    struct sockaddr_in remoteAddr;
+    remoteAddr.sin_family = AF_INET;
+    remoteAddr.sin_addr.s_addr = inet_addr( localIP );
+    remoteAddr.sin_port = htons( m_remotePort );
 
     if ( ::WSAConnect( m_socket,
-                  (const struct sockaddr* )&viewerAddr,
-                  sizeof(viewerAddr),
+                  (const struct sockaddr* )&remoteAddr,
+                  sizeof(remoteAddr),
                   NULL,
                   NULL,
                   NULL,
@@ -152,6 +155,7 @@ void NetworkOutput::write( const vector<char> &data )
 LRESULT CALLBACK NetworkOutput::networkWindowProc( HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam )
 {
     if ( msg == WM_TRACELIB_CONNECTIONUPDATE ) {
+        assert( g_networkOutputs );
         map<SOCKET, NetworkOutput *>::iterator it = g_networkOutputs->find( (SOCKET)wparam );
         assert( it != g_networkOutputs->end() );
         NetworkOutput *outputObject = it->second;

@@ -37,7 +37,7 @@ private:
 class NetworkOutput : public Output
 {
 public:
-    NetworkOutput();
+    NetworkOutput( const char *remoteHost, unsigned short remotePort );
     virtual ~NetworkOutput();
 
     void closeSocket();
@@ -50,6 +50,8 @@ public:
 private:
     static LRESULT CALLBACK networkWindowProc( HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam );
 
+    const char *m_remoteHost;
+    unsigned short m_remotePort;
     HWND m_commWindow;
     SOCKET m_socket;
     bool m_connected;

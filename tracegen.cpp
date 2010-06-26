@@ -27,7 +27,7 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
     trace->setSerializer( new CSVSerializer );
     MultiplexingOutput *output = new MultiplexingOutput;
     output->addOutput( new StdoutOutput );
-    output->addOutput( new NetworkOutput );
+    output->addOutput( new NetworkOutput( "127.0.0.1", 44123 ) );
     trace->setOutput( output );
     trace->addFilter( new VerbosityFilter );
     setActiveTrace( trace );
