@@ -40,17 +40,19 @@ public:
     NetworkOutput();
     virtual ~NetworkOutput();
 
+    void closeSocket();
+    void setupSocket();
+    void setConnected() { m_connected = true; }
+    void tryToConnect();
+
     virtual void write( const std::vector<char> &data );
 
 private:
     static LRESULT CALLBACK networkWindowProc( HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam );
 
-    static void tryToConnect( SOCKET socket );
-
-    static bool g_haveViewer;
-
     HWND m_commWindow;
     SOCKET m_socket;
+    bool m_connected;
 };
 
 }

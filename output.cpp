@@ -1,5 +1,8 @@
 #include "output.h"
 
+#include <cassert>
+#include <map>
+
 using namespace Tracelib;
 using namespace std;
 
@@ -30,6 +33,8 @@ MultiplexingOutput::~MultiplexingOutput()
         delete *it;
     }
 }
+
+static map<SOCKET, NetworkOutput *> *g_networkOutputs = 0;
 
 NetworkOutput::NetworkOutput()
     : m_commWindow( 0 ),
@@ -79,6 +84,23 @@ NetworkOutput::NetworkOutput()
         OutputDebugStringA( "Faile to get proper WinSock version" );
     }
 
+    setupSocket();
+    tryToConnect();
+}
+
+void NetworkOutput::closeSocket()
+{
+    m_connected = false;
+    assert( g_networkOutputs );
+    g_networkOutputs->erase( m_socket );
+    closesocket( m_socket );
+    m_socket = INVALID_SOCKET;
+}
+
+void NetworkOutput::setupSocket()
+{
+    m_connected = false;
+
     m_socket = ::WSASocket( AF_INET, SOCK_STREAM, IPPROTO_TCP, NULL, 0, 0 );
     if ( m_socket == INVALID_SOCKET ) {
         OutputDebugStringA( "WSASocket failed" );
@@ -88,10 +110,13 @@ NetworkOutput::NetworkOutput()
         OutputDebugStringA( "WSAAsyncSelect failed" );
     }
 
-    tryToConnect( m_socket );
+    if ( !g_networkOutputs ) {
+        g_networkOutputs = new map<SOCKET, NetworkOutput *>;
+    }
+    (*g_networkOutputs)[m_socket] = this;
 }
 
-void NetworkOutput::tryToConnect( SOCKET sock )
+void NetworkOutput::tryToConnect()
 {
     hostent *localHost = gethostbyname( "" );
     char *localIP = inet_ntoa (*(struct in_addr *)*localHost->h_addr_list);
@@ -100,7 +125,7 @@ void NetworkOutput::tryToConnect( SOCKET sock )
     viewerAddr.sin_addr.s_addr = inet_addr( localIP );
     viewerAddr.sin_port = htons(44123);
 
-    if ( ::WSAConnect( sock,
+    if ( ::WSAConnect( m_socket,
                   (const struct sockaddr* )&viewerAddr,
                   sizeof(viewerAddr),
                   NULL,
@@ -117,11 +142,9 @@ NetworkOutput::~NetworkOutput()
     ::WSACleanup();
 }
 
-bool NetworkOutput::g_haveViewer = false;
-
 void NetworkOutput::write( const vector<char> &data )
 {
-    if ( g_haveViewer ) {
+    if ( m_connected ) {
         send( m_socket, &data[0], data.size(), 0 );
     }
 }
@@ -129,18 +152,21 @@ void NetworkOutput::write( const vector<char> &data )
 LRESULT CALLBACK NetworkOutput::networkWindowProc( HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam )
 {
     if ( msg == WM_TRACELIB_CONNECTIONUPDATE ) {
+        map<SOCKET, NetworkOutput *>::iterator it = g_networkOutputs->find( (SOCKET)wparam );
+        assert( it != g_networkOutputs->end() );
+        NetworkOutput *outputObject = it->second;
         if ( WSAGETSELECTEVENT( lparam ) == FD_CONNECT ) {
             switch( WSAGETSELECTERROR( lparam ) ) {
                 case 0:
                     OutputDebugStringA( "Tracelib: connected to viewer!" );
-                    g_haveViewer = true;
+                    outputObject->setConnected();
                     break;
                 case WSAEAFNOSUPPORT:
                     OutputDebugStringA( "1" );
                     break;
                 case WSAECONNREFUSED:
                     OutputDebugStringA( "Tracelib: failed to connect to viewer, trying again..." );
-                    tryToConnect( (SOCKET)wparam );
+                    outputObject->tryToConnect();
                     break;
                 case WSAENETUNREACH:
                     OutputDebugStringA( "3" );
@@ -169,8 +195,9 @@ LRESULT CALLBACK NetworkOutput::networkWindowProc( HWND hwnd, UINT msg, WPARAM w
             }
         } else if ( WSAGETSELECTEVENT( lparam ) == FD_CLOSE ) {
             OutputDebugStringA( "Viewer disappeared." );
-            g_haveViewer = false;
-            tryToConnect( (SOCKET)wparam );
+            outputObject->closeSocket();
+            outputObject->setupSocket();
+            outputObject->tryToConnect();
         }
     }
     return ::DefWindowProc( hwnd, msg, wparam, lparam );
