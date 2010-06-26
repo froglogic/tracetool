@@ -6,7 +6,7 @@
 // Need to link with Ws2_32.lib, Mswsock.lib, and Advapi32.lib
 
 #define DEFAULT_BUFLEN 512
-#define DEFAULT_PORT "2705"
+#define DEFAULT_PORT "44123"
 
 int __cdecl main(void) 
 {
