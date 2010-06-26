@@ -3,6 +3,8 @@
 using namespace Tracelib;
 using namespace std;
 
+static const unsigned int WM_TRACELIB_CONNECTIONUPDATE = ::RegisterWindowMessage( TEXT( "Tracelib_ConnectionUpdate" ) );
+
 void StdoutOutput::write( const vector<char> &data )
 {
     fprintf(stdout, "%s\n", &data[0]);
@@ -82,8 +84,30 @@ NetworkOutput::NetworkOutput()
         OutputDebugStringA( "WSASocket failed" );
     }
 
-    if ( ::WSAAsyncSelect( m_socket, m_commWindow, 0, FD_CONNECT ) != 0 ) {
+    if ( ::WSAAsyncSelect( m_socket, m_commWindow, WM_TRACELIB_CONNECTIONUPDATE, FD_CONNECT | FD_CLOSE ) != 0 ) {
         OutputDebugStringA( "WSAAsyncSelect failed" );
+    }
+
+    tryToConnect( m_socket );
+}
+
+void NetworkOutput::tryToConnect( SOCKET sock )
+{
+    hostent *localHost = gethostbyname( "" );
+    char *localIP = inet_ntoa (*(struct in_addr *)*localHost->h_addr_list);
+    struct sockaddr_in viewerAddr;
+    viewerAddr.sin_family = AF_INET;
+    viewerAddr.sin_addr.s_addr = inet_addr( localIP );
+    viewerAddr.sin_port = htons(44123);
+
+    if ( ::WSAConnect( sock,
+                  (const struct sockaddr* )&viewerAddr,
+                  sizeof(viewerAddr),
+                  NULL,
+                  NULL,
+                  NULL,
+                  NULL ) == 0 || WSAGetLastError() != WSAEWOULDBLOCK ) {
+        OutputDebugStringA( "funny thing while connecting" );
     }
 }
 
@@ -93,13 +117,62 @@ NetworkOutput::~NetworkOutput()
     ::WSACleanup();
 }
 
+bool NetworkOutput::g_haveViewer = false;
+
 void NetworkOutput::write( const vector<char> &data )
 {
-    fprintf(stdout, "%s\n", &data[0]);
+    if ( g_haveViewer ) {
+        send( m_socket, &data[0], data.size(), 0 );
+    }
 }
 
 LRESULT CALLBACK NetworkOutput::networkWindowProc( HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam )
 {
+    if ( msg == WM_TRACELIB_CONNECTIONUPDATE ) {
+        if ( WSAGETSELECTEVENT( lparam ) == FD_CONNECT ) {
+            switch( WSAGETSELECTERROR( lparam ) ) {
+                case 0:
+                    OutputDebugStringA( "Tracelib: connected to viewer!" );
+                    g_haveViewer = true;
+                    break;
+                case WSAEAFNOSUPPORT:
+                    OutputDebugStringA( "1" );
+                    break;
+                case WSAECONNREFUSED:
+                    OutputDebugStringA( "Tracelib: failed to connect to viewer, trying again..." );
+                    tryToConnect( (SOCKET)wparam );
+                    break;
+                case WSAENETUNREACH:
+                    OutputDebugStringA( "3" );
+                    break;
+                case WSAEFAULT:
+                    OutputDebugStringA( "4" );
+                    break;
+                case WSAEINVAL:
+                    OutputDebugStringA( "5" );
+                    break;
+                case WSAEISCONN:
+                    OutputDebugStringA( "6" );
+                    break;
+                case WSAEMFILE:
+                    OutputDebugStringA( "7" );
+                    break;
+                case WSAENOBUFS:
+                    OutputDebugStringA( "8" );
+                    break;
+                case WSAENOTCONN:
+                    OutputDebugStringA( "9" );
+                    break;
+                case WSAETIMEDOUT:
+                    OutputDebugStringA( "10" );
+                    break;
+            }
+        } else if ( WSAGETSELECTEVENT( lparam ) == FD_CLOSE ) {
+            OutputDebugStringA( "Viewer disappeared." );
+            g_haveViewer = false;
+            tryToConnect( (SOCKET)wparam );
+        }
+    }
     return ::DefWindowProc( hwnd, msg, wparam, lparam );
 }
 

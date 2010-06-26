@@ -45,6 +45,10 @@ public:
 private:
     static LRESULT CALLBACK networkWindowProc( HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam );
 
+    static void tryToConnect( SOCKET socket );
+
+    static bool g_haveViewer;
+
     HWND m_commWindow;
     SOCKET m_socket;
 };
