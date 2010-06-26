@@ -21,3 +21,67 @@ void MultiplexingOutput::write( const vector<char> &data )
     }
 }
 
+NetworkOutput::NetworkOutput()
+    : m_commWindow( 0 )
+{
+    static HINSTANCE programInstance = ::GetModuleHandle( NULL );
+    if ( !programInstance ) {
+        OutputDebugStringA( "GetModuleHandle failed" );
+    }
+
+    static WNDCLASSEX networkClassInfo = {
+        sizeof( WNDCLASSEX ),
+        0,
+        &networkWindowProc,
+        0,
+        0,
+        programInstance,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        TEXT("Tracelib_Network_Window")
+    };
+    if ( !::RegisterClassEx( &networkClassInfo ) ) {
+        OutputDebugStringA( "RegisterClassEx failed" );
+    }
+
+    m_commWindow = ::CreateWindow( TEXT("Tracelib_Network_Window"),
+                                   NULL,
+                                   0,
+                                   0, 0, 0, 0,
+                                   HWND_MESSAGE,
+                                   NULL,
+                                   programInstance,
+                                   NULL );
+    if ( !m_commWindow ) {
+        OutputDebugStringA( "CreateWindow failed" );
+    }
+
+    WSADATA wsaData;
+    int err = WSAStartup( MAKEWORD( 2, 2 ), &wsaData );
+    if ( err != 0 ) {
+        OutputDebugStringA( "WSAStartup failed" );
+    }
+
+    if ( LOBYTE( wsaData.wVersion ) != 2 || HIBYTE( wsaData.wVersion ) != 2 ) {
+        OutputDebugStringA( "Faile to get proper WinSock version" );
+    }
+}
+
+NetworkOutput::~NetworkOutput()
+{
+    ::DestroyWindow( m_commWindow );
+    WSACleanup();
+}
+
+void NetworkOutput::write( const vector<char> &data )
+{
+    fprintf(stdout, "%s\n", &data[0]);
+}
+
+LRESULT CALLBACK NetworkOutput::networkWindowProc( HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam )
+{
+    return ::DefWindowProc( hwnd, msg, wparam, lparam );
+}
+

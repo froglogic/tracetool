@@ -3,6 +3,8 @@
 
 #include "tracelib.h"
 
+#include <windows.h>
+
 namespace Tracelib
 {
 
@@ -21,6 +23,20 @@ public:
 
 private:
     std::vector<Output *> m_outputs;
+};
+
+class NetworkOutput : public Output
+{
+public:
+    NetworkOutput();
+    virtual ~NetworkOutput();
+
+    virtual void write( const std::vector<char> &data );
+
+private:
+    static LRESULT CALLBACK networkWindowProc( HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam );
+
+    HWND m_commWindow;
 };
 
 }
