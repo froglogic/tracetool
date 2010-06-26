@@ -17,7 +17,6 @@ namespace Tracelib {
 
 static VOID CALLBACK timerProc( HWND, UINT, UINT_PTR, DWORD )
 {
-    OutputDebugStringA( "1" );
     TRACELIB_SNAPSHOT(1) << TRACELIB_VAR(time(NULL));
 }
 
