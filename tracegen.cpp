@@ -15,16 +15,36 @@ namespace Tracelib {
     }
 }
 
-int main()
+static VOID CALLBACK timerProc( HWND, UINT, UINT_PTR, DWORD )
+{
+    OutputDebugStringA( "1" );
+    TRACELIB_SNAPSHOT(1) << TRACELIB_VAR(time(NULL));
+}
+
+int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow )
 {
     using namespace Tracelib;
     Trace *trace = new Trace;
     trace->setSerializer( new CSVSerializer );
-    trace->setOutput( new StdoutOutput );
+    MultiplexingOutput *output = new MultiplexingOutput;
+    output->addOutput( new StdoutOutput );
+    output->addOutput( new NetworkOutput );
+    trace->setOutput( output );
     trace->addFilter( new VerbosityFilter );
     setActiveTrace( trace );
-    while ( true ) {
-        TRACELIB_SNAPSHOT(1) << TRACELIB_VAR(time(NULL));
-        ::Sleep(1000);
+
+    SetTimer( NULL, 0, 1000, &timerProc );
+
+    MSG msg;
+    BOOL ret;
+    while ( ( ret = GetMessage( &msg, NULL, 0, 0 ) ) != 0 ) {
+        if ( ret == -1 ) {
+            OutputDebugStringA( "GetMessage failed" );
+        } else {
+            TranslateMessage( &msg );
+            DispatchMessage( &msg );
+        }
     }
+
+    return msg.wParam;
 }
