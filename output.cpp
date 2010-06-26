@@ -21,6 +21,14 @@ void MultiplexingOutput::write( const vector<char> &data )
     }
 }
 
+MultiplexingOutput::~MultiplexingOutput()
+{
+    vector<Output *>::const_iterator it, end = m_outputs.end();
+    for ( it = m_outputs.begin(); it != end; ++it ) {
+        delete *it;
+    }
+}
+
 NetworkOutput::NetworkOutput()
     : m_commWindow( 0 )
 {

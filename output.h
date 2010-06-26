@@ -17,6 +17,8 @@ public:
 class MultiplexingOutput : public Output
 {
 public:
+    virtual ~MultiplexingOutput();
+
     void addOutput( Output *output );
 
     virtual void write( const std::vector<char> &data );
