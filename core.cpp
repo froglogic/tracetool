@@ -69,13 +69,21 @@ Trace::~Trace()
 
 void Trace::addEntry( unsigned short verbosity, const char *sourceFile, unsigned int lineno, const char *functionName, const vector<AbstractVariableConverter *> &variables )
 {
+    if ( !m_output->canWrite() ) {
+        return;
+    }
+
     vector<Filter *>::const_iterator it, end = m_filters.end();
     for ( it = m_filters.begin(); it != end; ++it ) {
         if ( !( *it )->acceptsEntry( verbosity, sourceFile, lineno, functionName ) ) {
             return;
         }
     }
-    m_output->write( m_serializer->serialize( verbosity, sourceFile, lineno, functionName, variables ) );
+
+    vector<char> data = m_serializer->serialize( verbosity, sourceFile, lineno, functionName, variables );
+    if ( !data.empty() ) {
+        m_output->write( data );
+    }
 }
 
 void Trace::setSerializer( Serializer *serializer )

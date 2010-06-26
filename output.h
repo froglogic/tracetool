@@ -45,6 +45,7 @@ public:
     void setConnected() { m_connected = true; }
     void tryToConnect();
 
+    virtual bool canWrite() const { return m_connected; }
     virtual void write( const std::vector<char> &data );
 
 private:
