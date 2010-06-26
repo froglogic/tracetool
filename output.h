@@ -39,6 +39,7 @@ private:
     static LRESULT CALLBACK networkWindowProc( HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam );
 
     HWND m_commWindow;
+    SOCKET m_socket;
 };
 
 }

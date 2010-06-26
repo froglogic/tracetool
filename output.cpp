@@ -1,5 +1,7 @@
 #include "output.h"
 
+#include <winsock2.h>
+
 using namespace Tracelib;
 using namespace std;
 
@@ -30,7 +32,8 @@ MultiplexingOutput::~MultiplexingOutput()
 }
 
 NetworkOutput::NetworkOutput()
-    : m_commWindow( 0 )
+    : m_commWindow( 0 ),
+    m_socket( 0 )
 {
     static HINSTANCE programInstance = ::GetModuleHandle( NULL );
     if ( !programInstance ) {
@@ -67,7 +70,7 @@ NetworkOutput::NetworkOutput()
     }
 
     WSADATA wsaData;
-    int err = WSAStartup( MAKEWORD( 2, 2 ), &wsaData );
+    int err = ::WSAStartup( MAKEWORD( 2, 2 ), &wsaData );
     if ( err != 0 ) {
         OutputDebugStringA( "WSAStartup failed" );
     }
@@ -75,12 +78,21 @@ NetworkOutput::NetworkOutput()
     if ( LOBYTE( wsaData.wVersion ) != 2 || HIBYTE( wsaData.wVersion ) != 2 ) {
         OutputDebugStringA( "Faile to get proper WinSock version" );
     }
+
+    m_socket = ::WSASocket( AF_INET, SOCK_STREAM, IPPROTO_TCP, NULL, 0, 0 );
+    if ( m_socket == INVALID_SOCKET ) {
+        OutputDebugStringA( "WSASocket failed" );
+    }
+
+    if ( ::WSAAsyncSelect( m_socket, m_commWindow, 0, FD_CONNECT ) != 0 ) {
+        OutputDebugStringA( "WSAAsyncSelect failed" );
+    }
 }
 
 NetworkOutput::~NetworkOutput()
 {
     ::DestroyWindow( m_commWindow );
-    WSACleanup();
+    ::WSACleanup();
 }
 
 void NetworkOutput::write( const vector<char> &data )
