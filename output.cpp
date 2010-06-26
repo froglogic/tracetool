@@ -1,7 +1,5 @@
 #include "output.h"
 
-#include <winsock2.h>
-
 using namespace Tracelib;
 using namespace std;
 
