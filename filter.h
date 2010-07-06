@@ -32,6 +32,28 @@ private:
     std::vector<std::string> m_acceptablePaths;
 };
 
+class ConjunctionFilter : public Filter
+{
+public:
+    void addFilter( Filter *filter );
+
+    virtual bool acceptsEntry( unsigned short verbosity, const char *sourceFile, unsigned int lineno, const char *functionName );
+
+private:
+    std::vector<Filter *> m_filters;
+};
+
+class DisjunctionFilter : public Filter
+{
+public:
+    void addFilter( Filter *filter );
+
+    virtual bool acceptsEntry( unsigned short verbosity, const char *sourceFile, unsigned int lineno, const char *functionName );
+
+private:
+    std::vector<Filter *> m_filters;
+};
+
 }
 
 #endif // !defined(FILTER_H)

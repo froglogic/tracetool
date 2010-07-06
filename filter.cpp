@@ -45,3 +45,35 @@ bool SourceFilePathFilter::acceptsEntry( unsigned short verbosity, const char *s
     return false;
 }
 
+void ConjunctionFilter::addFilter( Filter *filter )
+{
+    m_filters.push_back( filter );
+}
+
+bool ConjunctionFilter::acceptsEntry( unsigned short verbosity, const char *sourceFile, unsigned int lineno, const char *functionName )
+{
+    vector<Filter *>::const_iterator it, end = m_filters.end();
+    for ( it = m_filters.begin(); it != end; ++it ) {
+        if ( !( *it )->acceptsEntry( verbosity, sourceFile, lineno, functionName ) ) {
+            return false;
+        }
+    }
+    return true;
+}
+
+void DisjunctionFilter::addFilter( Filter *filter )
+{
+    m_filters.push_back( filter );
+}
+
+bool DisjunctionFilter::acceptsEntry( unsigned short verbosity, const char *sourceFile, unsigned int lineno, const char *functionName )
+{
+    vector<Filter *>::const_iterator it, end = m_filters.end();
+    for ( it = m_filters.begin(); it != end; ++it ) {
+        if ( ( *it )->acceptsEntry( verbosity, sourceFile, lineno, functionName ) ) {
+            return true;
+        }
+    }
+    return false;
+}
+
