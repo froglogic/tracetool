@@ -29,7 +29,7 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
     output->addOutput( new StdoutOutput );
     output->addOutput( new NetworkOutput( "127.0.0.1", 44123 ) );
     trace->setOutput( output );
-    trace->addFilter( new VerbosityFilter );
+    trace->setFilter( new VerbosityFilter );
     setActiveTrace( trace );
 
     SetTimer( NULL, 0, 1000, &timerProc );

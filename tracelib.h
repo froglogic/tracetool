@@ -120,7 +120,7 @@ public:
     void addEntry( unsigned short verbosity, const char *sourceFile, unsigned int lineno, const char *functionName, const std::vector<AbstractVariableConverter *> &variables = std::vector<AbstractVariableConverter *>() );
     void setSerializer( Serializer *serializer );
     void setOutput( Output *output );
-    void addFilter( Filter *filter );
+    void setFilter( Filter *filter );
 
 private:
     Trace( const Trace &trace );
@@ -128,7 +128,7 @@ private:
 
     Serializer *m_serializer;
     Output *m_output;
-    std::vector<Filter *> m_filters;
+    Filter *m_filter;
 };
 
 Trace *getActiveTrace();

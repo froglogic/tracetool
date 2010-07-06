@@ -61,10 +61,7 @@ Trace::~Trace()
 {
     delete m_serializer;
     delete m_output;
-    vector<Filter *>::iterator it, end = m_filters.end();
-    for ( it = m_filters.begin(); it != end; ++it ) {
-        delete *it;
-    }
+    delete m_filter;
 }
 
 void Trace::addEntry( unsigned short verbosity, const char *sourceFile, unsigned int lineno, const char *functionName, const vector<AbstractVariableConverter *> &variables )
@@ -73,11 +70,8 @@ void Trace::addEntry( unsigned short verbosity, const char *sourceFile, unsigned
         return;
     }
 
-    vector<Filter *>::const_iterator it, end = m_filters.end();
-    for ( it = m_filters.begin(); it != end; ++it ) {
-        if ( !( *it )->acceptsEntry( verbosity, sourceFile, lineno, functionName ) ) {
-            return;
-        }
+    if ( !m_filter->acceptsEntry( verbosity, sourceFile, lineno, functionName ) ) {
+        return;
     }
 
     vector<char> data = m_serializer->serialize( verbosity, sourceFile, lineno, functionName, variables );
@@ -98,9 +92,10 @@ void Trace::setOutput( Output *output )
     m_output = output;
 }
 
-void Trace::addFilter( Filter *filter )
+void Trace::setFilter( Filter *filter )
 {
-    m_filters.push_back( filter );
+    delete m_filter;
+    m_filter = filter;
 }
 
 static Trace *g_activeTrace = 0;
