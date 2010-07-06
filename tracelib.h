@@ -126,6 +126,8 @@ private:
     Trace( const Trace &trace );
     void operator=( const Trace &trace );
 
+    void configure();
+
     Serializer *m_serializer;
     Output *m_output;
     Filter *m_filter;
