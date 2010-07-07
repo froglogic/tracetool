@@ -2,8 +2,8 @@ CPPFLAGS=/nologo /W3 /EHsc /D_CRT_SECURE_NO_WARNINGS
 
 all: sampleapp.exe tracegen.exe traceview.exe
 
-tracelib.lib: core.obj serializer.obj output.obj filter.obj
-	lib /nologo /OUT:tracelib.lib core.obj serializer.obj output.obj filter.obj user32.lib ws2_32.lib
+tracelib.lib: core.obj serializer.obj output.obj filter.obj winstringconv.obj
+	lib /nologo /OUT:tracelib.lib core.obj serializer.obj output.obj filter.obj winstringconv.obj user32.lib ws2_32.lib
 core.obj: core.cpp tracelib.h
 serializer.obj: serializer.cpp tracelib.h
 output.obj: output.cpp tracelib.h
