@@ -84,7 +84,6 @@ int main()
     Trace *trace = new Trace;
     trace->setSerializer( new PlaintextSerializer );
     trace->setOutput( new StdoutOutput );
-    trace->setFilter( new VerbosityFilter );
     setActiveTrace( trace );
     TRACELIB_BEACON(1)
     ACME::GUI::Widget w;
