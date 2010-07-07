@@ -24,12 +24,12 @@ class SourceFilePathFilter : public Filter
 public:
     SourceFilePathFilter();
 
-    void addAcceptablePath( const std::string &path );
+    void setPath( const std::string &path );
 
     virtual bool acceptsEntry( unsigned short verbosity, const char *sourceFile, unsigned int lineno, const char *functionName );
 
 private:
-    std::vector<std::string> m_acceptablePaths;
+    std::string m_path;
 };
 
 class ConjunctionFilter : public Filter

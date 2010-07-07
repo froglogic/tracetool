@@ -29,20 +29,14 @@ SourceFilePathFilter::SourceFilePathFilter()
 {
 }
 
-void SourceFilePathFilter::addAcceptablePath( const string &path )
+void SourceFilePathFilter::setPath( const string &path )
 {
-    m_acceptablePaths.push_back( path );
+    m_path = path;
 }
 
 bool SourceFilePathFilter::acceptsEntry( unsigned short verbosity, const char *sourceFile, unsigned int lineno, const char *functionName )
 {
-    vector<string>::const_iterator it, end = m_acceptablePaths.end();
-    for ( it = m_acceptablePaths.begin(); it != end; ++it ) {
-        if ( startsWith( sourceFile, *it ) ) { // XXX Implement regex matching
-            return true;
-        }
-    }
-    return false;
+    return startsWith( sourceFile, m_path ); // XXX Implement regex matching
 }
 
 void ConjunctionFilter::addFilter( Filter *filter )
