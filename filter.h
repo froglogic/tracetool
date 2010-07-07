@@ -19,10 +19,10 @@ private:
     unsigned short m_maxVerbosity;
 };
 
-class SourceFilePathFilter : public Filter
+class PathFilter : public Filter
 {
 public:
-    SourceFilePathFilter();
+    PathFilter();
 
     void setPath( const std::string &path );
 

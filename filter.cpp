@@ -25,16 +25,16 @@ static bool startsWith( const string &a, const string &b )
     return b.size() <= a.size() && a.substr( 0, b.size() ) == b;
 }
 
-SourceFilePathFilter::SourceFilePathFilter()
+PathFilter::PathFilter()
 {
 }
 
-void SourceFilePathFilter::setPath( const string &path )
+void PathFilter::setPath( const string &path )
 {
     m_path = path;
 }
 
-bool SourceFilePathFilter::acceptsEntry( unsigned short verbosity, const char *sourceFile, unsigned int lineno, const char *functionName )
+bool PathFilter::acceptsEntry( unsigned short verbosity, const char *sourceFile, unsigned int lineno, const char *functionName )
 {
     return startsWith( sourceFile, m_path ); // XXX Implement regex matching
 }

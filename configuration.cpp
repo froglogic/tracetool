@@ -57,7 +57,7 @@ static ConjunctionFilter *createConjunctionForSection( CSimpleIniW *config, cons
         }
         if ( wcscmp( it->pItem, L"Path" ) == 0 ) {
             const wchar_t *value = config->GetValue( section, it->pItem );
-            SourceFilePathFilter *subFilter = new SourceFilePathFilter;
+            PathFilter *subFilter = new PathFilter;
             subFilter->setPath( Squish::utf16ToUTF8( value ) ); // XXX encoding right?
             filter->addFilter( subFilter );
             continue;
