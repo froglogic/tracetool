@@ -5,6 +5,12 @@
 using namespace Tracelib;
 using namespace std;
 
+template <class Iterator>
+void deleteRange( Iterator begin, Iterator end )
+{
+    while ( begin != end ) delete *begin++;
+}
+
 VerbosityFilter::VerbosityFilter()
     : m_maxVerbosity( 1 )
 {
@@ -39,6 +45,11 @@ bool PathFilter::acceptsEntry( unsigned short verbosity, const char *sourceFile,
     return startsWith( sourceFile, m_path ); // XXX Implement regex matching
 }
 
+ConjunctionFilter::~ConjunctionFilter()
+{
+    deleteRange( m_filters.begin(), m_filters.end() );
+}
+
 void ConjunctionFilter::addFilter( Filter *filter )
 {
     m_filters.push_back( filter );
@@ -53,6 +64,11 @@ bool ConjunctionFilter::acceptsEntry( unsigned short verbosity, const char *sour
         }
     }
     return true;
+}
+
+DisjunctionFilter::~DisjunctionFilter()
+{
+    deleteRange( m_filters.begin(), m_filters.end() );
 }
 
 void DisjunctionFilter::addFilter( Filter *filter )

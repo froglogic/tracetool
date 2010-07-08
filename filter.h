@@ -35,6 +35,8 @@ private:
 class ConjunctionFilter : public Filter
 {
 public:
+    virtual ~ConjunctionFilter();
+
     void addFilter( Filter *filter );
 
     virtual bool acceptsEntry( unsigned short verbosity, const char *sourceFile, unsigned int lineno, const char *functionName );
@@ -46,6 +48,8 @@ private:
 class DisjunctionFilter : public Filter
 {
 public:
+    virtual ~DisjunctionFilter();
+
     void addFilter( Filter *filter );
 
     virtual bool acceptsEntry( unsigned short verbosity, const char *sourceFile, unsigned int lineno, const char *functionName );
