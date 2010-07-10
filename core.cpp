@@ -67,11 +67,15 @@ Trace::~Trace()
 
 void Trace::addEntry( unsigned short verbosity, const char *sourceFile, unsigned int lineno, const char *functionName, const vector<AbstractVariableConverter *> &variables )
 {
+    if ( !m_serializer || !m_output ) {
+        return;
+    }
+
     if ( !m_output->canWrite() ) {
         return;
     }
 
-    if ( !m_filter->acceptsEntry( verbosity, sourceFile, lineno, functionName ) ) {
+    if ( m_filter && !m_filter->acceptsEntry( verbosity, sourceFile, lineno, functionName ) ) {
         return;
     }
 
