@@ -53,6 +53,7 @@ SnapshotCreator &SnapshotCreator::operator<<( AbstractVariableConverter *convert
 
 Trace::Trace()
     : m_serializer( 0 ),
+    m_filter( 0 ),
     m_output( 0 )
 {
 }
