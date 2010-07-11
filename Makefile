@@ -26,4 +26,4 @@ traceview.exe: traceview.cpp
 	cl $(CPPFLAGS) $(APPLFLAGS) traceview.cpp ws2_32.lib
 
 clean:
-	del *.obj *.exe *.lib *.pdb
+	del *.obj *.exe *.lib *.pdb *.ilk *.suo
