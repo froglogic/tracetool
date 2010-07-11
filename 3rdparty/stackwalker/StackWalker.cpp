@@ -387,8 +387,10 @@ public:
         this->m_parent->OnDbgHelpErr("SymGetSearchPath", GetLastError(), 0);
     }
     char szUserName[1024] = {0};
+#ifndef NO_GETUSERNAME
     DWORD dwSize = 1024;
     GetUserNameA(szUserName, &dwSize);
+#endif
     this->m_parent->OnSymInit(buf, symOptions, szUserName);
 
     return TRUE;
