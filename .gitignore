@@ -4,3 +4,14 @@
 *.ilk
 *.pdb
 *.suo
+*.manifest
+ALL_BUILD.vcproj
+CMakeCache.txt
+CMakeFiles/
+CMakeLists.txt
+Makefile
+Project.sln
+ZERO_CHECK.vcproj
+cmake_install.cmake
+tracelib.vcproj
+
