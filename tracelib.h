@@ -4,8 +4,20 @@
 #include <vector>
 
 #ifdef _MSC_VER
-#  define TRACELIB_BEACON(verbosity) if (Tracelib::getActiveTrace()) Tracelib::getActiveTrace()->addEntry((verbosity), __FILE__, __LINE__, __FUNCSIG__);
-#  define TRACELIB_SNAPSHOT(verbosity) if (Tracelib::getActiveTrace()) Tracelib::SnapshotCreator(Tracelib::getActiveTrace(), (verbosity), __FILE__, __LINE__, __FUNCSIG__)
+#  define TRACELIB_BEACON(verbosity) \
+{ \
+    if (Tracelib::getActiveTrace()) { \
+        static Tracelib::TraceCallback cb = Tracelib::getActiveTrace()->getCallback( (verbosity), __FILE__, __LINE__, __FUNCSIG__ ); \
+        cb(Tracelib::getActiveTrace(), (verbosity), __FILE__, __LINE__, __FUNCSIG__, std::vector<Tracelib::AbstractVariableConverter *>() ); \
+    } \
+}
+#  define TRACELIB_SNAPSHOT(verbosity, variables) \
+{ \
+    if (Tracelib::getActiveTrace()) { \
+        static Tracelib::TraceCallback cb = Tracelib::getActiveTrace()->getCallback( (verbosity), __FILE__, __LINE__, __FUNCSIG__ ); \
+        Tracelib::SnapshotCreator(cb, Tracelib::getActiveTrace(), (verbosity), __FILE__, __LINE__, __FUNCSIG__) << variables; \
+    } \
+}
 #  define TRACELIB_VAR(v) Tracelib::makeConverter(#v, v)
 #else
 #  error "Unsupported compiler!"
@@ -94,15 +106,23 @@ private:
 
 class Trace;
 
+typedef void (*TraceCallback)( Trace *trace,
+                               unsigned short verbosity,
+                               const char *sourceFile,
+                               unsigned int lineno,
+                               const char *functionName,
+                               const std::vector<AbstractVariableConverter *> &variables );
+
 class SnapshotCreator
 {
 public:
-    SnapshotCreator( Trace *trace, unsigned short verbosity, const char *sourceFile, unsigned int lineno, const char *functionName );
+    SnapshotCreator( TraceCallback callback, Trace *trace, unsigned short verbosity, const char *sourceFile, unsigned int lineno, const char *functionName );
     ~SnapshotCreator();
 
     SnapshotCreator &operator<<( AbstractVariableConverter *converter );
 
 private:
+    TraceCallback m_callback;
     Trace *m_trace;
     const unsigned short m_verbosity;
     const char * const m_sourceFile;
@@ -117,6 +137,10 @@ public:
     Trace();
     ~Trace();
 
+    TraceCallback getCallback( unsigned short verbosity,
+                               const char *sourceFile,
+                               unsigned int lineno,
+                               const char *functionName );
     void addEntry( unsigned short verbosity, const char *sourceFile, unsigned int lineno, const char *functionName, const std::vector<AbstractVariableConverter *> &variables = std::vector<AbstractVariableConverter *>() );
     void setSerializer( Serializer *serializer );
     void setOutput( Output *output );

@@ -17,7 +17,7 @@ namespace Tracelib {
 
 static VOID CALLBACK timerProc( HWND, UINT, UINT_PTR, DWORD )
 {
-    TRACELIB_SNAPSHOT(1) << TRACELIB_VAR(time(NULL));
+    TRACELIB_SNAPSHOT(1, TRACELIB_VAR(time(NULL)))
 }
 
 int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow )

@@ -18,9 +18,9 @@ public:
 
     std::string toString() const {
         TRACELIB_BEACON(1)
-        TRACELIB_SNAPSHOT(1) << TRACELIB_VAR(this)
+        TRACELIB_SNAPSHOT(1, TRACELIB_VAR(this)
                              << TRACELIB_VAR(m_firstName)
-                             << TRACELIB_VAR(m_lastName);
+                             << TRACELIB_VAR(m_lastName))
         return m_lastName + ", " + m_firstName;
     }
 
@@ -35,7 +35,7 @@ namespace ACME
 std::string f( int v1, int v2 )
 {
     TRACELIB_BEACON(1)
-    TRACELIB_SNAPSHOT(1) << TRACELIB_VAR(v1) << TRACELIB_VAR(v2);
+    TRACELIB_SNAPSHOT(1, TRACELIB_VAR(v1) << TRACELIB_VAR(v2))
     Person p( "John", "Doe" );
     return p.toString();
 }

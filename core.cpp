@@ -27,8 +27,9 @@ Filter::~Filter()
 {
 }
 
-SnapshotCreator::SnapshotCreator( Trace *trace, unsigned short verbosity, const char *sourceFile, unsigned int lineno, const char *functionName )
-    : m_trace( trace ),
+SnapshotCreator::SnapshotCreator( TraceCallback callback, Trace *trace, unsigned short verbosity, const char *sourceFile, unsigned int lineno, const char *functionName )
+    : m_callback( callback ),
+    m_trace( trace ),
     m_verbosity( verbosity ),
     m_sourceFile( sourceFile ),
     m_lineno( lineno ),
@@ -38,7 +39,7 @@ SnapshotCreator::SnapshotCreator( Trace *trace, unsigned short verbosity, const 
 
 SnapshotCreator::~SnapshotCreator()
 {
-    m_trace->addEntry( m_verbosity, m_sourceFile, m_lineno, m_functionName, m_variables );
+    m_callback( m_trace, m_verbosity, m_sourceFile, m_lineno, m_functionName, m_variables );
     vector<AbstractVariableConverter *>::iterator it, end = m_variables.end();
     for ( it = m_variables.begin(); it != end; ++it ) {
         delete *it;
@@ -65,6 +66,36 @@ Trace::~Trace()
     delete m_filter;
 }
 
+static void nullCallback( Trace *trace,
+                          unsigned short verbosity,
+                          const char *sourceFile,
+                          unsigned int lineno,
+                          const char *functionName,
+                          const std::vector<AbstractVariableConverter *> &variables )
+{
+}
+
+static void activeCallback( Trace *trace,
+                            unsigned short verbosity,
+                            const char *sourceFile,
+                            unsigned int lineno,
+                            const char *functionName,
+                            const std::vector<AbstractVariableConverter *> &variables )
+{
+    trace->addEntry( verbosity, sourceFile, lineno, functionName, variables );
+}
+
+TraceCallback Trace::getCallback( unsigned short verbosity,
+                                  const char *sourceFile,
+                                  unsigned int lineno,
+                                  const char *functionName )
+{
+    if ( m_filter && !m_filter->acceptsEntry( verbosity, sourceFile, lineno, functionName ) ) {
+        return nullCallback;
+    }
+    return activeCallback;
+}
+
 void Trace::addEntry( unsigned short verbosity, const char *sourceFile, unsigned int lineno, const char *functionName, const vector<AbstractVariableConverter *> &variables )
 {
     if ( !m_serializer || !m_output ) {
@@ -72,10 +103,6 @@ void Trace::addEntry( unsigned short verbosity, const char *sourceFile, unsigned
     }
 
     if ( !m_output->canWrite() ) {
-        return;
-    }
-
-    if ( m_filter && !m_filter->acceptsEntry( verbosity, sourceFile, lineno, functionName ) ) {
         return;
     }
 
