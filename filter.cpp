@@ -2,6 +2,8 @@
 
 #include <string>
 
+#include <assert.h>
+
 using namespace Tracelib;
 using namespace std;
 
@@ -35,28 +37,44 @@ PathFilter::PathFilter()
 {
 }
 
-void PathFilter::setPath( const string &path )
+void PathFilter::setPath( MatchingMode matchingMode, const string &path )
 {
-    m_path = path;
+    m_matchingMode = matchingMode;
+    m_path = path; // XXX Consider normalizing path
 }
 
 bool PathFilter::acceptsTracePoint( const TracePoint *tracePoint )
 {
-    return startsWith( tracePoint->sourceFile, m_path ); // XXX Implement regex matching
+    switch ( m_matchingMode ) {
+        case StrictMatch:
+#ifdef _WIN32
+            return _stricmp( tracePoint->sourceFile, m_path.c_str() ) == 0;
+#else
+            return strcmp( tracePoint->sourceFile, m_path.c_str() ) == 0;
+#endif
+        }
+    assert( !"Unreachable" );
+    return false;
 }
 
 FunctionFilter::FunctionFilter()
 {
 }
 
-void FunctionFilter::setFunction( const string &function )
+void FunctionFilter::setFunction( MatchingMode matchingMode, const string &function )
 {
+    m_matchingMode = matchingMode;
     m_function = function;
 }
 
 bool FunctionFilter::acceptsTracePoint( const TracePoint *tracePoint )
 {
-    return startsWith( tracePoint->functionName, m_function ); // XXX Implement regex matching
+    switch ( m_matchingMode ) {
+        case StrictMatch:
+            return m_function == tracePoint->functionName;
+    }
+    assert( !"Unreachable" );
+    return false;
 }
 
 ConjunctionFilter::~ConjunctionFilter()

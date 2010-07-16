@@ -6,6 +6,10 @@
 namespace Tracelib
 {
 
+enum MatchingMode {
+    StrictMatch
+};
+
 class VerbosityFilter : public Filter
 {
 public:
@@ -24,11 +28,12 @@ class PathFilter : public Filter
 public:
     PathFilter();
 
-    void setPath( const std::string &path );
+    void setPath( MatchingMode matchingMode, const std::string &path );
 
     virtual bool acceptsTracePoint( const TracePoint *tracePoint );
 
 private:
+    MatchingMode m_matchingMode;
     std::string m_path;
 };
 
@@ -37,11 +42,12 @@ class FunctionFilter : public Filter
 public:
     FunctionFilter();
 
-    void setFunction( const std::string &function );
+    void setFunction( MatchingMode matchingMode, const std::string &function );
 
     virtual bool acceptsTracePoint( const TracePoint *tracePoint );
 
 private:
+    MatchingMode m_matchingMode;
     std::string m_function;
 };
 

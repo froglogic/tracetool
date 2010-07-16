@@ -152,13 +152,13 @@ Filter *Configuration::createFilterFromElement( TiXmlElement *e )
         }
 
         PathFilter *f = new PathFilter;
-        f->setPath( e->GetText() );
+        f->setPath( Tracelib::StrictMatch, e->GetText() );
         return f;
     }
 
     if ( e->ValueStr() == "functionfilter" ) {
         FunctionFilter *f = new FunctionFilter;
-        f->setFunction( e->GetText() );
+        f->setFunction( Tracelib::StrictMatch, e->GetText() );
         return f;
     }
 
