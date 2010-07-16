@@ -17,8 +17,8 @@ public:
     }
 
     std::string toString() const {
-        TRACELIB_BEACON(1)
-        TRACELIB_SNAPSHOT(1, TRACELIB_VAR(this)
+        TRACELIB_BEACON(2)
+        TRACELIB_SNAPSHOT(2, TRACELIB_VAR(this)
                              << TRACELIB_VAR(m_firstName)
                              << TRACELIB_VAR(m_lastName))
         return m_lastName + ", " + m_firstName;
