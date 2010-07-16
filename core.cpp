@@ -1,4 +1,5 @@
 #include "tracelib.h"
+#include "configuration.h"
 
 using namespace Tracelib;
 using namespace std;
@@ -38,6 +39,8 @@ Trace::Trace()
     m_filter( 0 ),
     m_output( 0 )
 {
+    Configuration cfg;
+    m_filter = cfg.configuredFilter();
 }
 
 Trace::~Trace()
