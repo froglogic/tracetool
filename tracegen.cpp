@@ -45,5 +45,5 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
         }
     }
 
-    return msg.wParam;
+    return (int)msg.wParam;
 }
