@@ -17,6 +17,7 @@ SET(TRACELIB_SOURCES
         filter.cpp
         configuration.cpp
         backtrace.cpp
+        errorlog.cpp
         ${TINYXML_SOURCES})
 
 SET_SOURCE_FILES_PROPERTIES(configuration.cpp ${TINYXML_SOURCES} PROPERTIES COMPILE_DEFINITIONS TIXML_USE_STL)

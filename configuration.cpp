@@ -1,4 +1,5 @@
 #include "configuration.h"
+#include "errorlog.h"
 #include "filter.h"
 #include "serializer.h"
 
@@ -11,46 +12,43 @@
 using namespace Tracelib;
 using namespace std;
 
-static void nullErrorFn( const string & ) { }
-
 static bool fileExists( const string &filename )
 {
    return ifstream( filename.c_str() ).is_open();
 }
 
-Configuration::Configuration( ErrorFunction errorFn )
+Configuration::Configuration()
     : m_configuredFilter( 0 ),
     m_configuredSerializer( 0 ),
-    m_errorFn( errorFn ? errorFn : &nullErrorFn )
+    m_errorLog( new DebugViewErrorLog ),
+    m_fileName( configurationFileName() )
 {
-    const string fileName = configurationFileName();
-
-    if ( !fileExists( fileName ) ) {
+    if ( !fileExists( m_fileName ) ) {
         return;
     }
 
     TiXmlDocument xmlDoc;
-    if ( !xmlDoc.LoadFile( fileName.c_str() ) ) {
-        m_errorFn( "Failed to load XML file." );
+    if ( !xmlDoc.LoadFile( m_fileName.c_str() ) ) {
+        m_errorLog->write( "Tracelib Configuration: Failed to load XML file from %s", m_fileName.c_str() );
         return;;
     }
 
     TiXmlElement *rootElement = xmlDoc.RootElement();
     if ( rootElement->ValueStr() != "tracelibConfiguration" ) {
-        m_errorFn( "Root element of XML file is not tracelibConfiguration." );
+        m_errorLog->write( "Tracelib Configuration: while reading %s: unexpected root element '%s' found", m_fileName.c_str(), rootElement->Value() );
         return;
     }
 
     TiXmlElement *processElement = rootElement->FirstChildElement();
     while ( processElement ) {
         if ( processElement->ValueStr() != "process" ) {
-            m_errorFn( "Unexpected child element found inside <tracelibConfiguration>." );
+            m_errorLog->write( "Tracelib Configuration: while reading %s: unexpected child element '%s' found inside <tracelibConfiguration>.", m_fileName.c_str(), processElement->Value() );
             return;
         }
 
         TiXmlElement *nameElement = processElement->FirstChildElement( "name" );
         if ( !nameElement ) {
-            m_errorFn( "Found <process> element without <name> child element." );
+            m_errorLog->write( "Tracelib Configuration: while reading %s: found <process> element without <name> child element.", m_fileName.c_str() );
             return;
         }
 
@@ -70,7 +68,7 @@ Configuration::Configuration( ErrorFunction errorFn )
 
                 if ( e->ValueStr() == "serializer" ) {
                     if ( m_configuredSerializer ) {
-                        m_errorFn( "Found multiple <serializer> elements in <process> element." );
+                        m_errorLog->write( "Tracelib Configuration: while reading %s: found multiple <serializer> elements in <process> element.", m_fileName.c_str() );
                         return;
                     }
                     m_configuredSerializer = createSerializerFromElement( e );
@@ -127,7 +125,7 @@ Filter *Configuration::createFilterFromElement( TiXmlElement *e )
     if ( e->ValueStr() == "verbosityfilter" ) {
         int verbosity;
         if ( e->QueryIntAttribute( "maxVerbosity", &verbosity ) != TIXML_SUCCESS ) {
-            m_errorFn( "<verbosityfilter> element requires maxVerbosity attribute to be an integer value." );
+            m_errorLog->write( "Tracelib Configuration: while reading %s: <verbosityfilter> element requires maxVerbosity attribute to be an integer value.", m_fileName.c_str() );
             return 0;
         }
 
@@ -139,14 +137,14 @@ Filter *Configuration::createFilterFromElement( TiXmlElement *e )
         int fromLine;
         int rc = e->QueryIntAttribute( "fromLine", &fromLine );
         if ( rc != TIXML_SUCCESS && rc != TIXML_NO_ATTRIBUTE ) {
-            m_errorFn( "<pathfilter> element requires fromLine attribute to be an integer value." );
+            m_errorLog->write( "Tracelib Configuration: while reading %s: <pathfilter> element requires fromLine attribute to be an integer value.", m_fileName.c_str() );
             return 0;
         }
 
         int toLine;
         rc = e->QueryIntAttribute( "toLine", &toLine );
         if ( rc != TIXML_SUCCESS && rc != TIXML_NO_ATTRIBUTE ) {
-            m_errorFn( "<pathfilter> element requires tiLine attribute to be an integer value." );
+            m_errorLog->write( "Tracelib Configuration: while reading %s: <pathfilter> element requires toLine attribute to be an integer value.", m_fileName.c_str() );
             return 0;
         }
 
@@ -157,7 +155,7 @@ Filter *Configuration::createFilterFromElement( TiXmlElement *e )
     if ( e->ValueStr() == "functionfilter" ) {
         // XXX Implement me
     }
-    m_errorFn( "Unexpected element found" );
+    m_errorLog->write( "Tracelib Configuration: while reading %s: Unexpected filter element '%s' found.", m_fileName.c_str(), e->Value() );
     return 0;
 }
 
@@ -165,7 +163,7 @@ Serializer *Configuration::createSerializerFromElement( TiXmlElement *e )
 {
     string serializerType;
     if ( e->QueryStringAttribute( "type", &serializerType ) != TIXML_SUCCESS ) {
-        m_errorFn( "Failed to read type property of <serializer> element." );
+        m_errorLog->write( "Tracelib Configuration: while reading %s: Failed to read type property of <serializer> element.", m_fileName.c_str() );
         return 0;
     }
 
@@ -173,21 +171,21 @@ Serializer *Configuration::createSerializerFromElement( TiXmlElement *e )
         PlaintextSerializer *serializer = new PlaintextSerializer;
         for ( TiXmlElement *optionElement = e->FirstChildElement(); optionElement; optionElement = optionElement->NextSiblingElement() ) {
             if ( optionElement->ValueStr() != "option" ) {
-                m_errorFn( "Unexpected element in <serializer> of type plaintext found." );
+                m_errorLog->write( "Tracelib Configuration: while reading %s: Unexpected element '%s' in <serializer> element of type plaintext found.", m_fileName.c_str(), optionElement->Value() );
                 delete serializer;
                 return 0;
             }
 
             string optionName;
             if ( optionElement->QueryStringAttribute( "name", &optionName ) != TIXML_SUCCESS ) {
-                m_errorFn( "Failed to read name property of <option> element; ignoring this." );
+                m_errorLog->write( "Tracelib Configuration: while reading %s: Failed to read name property of <option> element; ignoring this.", m_fileName.c_str() );
                 continue;
             }
 
             if ( optionName == "timestamps" ) {
                 serializer->setTimestampsShown( strcmp( optionElement->GetText(), "yes" ) == 0 );
             } else {
-                m_errorFn( "Found <option> element with unknown name in plaintext serializer; ignoring this." );
+                m_errorLog->write( "Tracelib Configuration: while reading %s: Unknown <option> element with name '%s' found in plaintext serializer; ignoring this.", m_fileName.c_str(), optionName.c_str() );
                 continue;
             }
         }
@@ -198,8 +196,7 @@ Serializer *Configuration::createSerializerFromElement( TiXmlElement *e )
         return new CSVSerializer;
     }
 
-    m_errorFn( "Unknown serializer type found." );
+    m_errorLog->write( "Tracelib Configuration: while reading %s: <serializer> element with unknown type '%s' found.", m_fileName.c_str(), serializerType.c_str() );
     return 0;
-
 }
 

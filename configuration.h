@@ -8,15 +8,14 @@ class TiXmlElement;
 namespace Tracelib
 {
 
+class ErrorLog;
 class Filter;
 class Serializer;
 
 class Configuration
 {
 public:
-    typedef void(*ErrorFunction)(const std::string &msg);
-
-    Configuration( ErrorFunction errorFn = 0 );
+    Configuration();
 
     Filter *configuredFilter();
     Serializer *configuredSerializer();
@@ -28,9 +27,10 @@ private:
     Filter *createFilterFromElement( TiXmlElement *e );
     Serializer *createSerializerFromElement( TiXmlElement *e );
 
+    const std::string m_fileName;
     Filter *m_configuredFilter;
     Serializer *m_configuredSerializer;
-    ErrorFunction m_errorFn;
+    ErrorLog *m_errorLog;
 };
 
 }
