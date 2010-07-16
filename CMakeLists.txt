@@ -18,6 +18,7 @@ IF(WIN32)
             ${TRACELIB_SOURCES}
             winstringconv.cpp
             backtrace_win.cpp
+            configuration_win.cpp
             3rdparty/stackwalker/StackWalker.cpp)
 ENDIF(WIN32)
 
