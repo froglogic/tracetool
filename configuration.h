@@ -1,12 +1,26 @@
 #ifndef CONFIGURATION_H
 #define CONFIGURATION_H
 
+#include <string>
+
 namespace Tracelib
 {
 
-class Trace;
+class Filter;
 
-void configureTrace( Trace *trace );
+class Configuration
+{
+public:
+    Configuration();
+
+    Filter *configuredFilter();
+
+private:
+    static std::string currentProcessName();
+    static std::string configurationFileName();
+
+    Filter *m_configuredFilter;
+};
 
 }
 
