@@ -5,13 +5,21 @@ IF(MSVC)
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc")
 ENDIF(MSVC)
 
+SET(TINYXML_SOURCES
+        3rdparty/tinyxml/tinyxml.cpp
+        3rdparty/tinyxml/tinyxmlerror.cpp
+        3rdparty/tinyxml/tinyxmlparser.cpp)
+
 SET(TRACELIB_SOURCES
         core.cpp
         serializer.cpp
         output.cpp
         filter.cpp
         configuration.cpp
-        backtrace.cpp)
+        backtrace.cpp
+        ${TINYXML_SOURCES})
+
+SET_SOURCE_FILES_PROPERTIES(configuration.cpp ${TINYXML_SOURCES} PROPERTIES COMPILE_DEFINITIONS TIXML_USE_STL)
 
 IF(WIN32)
     SET(TRACELIB_SOURCES
