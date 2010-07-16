@@ -37,8 +37,22 @@ vector<char> PlaintextSerializer::serialize( const TraceEntry &entry )
         variableDump += "}";
     }
 
-    vector<char> buf( 1024, '\0' ); // XXX don't hardcode buffer size
-    _snprintf(&buf[0], buf.size(), "%s%s:%d: %s%s", timestamp, entry.sourceFile, entry.lineno, entry.functionName, variableDump.c_str() );
+    string backtrace;
+    if ( entry.backtrace ) {
+        ostringstream str;
+        str << "; Backtrace: { ";
+        for ( size_t i = 0; i  < entry.backtrace->depth(); ++i ) {
+            const StackFrame &frame = entry.backtrace->frame( i );
+            str << "#" << i << ": in " << frame.module <<
+                               ": " << frame.function << "+0x" << hex << frame.functionOffset
+                               << " (" << frame.sourceFile << ":" << frame.lineNumber << ") ";
+        }
+        str << "}";
+        backtrace = str.str();
+    }
+
+    vector<char> buf( 16384, '\0' ); // XXX don't hardcode buffer size
+    _snprintf(&buf[0], buf.size(), "%s%s:%d: %s%s%s", timestamp, entry.sourceFile, entry.lineno, entry.functionName, variableDump.c_str(), backtrace.c_str() );
     return buf;
 }
 
