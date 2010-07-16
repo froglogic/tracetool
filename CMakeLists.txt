@@ -5,6 +5,34 @@ IF(MSVC)
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc")
 ENDIF(MSVC)
 
+ADD_SUBDIRECTORY(3rdparty/pcre-8.10 EXCLUDE_FROM_ALL)
+
+CONFIGURE_FILE(3rdparty/pcre-8.10/pcre_chartables.c.dist
+        ${PROJECT_BINARY_DIR}/pcre_chartables.c
+        COPYONLY)
+
+SET(PCRE_SOURCES2
+        ${PROJECT_BINARY_DIR}/pcre_chartables.c
+        3rdparty/pcre-8.10/pcre_compile.c
+        3rdparty/pcre-8.10/pcre_config.c
+        3rdparty/pcre-8.10/pcre_dfa_exec.c
+        3rdparty/pcre-8.10/pcre_exec.c
+        3rdparty/pcre-8.10/pcre_fullinfo.c
+        3rdparty/pcre-8.10/pcre_get.c
+        3rdparty/pcre-8.10/pcre_globals.c
+        3rdparty/pcre-8.10/pcre_info.c
+        3rdparty/pcre-8.10/pcre_newline.c
+        3rdparty/pcre-8.10/pcre_maketables.c
+        3rdparty/pcre-8.10/pcre_ord2utf8.c
+        3rdparty/pcre-8.10/pcre_refcount.c
+        3rdparty/pcre-8.10/pcre_study.c
+        3rdparty/pcre-8.10/pcre_tables.c
+        3rdparty/pcre-8.10/pcre_try_flipped.c
+        3rdparty/pcre-8.10/pcre_ucd.c
+        3rdparty/pcre-8.10/pcre_valid_utf8.c
+        3rdparty/pcre-8.10/pcre_version.c
+        3rdparty/pcre-8.10/pcre_xclass.c)
+
 SET(TINYXML_SOURCES
         3rdparty/tinyxml/tinyxml.cpp
         3rdparty/tinyxml/tinyxmlerror.cpp
@@ -19,9 +47,12 @@ SET(TRACELIB_SOURCES
         backtrace.cpp
         errorlog.cpp
         3rdparty/wildcmp/wildcmp.c
-        ${TINYXML_SOURCES})
+        ${TINYXML_SOURCES}
+        ${PCRE_SOURCES2})
 
 SET_SOURCE_FILES_PROPERTIES(configuration.cpp ${TINYXML_SOURCES} PROPERTIES COMPILE_DEFINITIONS TIXML_USE_STL)
+SET_SOURCE_FILES_PROPERTIES(${PCRE_SOURCES2} PROPERTIES COMPILE_FLAGS /I3rdparty/pcre-8.10)
+SET_SOURCE_FILES_PROPERTIES(${PCRE_SOURCES2} PROPERTIES COMPILE_DEFINITIONS HAVE_CONFIG_H)
 
 IF(WIN32)
     SET(TRACELIB_SOURCES
