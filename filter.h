@@ -13,7 +13,7 @@ public:
 
     void setMaximumVerbosity( unsigned short verbosity );
 
-    virtual bool acceptsEntry( const TraceEntry &entry );
+    virtual bool acceptsTracePoint( const TracePoint *tracePoint );
 
 private:
     unsigned short m_maxVerbosity;
@@ -26,7 +26,7 @@ public:
 
     void setPath( const std::string &path );
 
-    virtual bool acceptsEntry( const TraceEntry &entry );
+    virtual bool acceptsTracePoint( const TracePoint *tracePoint );
 
 private:
     std::string m_path;
@@ -39,7 +39,7 @@ public:
 
     void addFilter( Filter *filter );
 
-    virtual bool acceptsEntry( const TraceEntry &entry );
+    virtual bool acceptsTracePoint( const TracePoint *tracePoint );
 
 private:
     std::vector<Filter *> m_filters;
@@ -52,7 +52,7 @@ public:
 
     void addFilter( Filter *filter );
 
-    virtual bool acceptsEntry( const TraceEntry &entry );
+    virtual bool acceptsTracePoint( const TracePoint *tracePoint );
 
 private:
     std::vector<Filter *> m_filters;

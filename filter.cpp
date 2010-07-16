@@ -21,9 +21,9 @@ void VerbosityFilter::setMaximumVerbosity( unsigned short verbosity )
     m_maxVerbosity = verbosity;
 }
 
-bool VerbosityFilter::acceptsEntry( const TraceEntry &entry )
+bool VerbosityFilter::acceptsTracePoint( const TracePoint *tracePoint )
 {
-    return entry.verbosity <= m_maxVerbosity;
+    return tracePoint->verbosity <= m_maxVerbosity;
 }
 
 static bool startsWith( const string &a, const string &b )
@@ -40,9 +40,9 @@ void PathFilter::setPath( const string &path )
     m_path = path;
 }
 
-bool PathFilter::acceptsEntry( const TraceEntry &entry )
+bool PathFilter::acceptsTracePoint( const TracePoint *tracePoint )
 {
-    return startsWith( entry.sourceFile, m_path ); // XXX Implement regex matching
+    return startsWith( tracePoint->sourceFile, m_path ); // XXX Implement regex matching
 }
 
 ConjunctionFilter::~ConjunctionFilter()
@@ -55,11 +55,11 @@ void ConjunctionFilter::addFilter( Filter *filter )
     m_filters.push_back( filter );
 }
 
-bool ConjunctionFilter::acceptsEntry( const TraceEntry &entry )
+bool ConjunctionFilter::acceptsTracePoint( const TracePoint *tracePoint )
 {
     vector<Filter *>::const_iterator it, end = m_filters.end();
     for ( it = m_filters.begin(); it != end; ++it ) {
-        if ( !( *it )->acceptsEntry( entry ) ) {
+        if ( !( *it )->acceptsTracePoint( tracePoint ) ) {
             return false;
         }
     }
@@ -76,11 +76,11 @@ void DisjunctionFilter::addFilter( Filter *filter )
     m_filters.push_back( filter );
 }
 
-bool DisjunctionFilter::acceptsEntry( const TraceEntry &entry )
+bool DisjunctionFilter::acceptsTracePoint( const TracePoint *tracePoint )
 {
     vector<Filter *>::const_iterator it, end = m_filters.end();
     for ( it = m_filters.begin(); it != end; ++it ) {
-        if ( ( *it )->acceptsEntry( entry ) ) {
+        if ( ( *it )->acceptsTracePoint( tracePoint ) ) {
             return true;
         }
     }

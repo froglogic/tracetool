@@ -25,10 +25,10 @@ vector<char> PlaintextSerializer::serialize( const TraceEntry &entry )
     }
 
     string variableDump;
-    if ( !entry.variables.empty() ) {
+    if ( entry.variables && !entry.variables->empty() ) {
         variableDump = "; Variables: { ";
-        vector<AbstractVariableConverter *>::const_iterator it, end = entry.variables.end();
-        for ( it = entry.variables.begin(); it != end; ++it ) {
+        vector<AbstractVariableConverter *>::const_iterator it, end = entry.variables->end();
+        for ( it = entry.variables->begin(); it != end; ++it ) {
             variableDump += ( *it )->name();
             variableDump += "=";
             variableDump += ( *it )->toString();
@@ -52,18 +52,20 @@ vector<char> PlaintextSerializer::serialize( const TraceEntry &entry )
     }
 
     vector<char> buf( 16384, '\0' ); // XXX don't hardcode buffer size
-    _snprintf(&buf[0], buf.size(), "%s%s:%d: %s%s%s", timestamp, entry.sourceFile, entry.lineno, entry.functionName, variableDump.c_str(), backtrace.c_str() );
+    _snprintf(&buf[0], buf.size(), "%s%s:%d: %s%s%s", timestamp, entry.tracePoint->sourceFile, entry.tracePoint->lineno, entry.tracePoint->functionName, variableDump.c_str(), backtrace.c_str() );
     return buf;
 }
 
 vector<char> CSVSerializer::serialize( const TraceEntry &entry )
 {
     ostringstream str;
-    str << entry.verbosity << "," << escape( entry.sourceFile ) << "," << entry.lineno << "," << escape( entry.functionName );
+    str << entry.tracePoint->verbosity << "," << escape( entry.tracePoint->sourceFile ) << "," << entry.tracePoint->lineno << "," << escape( entry.tracePoint->functionName );
 
-    vector<AbstractVariableConverter *>::const_iterator it, end = entry.variables.end();
-    for ( it = entry.variables.begin(); it != end; ++it ) {
-        str << "," << escape( ( *it )->name() ) << "," << escape( ( *it )->toString() );
+    if ( entry.variables ) {
+        vector<AbstractVariableConverter *>::const_iterator it, end = entry.variables->end();
+        for ( it = entry.variables->begin(); it != end; ++it ) {
+            str << "," << escape( ( *it )->name() ) << "," << escape( ( *it )->toString() );
+        }
     }
 
     const string result = str.str();

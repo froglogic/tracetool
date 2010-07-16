@@ -9,22 +9,37 @@
 #  define TRACELIB_BEACON(verbosity) \
 { \
     if (Tracelib::getActiveTrace()) { \
-        Tracelib::TraceEntry entry( (verbosity), __FILE__, __LINE__, __FUNCSIG__ ); \
-        static Tracelib::BacktraceSetter backtraceSetter = Tracelib::getActiveTrace()->getBacktraceSetter( entry ); \
-        backtraceSetter(&entry); \
-        static Tracelib::TraceCallback entryAdder = Tracelib::getActiveTrace()->getCallback( entry ); \
-        entryAdder(Tracelib::getActiveTrace(), entry); \
+        static Tracelib::TracePoint tracePoint((verbosity), __FILE__, __LINE__, __FUNCSIG__); \
+        if ( tracePoint.lastSeenFilter != Tracelib::getActiveTrace()->filter() ) { \
+            Tracelib::getActiveTrace()->reconsiderTracePoint( &tracePoint ); \
+        } \
+        if ( tracePoint.active ) { \
+            Tracelib::TraceEntry entry( &tracePoint ); \
+            if ( tracePoint.backtracesEnabled ) { \
+                entry.backtrace = new Tracelib::Backtrace( Tracelib::Backtrace::generate() ); \
+            } \
+            Tracelib::getActiveTrace()->addEntry( entry ); \
+        } \
     } \
 }
 #  define TRACELIB_SNAPSHOT(verbosity, vars) \
 { \
     if (Tracelib::getActiveTrace()) { \
-        Tracelib::TraceEntry entry( (verbosity), __FILE__, __LINE__, __FUNCSIG__ ); \
-        entry.variables << vars; \
-        static Tracelib::BacktraceSetter backtraceSetter = Tracelib::getActiveTrace()->getBacktraceSetter( entry ); \
-        backtraceSetter(&entry); \
-        static Tracelib::TraceCallback entryAdder = Tracelib::getActiveTrace()->getCallback( entry ); \
-        entryAdder(Tracelib::getActiveTrace(), entry); \
+        static Tracelib::TracePoint tracePoint((verbosity), __FILE__, __LINE__, __FUNCSIG__); \
+        if ( tracePoint.lastSeenFilter != Tracelib::getActiveTrace()->filter() ) { \
+            Tracelib::getActiveTrace()->reconsiderTracePoint( &tracePoint ); \
+        } \
+        if ( tracePoint.active ) { \
+            Tracelib::TraceEntry entry( &tracePoint ); \
+            if ( tracePoint.backtracesEnabled ) { \
+                entry.backtrace = new Tracelib::Backtrace( Tracelib::Backtrace::generate() ); \
+            } \
+            if ( tracePoint.variableSnapshotEnabled ) { \
+                entry.variables = new std::vector<Tracelib::AbstractVariableConverter *>; \
+                (*entry.variables) << vars; \
+            } \
+            Tracelib::getActiveTrace()->addEntry( entry ); \
+        } \
     } \
 }
 #  define TRACELIB_VAR(v) Tracelib::makeConverter(#v, v)
@@ -83,29 +98,29 @@ private:
     void operator=( const Output &other );
 };
 
+struct TracePoint;
+
 struct TraceEntry {
-    TraceEntry( unsigned short verbosity_, const char *sourceFile_, unsigned int lineno_, const char *functionName_ )
-        : verbosity( verbosity_ ),
-        sourceFile( sourceFile_ ),
-        lineno( lineno_ ),
-        functionName( functionName_ ),
-        backtrace( 0 )
+    TraceEntry( const TracePoint *tracePoint_ )
+        : tracePoint( tracePoint_ ),
+        backtrace( 0 ),
+        variables( 0 )
     {
     }
+
     ~TraceEntry() {
-        std::vector<AbstractVariableConverter *>::const_iterator it, end = variables.end();
-        for ( it = variables.begin(); it != end; ++it ) {
-            delete *it;
+        if ( variables ) {
+            std::vector<AbstractVariableConverter *>::const_iterator it, end = variables->end();
+            for ( it = variables->begin(); it != end; ++it ) {
+                delete *it;
+            }
         }
+        delete variables;
         delete backtrace;
     }
 
-    const unsigned short verbosity;
-    const char * const sourceFile;
-    const unsigned int lineno;
-    const char * const functionName;
-
-    std::vector<AbstractVariableConverter *> variables;
+    const TracePoint *tracePoint;
+    std::vector<AbstractVariableConverter *> *variables;
     Backtrace *backtrace;
 };
 
@@ -132,7 +147,7 @@ class Filter
 public:
     virtual ~Filter();
 
-    virtual bool acceptsEntry( const TraceEntry &entry ) = 0;
+    virtual bool acceptsTracePoint( const TracePoint *tracePoint ) = 0;
 
 protected:
     Filter();
@@ -142,10 +157,28 @@ private:
     void operator=( const Filter &other );
 };
 
-class Trace;
+struct TracePoint {
+    TracePoint( unsigned short verbosity_, const char *sourceFile_, unsigned int lineno_, const char *functionName_ )
+        : verbosity( verbosity_ ),
+        sourceFile( sourceFile_ ),
+        lineno( lineno_ ),
+        functionName( functionName_ ),
+        lastSeenFilter( 0 ),
+        active( false ),
+        backtracesEnabled( false ),
+        variableSnapshotEnabled( false )
+    {
+    }
 
-typedef void (*TraceCallback)( Trace *trace, const TraceEntry &entry );
-typedef void (*BacktraceSetter)( TraceEntry *entry );
+    const unsigned short verbosity;
+    const char * const sourceFile;
+    const unsigned int lineno;
+    const char * const functionName;
+    const Filter *lastSeenFilter;
+    bool active;
+    bool backtracesEnabled;
+    bool variableSnapshotEnabled;
+};
 
 class Trace
 {
@@ -153,11 +186,13 @@ public:
     Trace();
     ~Trace();
 
-    TraceCallback getCallback( const TraceEntry &entry );
-    BacktraceSetter getBacktraceSetter( const TraceEntry &entry );
+    void reconsiderTracePoint( TracePoint *tracePoint ) const;
+
     void addEntry( const TraceEntry &entry );
     void setSerializer( Serializer *serializer );
     void setOutput( Output *output );
+
+    const Filter *filter() const { return m_filter; }
     void setFilter( Filter *filter );
 
 private:
