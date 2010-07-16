@@ -16,4 +16,4 @@ Project.sln
 ZERO_CHECK.vcproj
 cmake_install.cmake
 tracelib.vcproj
-
+pcre_chartables.c
