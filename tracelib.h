@@ -8,8 +8,8 @@
 { \
     if (Tracelib::getActiveTrace()) { \
         Tracelib::TraceEntry entry( (verbosity), __FILE__, __LINE__, __FUNCSIG__ ); \
-        static Tracelib::TraceCallback cb = Tracelib::getActiveTrace()->getCallback( entry ); \
-        cb(Tracelib::getActiveTrace(), entry); \
+        static Tracelib::TraceCallback entryAdder = Tracelib::getActiveTrace()->getCallback( entry ); \
+        entryAdder(Tracelib::getActiveTrace(), entry); \
     } \
 }
 #  define TRACELIB_SNAPSHOT(verbosity, vars) \
@@ -17,8 +17,8 @@
     if (Tracelib::getActiveTrace()) { \
         Tracelib::TraceEntry entry( (verbosity), __FILE__, __LINE__, __FUNCSIG__ ); \
         entry.variables << vars; \
-        static Tracelib::TraceCallback cb = Tracelib::getActiveTrace()->getCallback( entry ); \
-        cb(Tracelib::getActiveTrace(), entry); \
+        static Tracelib::TraceCallback entryAdder = Tracelib::getActiveTrace()->getCallback( entry ); \
+        entryAdder(Tracelib::getActiveTrace(), entry); \
     } \
 }
 #  define TRACELIB_VAR(v) Tracelib::makeConverter(#v, v)
