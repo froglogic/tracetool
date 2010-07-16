@@ -1,14 +1,7 @@
 <tracelibConfiguration>
 <process>
     <name>sampleapp.exe</name>
-    <matchanyfilter>
-        <verbosityfilter maxValue="1"/>
-        <matchallfilter yieldBacktrace="yes">
-            <pathfilter fromLine="10" toLine="313" matchingmode="regexp">foo.*</path>
-            <verbosityfilter maxValue="5"/>
-            <functionfilter matchingmode="wildcard">ACME::*</functionfilter>
-        </matchallfilter>
-    </matchanyfilter>
+    <verbosityfilter maxVerbosity="1"/>
 </process>
 </tracelibConfiguration>
 
