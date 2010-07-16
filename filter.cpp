@@ -45,6 +45,20 @@ bool PathFilter::acceptsTracePoint( const TracePoint *tracePoint )
     return startsWith( tracePoint->sourceFile, m_path ); // XXX Implement regex matching
 }
 
+FunctionFilter::FunctionFilter()
+{
+}
+
+void FunctionFilter::setFunction( const string &function )
+{
+    m_function = function;
+}
+
+bool FunctionFilter::acceptsTracePoint( const TracePoint *tracePoint )
+{
+    return startsWith( tracePoint->functionName, m_function ); // XXX Implement regex matching
+}
+
 ConjunctionFilter::~ConjunctionFilter()
 {
     deleteRange( m_filters.begin(), m_filters.end() );

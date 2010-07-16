@@ -109,6 +109,7 @@ Filter *Configuration::createFilterFromElement( TiXmlElement *e )
         }
         return f;
     }
+
     if ( e->ValueStr() == "matchallfilter" ) {
         ConjunctionFilter *f = new ConjunctionFilter;
         for ( TiXmlElement *childElement = e->FirstChildElement(); childElement; childElement = childElement->NextSiblingElement() ) {
@@ -122,6 +123,7 @@ Filter *Configuration::createFilterFromElement( TiXmlElement *e )
         }
         return f;
     }
+
     if ( e->ValueStr() == "verbosityfilter" ) {
         int verbosity;
         if ( e->QueryIntAttribute( "maxVerbosity", &verbosity ) != TIXML_SUCCESS ) {
@@ -133,6 +135,7 @@ Filter *Configuration::createFilterFromElement( TiXmlElement *e )
         f->setMaximumVerbosity( verbosity );
         return f;
     }
+
     if ( e->ValueStr() == "pathfilter" ) {
         int fromLine;
         int rc = e->QueryIntAttribute( "fromLine", &fromLine );
@@ -152,9 +155,13 @@ Filter *Configuration::createFilterFromElement( TiXmlElement *e )
         f->setPath( e->GetText() );
         return f;
     }
+
     if ( e->ValueStr() == "functionfilter" ) {
-        // XXX Implement me
+        FunctionFilter *f = new FunctionFilter;
+        f->setFunction( e->GetText() );
+        return f;
     }
+
     m_errorLog->write( "Tracelib Configuration: while reading %s: Unexpected filter element '%s' found.", m_fileName.c_str(), e->Value() );
     return 0;
 }

@@ -32,6 +32,19 @@ private:
     std::string m_path;
 };
 
+class FunctionFilter : public Filter
+{
+public:
+    FunctionFilter();
+
+    void setFunction( const std::string &function );
+
+    virtual bool acceptsTracePoint( const TracePoint *tracePoint );
+
+private:
+    std::string m_function;
+};
+
 class ConjunctionFilter : public Filter
 {
 public:
