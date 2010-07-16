@@ -63,12 +63,30 @@ static void activeCallback( Trace *trace, const TraceEntry &entry )
     trace->addEntry( entry );
 }
 
+static void nullBacktraceSetter( TraceEntry *entry )
+{
+}
+
+static void activeBacktraceSetter( TraceEntry *entry )
+{
+    entry->backtrace = new Backtrace( Backtrace::generate() );
+}
+
 TraceCallback Trace::getCallback( const TraceEntry &entry )
 {
     if ( m_filter && !m_filter->acceptsEntry( entry ) ) {
         return nullCallback;
     }
     return activeCallback;
+}
+
+BacktraceSetter Trace::getBacktraceSetter( const TraceEntry &entry )
+{
+    const bool configurationEnablesBacktrace = true; // XXX
+    if ( !configurationEnablesBacktrace ) {
+        return nullBacktraceSetter;
+    }
+    return activeBacktraceSetter;
 }
 
 void Trace::addEntry( const TraceEntry &entry )

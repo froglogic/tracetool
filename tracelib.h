@@ -1,6 +1,8 @@
 #ifndef TRACELIB_H
 #define TRACELIB_H
 
+#include "backtrace.h"
+
 #include <vector>
 
 #ifdef _MSC_VER
@@ -8,6 +10,8 @@
 { \
     if (Tracelib::getActiveTrace()) { \
         Tracelib::TraceEntry entry( (verbosity), __FILE__, __LINE__, __FUNCSIG__ ); \
+        static Tracelib::BacktraceSetter backtraceSetter = Tracelib::getActiveTrace()->getBacktraceSetter( entry ); \
+        backtraceSetter(&entry); \
         static Tracelib::TraceCallback entryAdder = Tracelib::getActiveTrace()->getCallback( entry ); \
         entryAdder(Tracelib::getActiveTrace(), entry); \
     } \
@@ -17,6 +21,8 @@
     if (Tracelib::getActiveTrace()) { \
         Tracelib::TraceEntry entry( (verbosity), __FILE__, __LINE__, __FUNCSIG__ ); \
         entry.variables << vars; \
+        static Tracelib::BacktraceSetter backtraceSetter = Tracelib::getActiveTrace()->getBacktraceSetter( entry ); \
+        backtraceSetter(&entry); \
         static Tracelib::TraceCallback entryAdder = Tracelib::getActiveTrace()->getCallback( entry ); \
         entryAdder(Tracelib::getActiveTrace(), entry); \
     } \
@@ -82,7 +88,8 @@ struct TraceEntry {
         : verbosity( verbosity_ ),
         sourceFile( sourceFile_ ),
         lineno( lineno_ ),
-        functionName( functionName_ )
+        functionName( functionName_ ),
+        backtrace( 0 )
     {
     }
     ~TraceEntry() {
@@ -90,6 +97,7 @@ struct TraceEntry {
         for ( it = variables.begin(); it != end; ++it ) {
             delete *it;
         }
+        delete backtrace;
     }
 
     const unsigned short verbosity;
@@ -98,6 +106,7 @@ struct TraceEntry {
     const char * const functionName;
 
     std::vector<AbstractVariableConverter *> variables;
+    Backtrace *backtrace;
 };
 
 std::vector<AbstractVariableConverter *> &operator<<( std::vector<AbstractVariableConverter *> &v,
@@ -136,6 +145,7 @@ private:
 class Trace;
 
 typedef void (*TraceCallback)( Trace *trace, const TraceEntry &entry );
+typedef void (*BacktraceSetter)( TraceEntry *entry );
 
 class Trace
 {
@@ -144,6 +154,7 @@ public:
     ~Trace();
 
     TraceCallback getCallback( const TraceEntry &entry );
+    BacktraceSetter getBacktraceSetter( const TraceEntry &entry );
     void addEntry( const TraceEntry &entry );
     void setSerializer( Serializer *serializer );
     void setOutput( Output *output );
