@@ -5,6 +5,8 @@
 *.pdb
 *.suo
 *.manifest
+*.manifest.res
+*.resource.txt
 ALL_BUILD.vcproj
 CMakeCache.txt
 CMakeFiles/
