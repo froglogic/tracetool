@@ -9,6 +9,7 @@ namespace Tracelib
 {
 
 class Filter;
+class Serializer;
 
 class Configuration
 {
@@ -18,14 +19,17 @@ public:
     Configuration( ErrorFunction errorFn = 0 );
 
     Filter *configuredFilter();
+    Serializer *configuredSerializer();
 
 private:
     static std::string currentProcessName();
     static std::string configurationFileName();
 
     Filter *createFilterFromElement( TiXmlElement *e );
+    Serializer *createSerializerFromElement( TiXmlElement *e );
 
     Filter *m_configuredFilter;
+    Serializer *m_configuredSerializer;
     ErrorFunction m_errorFn;
 };
 

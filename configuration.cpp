@@ -1,5 +1,6 @@
 #include "configuration.h"
 #include "filter.h"
+#include "serializer.h"
 
 #include "3rdparty/tinyxml/tinyxml.h"
 
@@ -19,6 +20,7 @@ static bool fileExists( const string &filename )
 
 Configuration::Configuration( ErrorFunction errorFn )
     : m_configuredFilter( 0 ),
+    m_configuredSerializer( 0 ),
     m_errorFn( errorFn ? errorFn : &nullErrorFn )
 {
     const string fileName = configurationFileName();
@@ -66,6 +68,15 @@ Configuration::Configuration( ErrorFunction errorFn )
                     continue;
                 }
 
+                if ( e->ValueStr() == "serializer" ) {
+                    if ( m_configuredSerializer ) {
+                        m_errorFn( "Found multiple <serializer> elements in <process> element." );
+                        return;
+                    }
+                    m_configuredSerializer = createSerializerFromElement( e );
+                    continue;
+                }
+
                 m_configuredFilter = createFilterFromElement( e );
             }
             break;
@@ -78,6 +89,11 @@ Configuration::Configuration( ErrorFunction errorFn )
 Filter *Configuration::configuredFilter()
 {
     return m_configuredFilter;
+}
+
+Serializer *Configuration::configuredSerializer()
+{
+    return m_configuredSerializer;
 }
 
 Filter *Configuration::createFilterFromElement( TiXmlElement *e )
@@ -143,5 +159,47 @@ Filter *Configuration::createFilterFromElement( TiXmlElement *e )
     }
     m_errorFn( "Unexpected element found" );
     return 0;
+}
+
+Serializer *Configuration::createSerializerFromElement( TiXmlElement *e )
+{
+    string serializerType;
+    if ( e->QueryStringAttribute( "type", &serializerType ) != TIXML_SUCCESS ) {
+        m_errorFn( "Failed to read type property of <serializer> element." );
+        return 0;
+    }
+
+    if ( serializerType == "plaintext" ) {
+        PlaintextSerializer *serializer = new PlaintextSerializer;
+        for ( TiXmlElement *optionElement = e->FirstChildElement(); optionElement; optionElement = optionElement->NextSiblingElement() ) {
+            if ( optionElement->ValueStr() != "option" ) {
+                m_errorFn( "Unexpected element in <serializer> of type plaintext found." );
+                delete serializer;
+                return 0;
+            }
+
+            string optionName;
+            if ( optionElement->QueryStringAttribute( "name", &optionName ) != TIXML_SUCCESS ) {
+                m_errorFn( "Failed to read name property of <option> element; ignoring this." );
+                continue;
+            }
+
+            if ( optionName == "timestamps" ) {
+                serializer->setTimestampsShown( strcmp( optionElement->GetText(), "yes" ) == 0 );
+            } else {
+                m_errorFn( "Found <option> element with unknown name in plaintext serializer; ignoring this." );
+                continue;
+            }
+        }
+        return serializer;
+    }
+
+    if ( serializerType == "csv" ) {
+        return new CSVSerializer;
+    }
+
+    m_errorFn( "Unknown serializer type found." );
+    return 0;
+
 }
 

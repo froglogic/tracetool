@@ -82,7 +82,6 @@ int main()
 {
     using namespace Tracelib;
     Trace *trace = new Trace;
-    trace->setSerializer( new PlaintextSerializer );
     trace->setOutput( new StdoutOutput );
     setActiveTrace( trace );
     TRACELIB_BEACON(1)

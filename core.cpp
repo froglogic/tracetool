@@ -48,6 +48,7 @@ Trace::Trace()
 {
     Configuration cfg;
     m_filter = cfg.configuredFilter();
+    m_serializer = cfg.configuredSerializer();
 }
 
 Trace::~Trace()

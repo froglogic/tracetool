@@ -1,6 +1,9 @@
 <tracelibConfiguration>
 <process>
     <name>sampleapp.exe</name>
+    <serializer type="plaintext">
+        <option name="timestamps">yes</option>
+    </serializer>
     <verbosityfilter maxVerbosity="1"/>
 </process>
 </tracelibConfiguration>
