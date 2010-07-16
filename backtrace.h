@@ -1,8 +1,6 @@
 #ifndef BACKTRACE_H
 #define BACKTRACE_H
 
-#include <stdint.h>
-
 #include <string>
 #include <vector>
 
@@ -14,9 +12,9 @@ struct StackFrame
     StackFrame() : functionOffset( 0 ), lineNumber( 0 ) { }
     std::string module;
     std::string function;
-    uint64_t functionOffset;
+    size_t functionOffset;
     std::string sourceFile;
-    unsigned int lineNumber;
+    size_t lineNumber;
 };
 
 class BacktraceFactory;
