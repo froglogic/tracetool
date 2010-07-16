@@ -7,15 +7,18 @@
 #  define TRACELIB_BEACON(verbosity) \
 { \
     if (Tracelib::getActiveTrace()) { \
-        static Tracelib::TraceCallback cb = Tracelib::getActiveTrace()->getCallback( (verbosity), __FILE__, __LINE__, __FUNCSIG__ ); \
-        cb(Tracelib::getActiveTrace(), (verbosity), __FILE__, __LINE__, __FUNCSIG__, std::vector<Tracelib::AbstractVariableConverter *>() ); \
+        Tracelib::TraceEntry entry( (verbosity), __FILE__, __LINE__, __FUNCSIG__ ); \
+        static Tracelib::TraceCallback cb = Tracelib::getActiveTrace()->getCallback( entry ); \
+        cb(Tracelib::getActiveTrace(), entry); \
     } \
 }
-#  define TRACELIB_SNAPSHOT(verbosity, variables) \
+#  define TRACELIB_SNAPSHOT(verbosity, vars) \
 { \
     if (Tracelib::getActiveTrace()) { \
-        static Tracelib::TraceCallback cb = Tracelib::getActiveTrace()->getCallback( (verbosity), __FILE__, __LINE__, __FUNCSIG__ ); \
-        Tracelib::SnapshotCreator(cb, Tracelib::getActiveTrace(), (verbosity), __FILE__, __LINE__, __FUNCSIG__) << variables; \
+        Tracelib::TraceEntry entry( (verbosity), __FILE__, __LINE__, __FUNCSIG__ ); \
+        entry.variables << vars; \
+        static Tracelib::TraceCallback cb = Tracelib::getActiveTrace()->getCallback( entry ); \
+        cb(Tracelib::getActiveTrace(), entry); \
     } \
 }
 #  define TRACELIB_VAR(v) Tracelib::makeConverter(#v, v)
@@ -74,12 +77,38 @@ private:
     void operator=( const Output &other );
 };
 
+struct TraceEntry {
+    TraceEntry( unsigned short verbosity_, const char *sourceFile_, unsigned int lineno_, const char *functionName_ )
+        : verbosity( verbosity_ ),
+        sourceFile( sourceFile_ ),
+        lineno( lineno_ ),
+        functionName( functionName_ )
+    {
+    }
+    ~TraceEntry() {
+        std::vector<AbstractVariableConverter *>::const_iterator it, end = variables.end();
+        for ( it = variables.begin(); it != end; ++it ) {
+            delete *it;
+        }
+    }
+
+    const unsigned short verbosity;
+    const char * const sourceFile;
+    const unsigned int lineno;
+    const char * const functionName;
+
+    std::vector<AbstractVariableConverter *> variables;
+};
+
+std::vector<AbstractVariableConverter *> &operator<<( std::vector<AbstractVariableConverter *> &v,
+                                                      AbstractVariableConverter *c );
+
 class Serializer
 {
 public:
     virtual ~Serializer();
 
-    virtual std::vector<char> serialize( unsigned short verbosity, const char *sourceFile, unsigned int lineno, const char *functionName, const std::vector<AbstractVariableConverter *> &variables ) = 0;
+    virtual std::vector<char> serialize( const TraceEntry &entry ) = 0;
 
 protected:
     Serializer();
@@ -94,7 +123,7 @@ class Filter
 public:
     virtual ~Filter();
 
-    virtual bool acceptsEntry( unsigned short verbosity, const char *sourceFile, unsigned int lineno, const char *functionName ) = 0;
+    virtual bool acceptsEntry( const TraceEntry &entry ) = 0;
 
 protected:
     Filter();
@@ -106,30 +135,7 @@ private:
 
 class Trace;
 
-typedef void (*TraceCallback)( Trace *trace,
-                               unsigned short verbosity,
-                               const char *sourceFile,
-                               unsigned int lineno,
-                               const char *functionName,
-                               const std::vector<AbstractVariableConverter *> &variables );
-
-class SnapshotCreator
-{
-public:
-    SnapshotCreator( TraceCallback callback, Trace *trace, unsigned short verbosity, const char *sourceFile, unsigned int lineno, const char *functionName );
-    ~SnapshotCreator();
-
-    SnapshotCreator &operator<<( AbstractVariableConverter *converter );
-
-private:
-    TraceCallback m_callback;
-    Trace *m_trace;
-    const unsigned short m_verbosity;
-    const char * const m_sourceFile;
-    const unsigned int m_lineno;
-    const char * const m_functionName;
-    std::vector<AbstractVariableConverter *> m_variables;
-};
+typedef void (*TraceCallback)( Trace *trace, const TraceEntry &entry );
 
 class Trace
 {
@@ -137,11 +143,8 @@ public:
     Trace();
     ~Trace();
 
-    TraceCallback getCallback( unsigned short verbosity,
-                               const char *sourceFile,
-                               unsigned int lineno,
-                               const char *functionName );
-    void addEntry( unsigned short verbosity, const char *sourceFile, unsigned int lineno, const char *functionName, const std::vector<AbstractVariableConverter *> &variables = std::vector<AbstractVariableConverter *>() );
+    TraceCallback getCallback( const TraceEntry &entry );
+    void addEntry( const TraceEntry &entry );
     void setSerializer( Serializer *serializer );
     void setOutput( Output *output );
     void setFilter( Filter *filter );

@@ -3,6 +3,12 @@
 using namespace Tracelib;
 using namespace std;
 
+template <class Iterator>
+void deleteRange( Iterator begin, Iterator end )
+{
+    while ( begin != end ) delete *begin++;
+}
+
 Output::Output()
 {
 }
@@ -27,31 +33,6 @@ Filter::~Filter()
 {
 }
 
-SnapshotCreator::SnapshotCreator( TraceCallback callback, Trace *trace, unsigned short verbosity, const char *sourceFile, unsigned int lineno, const char *functionName )
-    : m_callback( callback ),
-    m_trace( trace ),
-    m_verbosity( verbosity ),
-    m_sourceFile( sourceFile ),
-    m_lineno( lineno ),
-    m_functionName( functionName )
-{
-}
-
-SnapshotCreator::~SnapshotCreator()
-{
-    m_callback( m_trace, m_verbosity, m_sourceFile, m_lineno, m_functionName, m_variables );
-    vector<AbstractVariableConverter *>::iterator it, end = m_variables.end();
-    for ( it = m_variables.begin(); it != end; ++it ) {
-        delete *it;
-    }
-}
-
-SnapshotCreator &SnapshotCreator::operator<<( AbstractVariableConverter *converter )
-{
-    m_variables.push_back( converter );
-    return *this;
-}
-
 Trace::Trace()
     : m_serializer( 0 ),
     m_filter( 0 ),
@@ -66,37 +47,31 @@ Trace::~Trace()
     delete m_filter;
 }
 
-static void nullCallback( Trace *trace,
-                          unsigned short verbosity,
-                          const char *sourceFile,
-                          unsigned int lineno,
-                          const char *functionName,
-                          const std::vector<AbstractVariableConverter *> &variables )
+vector<AbstractVariableConverter *> &Tracelib::operator<<( vector<AbstractVariableConverter *> &v,
+                                                 AbstractVariableConverter *c )
+{
+    v.push_back( c );
+    return v;
+}
+
+static void nullCallback( Trace *trace, const TraceEntry &entry )
 {
 }
 
-static void activeCallback( Trace *trace,
-                            unsigned short verbosity,
-                            const char *sourceFile,
-                            unsigned int lineno,
-                            const char *functionName,
-                            const std::vector<AbstractVariableConverter *> &variables )
+static void activeCallback( Trace *trace, const TraceEntry &entry )
 {
-    trace->addEntry( verbosity, sourceFile, lineno, functionName, variables );
+    trace->addEntry( entry );
 }
 
-TraceCallback Trace::getCallback( unsigned short verbosity,
-                                  const char *sourceFile,
-                                  unsigned int lineno,
-                                  const char *functionName )
+TraceCallback Trace::getCallback( const TraceEntry &entry )
 {
-    if ( m_filter && !m_filter->acceptsEntry( verbosity, sourceFile, lineno, functionName ) ) {
+    if ( m_filter && !m_filter->acceptsEntry( entry ) ) {
         return nullCallback;
     }
     return activeCallback;
 }
 
-void Trace::addEntry( unsigned short verbosity, const char *sourceFile, unsigned int lineno, const char *functionName, const vector<AbstractVariableConverter *> &variables )
+void Trace::addEntry( const TraceEntry &entry )
 {
     if ( !m_serializer || !m_output ) {
         return;
@@ -106,7 +81,7 @@ void Trace::addEntry( unsigned short verbosity, const char *sourceFile, unsigned
         return;
     }
 
-    vector<char> data = m_serializer->serialize( verbosity, sourceFile, lineno, functionName, variables );
+    vector<char> data = m_serializer->serialize( entry );
     if ( !data.empty() ) {
         m_output->write( data );
     }

@@ -15,11 +15,7 @@ void PlaintextSerializer::setTimestampsShown( bool timestamps )
     m_showTimestamp = timestamps;
 }
 
-vector<char> PlaintextSerializer::serialize( unsigned short verbosity,
-                                             const char *sourceFile,
-                                             unsigned int lineno,
-                                             const char *functionName,
-                                             const vector<AbstractVariableConverter *> &variables )
+vector<char> PlaintextSerializer::serialize( const TraceEntry &entry )
 {
     char timestamp[64] = { '\0' };
 
@@ -29,10 +25,10 @@ vector<char> PlaintextSerializer::serialize( unsigned short verbosity,
     }
 
     string variableDump;
-    if ( !variables.empty() ) {
+    if ( !entry.variables.empty() ) {
         variableDump = "; Variables: { ";
-        vector<AbstractVariableConverter *>::const_iterator it, end = variables.end();
-        for ( it = variables.begin(); it != end; ++it ) {
+        vector<AbstractVariableConverter *>::const_iterator it, end = entry.variables.end();
+        for ( it = entry.variables.begin(); it != end; ++it ) {
             variableDump += ( *it )->name();
             variableDump += "=";
             variableDump += ( *it )->toString();
@@ -42,17 +38,17 @@ vector<char> PlaintextSerializer::serialize( unsigned short verbosity,
     }
 
     vector<char> buf( 1024, '\0' ); // XXX don't hardcode buffer size
-    _snprintf(&buf[0], buf.size(), "%s%s:%d: %s%s", timestamp, sourceFile, lineno, functionName, variableDump.c_str() );
+    _snprintf(&buf[0], buf.size(), "%s%s:%d: %s%s", timestamp, entry.sourceFile, entry.lineno, entry.functionName, variableDump.c_str() );
     return buf;
 }
 
-vector<char> CSVSerializer::serialize( unsigned short verbosity, const char *sourceFile, unsigned int lineno, const char *functionName, const vector<AbstractVariableConverter *> &variables )
+vector<char> CSVSerializer::serialize( const TraceEntry &entry )
 {
     ostringstream str;
-    str << verbosity << "," << escape( sourceFile ) << "," << lineno << "," << escape( functionName );
+    str << entry.verbosity << "," << escape( entry.sourceFile ) << "," << entry.lineno << "," << escape( entry.functionName );
 
-    vector<AbstractVariableConverter *>::const_iterator it, end = variables.end();
-    for ( it = variables.begin(); it != end; ++it ) {
+    vector<AbstractVariableConverter *>::const_iterator it, end = entry.variables.end();
+    for ( it = entry.variables.begin(); it != end; ++it ) {
         str << "," << escape( ( *it )->name() ) << "," << escape( ( *it )->toString() );
     }
 

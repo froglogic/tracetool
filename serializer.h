@@ -12,7 +12,7 @@ public:
     PlaintextSerializer();
 
     void setTimestampsShown( bool timestamps );
-    virtual std::vector<char> serialize( unsigned short verbosity, const char *sourceFile, unsigned int lineno, const char *functionName, const std::vector<AbstractVariableConverter *> &variables );
+    virtual std::vector<char> serialize( const TraceEntry &entry );
 
 private:
     bool m_showTimestamp;
@@ -21,7 +21,7 @@ private:
 class CSVSerializer : public Serializer
 {
 public:
-    virtual std::vector<char> serialize( unsigned short verbosity, const char *sourceFile, unsigned int lineno, const char *functionName, const std::vector<AbstractVariableConverter *> &variables );
+    virtual std::vector<char> serialize( const TraceEntry &entry );
 
 private:
     std::string escape( const std::string &s ) const;

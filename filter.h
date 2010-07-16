@@ -13,7 +13,7 @@ public:
 
     void setMaximumVerbosity( unsigned short verbosity );
 
-    virtual bool acceptsEntry( unsigned short verbosity, const char *sourceFile, unsigned int lineno, const char *functionName );
+    virtual bool acceptsEntry( const TraceEntry &entry );
 
 private:
     unsigned short m_maxVerbosity;
@@ -26,7 +26,7 @@ public:
 
     void setPath( const std::string &path );
 
-    virtual bool acceptsEntry( unsigned short verbosity, const char *sourceFile, unsigned int lineno, const char *functionName );
+    virtual bool acceptsEntry( const TraceEntry &entry );
 
 private:
     std::string m_path;
@@ -39,7 +39,7 @@ public:
 
     void addFilter( Filter *filter );
 
-    virtual bool acceptsEntry( unsigned short verbosity, const char *sourceFile, unsigned int lineno, const char *functionName );
+    virtual bool acceptsEntry( const TraceEntry &entry );
 
 private:
     std::vector<Filter *> m_filters;
@@ -52,7 +52,7 @@ public:
 
     void addFilter( Filter *filter );
 
-    virtual bool acceptsEntry( unsigned short verbosity, const char *sourceFile, unsigned int lineno, const char *functionName );
+    virtual bool acceptsEntry( const TraceEntry &entry );
 
 private:
     std::vector<Filter *> m_filters;
