@@ -23,16 +23,3 @@ const StackFrame &Backtrace::frame( size_t depth ) const
     return m_frames[depth];
 }
 
-BacktraceFactory::BacktraceFactory()
-{
-}
-
-BacktraceFactory::~BacktraceFactory()
-{
-}
-
-Backtrace BacktraceFactory::createBacktrace() const
-{
-    return Backtrace( getStackFrames() );
-}
-

@@ -1,4 +1,4 @@
-#include "backtrace_win.h"
+#include "backtrace.h"
 
 #include "3rdparty/stackwalker/StackWalker.h"
 
@@ -44,19 +44,10 @@ void MyStackWalker::OnCallstackEntry( CallstackEntryType type, CallstackEntry &e
     }
 }
 
-WinBacktraceFactory::WinBacktraceFactory()
-    : m_stackWalker( new MyStackWalker )
+Backtrace Backtrace::generate()
 {
-}
-
-WinBacktraceFactory::~WinBacktraceFactory()
-{
-    delete m_stackWalker;
-}
-
-vector<StackFrame> WinBacktraceFactory::getStackFrames() const
-{
-    m_stackWalker->ShowCallstack();
-    return m_stackWalker->frames();
+    static MyStackWalker stackWalker;
+    stackWalker.ShowCallstack();
+    return Backtrace( stackWalker.frames() );
 }
 

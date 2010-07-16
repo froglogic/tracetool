@@ -24,6 +24,8 @@ class Backtrace
     friend class BacktraceFactory;
 
 public:
+    static Backtrace generate();
+
     size_t depth() const;
     const StackFrame &frame( size_t depth ) const;
 
@@ -31,23 +33,6 @@ private:
     explicit Backtrace( const std::vector<StackFrame> &frames );
 
     std::vector<StackFrame> m_frames;
-};
-
-class BacktraceFactory
-{
-public:
-    virtual ~BacktraceFactory();
-
-    Backtrace createBacktrace() const;
-
-protected:
-    BacktraceFactory();
-
-private:
-    BacktraceFactory( const BacktraceFactory &other );
-    void operator=( const BacktraceFactory &other );
-
-    virtual std::vector<StackFrame> getStackFrames() const = 0;
 };
 
 }
