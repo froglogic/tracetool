@@ -24,7 +24,6 @@ SET_SOURCE_FILES_PROPERTIES(configuration.cpp ${TINYXML_SOURCES} PROPERTIES COMP
 IF(WIN32)
     SET(TRACELIB_SOURCES
             ${TRACELIB_SOURCES}
-            winstringconv.cpp
             backtrace_win.cpp
             configuration_win.cpp
             3rdparty/stackwalker/StackWalker.cpp)
