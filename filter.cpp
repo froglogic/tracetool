@@ -1,5 +1,7 @@
 #include "filter.h"
 
+#include "3rdparty/wildcmp/wildcmp.h"
+
 #include <string>
 
 #include <assert.h>
@@ -53,8 +55,14 @@ bool PathFilter::acceptsTracePoint( const TracePoint *tracePoint )
             return strcmp( tracePoint->sourceFile, m_path.c_str() ) == 0;
 #endif
         case RegExpMatch:
-        case WildcardMatch:
             assert( !"Not implemented" );
+            return false;
+        case WildcardMatch:
+#ifdef _WIN32
+            return wildicmp( tracePoint->sourceFile, m_path.c_str() ) != 0;
+#else
+            return wildcmp( tracePoint->sourceFile, m_path.c_str() ) != 0;
+#endif
             return false;
         }
     assert( !"Unreachable" );
@@ -77,9 +85,10 @@ bool FunctionFilter::acceptsTracePoint( const TracePoint *tracePoint )
         case StrictMatch:
             return m_function == tracePoint->functionName;
         case RegExpMatch:
-        case WildcardMatch:
             assert( !"Not implemented" );
             return false;
+        case WildcardMatch:
+            return wildcmp( tracePoint->functionName, m_function.c_str() ) != 0;
     }
     assert( !"Unreachable" );
     return false;

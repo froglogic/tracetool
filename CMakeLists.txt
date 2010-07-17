@@ -18,6 +18,7 @@ SET(TRACELIB_SOURCES
         configuration.cpp
         backtrace.cpp
         errorlog.cpp
+        3rdparty/wildcmp/wildcmp.c
         ${TINYXML_SOURCES})
 
 SET_SOURCE_FILES_PROPERTIES(configuration.cpp ${TINYXML_SOURCES} PROPERTIES COMPILE_DEFINITIONS TIXML_USE_STL)
