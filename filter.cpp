@@ -52,6 +52,10 @@ bool PathFilter::acceptsTracePoint( const TracePoint *tracePoint )
 #else
             return strcmp( tracePoint->sourceFile, m_path.c_str() ) == 0;
 #endif
+        case RegExpMatch:
+        case WildcardMatch:
+            assert( !"Not implemented" );
+            return false;
         }
     assert( !"Unreachable" );
     return false;
@@ -72,6 +76,10 @@ bool FunctionFilter::acceptsTracePoint( const TracePoint *tracePoint )
     switch ( m_matchingMode ) {
         case StrictMatch:
             return m_function == tracePoint->functionName;
+        case RegExpMatch:
+        case WildcardMatch:
+            assert( !"Not implemented" );
+            return false;
     }
     assert( !"Unreachable" );
     return false;

@@ -7,7 +7,9 @@ namespace Tracelib
 {
 
 enum MatchingMode {
-    StrictMatch
+    StrictMatch,
+    RegExpMatch,
+    WildcardMatch
 };
 
 class VerbosityFilter : public Filter

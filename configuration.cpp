@@ -137,14 +137,42 @@ Filter *Configuration::createFilterFromElement( TiXmlElement *e )
     }
 
     if ( e->ValueStr() == "pathfilter" ) {
+        MatchingMode matchingMode;
+        string matchingModeValue = "strict";
+        if ( e->QueryStringAttribute( "matchingmode", &matchingModeValue ) == TIXML_SUCCESS ) {
+            if ( matchingModeValue == "strict" ) {
+                matchingMode = StrictMatch;
+            } else if ( matchingModeValue == "regexp" ) {
+                matchingMode = RegExpMatch;
+            } else if ( matchingModeValue == "wildcard" ) {
+                matchingMode = WildcardMatch;
+            } else {
+                m_errorLog->write( "Tracelib Configuration: while reading %s: unsupported matching mode '%s' specified for <pathfilter> element.", m_fileName.c_str(), matchingModeValue.c_str() );
+                return 0;
+            }
+        }
         PathFilter *f = new PathFilter;
-        f->setPath( Tracelib::StrictMatch, e->GetText() );
+        f->setPath( matchingMode, e->GetText() );
         return f;
     }
 
     if ( e->ValueStr() == "functionfilter" ) {
+        MatchingMode matchingMode;
+        string matchingModeValue = "strict";
+        if ( e->QueryStringAttribute( "matchingmode", &matchingModeValue ) == TIXML_SUCCESS ) {
+            if ( matchingModeValue == "strict" ) {
+                matchingMode = StrictMatch;
+            } else if ( matchingModeValue == "regexp" ) {
+                matchingMode = RegExpMatch;
+            } else if ( matchingModeValue == "wildcard" ) {
+                matchingMode = WildcardMatch;
+            } else {
+                m_errorLog->write( "Tracelib Configuration: while reading %s: unsupported matching mode '%s' specified for <functionfilter> element.", m_fileName.c_str(), matchingModeValue.c_str() );
+                return 0;
+            }
+        }
         FunctionFilter *f = new FunctionFilter;
-        f->setFunction( Tracelib::StrictMatch, e->GetText() );
+        f->setFunction( matchingMode, e->GetText() );
         return f;
     }
 
