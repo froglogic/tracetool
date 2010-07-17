@@ -137,20 +137,6 @@ Filter *Configuration::createFilterFromElement( TiXmlElement *e )
     }
 
     if ( e->ValueStr() == "pathfilter" ) {
-        int fromLine;
-        int rc = e->QueryIntAttribute( "fromLine", &fromLine );
-        if ( rc != TIXML_SUCCESS && rc != TIXML_NO_ATTRIBUTE ) {
-            m_errorLog->write( "Tracelib Configuration: while reading %s: <pathfilter> element requires fromLine attribute to be an integer value.", m_fileName.c_str() );
-            return 0;
-        }
-
-        int toLine;
-        rc = e->QueryIntAttribute( "toLine", &toLine );
-        if ( rc != TIXML_SUCCESS && rc != TIXML_NO_ATTRIBUTE ) {
-            m_errorLog->write( "Tracelib Configuration: while reading %s: <pathfilter> element requires toLine attribute to be an integer value.", m_fileName.c_str() );
-            return 0;
-        }
-
         PathFilter *f = new PathFilter;
         f->setPath( Tracelib::StrictMatch, e->GetText() );
         return f;
