@@ -2,6 +2,7 @@
 #define CONFIGURATION_H
 
 #include <string>
+#include <vector>
 
 class TiXmlElement;
 
@@ -11,13 +12,14 @@ namespace Tracelib
 class ErrorLog;
 class Filter;
 class Serializer;
+class TracePointSet;
 
 class Configuration
 {
 public:
     Configuration();
 
-    Filter *configuredFilter();
+    const std::vector<TracePointSet *> &configuredTracePointSets() const;
     Serializer *configuredSerializer();
 
 private:
@@ -26,9 +28,10 @@ private:
 
     Filter *createFilterFromElement( TiXmlElement *e );
     Serializer *createSerializerFromElement( TiXmlElement *e );
+    TracePointSet *createTracePointSetFromElement( TiXmlElement *e );
 
     const std::string m_fileName;
-    Filter *m_configuredFilter;
+    std::vector<TracePointSet *> m_configuredTracePointSets;
     Serializer *m_configuredSerializer;
     ErrorLog *m_errorLog;
 };

@@ -18,8 +18,7 @@ static bool fileExists( const string &filename )
 }
 
 Configuration::Configuration()
-    : m_configuredFilter( 0 ),
-    m_configuredSerializer( 0 ),
+    : m_configuredSerializer( 0 ),
     m_errorLog( new DebugViewErrorLog ),
     m_fileName( configurationFileName() )
 {
@@ -61,7 +60,7 @@ Configuration::Configuration()
         const bool isMyProcessElement = strcmp( myProcessName.c_str(), nameElement->GetText() ) == 0;
 #endif
         if ( isMyProcessElement ) {
-            for ( TiXmlElement *e = processElement->FirstChildElement(); e && !m_configuredFilter; e = e->NextSiblingElement() ) {
+            for ( TiXmlElement *e = processElement->FirstChildElement(); e; e = e->NextSiblingElement() ) {
                 if ( e->ValueStr() == "name" ) {
                     continue;
                 }
@@ -75,7 +74,10 @@ Configuration::Configuration()
                     continue;
                 }
 
-                m_configuredFilter = createFilterFromElement( e );
+                if ( e->ValueStr() == "tracepointset" ) {
+                    m_configuredTracePointSets.push_back( createTracePointSetFromElement( e ) );
+                    continue;
+                }
             }
             break;
         }
@@ -84,9 +86,9 @@ Configuration::Configuration()
     }
 }
 
-Filter *Configuration::configuredFilter()
+const vector<TracePointSet *> &Configuration::configuredTracePointSets() const
 {
-    return m_configuredFilter;
+    return m_configuredTracePointSets;
 }
 
 Serializer *Configuration::configuredSerializer()
@@ -219,5 +221,40 @@ Serializer *Configuration::createSerializerFromElement( TiXmlElement *e )
 
     m_errorLog->write( "Tracelib Configuration: while reading %s: <serializer> element with unknown type '%s' found.", m_fileName.c_str(), serializerType.c_str() );
     return 0;
+}
+
+TracePointSet *Configuration::createTracePointSetFromElement( TiXmlElement *e )
+{
+    string backtracesAttr = "no";
+    e->QueryStringAttribute( "backtraces", &backtracesAttr );
+    if ( backtracesAttr != "yes" && backtracesAttr != "no" ) {
+        m_errorLog->write( "Tracelib Configuration: while reading %s: Invalid value '%s' for backtraces= attribute of <tracepointset> element", m_fileName.c_str(), backtracesAttr.c_str() );
+        return 0;
+    }
+
+    string variablesAttr = "no";
+    e->QueryStringAttribute( "variables", &variablesAttr );
+    if ( variablesAttr != "yes" && variablesAttr != "no" ) {
+        m_errorLog->write( "Tracelib Configuration: while reading %s: Invalid value '%s' for variables= attribute of <tracepointset> element", m_fileName.c_str(), variablesAttr.c_str() );
+        return 0;
+    }
+
+    TiXmlElement *filterElement = e->FirstChildElement();
+    if ( !filterElement ) {
+        m_errorLog->write( "Tracelib Configuration: while reading %s: No filter element specified for <tracepointset> element", m_fileName.c_str() );
+        return 0;
+    }
+
+    Filter *filter = createFilterFromElement( filterElement );
+
+    int actions = TracePointSet::LogTracePoint;
+    if ( backtracesAttr == "yes" ) {
+        actions |= TracePointSet::YieldBacktrace;
+    }
+    if ( variablesAttr == "yes" ) {
+        actions |= TracePointSet::YieldVariables;
+    }
+
+    return new TracePointSet( filter, actions );
 }
 

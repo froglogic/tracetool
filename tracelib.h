@@ -182,6 +182,27 @@ struct TracePoint {
     bool variableSnapshotEnabled;
 };
 
+class TracePointSet
+{
+public:
+    static const unsigned int IgnoreTracePoint = 0x0000;
+    static const unsigned int LogTracePoint = 0x0001;
+    static const unsigned int YieldBacktrace = LogTracePoint | 0x0100;
+    static const unsigned int YieldVariables = LogTracePoint | 0x0200;
+
+    TracePointSet( Filter *filter, unsigned int actions );
+    ~TracePointSet();
+
+    unsigned int considerTracePoint( const TracePoint *tracePoint );
+
+private:
+    TracePointSet( const TracePointSet &other );
+    void operator=( const TracePointSet &rhs );
+
+    Filter *m_filter;
+    const unsigned int m_actions;
+};
+
 class Trace
 {
 public:
@@ -196,7 +217,7 @@ public:
 
     const Configuration *configuration() const { return m_configuration; }
 
-    void setFilter( Filter *filter );
+    void addTracePointSet( TracePointSet *tracePointSet );
 
 private:
     Trace( const Trace &trace );
@@ -204,7 +225,7 @@ private:
 
     Serializer *m_serializer;
     Output *m_output;
-    Filter *m_filter;
+    std::vector<TracePointSet *> m_tracePointSets;
     Configuration *m_configuration;
 };
 

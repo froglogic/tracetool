@@ -41,30 +41,65 @@ vector<AbstractVariableConverter *> &Tracelib::operator<<( vector<AbstractVariab
     return v;
 }
 
+TracePointSet::TracePointSet( Filter *filter, unsigned int actions )
+    : m_filter( filter ),
+    m_actions( actions )
+{
+}
+
+TracePointSet::~TracePointSet()
+{
+    delete m_filter;
+}
+
+unsigned int TracePointSet::considerTracePoint( const TracePoint *tracePoint )
+{
+    if ( m_filter && m_filter->acceptsTracePoint( tracePoint ) ) {
+        return m_actions;
+    }
+    return IgnoreTracePoint;
+}
+
 Trace::Trace()
     : m_serializer( 0 ),
     m_output( 0 ),
-    m_filter( 0 ),
     m_configuration( new Configuration )
 {
-    m_filter = m_configuration->configuredFilter();
     m_serializer = m_configuration->configuredSerializer();
+    m_tracePointSets = m_configuration->configuredTracePointSets();
 }
 
 Trace::~Trace()
 {
     delete m_serializer;
     delete m_output;
-    delete m_filter;
+    deleteRange( m_tracePointSets.begin(), m_tracePointSets.end() );
     delete m_configuration;
 }
 
 void Trace::reconsiderTracePoint( TracePoint *tracePoint ) const
 {
-    tracePoint->active = !m_filter || m_filter->acceptsTracePoint( tracePoint );
-    tracePoint->backtracesEnabled = false;
-    tracePoint->variableSnapshotEnabled = true;
     tracePoint->lastUsedConfiguration = m_configuration;
+
+    if ( m_tracePointSets.empty() ) {
+        tracePoint->active = true;
+        return;
+    }
+
+    tracePoint->active = false;
+
+    vector<TracePointSet *>::const_iterator it, end = m_tracePointSets.end();
+    for ( it = m_tracePointSets.begin(); it != end; ++it ) {
+        const int action = ( *it )->considerTracePoint( tracePoint );
+        if ( action == TracePointSet::IgnoreTracePoint ) {
+            continue;
+        }
+
+        tracePoint->active = true;
+        tracePoint->backtracesEnabled = ( action & TracePointSet::YieldBacktrace ) == TracePointSet::YieldBacktrace;
+        tracePoint->variableSnapshotEnabled = ( action & TracePointSet::YieldVariables ) == TracePointSet::YieldVariables;
+        return;
+    }
 }
 
 void Trace::addEntry( const TraceEntry &entry )
@@ -93,12 +128,6 @@ void Trace::setOutput( Output *output )
 {
     delete m_output;
     m_output = output;
-}
-
-void Trace::setFilter( Filter *filter )
-{
-    delete m_filter;
-    m_filter = filter;
 }
 
 static Trace *g_activeTrace = 0;

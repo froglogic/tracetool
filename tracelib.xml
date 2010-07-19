@@ -4,7 +4,12 @@
     <serializer type="plaintext">
         <option name="timestamps">yes</option>
     </serializer>
-    <verbosityfilter maxVerbosity="1"/>
+    <tracepointset variables="yes">
+        <verbosityfilter maxVerbosity="1"/>
+    </tracepointset>
+    <tracepointset  variables="yes">
+        <verbosityfilter maxVerbosity="2"/>
+    </tracepointset>
 </process>
 </tracelibConfiguration>
 
