@@ -1,4 +1,4 @@
-#include "networkoutput_win.h"
+#include "output.h"
 
 #include <map>
 

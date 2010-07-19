@@ -27,5 +27,9 @@ private:
 
 }
 
+#ifdef _WIN32
+#  include "networkoutput_win.h"
+#endif
+
 #endif // !defined(OUTPUT_H)
 
