@@ -69,7 +69,10 @@ vector<char> CSVSerializer::serialize( const TraceEntry &entry )
     }
 
     const string result = str.str();
-    return vector<char>( result.begin(), result.end() );
+
+    vector<char> buf( result.begin(), result.end() );
+    buf.push_back( '\0' );
+    return buf;
 }
 
 string CSVSerializer::escape( const string &s ) const
