@@ -11,7 +11,7 @@ static const unsigned int WM_TRACELIB_CONNECTIONUPDATE = ::RegisterWindowMessage
 
 static map<SOCKET, NetworkOutput *> *g_networkOutputs = 0;
 
-NetworkOutput::NetworkOutput( const char *remoteHost, unsigned short remotePort )
+NetworkOutput::NetworkOutput( const string &remoteHost, unsigned short remotePort )
     : m_remoteHost( remoteHost ),
     m_remotePort( remotePort ),
     m_commWindow( 0 ),
@@ -96,7 +96,7 @@ void NetworkOutput::setupSocket()
 
 void NetworkOutput::tryToConnect()
 {
-    hostent *localHost = gethostbyname( m_remoteHost );
+    hostent *localHost = gethostbyname( m_remoteHost.c_str() );
     char *localIP = inet_ntoa (*(struct in_addr *)*localHost->h_addr_list);
     struct sockaddr_in remoteAddr;
     remoteAddr.sin_family = AF_INET;

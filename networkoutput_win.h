@@ -13,7 +13,7 @@ namespace Tracelib
 class NetworkOutput : public Output
 {
 public:
-    NetworkOutput( const char *remoteHost, unsigned short remotePort );
+    NetworkOutput( const std::string &remoteHost, unsigned short remotePort );
     virtual ~NetworkOutput();
 
     virtual bool canWrite() const { return m_connected; }
@@ -27,7 +27,7 @@ private:
     void setConnected() { m_connected = true; }
     void tryToConnect();
 
-    const char *m_remoteHost;
+    std::string m_remoteHost;
     unsigned short m_remotePort;
     HWND m_commWindow;
     SOCKET m_socket;
