@@ -93,3 +93,9 @@ IF(WIN32)
     TARGET_LINK_LIBRARIES(traceview ws2_32.lib)
 ENDIF(WIN32)
 
+ADD_EXECUTABLE(test_filter test_filter.cpp)
+TARGET_LINK_LIBRARIES(test_filter tracelib)
+
+ENABLE_TESTING()
+ADD_TEST(NAME test_filter COMMAND test_filter)
+
