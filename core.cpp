@@ -43,12 +43,12 @@ vector<AbstractVariableConverter *> &Tracelib::operator<<( vector<AbstractVariab
 
 Trace::Trace()
     : m_serializer( 0 ),
+    m_output( 0 ),
     m_filter( 0 ),
-    m_output( 0 )
+    m_configuration( new Configuration )
 {
-    Configuration cfg;
-    m_filter = cfg.configuredFilter();
-    m_serializer = cfg.configuredSerializer();
+    m_filter = m_configuration->configuredFilter();
+    m_serializer = m_configuration->configuredSerializer();
 }
 
 Trace::~Trace()
@@ -56,6 +56,7 @@ Trace::~Trace()
     delete m_serializer;
     delete m_output;
     delete m_filter;
+    delete m_configuration;
 }
 
 void Trace::reconsiderTracePoint( TracePoint *tracePoint ) const
@@ -63,6 +64,7 @@ void Trace::reconsiderTracePoint( TracePoint *tracePoint ) const
     tracePoint->active = !m_filter || m_filter->acceptsTracePoint( tracePoint );
     tracePoint->backtracesEnabled = false;
     tracePoint->variableSnapshotEnabled = true;
+    tracePoint->lastUsedConfiguration = m_configuration;
 }
 
 void Trace::addEntry( const TraceEntry &entry )

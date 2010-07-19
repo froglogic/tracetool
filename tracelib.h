@@ -10,7 +10,7 @@
 { \
     if (Tracelib::getActiveTrace()) { \
         static Tracelib::TracePoint tracePoint((verbosity), __FILE__, __LINE__, __FUNCSIG__); \
-        if ( tracePoint.lastSeenFilter != Tracelib::getActiveTrace()->filter() ) { \
+        if ( tracePoint.lastUsedConfiguration != Tracelib::getActiveTrace()->configuration() ) { \
             Tracelib::getActiveTrace()->reconsiderTracePoint( &tracePoint ); \
         } \
         if ( tracePoint.active ) { \
@@ -26,7 +26,7 @@
 { \
     if (Tracelib::getActiveTrace()) { \
         static Tracelib::TracePoint tracePoint((verbosity), __FILE__, __LINE__, __FUNCSIG__); \
-        if ( tracePoint.lastSeenFilter != Tracelib::getActiveTrace()->filter() ) { \
+        if ( tracePoint.lastUsedConfiguration != Tracelib::getActiveTrace()->configuration() ) { \
             Tracelib::getActiveTrace()->reconsiderTracePoint( &tracePoint ); \
         } \
         if ( tracePoint.active ) { \
@@ -157,13 +157,15 @@ private:
     void operator=( const Filter &other );
 };
 
+class Configuration;
+
 struct TracePoint {
     TracePoint( unsigned short verbosity_, const char *sourceFile_, unsigned int lineno_, const char *functionName_ )
         : verbosity( verbosity_ ),
         sourceFile( sourceFile_ ),
         lineno( lineno_ ),
         functionName( functionName_ ),
-        lastSeenFilter( 0 ),
+        lastUsedConfiguration( 0 ),
         active( false ),
         backtracesEnabled( false ),
         variableSnapshotEnabled( false )
@@ -174,7 +176,7 @@ struct TracePoint {
     const char * const sourceFile;
     const unsigned int lineno;
     const char * const functionName;
-    const Filter *lastSeenFilter;
+    const Configuration *lastUsedConfiguration;
     bool active;
     bool backtracesEnabled;
     bool variableSnapshotEnabled;
@@ -192,7 +194,8 @@ public:
     void setSerializer( Serializer *serializer );
     void setOutput( Output *output );
 
-    const Filter *filter() const { return m_filter; }
+    const Configuration *configuration() const { return m_configuration; }
+
     void setFilter( Filter *filter );
 
 private:
@@ -202,6 +205,7 @@ private:
     Serializer *m_serializer;
     Output *m_output;
     Filter *m_filter;
+    Configuration *m_configuration;
 };
 
 Trace *getActiveTrace();
