@@ -31,11 +31,6 @@ bool VerbosityFilter::acceptsTracePoint( const TracePoint *tracePoint )
     return tracePoint->verbosity <= m_maxVerbosity;
 }
 
-static bool startsWith( const string &a, const string &b )
-{
-    return b.size() <= a.size() && a.substr( 0, b.size() ) == b;
-}
-
 PathFilter::PathFilter()
     : m_rx( 0 )
 {
@@ -51,6 +46,8 @@ void PathFilter::setPath( MatchingMode matchingMode, const string &path )
     m_matchingMode = matchingMode;
     m_path = path; // XXX Consider normalizing path
     delete m_rx;
+
+    // XXX Consider encoding issues ('path' is UTF-8 encoded!)
 #ifdef _WIN32
     m_rx = new pcrecpp::RE( m_path.c_str(), pcrecpp::CASELESS() );
 #else
@@ -58,6 +55,7 @@ void PathFilter::setPath( MatchingMode matchingMode, const string &path )
 #endif
 }
 
+// XXX Consider encoding issues
 bool PathFilter::acceptsTracePoint( const TracePoint *tracePoint )
 {
     switch ( m_matchingMode ) {

@@ -35,10 +35,10 @@ void MyStackWalker::OnCallstackEntry( CallstackEntryType type, CallstackEntry &e
 
     if ( entry.offset != 0 ) {
         StackFrame frame;
-        frame.module = entry.moduleName;
+        frame.module = entry.moduleName; // XXX Consider encoding issues
         frame.function = entry.undFullName;
         frame.functionOffset = entry.offsetFromSmybol;
-        frame.sourceFile = entry.lineFileName;
+        frame.sourceFile = entry.lineFileName; // XXX Consider encoding issues
         frame.lineNumber = entry.lineNumber;
         m_frames.push_back( frame );
     }

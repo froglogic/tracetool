@@ -57,6 +57,7 @@ Configuration::Configuration()
 
         static string myProcessName = currentProcessName();
 
+        // XXX Consider encoding issues (e.g. if myProcessName contains umlauts)
 #ifdef _WIN32
         const bool isMyProcessElement = _stricmp( myProcessName.c_str(), nameElement->GetText() ) == 0;
 #else
@@ -170,7 +171,7 @@ Filter *Configuration::createFilterFromElement( TiXmlElement *e )
             }
         }
         PathFilter *f = new PathFilter;
-        f->setPath( matchingMode, e->GetText() );
+        f->setPath( matchingMode, e->GetText() ); // XXX Consider encoding issues
         return f;
     }
 
@@ -190,7 +191,7 @@ Filter *Configuration::createFilterFromElement( TiXmlElement *e )
             }
         }
         FunctionFilter *f = new FunctionFilter;
-        f->setFunction( matchingMode, e->GetText() );
+        f->setFunction( matchingMode, e->GetText() ); // XXX Consider encoding issues
         return f;
     }
 
@@ -302,10 +303,10 @@ Output *Configuration::createOutputFromElement( TiXmlElement *e )
             }
 
             if ( optionName == "host" ) {
-                hostname = optionElement->GetText();
+                hostname = optionElement->GetText(); // XXX Consider encoding issues
             } else if ( optionName == "port" ) {
                 istringstream str( optionElement->GetText() );
-                str >> port;
+                str >> port; // XXX Error handling for non-numeric port numbers
             } else {
                 m_errorLog->write( "Tracelib Configuration: while reading %s: Unknown <option> element with name '%s' found in tcp output; ignoring this.", m_fileName.c_str(), optionName.c_str() );
                 continue;

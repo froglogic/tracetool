@@ -5,6 +5,9 @@
 using namespace Tracelib;
 using namespace std;
 
+/* XXX Consider encoding issues; this function should return UTF-8 encoded
+ * strings.
+ */
 string Configuration::configurationFileName()
 {
     /* According to the MSDN documentation on GetEnvironmentVariable, an
@@ -26,6 +29,9 @@ string Configuration::configurationFileName()
     return defaultFileName;
 }
 
+/* XXX Consider encoding issues; this function should return UTF-8 encoded
+ * strings.
+ */
 string Configuration::currentProcessName()
 {
     static char buf[ 32768 ] = { '\0' };
