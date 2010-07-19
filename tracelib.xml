@@ -11,6 +11,13 @@
         <verbosityfilter maxVerbosity="2"/>
     </tracepointset>
 </process>
+<process>
+    <name>tracegen.exe</name>
+    <serializer type="csv"/>
+    <tracepointset variables="yes">
+        <verbosityfilter maxVerbosity="1"/>
+    </tracepointset>
+</process>
 </tracelibConfiguration>
 
 

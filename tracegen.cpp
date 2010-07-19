@@ -27,12 +27,10 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 {
     using namespace Tracelib;
     Trace *trace = new Trace;
-    trace->setSerializer( new CSVSerializer );
     MultiplexingOutput *output = new MultiplexingOutput;
     output->addOutput( new StdoutOutput );
     output->addOutput( new NetworkOutput( "127.0.0.1", 44123 ) );
     trace->setOutput( output );
-    trace->setFilter( new VerbosityFilter );
     setActiveTrace( trace );
 
     SetTimer( NULL, 0, 1000, &timerProc );
