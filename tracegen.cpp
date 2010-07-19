@@ -24,10 +24,6 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 {
     using namespace Tracelib;
     Trace *trace = new Trace;
-    MultiplexingOutput *output = new MultiplexingOutput;
-    output->addOutput( new StdoutOutput );
-    output->addOutput( new NetworkOutput( "127.0.0.1", 44123 ) );
-    trace->setOutput( output );
     setActiveTrace( trace );
 
     SetTimer( NULL, 0, 1000, &timerProc );

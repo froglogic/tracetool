@@ -1,6 +1,8 @@
+#define WIN32_LEAN_AND_MEAN
 #include "configuration.h"
 #include "errorlog.h"
 #include "filter.h"
+#include "output.h"
 #include "serializer.h"
 
 #include "3rdparty/tinyxml/tinyxml.h"
@@ -19,6 +21,7 @@ static bool fileExists( const string &filename )
 
 Configuration::Configuration()
     : m_configuredSerializer( 0 ),
+    m_configuredOutput( 0 ),
     m_errorLog( new DebugViewErrorLog ),
     m_fileName( configurationFileName() )
 {
@@ -78,6 +81,14 @@ Configuration::Configuration()
                     m_configuredTracePointSets.push_back( createTracePointSetFromElement( e ) );
                     continue;
                 }
+
+                if ( e->ValueStr() == "output" ) {
+                    if ( m_configuredOutput ) {
+                        m_errorLog->write( "Tracelib Configuration: while reading %s: found multiple <output> elements in <process> element.", m_fileName.c_str() );
+                        return;
+                    }
+                    m_configuredOutput = createOutputFromElement( e );
+                }
             }
             break;
         }
@@ -94,6 +105,11 @@ const vector<TracePointSet *> &Configuration::configuredTracePointSets() const
 Serializer *Configuration::configuredSerializer()
 {
     return m_configuredSerializer;
+}
+
+Output *Configuration::configuredOutput()
+{
+    return m_configuredOutput;
 }
 
 Filter *Configuration::createFilterFromElement( TiXmlElement *e )
@@ -256,5 +272,60 @@ TracePointSet *Configuration::createTracePointSetFromElement( TiXmlElement *e )
     }
 
     return new TracePointSet( filter, actions );
+}
+
+Output *Configuration::createOutputFromElement( TiXmlElement *e )
+{
+    string outputType;
+    if ( e->QueryStringAttribute( "type", &outputType ) == TIXML_NO_ATTRIBUTE ) {
+        m_errorLog->write( "Tracelib Configuration: while reading %s: No type= attribute specified for <output> element", m_fileName.c_str() );
+        return 0;
+    }
+
+    if ( outputType == "stdout" ) {
+        return new StdoutOutput;
+    }
+
+    if ( outputType == "tcp" ) {
+        string hostname;
+        unsigned short port = 0;
+        for ( TiXmlElement *optionElement = e->FirstChildElement(); optionElement; optionElement = optionElement->NextSiblingElement() ) {
+            if ( optionElement->ValueStr() != "option" ) {
+                m_errorLog->write( "Tracelib Configuration: while reading %s: Unexpected element '%s' in <output> element of type tcp found.", m_fileName.c_str(), optionElement->Value() );
+                return 0;
+            }
+
+            string optionName;
+            if ( optionElement->QueryStringAttribute( "name", &optionName ) != TIXML_SUCCESS ) {
+                m_errorLog->write( "Tracelib Configuration: while reading %s: Failed to read name property of <option> element; ignoring this.", m_fileName.c_str() );
+                continue;
+            }
+
+            if ( optionName == "host" ) {
+                hostname = optionElement->GetText();
+            } else if ( optionName == "port" ) {
+                istringstream str( optionElement->GetText() );
+                str >> port;
+            } else {
+                m_errorLog->write( "Tracelib Configuration: while reading %s: Unknown <option> element with name '%s' found in tcp output; ignoring this.", m_fileName.c_str(), optionName.c_str() );
+                continue;
+            }
+        }
+
+        if ( hostname.empty() ) {
+            m_errorLog->write( "Tracelib Configuration: while reading %s: No 'name' option specified for <output> element of type tcp.", m_fileName.c_str() );
+            return 0;
+        }
+
+        if ( port == 0 ) {
+            m_errorLog->write( "Tracelib Configuration: while reading %s: No 'port' option specified for <output> element of type tcp.", m_fileName.c_str() );
+            return 0;
+        }
+
+        return new NetworkOutput( hostname.c_str(), port );
+    }
+
+    m_errorLog->write( "Tracelib Configuration: while reading %s: Unknown type '%s' specified for <output> element", m_fileName.c_str(), outputType.c_str() );
+    return 0;
 }
 

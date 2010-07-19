@@ -66,6 +66,7 @@ Trace::Trace()
     m_configuration( new Configuration )
 {
     m_serializer = m_configuration->configuredSerializer();
+    m_output = m_configuration->configuredOutput();
     m_tracePointSets = m_configuration->configuredTracePointSets();
 }
 

@@ -1,6 +1,7 @@
 <tracelibConfiguration>
 <process>
     <name>sampleapp.exe</name>
+    <output type="stdout"/>
     <serializer type="plaintext">
         <option name="timestamps">yes</option>
     </serializer>
@@ -13,6 +14,10 @@
 </process>
 <process>
     <name>tracegen.exe</name>
+    <output type="tcp">
+        <option name="host">127.0.0.1</option>
+        <option name="port">44123</option>
+    </output>
     <serializer type="csv"/>
     <tracepointset variables="yes">
         <verbosityfilter maxVerbosity="1"/>

@@ -82,7 +82,6 @@ int main()
 {
     using namespace Tracelib;
     Trace *trace = new Trace;
-    trace->setOutput( new StdoutOutput );
     setActiveTrace( trace );
     TRACELIB_BEACON(1)
     ACME::GUI::Widget w;
