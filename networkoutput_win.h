@@ -7,11 +7,14 @@
 #include <windows.h>
 #include <winsock2.h>
 
+class NetworkEventMonitor;
+
 namespace Tracelib
 {
 
 class NetworkOutput : public Output
 {
+    friend class NetworkEventMonitor;
 public:
     NetworkOutput( const std::string &remoteHost, unsigned short remotePort );
     virtual ~NetworkOutput();
@@ -20,8 +23,6 @@ public:
     virtual void write( const std::vector<char> &data );
 
 private:
-    static LRESULT CALLBACK networkWindowProc( HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam );
-
     void closeSocket();
     void setupSocket();
     void setConnected() { m_connected = true; }
@@ -29,7 +30,6 @@ private:
 
     std::string m_remoteHost;
     unsigned short m_remotePort;
-    HWND m_commWindow;
     SOCKET m_socket;
     bool m_connected;
 };

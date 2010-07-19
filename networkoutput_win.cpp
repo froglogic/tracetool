@@ -7,16 +7,42 @@
 using namespace std;
 using namespace Tracelib;
 
-static const unsigned int WM_TRACELIB_CONNECTIONUPDATE = ::RegisterWindowMessage( TEXT( "Tracelib_ConnectionUpdate" ) );
+class NetworkEventMonitor
+{
+public:
+    static NetworkEventMonitor *self();
 
-static map<SOCKET, NetworkOutput *> *g_networkOutputs = 0;
+    ~NetworkEventMonitor();
 
-NetworkOutput::NetworkOutput( const string &remoteHost, unsigned short remotePort )
-    : m_remoteHost( remoteHost ),
-    m_remotePort( remotePort ),
-    m_commWindow( 0 ),
-    m_socket( 0 ),
-    m_connected( false )
+    void addOutputObject( NetworkOutput *output, SOCKET socket );
+
+private:
+    NetworkEventMonitor();
+    NetworkEventMonitor( const NetworkEventMonitor &other );
+    void operator=( const NetworkEventMonitor &rhs );
+
+    static LRESULT CALLBACK networkWindowProc( HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam );
+    static const unsigned int WM_TRACELIB_CONNECTIONUPDATE;
+    static std::map<SOCKET, NetworkOutput *> *s_outputObjects;
+
+    HWND m_commWindow;
+};
+
+const unsigned int NetworkEventMonitor::WM_TRACELIB_CONNECTIONUPDATE = ::RegisterWindowMessage( TEXT( "Tracelib_ConnectionUpdate" ) );
+
+map<SOCKET, NetworkOutput *> *NetworkEventMonitor::s_outputObjects = 0;
+
+NetworkEventMonitor *NetworkEventMonitor::self()
+{
+    static map<SOCKET, NetworkOutput *> outputObjects;
+    s_outputObjects = &outputObjects;
+
+    static NetworkEventMonitor instance;
+    return &instance;
+}
+
+NetworkEventMonitor::NetworkEventMonitor()
+    : m_commWindow( NULL )
 {
     static HINSTANCE programInstance = ::GetModuleHandle( NULL );
     if ( !programInstance ) {
@@ -26,7 +52,7 @@ NetworkOutput::NetworkOutput( const string &remoteHost, unsigned short remotePor
     static WNDCLASSEX networkClassInfo = {
         sizeof( WNDCLASSEX ),
         0,
-        &networkWindowProc,
+        &NetworkEventMonitor::networkWindowProc,
         0,
         0,
         programInstance,
@@ -51,88 +77,26 @@ NetworkOutput::NetworkOutput( const string &remoteHost, unsigned short remotePor
     if ( !m_commWindow ) {
         OutputDebugStringA( "CreateWindow failed" );
     }
-
-    WSADATA wsaData;
-    int err = ::WSAStartup( MAKEWORD( 2, 2 ), &wsaData );
-    if ( err != 0 ) {
-        OutputDebugStringA( "WSAStartup failed" );
-    }
-
-    if ( LOBYTE( wsaData.wVersion ) != 2 || HIBYTE( wsaData.wVersion ) != 2 ) {
-        OutputDebugStringA( "Faile to get proper WinSock version" );
-    }
-
-    setupSocket();
-    tryToConnect();
 }
 
-void NetworkOutput::closeSocket()
+NetworkEventMonitor::~NetworkEventMonitor()
 {
-    m_connected = false;
-    assert( g_networkOutputs );
-    g_networkOutputs->erase( m_socket );
-    closesocket( m_socket );
-    m_socket = INVALID_SOCKET;
+    ::DestroyWindow( m_commWindow );
 }
 
-void NetworkOutput::setupSocket()
+void NetworkEventMonitor::addOutputObject( NetworkOutput *output, SOCKET socket )
 {
-    m_connected = false;
-
-    m_socket = ::WSASocket( AF_INET, SOCK_STREAM, IPPROTO_TCP, NULL, 0, 0 );
-    if ( m_socket == INVALID_SOCKET ) {
-        OutputDebugStringA( "WSASocket failed" );
-    }
-
-    if ( ::WSAAsyncSelect( m_socket, m_commWindow, WM_TRACELIB_CONNECTIONUPDATE, FD_CONNECT | FD_CLOSE ) != 0 ) {
+    if ( ::WSAAsyncSelect( socket, m_commWindow, WM_TRACELIB_CONNECTIONUPDATE, FD_CONNECT | FD_CLOSE ) != 0 ) {
         OutputDebugStringA( "WSAAsyncSelect failed" );
     }
 
-    if ( !g_networkOutputs ) {
-        g_networkOutputs = new map<SOCKET, NetworkOutput *>;
-    }
-    (*g_networkOutputs)[m_socket] = this;
+    (*s_outputObjects)[socket] = output;
 }
 
-void NetworkOutput::tryToConnect()
-{
-    hostent *localHost = gethostbyname( m_remoteHost.c_str() );
-    char *localIP = inet_ntoa (*(struct in_addr *)*localHost->h_addr_list);
-    struct sockaddr_in remoteAddr;
-    remoteAddr.sin_family = AF_INET;
-    remoteAddr.sin_addr.s_addr = inet_addr( localIP );
-    remoteAddr.sin_port = htons( m_remotePort );
-
-    if ( ::WSAConnect( m_socket,
-                  (const struct sockaddr* )&remoteAddr,
-                  sizeof(remoteAddr),
-                  NULL,
-                  NULL,
-                  NULL,
-                  NULL ) == 0 || WSAGetLastError() != WSAEWOULDBLOCK ) {
-        OutputDebugStringA( "funny thing while connecting" );
-    }
-}
-
-NetworkOutput::~NetworkOutput()
-{
-    ::DestroyWindow( m_commWindow );
-    ::WSACleanup();
-}
-
-void NetworkOutput::write( const vector<char> &data )
-{
-    if ( m_connected ) {
-        send( m_socket, &data[0], data.size(), 0 );
-    }
-}
-
-LRESULT CALLBACK NetworkOutput::networkWindowProc( HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam )
+LRESULT CALLBACK NetworkEventMonitor::networkWindowProc( HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam )
 {
     if ( msg == WM_TRACELIB_CONNECTIONUPDATE ) {
-        assert( g_networkOutputs );
-        map<SOCKET, NetworkOutput *>::iterator it = g_networkOutputs->find( (SOCKET)wparam );
-        assert( it != g_networkOutputs->end() );
+        map<SOCKET, NetworkOutput *>::iterator it = s_outputObjects->find( (SOCKET)wparam );
         NetworkOutput *outputObject = it->second;
         if ( WSAGETSELECTEVENT( lparam ) == FD_CONNECT ) {
             switch( WSAGETSELECTERROR( lparam ) ) {
@@ -173,12 +137,83 @@ LRESULT CALLBACK NetworkOutput::networkWindowProc( HWND hwnd, UINT msg, WPARAM w
                     break;
             }
         } else if ( WSAGETSELECTEVENT( lparam ) == FD_CLOSE ) {
-            OutputDebugStringA( "Viewer disappeared." );
+            s_outputObjects->erase( (SOCKET)wparam );
             outputObject->closeSocket();
             outputObject->setupSocket();
             outputObject->tryToConnect();
         }
     }
     return ::DefWindowProc( hwnd, msg, wparam, lparam );
+}
+
+NetworkOutput::NetworkOutput( const string &remoteHost, unsigned short remotePort )
+    : m_remoteHost( remoteHost ),
+    m_remotePort( remotePort ),
+    m_socket( 0 ),
+    m_connected( false )
+{
+    WSADATA wsaData;
+    int err = ::WSAStartup( MAKEWORD( 2, 2 ), &wsaData );
+    if ( err != 0 ) {
+        OutputDebugStringA( "WSAStartup failed" );
+    }
+
+    if ( LOBYTE( wsaData.wVersion ) != 2 || HIBYTE( wsaData.wVersion ) != 2 ) {
+        OutputDebugStringA( "Faile to get proper WinSock version" );
+    }
+
+    setupSocket();
+    tryToConnect();
+}
+
+void NetworkOutput::closeSocket()
+{
+    m_connected = false;
+    closesocket( m_socket );
+    m_socket = INVALID_SOCKET;
+}
+
+void NetworkOutput::setupSocket()
+{
+    m_connected = false;
+
+    m_socket = ::WSASocket( AF_INET, SOCK_STREAM, IPPROTO_TCP, NULL, 0, 0 );
+    if ( m_socket == INVALID_SOCKET ) {
+        OutputDebugStringA( "WSASocket failed" );
+    }
+
+    NetworkEventMonitor::self()->addOutputObject( this, m_socket );
+}
+
+void NetworkOutput::tryToConnect()
+{
+    hostent *localHost = gethostbyname( m_remoteHost.c_str() );
+    char *localIP = inet_ntoa (*(struct in_addr *)*localHost->h_addr_list);
+    struct sockaddr_in remoteAddr;
+    remoteAddr.sin_family = AF_INET;
+    remoteAddr.sin_addr.s_addr = inet_addr( localIP );
+    remoteAddr.sin_port = htons( m_remotePort );
+
+    if ( ::WSAConnect( m_socket,
+                  (const struct sockaddr* )&remoteAddr,
+                  sizeof(remoteAddr),
+                  NULL,
+                  NULL,
+                  NULL,
+                  NULL ) == 0 || WSAGetLastError() != WSAEWOULDBLOCK ) {
+        OutputDebugStringA( "funny thing while connecting" );
+    }
+}
+
+NetworkOutput::~NetworkOutput()
+{
+    ::WSACleanup();
+}
+
+void NetworkOutput::write( const vector<char> &data )
+{
+    if ( m_connected ) {
+        send( m_socket, &data[0], data.size(), 0 );
+    }
 }
 
