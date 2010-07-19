@@ -3,6 +3,10 @@
 
 #include "tracelib.h"
 
+namespace pcrecpp {
+    class RE;
+}
+
 namespace Tracelib
 {
 
@@ -29,6 +33,7 @@ class PathFilter : public Filter
 {
 public:
     PathFilter();
+    virtual ~PathFilter();
 
     void setPath( MatchingMode matchingMode, const std::string &path );
 
@@ -37,12 +42,14 @@ public:
 private:
     MatchingMode m_matchingMode;
     std::string m_path;
+    pcrecpp::RE *m_rx;
 };
 
 class FunctionFilter : public Filter
 {
 public:
     FunctionFilter();
+    virtual ~FunctionFilter();
 
     void setFunction( MatchingMode matchingMode, const std::string &function );
 
@@ -51,6 +58,7 @@ public:
 private:
     MatchingMode m_matchingMode;
     std::string m_function;
+    pcrecpp::RE *m_rx;
 };
 
 class ConjunctionFilter : public Filter

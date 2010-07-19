@@ -5,6 +5,7 @@ IF(MSVC)
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc")
 ENDIF(MSVC)
 
+ADD_DEFINITIONS(-DHAVE_CONFIG_H -DPCRE_STATIC -DTIXML_USE_STL)
 ADD_SUBDIRECTORY(3rdparty/pcre-8.10 EXCLUDE_FROM_ALL)
 
 CONFIGURE_FILE(3rdparty/pcre-8.10/pcre_chartables.c.dist
@@ -33,6 +34,11 @@ SET(PCRE_SOURCES2
         3rdparty/pcre-8.10/pcre_version.c
         3rdparty/pcre-8.10/pcre_xclass.c)
 
+SET(PCRECPP_SOURCES2
+        3rdparty/pcre-8.10/pcrecpp.cc
+        3rdparty/pcre-8.10/pcre_scanner.cc
+        3rdparty/pcre-8.10/pcre_stringpiece.cc)
+
 SET(TINYXML_SOURCES
         3rdparty/tinyxml/tinyxml.cpp
         3rdparty/tinyxml/tinyxmlerror.cpp
@@ -48,11 +54,10 @@ SET(TRACELIB_SOURCES
         errorlog.cpp
         3rdparty/wildcmp/wildcmp.c
         ${TINYXML_SOURCES}
-        ${PCRE_SOURCES2})
+        ${PCRE_SOURCES2}
+        ${PCRECPP_SOURCES2})
 
-SET_SOURCE_FILES_PROPERTIES(configuration.cpp ${TINYXML_SOURCES} PROPERTIES COMPILE_DEFINITIONS TIXML_USE_STL)
-SET_SOURCE_FILES_PROPERTIES(${PCRE_SOURCES2} PROPERTIES COMPILE_FLAGS /I3rdparty/pcre-8.10)
-SET_SOURCE_FILES_PROPERTIES(${PCRE_SOURCES2} PROPERTIES COMPILE_DEFINITIONS HAVE_CONFIG_H)
+SET_SOURCE_FILES_PROPERTIES(${PCRE_SOURCES2} ${PCRECPP_SOURCES2} filter.cpp PROPERTIES COMPILE_FLAGS /I3rdparty/pcre-8.10)
 
 IF(WIN32)
     SET(TRACELIB_SOURCES

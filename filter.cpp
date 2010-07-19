@@ -1,6 +1,7 @@
 #include "filter.h"
 
 #include "3rdparty/wildcmp/wildcmp.h"
+#include "3rdparty/pcre-8.10/pcrecpp.h"
 
 #include <string>
 
@@ -36,13 +37,25 @@ static bool startsWith( const string &a, const string &b )
 }
 
 PathFilter::PathFilter()
+    : m_rx( 0 )
 {
+}
+
+PathFilter::~PathFilter()
+{
+    delete m_rx;
 }
 
 void PathFilter::setPath( MatchingMode matchingMode, const string &path )
 {
     m_matchingMode = matchingMode;
     m_path = path; // XXX Consider normalizing path
+    delete m_rx;
+#ifdef _WIN32
+    m_rx = new pcrecpp::RE( m_path.c_str(), pcrecpp::CASELESS() );
+#else
+    m_rx = new pcrecpp::RE( m_path.c_str() );
+#endif
 }
 
 bool PathFilter::acceptsTracePoint( const TracePoint *tracePoint )
@@ -55,8 +68,7 @@ bool PathFilter::acceptsTracePoint( const TracePoint *tracePoint )
             return strcmp( tracePoint->sourceFile, m_path.c_str() ) == 0;
 #endif
         case RegExpMatch:
-            assert( !"Not implemented" );
-            return false;
+            return m_rx->FullMatch( tracePoint->sourceFile );
         case WildcardMatch:
 #ifdef _WIN32
             return wildicmp( tracePoint->sourceFile, m_path.c_str() ) != 0;
@@ -70,13 +82,25 @@ bool PathFilter::acceptsTracePoint( const TracePoint *tracePoint )
 }
 
 FunctionFilter::FunctionFilter()
+    : m_rx( 0 )
 {
+}
+
+FunctionFilter::~FunctionFilter()
+{
+    delete m_rx;
 }
 
 void FunctionFilter::setFunction( MatchingMode matchingMode, const string &function )
 {
     m_matchingMode = matchingMode;
     m_function = function;
+    delete m_rx;
+#ifdef _WIN32
+    m_rx = new pcrecpp::RE( m_function.c_str(), pcrecpp::CASELESS() );
+#else
+    m_rx = new pcrecpp::RE( m_function.c_str() );
+#endif
 }
 
 bool FunctionFilter::acceptsTracePoint( const TracePoint *tracePoint )
@@ -85,8 +109,7 @@ bool FunctionFilter::acceptsTracePoint( const TracePoint *tracePoint )
         case StrictMatch:
             return m_function == tracePoint->functionName;
         case RegExpMatch:
-            assert( !"Not implemented" );
-            return false;
+            return m_rx->FullMatch( tracePoint->functionName );
         case WildcardMatch:
             return wildcmp( tracePoint->functionName, m_function.c_str() ) != 0;
     }
