@@ -8,39 +8,18 @@
 #ifdef _MSC_VER
 #  define TRACELIB_BEACON(verbosity) \
 { \
-    if (Tracelib::getActiveTrace()) { \
-        static Tracelib::TracePoint tracePoint((verbosity), __FILE__, __LINE__, __FUNCSIG__); \
-        if ( tracePoint.lastUsedConfiguration != Tracelib::getActiveTrace()->configuration() ) { \
-            Tracelib::getActiveTrace()->reconsiderTracePoint( &tracePoint ); \
-        } \
-        if ( tracePoint.active ) { \
-            Tracelib::TraceEntry entry( &tracePoint ); \
-            if ( tracePoint.backtracesEnabled ) { \
-                entry.backtrace = new Tracelib::Backtrace( Tracelib::Backtrace::generate() ); \
-            } \
-            Tracelib::getActiveTrace()->addEntry( entry ); \
-        } \
-    } \
+    static Tracelib::TracePoint tracePoint((verbosity), __FILE__, __LINE__, __FUNCSIG__); \
+    Tracelib::getActiveTrace()->visitTracePoint( &tracePoint ); \
 }
 #  define TRACELIB_SNAPSHOT(verbosity, vars) \
 { \
-    if (Tracelib::getActiveTrace()) { \
-        static Tracelib::TracePoint tracePoint((verbosity), __FILE__, __LINE__, __FUNCSIG__); \
-        if ( tracePoint.lastUsedConfiguration != Tracelib::getActiveTrace()->configuration() ) { \
-            Tracelib::getActiveTrace()->reconsiderTracePoint( &tracePoint ); \
-        } \
-        if ( tracePoint.active ) { \
-            Tracelib::TraceEntry entry( &tracePoint ); \
-            if ( tracePoint.backtracesEnabled ) { \
-                entry.backtrace = new Tracelib::Backtrace( Tracelib::Backtrace::generate() ); \
-            } \
-            if ( tracePoint.variableSnapshotEnabled ) { \
-                entry.variables = new std::vector<Tracelib::AbstractVariableConverter *>; \
-                (*entry.variables) << vars; \
-            } \
-            Tracelib::getActiveTrace()->addEntry( entry ); \
-        } \
+    static Tracelib::TracePoint tracePoint((verbosity), __FILE__, __LINE__, __FUNCSIG__); \
+    std::vector<Tracelib::AbstractVariableConverter *> *variableSnapshot = 0; \
+    if ( tracePoint.variableSnapshotEnabled ) { \
+        variableSnapshot = new std::vector<Tracelib::AbstractVariableConverter *>; \
+        (*variableSnapshot) << vars; \
     } \
+    Tracelib::getActiveTrace()->visitTracePoint( &tracePoint, variableSnapshot ); \
 }
 #  define TRACELIB_VAR(v) Tracelib::makeConverter(#v, v)
 #else
@@ -210,13 +189,11 @@ public:
     ~Trace();
 
     void reconsiderTracePoint( TracePoint *tracePoint ) const;
+    void visitTracePoint( TracePoint *tracePoint,
+                          std::vector<AbstractVariableConverter *> *variables = 0 );
 
-    void addEntry( const TraceEntry &entry );
     void setSerializer( Serializer *serializer );
     void setOutput( Output *output );
-
-    const Configuration *configuration() const { return m_configuration; }
-
     void addTracePointSet( TracePointSet *tracePointSet );
 
 private:

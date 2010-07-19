@@ -103,14 +103,26 @@ void Trace::reconsiderTracePoint( TracePoint *tracePoint ) const
     }
 }
 
-void Trace::addEntry( const TraceEntry &entry )
+void Trace::visitTracePoint( TracePoint *tracePoint,
+                             vector<AbstractVariableConverter *> *variables )
 {
-    if ( !m_serializer || !m_output ) {
-        return;
+    if ( tracePoint->lastUsedConfiguration != m_configuration ) {
+        reconsiderTracePoint( tracePoint );
     }
 
-    if ( !m_output->canWrite() ) {
+    if ( !tracePoint->active || !m_serializer || !m_output || !m_output->canWrite() ) {
         return;
+
+    }
+
+    TraceEntry entry( tracePoint );
+    if ( tracePoint->backtracesEnabled ) {
+        // XXX Skip this (topmost) frame in backtrace!
+        entry.backtrace = new Backtrace( Backtrace::generate() );
+    }
+
+    if ( tracePoint->variableSnapshotEnabled ) {
+        entry.variables = variables;
     }
 
     vector<char> data = m_serializer->serialize( entry );
