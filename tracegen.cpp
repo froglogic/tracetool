@@ -2,6 +2,9 @@
 #include "serializer.h"
 #include "filter.h"
 #include "output.h"
+#ifdef _WIN32
+#  include "networkoutput_win.h"
+#endif
 #include <windows.h>
 #include <time.h>
 #include <sstream>
