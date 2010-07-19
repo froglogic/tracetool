@@ -22,10 +22,6 @@ static VOID CALLBACK timerProc( HWND, UINT, UINT_PTR, DWORD )
 
 int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow )
 {
-    using namespace Tracelib;
-    Trace *trace = new Trace;
-    setActiveTrace( trace );
-
     SetTimer( NULL, 0, 1000, &timerProc );
 
     MSG msg;

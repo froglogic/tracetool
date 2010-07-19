@@ -80,12 +80,8 @@ namespace Tracelib
 
 int main()
 {
-    using namespace Tracelib;
-    Trace *trace = new Trace;
-    setActiveTrace( trace );
     TRACELIB_BEACON(1)
     ACME::GUI::Widget w;
     w.repaint( false );
-    delete trace;
 }
 

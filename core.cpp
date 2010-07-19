@@ -138,6 +138,10 @@ namespace Tracelib
 
 Trace *getActiveTrace()
 {
+    if ( !g_activeTrace ) {
+        static Trace defaultTrace;
+        return &defaultTrace;
+    }
     return g_activeTrace;
 }
 
