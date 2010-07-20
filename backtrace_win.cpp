@@ -56,6 +56,7 @@ void MyStackWalker::OnCallstackEntry( CallstackEntryType type, CallstackEntry &e
 
 Backtrace Backtrace::generate( size_t skipInnermostFrames )
 {
+    // XXX Make this thread safe using a critical section
     static MyStackWalker stackWalker;
     stackWalker.setFramesToSkip( 2 /* ShowCallstack() + generate() */ + skipInnermostFrames );
     stackWalker.ShowCallstack();
