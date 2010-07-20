@@ -94,11 +94,7 @@ void FunctionFilter::setFunction( MatchingMode matchingMode, const string &funct
     m_matchingMode = matchingMode;
     m_function = function;
     delete m_rx;
-#ifdef _WIN32
-    m_rx = new pcrecpp::RE( m_function.c_str(), pcrecpp::CASELESS() );
-#else
     m_rx = new pcrecpp::RE( m_function.c_str() );
-#endif
 }
 
 bool FunctionFilter::acceptsTracePoint( const TracePoint *tracePoint )
