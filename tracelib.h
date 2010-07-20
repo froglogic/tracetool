@@ -3,6 +3,7 @@
 
 #include "backtrace.h"
 
+#include <ctime>
 #include <vector>
 
 #ifdef _MSC_VER
@@ -81,7 +82,8 @@ struct TracePoint;
 
 struct TraceEntry {
     TraceEntry( const TracePoint *tracePoint_ )
-        : tracePoint( tracePoint_ ),
+        : timeStamp( std::time( NULL ) ),
+        tracePoint( tracePoint_ ),
         backtrace( 0 ),
         variables( 0 )
     {
@@ -98,6 +100,7 @@ struct TraceEntry {
         delete backtrace;
     }
 
+    const time_t timeStamp;
     const TracePoint *tracePoint;
     std::vector<AbstractVariableConverter *> *variables;
     Backtrace *backtrace;

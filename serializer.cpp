@@ -20,8 +20,7 @@ vector<char> PlaintextSerializer::serialize( const TraceEntry &entry )
     char timestamp[64] = { '\0' };
 
     if ( m_showTimestamp ) {
-        time_t t = time(NULL);
-        strftime(timestamp, sizeof(timestamp), "%d.%m.%Y %H:%M:%S: ", localtime(&t));
+        strftime(timestamp, sizeof(timestamp), "%d.%m.%Y %H:%M:%S: ", localtime(&entry.timeStamp));
     }
 
     string variableDump;
