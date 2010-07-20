@@ -19,23 +19,62 @@ static bool fileExists( const string &filename )
    return ifstream( filename.c_str() ).is_open();
 }
 
+Configuration *Configuration::fromFile( const string &fileName )
+{
+    Configuration *cfg = new Configuration;
+    if ( !cfg->loadFromFile( fileName ) ) {
+        delete cfg;
+        return 0;
+    }
+    return cfg;
+}
+
+Configuration *Configuration::fromMarkup( const string &markup )
+{
+    Configuration *cfg = new Configuration;
+    if ( !cfg->loadFromMarkup( markup ) ) {
+        delete cfg;
+        return 0;
+    }
+    return cfg;
+}
+
 Configuration::Configuration()
     : m_configuredSerializer( 0 ),
     m_configuredOutput( 0 ),
     m_errorLog( new DebugViewErrorLog ),
-    m_fileName( configurationFileName() )
+    m_fileName( "<null>")
 {
+}
+
+bool Configuration::loadFromFile( const string &fileName )
+{
+    m_fileName = fileName;;
+
     if ( !fileExists( m_fileName ) ) {
-        return;
+        return false;
     }
 
     TiXmlDocument xmlDoc;
     if ( !xmlDoc.LoadFile( m_fileName.c_str() ) ) {
         m_errorLog->write( "Tracelib Configuration: Failed to load XML file from %s", m_fileName.c_str() );
-        return;;
+        return false;
     }
 
-    TiXmlElement *rootElement = xmlDoc.RootElement();
+    loadFrom( &xmlDoc );
+    return true;
+}
+
+bool Configuration::loadFromMarkup( const string &markup )
+{
+    TiXmlDocument xmlDoc;
+    xmlDoc.Parse( markup.c_str() ); // XXX Error handling
+    return true;
+}
+
+void Configuration::loadFrom( TiXmlDocument *xmlDoc )
+{
+    TiXmlElement *rootElement = xmlDoc->RootElement();
     if ( rootElement->ValueStr() != "tracelibConfiguration" ) {
         m_errorLog->write( "Tracelib Configuration: while reading %s: unexpected root element '%s' found", m_fileName.c_str(), rootElement->Value() );
         return;

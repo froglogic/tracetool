@@ -63,11 +63,13 @@ unsigned int TracePointSet::considerTracePoint( const TracePoint *tracePoint )
 Trace::Trace()
     : m_serializer( 0 ),
     m_output( 0 ),
-    m_configuration( new Configuration )
+    m_configuration( Configuration::fromFile( Configuration::defaultFileName() ) )
 {
-    m_serializer = m_configuration->configuredSerializer();
-    m_output = m_configuration->configuredOutput();
-    m_tracePointSets = m_configuration->configuredTracePointSets();
+    if ( m_configuration ) {
+        m_serializer = m_configuration->configuredSerializer();
+        m_output = m_configuration->configuredOutput();
+        m_tracePointSets = m_configuration->configuredTracePointSets();
+    }
 }
 
 Trace::~Trace()

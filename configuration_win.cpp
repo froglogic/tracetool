@@ -8,7 +8,7 @@ using namespace std;
 /* XXX Consider encoding issues; this function should return UTF-8 encoded
  * strings.
  */
-string Configuration::configurationFileName()
+string Configuration::defaultFileName()
 {
     /* According to the MSDN documentation on GetEnvironmentVariable, an
      * environment variable has a maximum size limit of 32767 characters
@@ -19,14 +19,14 @@ string Configuration::configurationFileName()
         return &buf[0];
     }
 
-    static string defaultFileName;
-    if ( defaultFileName.empty() ) {
+    static string defaultName;
+    if ( defaultName.empty() ) {
         ::GetModuleFileName( NULL, buf, sizeof( buf ) );
         char *lastSeparator = strrchr( buf, '\\' );
         strcpy( lastSeparator + 1, "tracelib.xml" ); // XXX Guard against buffer overflow
-        defaultFileName = &buf[0];
+        defaultName = &buf[0];
     }
-    return defaultFileName;
+    return defaultName;
 }
 
 /* XXX Consider encoding issues; this function should return UTF-8 encoded

@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
+class TiXmlDocument;
 class TiXmlElement;
 
 namespace Tracelib
@@ -18,7 +19,10 @@ class TracePointSet;
 class Configuration
 {
 public:
-    Configuration();
+    static std::string defaultFileName();
+
+    static Configuration *fromFile( const std::string &fileName );
+    static Configuration *fromMarkup( const std::string &markup );
 
     const std::vector<TracePointSet *> &configuredTracePointSets() const;
     Serializer *configuredSerializer();
@@ -26,14 +30,18 @@ public:
 
 private:
     static std::string currentProcessName();
-    static std::string configurationFileName();
+
+    Configuration();
+    bool loadFromFile( const std::string &fileName );
+    bool loadFromMarkup( const std::string &markup );
+    void loadFrom( TiXmlDocument *xmlDoc );
 
     Filter *createFilterFromElement( TiXmlElement *e );
     Serializer *createSerializerFromElement( TiXmlElement *e );
     TracePointSet *createTracePointSetFromElement( TiXmlElement *e );
     Output *createOutputFromElement( TiXmlElement *e );
 
-    const std::string m_fileName;
+    std::string m_fileName;
     std::vector<TracePointSet *> m_configuredTracePointSets;
     Serializer *m_configuredSerializer;
     Output *m_configuredOutput;
