@@ -24,7 +24,7 @@ class Backtrace
     friend class BacktraceFactory;
 
 public:
-    static Backtrace generate();
+    static Backtrace generate( size_t skipInnermostFrames );
 
     size_t depth() const;
     const StackFrame &frame( size_t depth ) const;
