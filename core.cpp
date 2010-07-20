@@ -119,8 +119,7 @@ void Trace::visitTracePoint( TracePoint *tracePoint,
 
     TraceEntry entry( tracePoint );
     if ( tracePoint->backtracesEnabled ) {
-        // XXX Skip this (topmost) frame in backtrace!
-        entry.backtrace = new Backtrace( Backtrace::generate() );
+        entry.backtrace = new Backtrace( Backtrace::generate( 1 /* omit this function in backtrace */ ) );
     }
 
     if ( tracePoint->variableSnapshotEnabled ) {
