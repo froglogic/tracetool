@@ -61,36 +61,35 @@ bool Configuration::loadFromFile( const string &fileName )
         return false;
     }
 
-    loadFrom( &xmlDoc );
-    return true;
+    return loadFrom( &xmlDoc );
 }
 
 bool Configuration::loadFromMarkup( const string &markup )
 {
     TiXmlDocument xmlDoc;
     xmlDoc.Parse( markup.c_str() ); // XXX Error handling
-    return true;
+    return loadFrom( &xmlDoc );
 }
 
-void Configuration::loadFrom( TiXmlDocument *xmlDoc )
+bool Configuration::loadFrom( TiXmlDocument *xmlDoc )
 {
     TiXmlElement *rootElement = xmlDoc->RootElement();
     if ( rootElement->ValueStr() != "tracelibConfiguration" ) {
         m_errorLog->write( "Tracelib Configuration: while reading %s: unexpected root element '%s' found", m_fileName.c_str(), rootElement->Value() );
-        return;
+        return false;
     }
 
     TiXmlElement *processElement = rootElement->FirstChildElement();
     while ( processElement ) {
         if ( processElement->ValueStr() != "process" ) {
             m_errorLog->write( "Tracelib Configuration: while reading %s: unexpected child element '%s' found inside <tracelibConfiguration>.", m_fileName.c_str(), processElement->Value() );
-            return;
+            return false;
         }
 
         TiXmlElement *nameElement = processElement->FirstChildElement( "name" );
         if ( !nameElement ) {
             m_errorLog->write( "Tracelib Configuration: while reading %s: found <process> element without <name> child element.", m_fileName.c_str() );
-            return;
+            return false;
         }
 
 
@@ -111,23 +110,37 @@ void Configuration::loadFrom( TiXmlDocument *xmlDoc )
                 if ( e->ValueStr() == "serializer" ) {
                     if ( m_configuredSerializer ) {
                         m_errorLog->write( "Tracelib Configuration: while reading %s: found multiple <serializer> elements in <process> element.", m_fileName.c_str() );
-                        return;
+                        return false;
                     }
-                    m_configuredSerializer = createSerializerFromElement( e );
+
+                    Serializer *s = createSerializerFromElement( e );
+                    if ( !s ) {
+                        return false;
+                    }
+
+                    m_configuredSerializer = s;
                     continue;
                 }
 
                 if ( e->ValueStr() == "tracepointset" ) {
-                    m_configuredTracePointSets.push_back( createTracePointSetFromElement( e ) );
+                    TracePointSet *tracePointSet = createTracePointSetFromElement( e );
+                    if ( !tracePointSet ) {
+                        return false;
+                    }
+                    m_configuredTracePointSets.push_back( tracePointSet );
                     continue;
                 }
 
                 if ( e->ValueStr() == "output" ) {
                     if ( m_configuredOutput ) {
                         m_errorLog->write( "Tracelib Configuration: while reading %s: found multiple <output> elements in <process> element.", m_fileName.c_str() );
-                        return;
+                        return false;
                     }
-                    m_configuredOutput = createOutputFromElement( e );
+                    Output *output = createOutputFromElement( e );
+                    if ( !output ) {
+                        return false;
+                    }
+                    m_configuredOutput = output;
                 }
             }
             break;
@@ -135,6 +148,7 @@ void Configuration::loadFrom( TiXmlDocument *xmlDoc )
 
         processElement = processElement->NextSiblingElement();
     }
+    return true;
 }
 
 const vector<TracePointSet *> &Configuration::configuredTracePointSets() const

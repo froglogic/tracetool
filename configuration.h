@@ -34,7 +34,7 @@ private:
     Configuration();
     bool loadFromFile( const std::string &fileName );
     bool loadFromMarkup( const std::string &markup );
-    void loadFrom( TiXmlDocument *xmlDoc );
+    bool loadFrom( TiXmlDocument *xmlDoc );
 
     Filter *createFilterFromElement( TiXmlElement *e );
     Serializer *createSerializerFromElement( TiXmlElement *e );
