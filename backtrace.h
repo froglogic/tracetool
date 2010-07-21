@@ -17,15 +17,13 @@ struct StackFrame
     size_t lineNumber;
 };
 
-class BacktraceFactory;
+class BacktraceGenerator;
 
 class Backtrace
 {
-    friend class BacktraceFactory;
+    friend class BacktraceGenerator;
 
 public:
-    static Backtrace generate( size_t skipInnermostFrames );
-
     size_t depth() const;
     const StackFrame &frame( size_t depth ) const;
 
@@ -33,6 +31,22 @@ private:
     explicit Backtrace( const std::vector<StackFrame> &frames );
 
     std::vector<StackFrame> m_frames;
+};
+
+class BacktraceGenerator
+{
+public:
+    BacktraceGenerator();
+    ~BacktraceGenerator();
+
+    Backtrace generate( size_t skipInnermostFrames );
+
+private:
+    BacktraceGenerator( const BacktraceGenerator &other );
+    void operator=( const BacktraceGenerator &rhs );
+
+    struct Private;
+    Private *d;
 };
 
 }

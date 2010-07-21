@@ -54,12 +54,30 @@ void MyStackWalker::OnCallstackEntry( CallstackEntryType type, CallstackEntry &e
     }
 }
 
-Backtrace Backtrace::generate( size_t skipInnermostFrames )
+struct BacktraceGenerator::Private {
+    CRITICAL_SECTION generationSection;
+};
+
+BacktraceGenerator::BacktraceGenerator()
+    : d( new Private )
 {
-    // XXX Make this thread safe using a critical section
+    ::InitializeCriticalSection( &d->generationSection );
+}
+
+BacktraceGenerator::~BacktraceGenerator()
+{
+    ::DeleteCriticalSection( &d->generationSection );
+    delete d;
+}
+
+Backtrace BacktraceGenerator::generate( size_t skipInnermostFrames )
+{
+    ::EnterCriticalSection( &d->generationSection );
     static MyStackWalker stackWalker;
     stackWalker.setFramesToSkip( 2 /* ShowCallstack() + generate() */ + skipInnermostFrames );
     stackWalker.ShowCallstack();
-    return Backtrace( stackWalker.frames() );
+    Backtrace bt( stackWalker.frames() );
+    ::LeaveCriticalSection( &d->generationSection );
+    return bt;
 }
 

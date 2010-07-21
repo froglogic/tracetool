@@ -207,6 +207,7 @@ private:
     Output *m_output;
     std::vector<TracePointSet *> m_tracePointSets;
     Configuration *m_configuration;
+    BacktraceGenerator m_backtraceGenerator;
 };
 
 Trace *getActiveTrace();

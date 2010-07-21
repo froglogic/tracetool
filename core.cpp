@@ -119,7 +119,7 @@ void Trace::visitTracePoint( TracePoint *tracePoint,
 
     TraceEntry entry( tracePoint );
     if ( tracePoint->backtracesEnabled ) {
-        entry.backtrace = new Backtrace( Backtrace::generate( 1 /* omit this function in backtrace */ ) );
+        entry.backtrace = new Backtrace( m_backtraceGenerator.generate( 1 /* omit this function in backtrace */ ) );
     }
 
     if ( tracePoint->variableSnapshotEnabled ) {
