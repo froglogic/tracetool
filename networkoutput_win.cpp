@@ -1,9 +1,28 @@
 #include "output.h"
+#include "errorlog.h"
 
 #include <assert.h>
 
 using namespace std;
 using namespace Tracelib;
+
+static void yieldWin32Error( ErrorLog *errorLog, const char *what, DWORD code )
+{
+    LPVOID lpMsgBuf;
+
+    ::FormatMessageA(
+        FORMAT_MESSAGE_ALLOCATE_BUFFER |
+        FORMAT_MESSAGE_FROM_SYSTEM,
+        NULL,
+        code,
+        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+        (LPSTR) &lpMsgBuf,
+        0, NULL );
+
+    errorLog->write( "Tracelib Network Output: %s (code %d): %s", what, code, (LPSTR)lpMsgBuf );
+
+    ::LocalFree( lpMsgBuf ); // because we used FORMAT_MESSAGE_ALLOCATE_BUFFER
+}
 
 class SocketCloser
 {
@@ -23,7 +42,7 @@ DWORD __stdcall NetworkOutput::outputThreadProc( LPVOID param )
     {
         hostent *host = gethostbyname( outputObject->m_remoteHost.c_str() );
         if ( !host ) {
-            OutputDebugStringA( "gethostbyname failed" );
+            yieldWin32Error( outputObject->m_errorLog, "gethostbyname failed", ::WSAGetLastError() );
             return 4;
         }
 
@@ -35,7 +54,7 @@ DWORD __stdcall NetworkOutput::outputThreadProc( LPVOID param )
 
     HandleOwner socketStateChangedEvent = ::WSACreateEvent();
     if ( !socketStateChangedEvent ) {
-        OutputDebugStringA( "CreateEvent failed" );
+        yieldWin32Error( outputObject->m_errorLog, "WSACreateEvent failed", ::WSAGetLastError() );
         return 2;
     }
 
@@ -45,14 +64,14 @@ DWORD __stdcall NetworkOutput::outputThreadProc( LPVOID param )
     for ( ;; ) {
         outputObject->m_socket = ::WSASocket( AF_INET, SOCK_STREAM, IPPROTO_TCP, NULL, 0, 0 );
         if ( outputObject->m_socket == INVALID_SOCKET ) {
-            OutputDebugStringA( "WSASocket failed" );
+            yieldWin32Error( outputObject->m_errorLog, "WSASocket failed", ::WSAGetLastError() );
             return 1;
         }
 
         SocketCloser socketCloser( &outputObject->m_socket );
 
         if ( ::WSAEventSelect( outputObject->m_socket, socketStateChangedEvent, FD_CONNECT | FD_CLOSE ) != 0 ) {
-            OutputDebugStringA( "WSAEventSelect failed" );
+            yieldWin32Error( outputObject->m_errorLog, "WSAEventSelect failed", ::WSAGetLastError() );
             return 3;
         }
 
@@ -65,7 +84,7 @@ DWORD __stdcall NetworkOutput::outputThreadProc( LPVOID param )
                         NULL,
                         NULL,
                         NULL ) != 0 && WSAGetLastError() != WSAEWOULDBLOCK ) {
-                OutputDebugStringA( "WSAConnect failed" );
+                yieldWin32Error( outputObject->m_errorLog, "WSAConnect failed", ::WSAGetLastError() );
                 return 5;
             }
 
@@ -76,7 +95,7 @@ DWORD __stdcall NetworkOutput::outputThreadProc( LPVOID param )
                     INFINITE );
             assert( waitResult != WAIT_TIMEOUT );
             if ( waitResult == WAIT_FAILED ) {
-                OutputDebugStringA( "WaitFrMultipleObjects failed" );
+                yieldWin32Error( outputObject->m_errorLog, "WaitForMultipleObjects failed", ::WSAGetLastError() );
             } else if ( waitResult >= WAIT_ABANDONED && waitResult <= WAIT_ABANDONED ) {
                 // XXX What does this mean?
             } else {
@@ -84,7 +103,7 @@ DWORD __stdcall NetworkOutput::outputThreadProc( LPVOID param )
                     case 0:
                         WSANETWORKEVENTS ev;
                         if ( ::WSAEnumNetworkEvents( outputObject->m_socket, socketStateChangedEvent, &ev ) != 0 ) {
-                            OutputDebugStringA( "WSAEnumNetworkEffects failed" );
+                            yieldWin32Error( outputObject->m_errorLog, "WSAEnumNetworkEvents failed", ::WSAGetLastError() );
                             break;
                         }
                         assert( ev.lNetworkEvents == FD_CONNECT );
@@ -111,7 +130,7 @@ DWORD __stdcall NetworkOutput::outputThreadProc( LPVOID param )
                 INFINITE );
         assert( waitResult != WAIT_TIMEOUT );
         if ( waitResult == WAIT_FAILED ) {
-            OutputDebugStringA( "WaitFrMultipleObjects failed" );
+            yieldWin32Error( outputObject->m_errorLog, "WaitForMultipleObjects failed", ::WSAGetLastError() );
         } else if ( waitResult >= WAIT_ABANDONED && waitResult <= WAIT_ABANDONED ) {
             // XXX What does this mean?
         } else {
@@ -119,7 +138,7 @@ DWORD __stdcall NetworkOutput::outputThreadProc( LPVOID param )
                 case 0:
                     WSANETWORKEVENTS ev;
                     if ( ::WSAEnumNetworkEvents( outputObject->m_socket, socketStateChangedEvent, &ev ) != 0 ) {
-                        OutputDebugStringA( "WSAEnumNetworkEffects failed" );
+                        yieldWin32Error( outputObject->m_errorLog, "WSAEnumNetworkEvents failed", ::WSAGetLastError() );
                         break;
                     }
                     assert( ev.lNetworkEvents == FD_CLOSE );
@@ -136,29 +155,51 @@ DWORD __stdcall NetworkOutput::outputThreadProc( LPVOID param )
     return 0;
 }
 
-NetworkOutput::NetworkOutput( const string &remoteHost, unsigned short remotePort )
+NetworkOutput::NetworkOutput( ErrorLog *errorLog, const string &remoteHost, unsigned short remotePort )
     : m_outputObjectDestructingEvent( 0 ),
     m_outputThread( 0 ),
     m_outputThreadAttemptedConnectingEvent( 0 ),
     m_remoteHost( remoteHost ),
     m_remotePort( remotePort ),
     m_socket( 0 ),
-    m_connectionEstablishedEvent( 0 )
+    m_connectionEstablishedEvent( 0 ),
+    m_errorLog( errorLog )
 {
     WSADATA wsaData;
     int err = ::WSAStartup( MAKEWORD( 2, 2 ), &wsaData );
     if ( err != 0 ) {
-        OutputDebugStringA( "WSAStartup failed" );
+        yieldWin32Error( m_errorLog, "WSAStartup failed", ::WSAGetLastError() );
+        return;
     }
 
     if ( LOBYTE( wsaData.wVersion ) != 2 || HIBYTE( wsaData.wVersion ) != 2 ) {
-        OutputDebugStringA( "Faile to get proper WinSock version" );
+        OutputDebugStringA( "Failed to get proper WinSock version" );
+        return;
     }
 
     m_outputThreadAttemptedConnectingEvent = ::CreateEvent( NULL, TRUE, FALSE, NULL );
+    if ( !m_outputThreadAttemptedConnectingEvent ) {
+        yieldWin32Error( m_errorLog, "CreateEvent failed", ::GetLastError() );
+        return;
+    }
+
     m_outputObjectDestructingEvent = ::CreateEvent( NULL, FALSE, FALSE, NULL );
+    if ( !m_outputObjectDestructingEvent ) {
+        yieldWin32Error( m_errorLog, "CreateEvent failed", ::GetLastError() );
+        return;
+    }
+
     m_connectionEstablishedEvent = ::CreateEvent( NULL, TRUE, FALSE, NULL );
+    if ( !m_connectionEstablishedEvent ) {
+        yieldWin32Error( m_errorLog, "CreateEvent failed", ::GetLastError() );
+        return;
+    }
+
     m_outputThread = ::CreateThread( NULL, 0, &outputThreadProc, this, 0, NULL );
+    if ( !m_outputThread ) {
+        yieldWin32Error( m_errorLog, "CreateThread failed", ::GetLastError() );
+        return;
+    }
 
     HANDLE events[2] = { m_outputThread, m_outputThreadAttemptedConnectingEvent };
     // XXX Error handling!

@@ -376,7 +376,7 @@ Output *Configuration::createOutputFromElement( TiXmlElement *e )
             return 0;
         }
 
-        return new NetworkOutput( hostname.c_str(), port );
+        return new NetworkOutput( m_errorLog, hostname.c_str(), port );
     }
 
     m_errorLog->write( "Tracelib Configuration: while reading %s: Unknown type '%s' specified for <output> element", m_fileName.c_str(), outputType.c_str() );

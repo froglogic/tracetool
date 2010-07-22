@@ -13,6 +13,8 @@ class NetworkEventMonitor;
 namespace Tracelib
 {
 
+class ErrorLog;
+
 class HandleOwner
 {
 public:
@@ -32,7 +34,7 @@ private:
 class NetworkOutput : public Output
 {
 public:
-    NetworkOutput( const std::string &remoteHost, unsigned short remotePort );
+    NetworkOutput( ErrorLog *errorLog, const std::string &remoteHost, unsigned short remotePort );
     virtual ~NetworkOutput();
 
     virtual bool canWrite() const;
@@ -49,6 +51,7 @@ private:
     SOCKET m_socket;
     HandleOwner m_connectionEstablishedEvent;
     CRITICAL_SECTION m_socketWriteSection;
+    ErrorLog *m_errorLog;
 };
 
 }
