@@ -15,11 +15,8 @@
 #  define TRACELIB_SNAPSHOT(verbosity, vars) \
 { \
     static Tracelib::TracePoint tracePoint((verbosity), __FILE__, __LINE__, __FUNCSIG__); \
-    std::vector<Tracelib::AbstractVariableConverter *> *variableSnapshot = 0; \
-    if ( tracePoint.variableSnapshotEnabled ) { \
-        variableSnapshot = new std::vector<Tracelib::AbstractVariableConverter *>; \
-        (*variableSnapshot) << vars; \
-    } \
+    std::vector<Tracelib::AbstractVariableConverter *> *variableSnapshot = new std::vector<Tracelib::AbstractVariableConverter *>; \
+    (*variableSnapshot) << vars; \
     Tracelib::getActiveTrace()->visitTracePoint( &tracePoint, variableSnapshot ); \
 }
 #  define TRACELIB_VAR(v) Tracelib::makeConverter(#v, v)
