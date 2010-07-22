@@ -69,9 +69,9 @@ bool PathFilter::acceptsTracePoint( const TracePoint *tracePoint )
             return m_rx->FullMatch( tracePoint->sourceFile );
         case WildcardMatch:
 #ifdef _WIN32
-            return wildicmp( tracePoint->sourceFile, m_path.c_str() ) != 0;
+            return wildicmp( m_path.c_str(), tracePoint->sourceFile ) != 0;
 #else
-            return wildcmp( tracePoint->sourceFile, m_path.c_str() ) != 0;
+            return wildcmp( m_path.c_str(), tracePoint->sourceFile ) != 0;
 #endif
             return false;
         }
@@ -105,7 +105,7 @@ bool FunctionFilter::acceptsTracePoint( const TracePoint *tracePoint )
         case RegExpMatch:
             return m_rx->FullMatch( tracePoint->functionName );
         case WildcardMatch:
-            return wildcmp( tracePoint->functionName, m_function.c_str() ) != 0;
+            return wildcmp( m_function.c_str(), tracePoint->functionName ) != 0;
     }
     assert( !"Unreachable" );
     return false;
