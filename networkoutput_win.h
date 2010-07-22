@@ -1,3 +1,5 @@
+#include "tracelib_config.h"
+
 /* Avoids that winsock.h is included by windows.h; winsock.h conflicts
  * with winsock2.h
  */
@@ -10,8 +12,7 @@
 
 class NetworkEventMonitor;
 
-namespace Tracelib
-{
+TRACELIB_NAMESPACE_BEGIN
 
 class ErrorLog;
 
@@ -54,5 +55,5 @@ private:
     ErrorLog *m_errorLog;
 };
 
-}
+TRACELIB_NAMESPACE_END
 

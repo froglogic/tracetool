@@ -7,7 +7,6 @@
 
 #include <assert.h>
 
-using namespace Tracelib;
 using namespace std;
 
 template <class Iterator>
@@ -15,6 +14,8 @@ void deleteRange( Iterator begin, Iterator end )
 {
     while ( begin != end ) delete *begin++;
 }
+
+TRACELIB_NAMESPACE_BEGIN
 
 VerbosityFilter::VerbosityFilter()
     : m_maxVerbosity( 1 )
@@ -152,4 +153,6 @@ bool DisjunctionFilter::acceptsTracePoint( const TracePoint *tracePoint )
     }
     return false;
 }
+
+TRACELIB_NAMESPACE_END
 

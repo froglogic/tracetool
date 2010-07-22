@@ -1,14 +1,15 @@
 #ifndef CONFIGURATION_H
 #define CONFIGURATION_H
 
+#include "tracelib_config.h"
+
 #include <string>
 #include <vector>
 
 class TiXmlDocument;
 class TiXmlElement;
 
-namespace Tracelib
-{
+TRACELIB_NAMESPACE_BEGIN
 
 class ErrorLog;
 class Filter;
@@ -48,6 +49,6 @@ private:
     ErrorLog *m_errorLog;
 };
 
-}
+TRACELIB_NAMESPACE_END
 
 #endif // !defined(CONFIGURATION_H)

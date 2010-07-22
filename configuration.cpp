@@ -11,13 +11,14 @@
 
 #include <string.h>
 
-using namespace Tracelib;
 using namespace std;
 
 static bool fileExists( const string &filename )
 {
    return ifstream( filename.c_str() ).is_open();
 }
+
+TRACELIB_NAMESPACE_BEGIN
 
 Configuration *Configuration::fromFile( const string &fileName )
 {
@@ -382,4 +383,6 @@ Output *Configuration::createOutputFromElement( TiXmlElement *e )
     m_errorLog->write( "Tracelib Configuration: while reading %s: Unknown type '%s' specified for <output> element", m_fileName.c_str(), outputType.c_str() );
     return 0;
 }
+
+TRACELIB_NAMESPACE_END
 

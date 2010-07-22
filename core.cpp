@@ -1,7 +1,6 @@
 #include "tracelib.h"
 #include "configuration.h"
 
-using namespace Tracelib;
 using namespace std;
 
 template <class Iterator>
@@ -9,6 +8,8 @@ void deleteRange( Iterator begin, Iterator end )
 {
     while ( begin != end ) delete *begin++;
 }
+
+TRACELIB_NAMESPACE_BEGIN
 
 Output::Output()
 {
@@ -34,7 +35,7 @@ Filter::~Filter()
 {
 }
 
-vector<AbstractVariableConverter *> &Tracelib::operator<<( vector<AbstractVariableConverter *> &v,
+vector<AbstractVariableConverter *> &operator<<( vector<AbstractVariableConverter *> &v,
                                                  AbstractVariableConverter *c )
 {
     v.push_back( c );
@@ -146,9 +147,6 @@ void Trace::setOutput( Output *output )
 
 static Trace *g_activeTrace = 0;
 
-namespace Tracelib
-{
-
 Trace *getActiveTrace()
 {
     if ( !g_activeTrace ) {
@@ -163,5 +161,5 @@ void setActiveTrace( Trace *trace )
     g_activeTrace = trace;
 }
 
-}
+TRACELIB_NAMESPACE_END
 

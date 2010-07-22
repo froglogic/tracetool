@@ -1,10 +1,10 @@
 #ifndef OUTPUT_H
 #define OUTPUT_H
 
+#include "tracelib_config.h"
 #include "tracelib.h"
 
-namespace Tracelib
-{
+TRACELIB_NAMESPACE_BEGIN
 
 class StdoutOutput : public Output
 {
@@ -25,7 +25,7 @@ private:
     std::vector<Output *> m_outputs;
 };
 
-}
+TRACELIB_NAMESPACE_END
 
 #ifdef _WIN32
 #  include "networkoutput_win.h"

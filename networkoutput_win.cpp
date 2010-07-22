@@ -4,9 +4,8 @@
 #include <assert.h>
 
 using namespace std;
-using namespace Tracelib;
 
-static void yieldWin32Error( ErrorLog *errorLog, const char *what, DWORD code )
+static void yieldWin32Error( TRACELIB_NAMESPACE_IDENT(ErrorLog) *errorLog, const char *what, DWORD code )
 {
     LPVOID lpMsgBuf;
 
@@ -33,6 +32,8 @@ public:
 private:
     SOCKET *m_sock;
 };
+
+TRACELIB_NAMESPACE_BEGIN
 
 DWORD __stdcall NetworkOutput::outputThreadProc( LPVOID param )
 {
@@ -234,4 +235,6 @@ void NetworkOutput::write( const vector<char> &data )
         ::LeaveCriticalSection( &m_socketWriteSection );
     }
 }
+
+TRACELIB_NAMESPACE_END
 

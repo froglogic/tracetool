@@ -1,7 +1,8 @@
 #include "output.h"
 
-using namespace Tracelib;
 using namespace std;
+
+TRACELIB_NAMESPACE_BEGIN
 
 void StdoutOutput::write( const vector<char> &data )
 {
@@ -28,4 +29,6 @@ MultiplexingOutput::~MultiplexingOutput()
         delete *it;
     }
 }
+
+TRACELIB_NAMESPACE_END
 

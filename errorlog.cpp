@@ -5,7 +5,8 @@
 #endif
 
 using namespace std;
-using namespace Tracelib;
+
+TRACELIB_NAMESPACE_BEGIN
 
 ErrorLog::ErrorLog()
 {
@@ -22,4 +23,6 @@ void DebugViewErrorLog::write( const string &msg )
     OutputDebugStringA( msg.c_str() );
 #endif
 }
+
+TRACELIB_NAMESPACE_END
 

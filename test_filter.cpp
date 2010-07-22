@@ -3,7 +3,6 @@
 #include <iostream>
 
 using namespace std;
-using namespace Tracelib;
 
 int g_failureCount = 0;
 int g_verificationCount = 0;
@@ -17,6 +16,8 @@ static void verify( const char *what, T expected, T actual )
     }
     ++g_verificationCount;
 }
+
+TRACELIB_NAMESPACE_BEGIN
 
 static void testVerbosityFilter()
 {
@@ -138,10 +139,12 @@ static void testPathFilter()
     testWildcardPathFilter();
 }
 
+TRACELIB_NAMESPACE_END
+
 int main()
 {
-    testVerbosityFilter();
-    testPathFilter();
+    TRACELIB_NAMESPACE_IDENT(testVerbosityFilter)();
+    TRACELIB_NAMESPACE_IDENT(testPathFilter)();
     cout << g_verificationCount << " verifications; " << g_failureCount << " failures found." << endl;
     return g_failureCount;
 }

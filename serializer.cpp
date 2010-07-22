@@ -2,8 +2,9 @@
 #include <ctime>
 #include <sstream>
 
-using namespace Tracelib;
 using namespace std;
+
+TRACELIB_NAMESPACE_BEGIN
 
 PlaintextSerializer::PlaintextSerializer()
     : m_showTimestamp( true )
@@ -92,4 +93,6 @@ string CSVSerializer::escape( const string &s ) const
     }
     return v;
 }
+
+TRACELIB_NAMESPACE_END
 

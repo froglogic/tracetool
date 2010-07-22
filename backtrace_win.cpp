@@ -3,7 +3,6 @@
 #include "3rdparty/stackwalker/StackWalker.h"
 
 using namespace std;
-using namespace Tracelib;
 
 class MyStackWalker : public StackWalker
 {
@@ -11,7 +10,7 @@ public:
     MyStackWalker();
 
     void setFramesToSkip( size_t i ) { m_framesToSkip = i; }
-    const vector<StackFrame> &frames() const { return m_frames; }
+    const vector<TRACELIB_NAMESPACE_IDENT(StackFrame)> &frames() const { return m_frames; }
 
 protected:
     virtual void OnCallstackEntry( CallstackEntryType type, CallstackEntry &entry );
@@ -19,7 +18,7 @@ protected:
 private:
     size_t m_framesSeen;
     size_t m_framesToSkip;
-    vector<StackFrame> m_frames;
+    vector<TRACELIB_NAMESPACE_IDENT(StackFrame)> m_frames;
 };
 
 MyStackWalker::MyStackWalker()
@@ -44,7 +43,7 @@ void MyStackWalker::OnCallstackEntry( CallstackEntryType type, CallstackEntry &e
             return;
         }
 
-        StackFrame frame;
+        TRACELIB_NAMESPACE_IDENT(StackFrame) frame;
         frame.module = entry.moduleName; // XXX Consider encoding issues
         frame.function = entry.undFullName;
         frame.functionOffset = entry.offsetFromSmybol;
@@ -53,6 +52,8 @@ void MyStackWalker::OnCallstackEntry( CallstackEntryType type, CallstackEntry &e
         m_frames.push_back( frame );
     }
 }
+
+TRACELIB_NAMESPACE_BEGIN
 
 struct BacktraceGenerator::Private {
     CRITICAL_SECTION generationSection;
@@ -80,4 +81,6 @@ Backtrace BacktraceGenerator::generate( size_t skipInnermostFrames )
     ::LeaveCriticalSection( &d->generationSection );
     return bt;
 }
+
+TRACELIB_NAMESPACE_END
 

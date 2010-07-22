@@ -1,14 +1,15 @@
 #ifndef FILTER_H
 #define FILTER_H
 
+#include "tracelib_config.h"
+
 #include "tracelib.h"
 
 namespace pcrecpp {
     class RE;
 }
 
-namespace Tracelib
-{
+TRACELIB_NAMESPACE_BEGIN
 
 enum MatchingMode {
     StrictMatch,
@@ -87,7 +88,7 @@ private:
     std::vector<Filter *> m_filters;
 };
 
-}
+TRACELIB_NAMESPACE_END
 
 #endif // !defined(FILTER_H)
 

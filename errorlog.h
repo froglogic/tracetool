@@ -1,6 +1,8 @@
 #ifndef ERRORLOG_H
 #define ERRORLOG_H
 
+#include "tracelib_config.h"
+
 #include <string>
 #include <vector>
 
@@ -9,8 +11,7 @@
 #  define vsnprintf _vsnprintf
 #endif
 
-namespace Tracelib
-{
+TRACELIB_NAMESPACE_BEGIN
 
 class ErrorLog
 {
@@ -42,7 +43,7 @@ public:
     virtual void write( const std::string &msg );
 };
 
-}
+TRACELIB_NAMESPACE_END
 
 #endif // !defined(ERRORLOG_H)
 

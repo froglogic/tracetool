@@ -1,6 +1,8 @@
 #ifndef TRACELIB_H
 #define TRACELIB_H
 
+#include "tracelib_config.h"
+
 #include "backtrace.h"
 
 #include <ctime>
@@ -9,23 +11,22 @@
 #ifdef _MSC_VER
 #  define TRACELIB_BEACON(verbosity) \
 { \
-    static Tracelib::TracePoint tracePoint((verbosity), __FILE__, __LINE__, __FUNCSIG__); \
-    Tracelib::getActiveTrace()->visitTracePoint( &tracePoint ); \
+    static TRACELIB_NAMESPACE_IDENT(TracePoint) tracePoint((verbosity), __FILE__, __LINE__, __FUNCSIG__); \
+    TRACELIB_NAMESPACE_IDENT(getActiveTrace()->visitTracePoint( &tracePoint )); \
 }
 #  define TRACELIB_SNAPSHOT(verbosity, vars) \
 { \
-    static Tracelib::TracePoint tracePoint((verbosity), __FILE__, __LINE__, __FUNCSIG__); \
-    std::vector<Tracelib::AbstractVariableConverter *> *variableSnapshot = new std::vector<Tracelib::AbstractVariableConverter *>; \
+    static TRACELIB_NAMESPACE_IDENT(TracePoint) tracePoint((verbosity), __FILE__, __LINE__, __FUNCSIG__); \
+    std::vector<TRACELIB_NAMESPACE_IDENT(AbstractVariableConverter) *> *variableSnapshot = new std::vector<TRACELIB_NAMESPACE_IDENT(AbstractVariableConverter) *>; \
     (*variableSnapshot) << vars; \
-    Tracelib::getActiveTrace()->visitTracePoint( &tracePoint, variableSnapshot ); \
+    TRACELIB_NAMESPACE_IDENT(getActiveTrace()->visitTracePoint( &tracePoint, variableSnapshot )); \
 }
-#  define TRACELIB_VAR(v) Tracelib::makeConverter(#v, v)
+#  define TRACELIB_VAR(v) TRACELIB_NAMESPACE_IDENT(makeConverter(#v, v))
 #else
 #  error "Unsupported compiler!"
 #endif
 
-namespace Tracelib
-{
+TRACELIB_NAMESPACE_BEGIN
 
 template <typename T>
 std::string convertVariable( T o );
@@ -210,6 +211,6 @@ private:
 Trace *getActiveTrace();
 void setActiveTrace( Trace *trace );
 
-}
+TRACELIB_NAMESPACE_END
 
 #endif // !defined(TRACELIB_H)

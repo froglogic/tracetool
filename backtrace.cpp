@@ -3,9 +3,8 @@
 #include <assert.h>
 
 using namespace std;
-using namespace Tracelib;
 
-using namespace Tracelib;
+TRACELIB_NAMESPACE_BEGIN
 
 Backtrace::Backtrace( const vector<StackFrame> &frames )
     : m_frames( frames )
@@ -22,4 +21,6 @@ const StackFrame &Backtrace::frame( size_t depth ) const
     assert( depth < m_frames.size() );
     return m_frames[depth];
 }
+
+TRACELIB_NAMESPACE_END
 

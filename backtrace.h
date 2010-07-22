@@ -1,11 +1,12 @@
 #ifndef BACKTRACE_H
 #define BACKTRACE_H
 
+#include "tracelib_config.h"
+
 #include <string>
 #include <vector>
 
-namespace Tracelib
-{
+TRACELIB_NAMESPACE_BEGIN
 
 struct StackFrame
 {
@@ -49,6 +50,7 @@ private:
     Private *d;
 };
 
-}
+TRACELIB_NAMESPACE_END
+
 #endif // !defined(BACKTRACE_H)
 

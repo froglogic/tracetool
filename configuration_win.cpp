@@ -2,8 +2,9 @@
 
 #include <windows.h>
 
-using namespace Tracelib;
 using namespace std;
+
+TRACELIB_NAMESPACE_BEGIN
 
 /* XXX Consider encoding issues; this function should return UTF-8 encoded
  * strings.
@@ -42,4 +43,6 @@ string Configuration::currentProcessName()
     }
     return lastSeparator + 1;
 }
+
+TRACELIB_NAMESPACE_END
 

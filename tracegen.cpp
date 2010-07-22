@@ -6,14 +6,14 @@
 #include <time.h>
 #include <sstream>
 
-namespace Tracelib {
+TRACELIB_NAMESPACE_BEGIN
     template <>
     std::string convertVariable<time_t>( time_t value ) {
         std::ostringstream str;
         str << value;
         return str.str();
     }
-}
+TRACELIB_NAMESPACE_END
 
 static VOID CALLBACK timerProc( HWND, UINT, UINT_PTR, DWORD )
 {

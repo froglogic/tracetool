@@ -56,8 +56,7 @@ public:
 
 }
 
-namespace Tracelib
-{
+TRACELIB_NAMESPACE_BEGIN
     template <>
     std::string convertVariable<int>( int i ) {
         std::ostringstream str;
@@ -76,7 +75,7 @@ namespace Tracelib
         sprintf( buf, "0x%08x", p );
         return &buf[0];
     }
-}
+TRACELIB_NAMESPACE_END
 
 int main()
 {

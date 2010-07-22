@@ -1,10 +1,10 @@
 #ifndef SERIALIZER_H
 #define SERIALIZER_H
 
+#include "tracelib_config.h"
 #include "tracelib.h"
 
-namespace Tracelib
-{
+TRACELIB_NAMESPACE_BEGIN
 
 class PlaintextSerializer : public Serializer
 {
@@ -27,7 +27,7 @@ private:
     std::string escape( const std::string &s ) const;
 };
 
-}
+TRACELIB_NAMESPACE_END
 
 #endif // !defined(SERIALIZER_H)
 
