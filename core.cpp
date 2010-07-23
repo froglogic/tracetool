@@ -107,6 +107,7 @@ void Trace::reconsiderTracePoint( TracePoint *tracePoint ) const
 }
 
 void Trace::visitTracePoint( TracePoint *tracePoint,
+                             const char *msg,
                              vector<AbstractVariableConverter *> *variables )
 {
     if ( tracePoint->lastUsedConfiguration != m_configuration ) {
@@ -118,7 +119,7 @@ void Trace::visitTracePoint( TracePoint *tracePoint,
 
     }
 
-    TraceEntry entry( tracePoint );
+    TraceEntry entry( tracePoint, msg );
     if ( tracePoint->backtracesEnabled ) {
         entry.backtrace = new Backtrace( m_backtraceGenerator.generate( 1 /* omit this function in backtrace */ ) );
     }

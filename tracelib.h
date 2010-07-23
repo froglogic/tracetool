@@ -19,7 +19,7 @@
     static TRACELIB_NAMESPACE_IDENT(TracePoint) tracePoint(TRACELIB_NAMESPACE_IDENT(TracePoint)::WatchPoint, (verbosity), __FILE__, __LINE__, __FUNCSIG__); \
     std::vector<TRACELIB_NAMESPACE_IDENT(AbstractVariableConverter) *> *variableSnapshot = new std::vector<TRACELIB_NAMESPACE_IDENT(AbstractVariableConverter) *>; \
     (*variableSnapshot) << vars; \
-    TRACELIB_NAMESPACE_IDENT(getActiveTrace()->visitTracePoint( &tracePoint, variableSnapshot )); \
+    TRACELIB_NAMESPACE_IDENT(getActiveTrace()->visitTracePoint( &tracePoint, 0, variableSnapshot )); \
 }
 #  define TRACELIB_VISIT_TRACEPOINT(type, verbosity) \
 { \
@@ -89,11 +89,12 @@ private:
 struct TracePoint;
 
 struct TraceEntry {
-    TraceEntry( const TracePoint *tracePoint_ )
+    TraceEntry( const TracePoint *tracePoint_, const char *msg = 0)
         : timeStamp( std::time( NULL ) ),
         tracePoint( tracePoint_ ),
         backtrace( 0 ),
-        variables( 0 )
+        variables( 0 ),
+        message( msg )
     {
     }
 
@@ -112,6 +113,7 @@ struct TraceEntry {
     const TracePoint *tracePoint;
     std::vector<AbstractVariableConverter *> *variables;
     Backtrace *backtrace;
+    const char * const message;
 };
 
 std::vector<AbstractVariableConverter *> &operator<<( std::vector<AbstractVariableConverter *> &v,
@@ -210,6 +212,7 @@ public:
 
     void reconsiderTracePoint( TracePoint *tracePoint ) const;
     void visitTracePoint( TracePoint *tracePoint,
+                          const char *msg = 0,
                           std::vector<AbstractVariableConverter *> *variables = 0 );
 
     void setSerializer( Serializer *serializer );
