@@ -101,7 +101,7 @@ void Trace::reconsiderTracePoint( TracePoint *tracePoint ) const
 
 void Trace::visitTracePoint( TracePoint *tracePoint,
                              const char *msg,
-                             vector<AbstractVariable *> *variables )
+                             VariableSnapshot *variables )
 {
     if ( tracePoint->lastUsedConfiguration != m_configuration ) {
         reconsiderTracePoint( tracePoint );

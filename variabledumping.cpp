@@ -2,11 +2,11 @@
 
 TRACELIB_NAMESPACE_BEGIN
 
-std::vector<AbstractVariable *> &operator<<( std::vector<AbstractVariable *> &v,
-                                             AbstractVariable *c )
+
+VariableSnapshot &operator<<( VariableSnapshot &snapshot, AbstractVariable *v )
 {
-    v.push_back( c );
-    return v;
+    snapshot.push_back( v );
+    return snapshot;
 }
 
 TRACELIB_NAMESPACE_END

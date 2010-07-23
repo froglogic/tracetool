@@ -53,7 +53,7 @@ vector<char> PlaintextSerializer::serialize( const TraceEntry &entry )
 
     if ( entry.variables && !entry.variables->empty() ) {
         str << "; Variables: { ";
-        vector<AbstractVariable *>::const_iterator it, end = entry.variables->end();
+        VariableSnapshot::const_iterator it, end = entry.variables->end();
         for ( it = entry.variables->begin(); it != end; ++it ) {
             str << ( *it )->name() << "=" << ( *it )->toString() << " ";
         }
@@ -84,7 +84,7 @@ vector<char> CSVSerializer::serialize( const TraceEntry &entry )
     str << entry.tracePoint->verbosity << "," << escape( entry.tracePoint->sourceFile ) << "," << entry.tracePoint->lineno << "," << escape( entry.tracePoint->functionName );
 
     if ( entry.variables ) {
-        vector<AbstractVariable *>::const_iterator it, end = entry.variables->end();
+        VariableSnapshot::const_iterator it, end = entry.variables->end();
         for ( it = entry.variables->begin(); it != end; ++it ) {
             str << "," << escape( ( *it )->name() ) << "," << escape( ( *it )->toString() );
         }

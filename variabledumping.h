@@ -40,8 +40,9 @@ AbstractVariable *makeConverter(const char *name, const T &o) {
     return new Variable<T>( name, o );
 }
 
-std::vector<AbstractVariable *> &operator<<( std::vector<AbstractVariable *> &v,
-                                             AbstractVariable *c );
+typedef std::vector<AbstractVariable *> VariableSnapshot;
+
+VariableSnapshot &operator<<( VariableSnapshot &snapshot, AbstractVariable *v );
 
 TRACELIB_NAMESPACE_END
 
