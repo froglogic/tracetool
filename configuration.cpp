@@ -1,9 +1,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include "configuration.h"
 #include "errorlog.h"
-#include "filter.h"
-#include "output.h"
-#include "serializer.h"
+#include "tracelib.h"
 
 #include "3rdparty/tinyxml/tinyxml.h"
 

@@ -3,13 +3,31 @@
 
 #include "tracelib_config.h"
 
-#include "tracelib.h"
+#include <string>
+#include <vector>
 
 namespace pcrecpp {
     class RE;
 }
 
 TRACELIB_NAMESPACE_BEGIN
+
+struct TracePoint;
+
+class Filter
+{
+public:
+    virtual ~Filter();
+
+    virtual bool acceptsTracePoint( const TracePoint *tracePoint ) = 0;
+
+protected:
+    Filter();
+
+private:
+    Filter( const Filter &rhs );
+    void operator=( const Filter &other );
+};
 
 enum MatchingMode {
     StrictMatch,

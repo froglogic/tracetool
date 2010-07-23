@@ -4,6 +4,14 @@ using namespace std;
 
 TRACELIB_NAMESPACE_BEGIN
 
+Output::Output()
+{
+}
+
+Output::~Output()
+{
+}
+
 void StdoutOutput::write( const vector<char> &data )
 {
     fprintf(stdout, "%s\n", &data[0]);

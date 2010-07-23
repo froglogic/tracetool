@@ -4,6 +4,9 @@
 #include "tracelib_config.h"
 
 #include "backtrace.h"
+#include "filter.h"
+#include "output.h"
+#include "serializer.h"
 #include "variabledumping.h"
 
 #include <ctime>
@@ -44,22 +47,6 @@
 
 TRACELIB_NAMESPACE_BEGIN
 
-class Output
-{
-public:
-    virtual ~Output();
-
-    virtual bool canWrite() const { return true; }
-    virtual void write( const std::vector<char> &data ) = 0;
-
-protected:
-    Output();
-
-private:
-    Output( const Output &rhs );
-    void operator=( const Output &other );
-};
-
 struct TracePoint;
 
 struct TraceEntry {
@@ -88,36 +75,6 @@ struct TraceEntry {
     VariableSnapshot *variables;
     Backtrace *backtrace;
     const char * const message;
-};
-
-class Serializer
-{
-public:
-    virtual ~Serializer();
-
-    virtual std::vector<char> serialize( const TraceEntry &entry ) = 0;
-
-protected:
-    Serializer();
-
-private:
-    Serializer( const Serializer &rhs );
-    void operator=( const Serializer &other );
-};
-
-class Filter
-{
-public:
-    virtual ~Filter();
-
-    virtual bool acceptsTracePoint( const TracePoint *tracePoint ) = 0;
-
-protected:
-    Filter();
-
-private:
-    Filter( const Filter &rhs );
-    void operator=( const Filter &other );
 };
 
 class Configuration;

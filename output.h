@@ -2,9 +2,26 @@
 #define TRACELIB_OUTPUT_H
 
 #include "tracelib_config.h"
-#include "tracelib.h"
+
+#include <vector>
 
 TRACELIB_NAMESPACE_BEGIN
+
+class Output
+{
+public:
+    virtual ~Output();
+
+    virtual bool canWrite() const { return true; }
+    virtual void write( const std::vector<char> &data ) = 0;
+
+protected:
+    Output();
+
+private:
+    Output( const Output &rhs );
+    void operator=( const Output &other );
+};
 
 class StdoutOutput : public Output
 {

@@ -1,4 +1,6 @@
 #include "serializer.h"
+#include "tracelib.h"
+
 #include <ctime>
 #include <sstream>
 
@@ -7,6 +9,14 @@
 using namespace std;
 
 TRACELIB_NAMESPACE_BEGIN
+
+Serializer::Serializer()
+{
+}
+
+Serializer::~Serializer()
+{
+}
 
 PlaintextSerializer::PlaintextSerializer()
     : m_showTimestamp( true )

@@ -2,9 +2,28 @@
 #define TRACELIB_SERIALIZER_H
 
 #include "tracelib_config.h"
-#include "tracelib.h"
+
+#include <string>
+#include <vector>
 
 TRACELIB_NAMESPACE_BEGIN
+
+struct TraceEntry;
+
+class Serializer
+{
+public:
+    virtual ~Serializer();
+
+    virtual std::vector<char> serialize( const TraceEntry &entry ) = 0;
+
+protected:
+    Serializer();
+
+private:
+    Serializer( const Serializer &rhs );
+    void operator=( const Serializer &other );
+};
 
 class PlaintextSerializer : public Serializer
 {

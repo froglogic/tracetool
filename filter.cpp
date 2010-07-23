@@ -1,9 +1,8 @@
 #include "filter.h"
+#include "tracelib.h"
 
 #include "3rdparty/wildcmp/wildcmp.h"
 #include "3rdparty/pcre-8.10/pcrecpp.h"
-
-#include <string>
 
 #include <assert.h>
 
@@ -16,6 +15,14 @@ void deleteRange( Iterator begin, Iterator end )
 }
 
 TRACELIB_NAMESPACE_BEGIN
+
+Filter::Filter()
+{
+}
+
+Filter::~Filter()
+{
+}
 
 VerbosityFilter::VerbosityFilter()
     : m_maxVerbosity( 1 )

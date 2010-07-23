@@ -11,30 +11,6 @@ void deleteRange( Iterator begin, Iterator end )
 
 TRACELIB_NAMESPACE_BEGIN
 
-Output::Output()
-{
-}
-
-Output::~Output()
-{
-}
-
-Serializer::Serializer()
-{
-}
-
-Serializer::~Serializer()
-{
-}
-
-Filter::Filter()
-{
-}
-
-Filter::~Filter()
-{
-}
-
 TracePointSet::TracePointSet( Filter *filter, unsigned int actions )
     : m_filter( filter ),
     m_actions( actions )
