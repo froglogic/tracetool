@@ -97,6 +97,15 @@ void Trace::visitTracePoint( TracePoint *tracePoint,
         entry.variables = variables;
     }
 
+    addEntry( entry );
+}
+
+void Trace::addEntry( const TraceEntry &entry )
+{
+    if ( !m_serializer || !m_output || !m_output->canWrite() ) {
+        return;
+    }
+
     vector<char> data = m_serializer->serialize( entry );
     if ( !data.empty() ) {
         m_output->write( data );

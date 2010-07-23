@@ -143,6 +143,8 @@ public:
                           const char *msg = 0,
                           VariableSnapshot *variables = 0 );
 
+    void addEntry( const TraceEntry &e );
+
     void setSerializer( Serializer *serializer );
     void setOutput( Output *output );
     void addTracePointSet( TracePointSet *tracePointSet );
