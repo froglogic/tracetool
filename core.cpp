@@ -22,7 +22,7 @@ TracePointSet::~TracePointSet()
     delete m_filter;
 }
 
-unsigned int TracePointSet::considerTracePoint( const TracePoint *tracePoint )
+unsigned int TracePointSet::actionForTracePoint( const TracePoint *tracePoint )
 {
     if ( m_filter && m_filter->acceptsTracePoint( tracePoint ) ) {
         return m_actions;
@@ -50,7 +50,7 @@ Trace::~Trace()
     delete m_configuration;
 }
 
-void Trace::reconsiderTracePoint( TracePoint *tracePoint ) const
+void Trace::configureTracePoint( TracePoint *tracePoint ) const
 {
     tracePoint->lastUsedConfiguration = m_configuration;
 
@@ -63,7 +63,7 @@ void Trace::reconsiderTracePoint( TracePoint *tracePoint ) const
 
     vector<TracePointSet *>::const_iterator it, end = m_tracePointSets.end();
     for ( it = m_tracePointSets.begin(); it != end; ++it ) {
-        const int action = ( *it )->considerTracePoint( tracePoint );
+        const int action = ( *it )->actionForTracePoint( tracePoint );
         if ( action == TracePointSet::IgnoreTracePoint ) {
             continue;
         }
@@ -80,7 +80,7 @@ void Trace::visitTracePoint( TracePoint *tracePoint,
                              VariableSnapshot *variables )
 {
     if ( tracePoint->lastUsedConfiguration != m_configuration ) {
-        reconsiderTracePoint( tracePoint );
+        configureTracePoint( tracePoint );
     }
 
     if ( !tracePoint->active || !m_serializer || !m_output || !m_output->canWrite() ) {

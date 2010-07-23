@@ -122,7 +122,7 @@ public:
     TracePointSet( Filter *filter, unsigned int actions );
     ~TracePointSet();
 
-    unsigned int considerTracePoint( const TracePoint *tracePoint );
+    unsigned int actionForTracePoint( const TracePoint *tracePoint );
 
 private:
     TracePointSet( const TracePointSet &other );
@@ -138,7 +138,7 @@ public:
     Trace();
     ~Trace();
 
-    void reconsiderTracePoint( TracePoint *tracePoint ) const;
+    void configureTracePoint( TracePoint *tracePoint ) const;
     void visitTracePoint( TracePoint *tracePoint,
                           const char *msg = 0,
                           VariableSnapshot *variables = 0 );
