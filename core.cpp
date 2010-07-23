@@ -35,8 +35,8 @@ Filter::~Filter()
 {
 }
 
-vector<AbstractVariableConverter *> &operator<<( vector<AbstractVariableConverter *> &v,
-                                                 AbstractVariableConverter *c )
+vector<AbstractVariable *> &operator<<( vector<AbstractVariable *> &v,
+                                                 AbstractVariable *c )
 {
     v.push_back( c );
     return v;
@@ -108,7 +108,7 @@ void Trace::reconsiderTracePoint( TracePoint *tracePoint ) const
 
 void Trace::visitTracePoint( TracePoint *tracePoint,
                              const char *msg,
-                             vector<AbstractVariableConverter *> *variables )
+                             vector<AbstractVariable *> *variables )
 {
     if ( tracePoint->lastUsedConfiguration != m_configuration ) {
         reconsiderTracePoint( tracePoint );

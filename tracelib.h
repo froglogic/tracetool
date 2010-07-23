@@ -19,7 +19,7 @@
 #define TRACELIB_VARIABLE_SNAPSHOT_MSG(verbosity, vars, msg) \
 { \
     static TRACELIB_NAMESPACE_IDENT(TracePoint) tracePoint(TRACELIB_NAMESPACE_IDENT(TracePoint)::WatchPoint, (verbosity), TRACELIB_CURRENT_FILE_NAME, TRACELIB_CURRENT_LINE_NUMBER, TRACELIB_CURRENT_FUNCTION_NAME); \
-    std::vector<TRACELIB_NAMESPACE_IDENT(AbstractVariableConverter) *> *variableSnapshot = new std::vector<TRACELIB_NAMESPACE_IDENT(AbstractVariableConverter) *>; \
+    std::vector<TRACELIB_NAMESPACE_IDENT(AbstractVariable) *> *variableSnapshot = new std::vector<TRACELIB_NAMESPACE_IDENT(AbstractVariable) *>; \
     (*variableSnapshot) << vars; \
     TRACELIB_NAMESPACE_IDENT(getActiveTrace)()->visitTracePoint( &tracePoint, (msg), variableSnapshot ); \
 }
@@ -46,7 +46,7 @@ TRACELIB_NAMESPACE_BEGIN
 template <typename T>
 std::string convertVariable( T o );
 
-class AbstractVariableConverter
+class AbstractVariable
 {
 public:
     virtual const char *name() const = 0;
@@ -54,10 +54,10 @@ public:
 };
 
 template <typename T>
-class VariableConverter : public AbstractVariableConverter
+class Variable : public AbstractVariable
 {
 public:
-    VariableConverter( const char *name, const T &o ) : m_name( name ), m_o( o ) { }
+    Variable( const char *name, const T &o ) : m_name( name ), m_o( o ) { }
 
     const char *name() const { return m_name; }
 
@@ -71,8 +71,8 @@ private:
 };
 
 template <typename T>
-AbstractVariableConverter *makeConverter(const char *name, const T &o) {
-    return new VariableConverter<T>( name, o );
+AbstractVariable *makeConverter(const char *name, const T &o) {
+    return new Variable<T>( name, o );
 }
 
 class Output
@@ -105,7 +105,7 @@ struct TraceEntry {
 
     ~TraceEntry() {
         if ( variables ) {
-            std::vector<AbstractVariableConverter *>::const_iterator it, end = variables->end();
+            std::vector<AbstractVariable *>::const_iterator it, end = variables->end();
             for ( it = variables->begin(); it != end; ++it ) {
                 delete *it;
             }
@@ -116,13 +116,13 @@ struct TraceEntry {
 
     const time_t timeStamp;
     const TracePoint *tracePoint;
-    std::vector<AbstractVariableConverter *> *variables;
+    std::vector<AbstractVariable *> *variables;
     Backtrace *backtrace;
     const char * const message;
 };
 
-std::vector<AbstractVariableConverter *> &operator<<( std::vector<AbstractVariableConverter *> &v,
-                                                      AbstractVariableConverter *c );
+std::vector<AbstractVariable *> &operator<<( std::vector<AbstractVariable *> &v,
+                                                      AbstractVariable *c );
 
 class Serializer
 {
@@ -218,7 +218,7 @@ public:
     void reconsiderTracePoint( TracePoint *tracePoint ) const;
     void visitTracePoint( TracePoint *tracePoint,
                           const char *msg = 0,
-                          std::vector<AbstractVariableConverter *> *variables = 0 );
+                          std::vector<AbstractVariable *> *variables = 0 );
 
     void setSerializer( Serializer *serializer );
     void setOutput( Output *output );
