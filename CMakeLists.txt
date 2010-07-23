@@ -66,6 +66,7 @@ IF(WIN32)
             backtrace_win.cpp
             configuration_win.cpp
             networkoutput_win.cpp
+            crashhandler_win.cpp
             3rdparty/stackwalker/StackWalker.cpp)
 ENDIF(WIN32)
 

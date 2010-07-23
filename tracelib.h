@@ -160,6 +160,7 @@ private:
 
 Trace *getActiveTrace();
 void setActiveTrace( Trace *trace );
+void installCrashHandler();
 
 TRACELIB_NAMESPACE_END
 
