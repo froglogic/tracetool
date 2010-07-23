@@ -4,6 +4,7 @@
 #include "tracelib_config.h"
 
 #include "backtrace.h"
+#include "variabledumping.h"
 
 #include <ctime>
 #include <vector>
@@ -42,38 +43,6 @@
 #define TRACELIB_WATCH_MSG(msg, vars) TRACELIB_VARIABLE_SNAPSHOT_MSG(1, vars, msg)
 
 TRACELIB_NAMESPACE_BEGIN
-
-template <typename T>
-std::string convertVariable( T o );
-
-class AbstractVariable
-{
-public:
-    virtual const char *name() const = 0;
-    virtual std::string toString() const = 0;
-};
-
-template <typename T>
-class Variable : public AbstractVariable
-{
-public:
-    Variable( const char *name, const T &o ) : m_name( name ), m_o( o ) { }
-
-    const char *name() const { return m_name; }
-
-    virtual std::string toString() const {
-        return convertVariable( m_o );
-    }
-
-private:
-    const char *m_name;
-    const T &m_o;
-};
-
-template <typename T>
-AbstractVariable *makeConverter(const char *name, const T &o) {
-    return new Variable<T>( name, o );
-}
 
 class Output
 {
@@ -120,9 +89,6 @@ struct TraceEntry {
     Backtrace *backtrace;
     const char * const message;
 };
-
-std::vector<AbstractVariable *> &operator<<( std::vector<AbstractVariable *> &v,
-                                                      AbstractVariable *c );
 
 class Serializer
 {

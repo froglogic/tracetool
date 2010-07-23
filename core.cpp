@@ -35,13 +35,6 @@ Filter::~Filter()
 {
 }
 
-vector<AbstractVariable *> &operator<<( vector<AbstractVariable *> &v,
-                                                 AbstractVariable *c )
-{
-    v.push_back( c );
-    return v;
-}
-
 TracePointSet::TracePointSet( Filter *filter, unsigned int actions )
     : m_filter( filter ),
     m_actions( actions )

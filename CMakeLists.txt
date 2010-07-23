@@ -52,6 +52,7 @@ SET(TRACELIB_SOURCES
         configuration.cpp
         backtrace.cpp
         errorlog.cpp
+        variabledumping.cpp
         3rdparty/wildcmp/wildcmp.c
         ${TINYXML_SOURCES}
         ${PCRE_SOURCES2}
