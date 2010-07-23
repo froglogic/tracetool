@@ -47,36 +47,6 @@
 
 TRACELIB_NAMESPACE_BEGIN
 
-struct TracePoint;
-
-struct TraceEntry {
-    TraceEntry( const TracePoint *tracePoint_, const char *msg = 0)
-        : timeStamp( std::time( NULL ) ),
-        tracePoint( tracePoint_ ),
-        backtrace( 0 ),
-        variables( 0 ),
-        message( msg )
-    {
-    }
-
-    ~TraceEntry() {
-        if ( variables ) {
-            VariableSnapshot::const_iterator it, end = variables->end();
-            for ( it = variables->begin(); it != end; ++it ) {
-                delete *it;
-            }
-        }
-        delete variables;
-        delete backtrace;
-    }
-
-    const time_t timeStamp;
-    const TracePoint *tracePoint;
-    VariableSnapshot *variables;
-    Backtrace *backtrace;
-    const char * const message;
-};
-
 class Configuration;
 
 struct TracePoint {
@@ -130,6 +100,34 @@ private:
 
     Filter *m_filter;
     const unsigned int m_actions;
+};
+
+struct TraceEntry {
+    TraceEntry( const TracePoint *tracePoint_, const char *msg = 0)
+        : timeStamp( std::time( NULL ) ),
+        tracePoint( tracePoint_ ),
+        backtrace( 0 ),
+        variables( 0 ),
+        message( msg )
+    {
+    }
+
+    ~TraceEntry() {
+        if ( variables ) {
+            VariableSnapshot::const_iterator it, end = variables->end();
+            for ( it = variables->begin(); it != end; ++it ) {
+                delete *it;
+            }
+        }
+        delete variables;
+        delete backtrace;
+    }
+
+    const time_t timeStamp;
+    const TracePoint *tracePoint;
+    VariableSnapshot *variables;
+    Backtrace *backtrace;
+    const char * const message;
 };
 
 class Trace
