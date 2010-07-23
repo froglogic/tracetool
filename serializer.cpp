@@ -45,6 +45,10 @@ vector<char> PlaintextSerializer::serialize( const TraceEntry &entry )
             assert( !"Unreachable" );
     }
 
+    if ( entry.message ) {
+        str << " '" << entry.message << "'";
+    }
+
     str << " " << entry.tracePoint->sourceFile << ":" << entry.tracePoint->lineno << ": " << entry.tracePoint->functionName;
 
     if ( entry.variables && !entry.variables->empty() ) {
