@@ -11,12 +11,12 @@
 #ifdef _MSC_VER
 #  define TRACELIB_BEACON(verbosity) \
 { \
-    static TRACELIB_NAMESPACE_IDENT(TracePoint) tracePoint((verbosity), __FILE__, __LINE__, __FUNCSIG__); \
+    static TRACELIB_NAMESPACE_IDENT(TracePoint) tracePoint(TRACELIB_NAMESPACE_IDENT(TracePoint)::LogPoint, (verbosity), __FILE__, __LINE__, __FUNCSIG__); \
     TRACELIB_NAMESPACE_IDENT(getActiveTrace()->visitTracePoint( &tracePoint )); \
 }
 #  define TRACELIB_SNAPSHOT(verbosity, vars) \
 { \
-    static TRACELIB_NAMESPACE_IDENT(TracePoint) tracePoint((verbosity), __FILE__, __LINE__, __FUNCSIG__); \
+    static TRACELIB_NAMESPACE_IDENT(TracePoint) tracePoint(TRACELIB_NAMESPACE_IDENT(TracePoint)::LogPoint, (verbosity), __FILE__, __LINE__, __FUNCSIG__); \
     std::vector<TRACELIB_NAMESPACE_IDENT(AbstractVariableConverter) *> *variableSnapshot = new std::vector<TRACELIB_NAMESPACE_IDENT(AbstractVariableConverter) *>; \
     (*variableSnapshot) << vars; \
     TRACELIB_NAMESPACE_IDENT(getActiveTrace()->visitTracePoint( &tracePoint, variableSnapshot )); \
@@ -140,8 +140,16 @@ private:
 class Configuration;
 
 struct TracePoint {
-    TracePoint( unsigned short verbosity_, const char *sourceFile_, unsigned int lineno_, const char *functionName_ )
-        : verbosity( verbosity_ ),
+    enum Type {
+        ErrorPoint,
+        DebugPoint,
+        LogPoint,
+        WatchPoint
+    };
+
+    TracePoint( Type type_, unsigned short verbosity_, const char *sourceFile_, unsigned int lineno_, const char *functionName_ )
+        : type( type_ ),
+        verbosity( verbosity_ ),
         sourceFile( sourceFile_ ),
         lineno( lineno_ ),
         functionName( functionName_ ),
@@ -152,6 +160,7 @@ struct TracePoint {
     {
     }
 
+    const Type type;
     const unsigned short verbosity;
     const char * const sourceFile;
     const unsigned int lineno;
