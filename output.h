@@ -1,5 +1,5 @@
-#ifndef OUTPUT_H
-#define OUTPUT_H
+#ifndef TRACELIB_OUTPUT_H
+#define TRACELIB_OUTPUT_H
 
 #include "tracelib_config.h"
 #include "tracelib.h"
@@ -31,5 +31,5 @@ TRACELIB_NAMESPACE_END
 #  include "networkoutput_win.h"
 #endif
 
-#endif // !defined(OUTPUT_H)
+#endif // !defined(TRACELIB_OUTPUT_H)
 

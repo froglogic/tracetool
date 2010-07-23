@@ -1,5 +1,5 @@
-#ifndef SERIALIZER_H
-#define SERIALIZER_H
+#ifndef TRACELIB_SERIALIZER_H
+#define TRACELIB_SERIALIZER_H
 
 #include "tracelib_config.h"
 #include "tracelib.h"
@@ -29,5 +29,5 @@ private:
 
 TRACELIB_NAMESPACE_END
 
-#endif // !defined(SERIALIZER_H)
+#endif // !defined(TRACELIB_SERIALIZER_H)
 

@@ -1,5 +1,5 @@
-#ifndef ERRORLOG_H
-#define ERRORLOG_H
+#ifndef TRACELIB_ERRORLOG_H
+#define TRACELIB_ERRORLOG_H
 
 #include "tracelib_config.h"
 
@@ -45,6 +45,6 @@ public:
 
 TRACELIB_NAMESPACE_END
 
-#endif // !defined(ERRORLOG_H)
+#endif // !defined(TRACELIB_ERRORLOG_H)
 
 

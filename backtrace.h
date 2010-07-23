@@ -1,5 +1,5 @@
-#ifndef BACKTRACE_H
-#define BACKTRACE_H
+#ifndef TRACELIB_BACKTRACE_H
+#define TRACELIB_BACKTRACE_H
 
 #include "tracelib_config.h"
 
@@ -52,5 +52,5 @@ private:
 
 TRACELIB_NAMESPACE_END
 
-#endif // !defined(BACKTRACE_H)
+#endif // !defined(TRACELIB_BACKTRACE_H)
 

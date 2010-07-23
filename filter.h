@@ -1,5 +1,5 @@
-#ifndef FILTER_H
-#define FILTER_H
+#ifndef TRACELIB_FILTER_H
+#define TRACELIB_FILTER_H
 
 #include "tracelib_config.h"
 
@@ -90,5 +90,5 @@ private:
 
 TRACELIB_NAMESPACE_END
 
-#endif // !defined(FILTER_H)
+#endif // !defined(TRACELIB_FILTER_H)
 

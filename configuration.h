@@ -1,5 +1,5 @@
-#ifndef CONFIGURATION_H
-#define CONFIGURATION_H
+#ifndef TRACELIB_CONFIGURATION_H
+#define TRACELIB_CONFIGURATION_H
 
 #include "tracelib_config.h"
 
@@ -51,4 +51,4 @@ private:
 
 TRACELIB_NAMESPACE_END
 
-#endif // !defined(CONFIGURATION_H)
+#endif // !defined(TRACELIB_CONFIGURATION_H)
