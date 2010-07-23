@@ -14,27 +14,35 @@
     static TRACELIB_NAMESPACE_IDENT(TracePoint) tracePoint(TRACELIB_NAMESPACE_IDENT(TracePoint)::LogPoint, (verbosity), __FILE__, __LINE__, __FUNCSIG__); \
     TRACELIB_NAMESPACE_IDENT(getActiveTrace()->visitTracePoint( &tracePoint )); \
 }
-#  define TRACELIB_SNAPSHOT(verbosity, vars) \
+
+#  define TRACELIB_SNAPSHOT_MSG(verbosity, vars, msg) \
 { \
     static TRACELIB_NAMESPACE_IDENT(TracePoint) tracePoint(TRACELIB_NAMESPACE_IDENT(TracePoint)::WatchPoint, (verbosity), __FILE__, __LINE__, __FUNCSIG__); \
     std::vector<TRACELIB_NAMESPACE_IDENT(AbstractVariableConverter) *> *variableSnapshot = new std::vector<TRACELIB_NAMESPACE_IDENT(AbstractVariableConverter) *>; \
     (*variableSnapshot) << vars; \
-    TRACELIB_NAMESPACE_IDENT(getActiveTrace()->visitTracePoint( &tracePoint, 0, variableSnapshot )); \
+    TRACELIB_NAMESPACE_IDENT(getActiveTrace()->visitTracePoint( &tracePoint, (msg), variableSnapshot )); \
 }
-#  define TRACELIB_VISIT_TRACEPOINT(type, verbosity) \
+#  define TRACELIB_SNAPSHOT(verbosity, vars) TRACELIB_SNAPSHOT_MSG(verbosity, vars, 0)
+
+#  define TRACELIB_VISIT_TRACEPOINT_MSG(type, verbosity, msg) \
 { \
     static TRACELIB_NAMESPACE_IDENT(TracePoint) tracePoint(type, (verbosity), __FILE__, __LINE__, __FUNCSIG__); \
-    TRACELIB_NAMESPACE_IDENT(getActiveTrace()->visitTracePoint( &tracePoint )); \
+    TRACELIB_NAMESPACE_IDENT(getActiveTrace()->visitTracePoint( &tracePoint, msg )); \
 }
+
 #  define TRACELIB_VAR(v) TRACELIB_NAMESPACE_IDENT(makeConverter(#v, v))
 #else
 #  error "Unsupported compiler!"
 #endif
 
-#define TRACELIB_DEBUG TRACELIB_VISIT_TRACEPOINT(TRACELIB_NAMESPACE_IDENT(TracePoint)::DebugPoint, 1)
-#define TRACELIB_ERROR TRACELIB_VISIT_TRACEPOINT(TRACELIB_NAMESPACE_IDENT(TracePoint)::ErrorPoint, 1)
-#define TRACELIB_TRACE TRACELIB_VISIT_TRACEPOINT(TRACELIB_NAMESPACE_IDENT(TracePoint)::LogPoint, 1)
-#define TRACELIB_WATCH(vars) TRACELIB_SNAPSHOT(1, vars)
+#define TRACELIB_DEBUG TRACELIB_DEBUG_MSG(0)
+#define TRACELIB_ERROR TRACELIB_ERROR_MSG(0)
+#define TRACELIB_TRACE TRACELIB_TRACE_MSG(0)
+#define TRACELIB_WATCH(vars) TRACELIB_WATCH_MSG(0, msg)
+#define TRACELIB_DEBUG_MSG(msg) TRACELIB_VISIT_TRACEPOINT_MSG(TRACELIB_NAMESPACE_IDENT(TracePoint)::DebugPoint, 1, msg)
+#define TRACELIB_ERROR_MSG(msg) TRACELIB_VISIT_TRACEPOINT_MSG(TRACELIB_NAMESPACE_IDENT(TracePoint)::ErrorPoint, 1, msg)
+#define TRACELIB_TRACE_MSG(msg) TRACELIB_VISIT_TRACEPOINT_MSG(TRACELIB_NAMESPACE_IDENT(TracePoint)::LogPoint, 1, msg)
+#define TRACELIB_WATCH_MSG(msg, vars) TRACELIB_SNAPSHOT_MSG(1, vars, msg)
 
 TRACELIB_NAMESPACE_BEGIN
 

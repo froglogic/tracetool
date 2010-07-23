@@ -17,8 +17,9 @@ public:
     }
 
     std::string toString() const {
-        TRACELIB_TRACE
-        TRACELIB_WATCH(TRACELIB_VAR(this)
+        TRACELIB_TRACE_MSG("Person -> String conversion")
+        TRACELIB_WATCH_MSG("Person member variables",
+                       TRACELIB_VAR(this)
                        << TRACELIB_VAR(m_firstName)
                        << TRACELIB_VAR(m_lastName))
         return m_lastName + ", " + m_firstName;
@@ -35,7 +36,7 @@ namespace ACME
 std::string f( int v1, int v2 )
 {
     TRACELIB_DEBUG
-    TRACELIB_WATCH(TRACELIB_VAR(v1) << TRACELIB_VAR(v2))
+    TRACELIB_WATCH_MSG("f() arguments", TRACELIB_VAR(v1) << TRACELIB_VAR(v2))
     Person p( "John", "Doe" );
     return p.toString();
 }
