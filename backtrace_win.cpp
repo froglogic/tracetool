@@ -4,6 +4,8 @@
 
 using namespace std;
 
+namespace {
+
 class MyStackWalker : public StackWalker
 {
 public:
@@ -51,6 +53,8 @@ void MyStackWalker::OnCallstackEntry( CallstackEntryType type, CallstackEntry &e
         frame.lineNumber = entry.lineNumber;
         m_frames.push_back( frame );
     }
+}
+
 }
 
 TRACELIB_NAMESPACE_BEGIN
