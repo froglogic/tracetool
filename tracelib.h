@@ -9,24 +9,28 @@
 #include <vector>
 
 #ifdef _MSC_VER
-#  define TRACELIB_VARIABLE_SNAPSHOT_MSG(verbosity, vars, msg) \
+#  define TRACELIB_CURRENT_FILE_NAME __FILE__
+#  define TRACELIB_CURRENT_LINE_NUMBER __LINE__
+#  define TRACELIB_CURRENT_FUNCTION_NAME __FUNCSIG__
+#else
+#  error "Unsupported compiler!"
+#endif
+
+#define TRACELIB_VARIABLE_SNAPSHOT_MSG(verbosity, vars, msg) \
 { \
-    static TRACELIB_NAMESPACE_IDENT(TracePoint) tracePoint(TRACELIB_NAMESPACE_IDENT(TracePoint)::WatchPoint, (verbosity), __FILE__, __LINE__, __FUNCSIG__); \
+    static TRACELIB_NAMESPACE_IDENT(TracePoint) tracePoint(TRACELIB_NAMESPACE_IDENT(TracePoint)::WatchPoint, (verbosity), TRACELIB_CURRENT_FILE_NAME, TRACELIB_CURRENT_LINE_NUMBER, TRACELIB_CURRENT_FUNCTION_NAME); \
     std::vector<TRACELIB_NAMESPACE_IDENT(AbstractVariableConverter) *> *variableSnapshot = new std::vector<TRACELIB_NAMESPACE_IDENT(AbstractVariableConverter) *>; \
     (*variableSnapshot) << vars; \
     TRACELIB_NAMESPACE_IDENT(getActiveTrace)()->visitTracePoint( &tracePoint, (msg), variableSnapshot ); \
 }
 
-#  define TRACELIB_VISIT_TRACEPOINT_MSG(type, verbosity, msg) \
+#define TRACELIB_VISIT_TRACEPOINT_MSG(type, verbosity, msg) \
 { \
-    static TRACELIB_NAMESPACE_IDENT(TracePoint) tracePoint(type, (verbosity), __FILE__, __LINE__, __FUNCSIG__); \
+    static TRACELIB_NAMESPACE_IDENT(TracePoint) tracePoint(type, (verbosity), TRACELIB_CURRENT_FILE_NAME, TRACELIB_CURRENT_LINE_NUMBER, TRACELIB_CURRENT_FUNCTION_NAME); \
     TRACELIB_NAMESPACE_IDENT(getActiveTrace)()->visitTracePoint( &tracePoint, msg ); \
 }
 
-#  define TRACELIB_VAR(v) TRACELIB_NAMESPACE_IDENT(makeConverter)(#v, v)
-#else
-#  error "Unsupported compiler!"
-#endif
+#define TRACELIB_VAR(v) TRACELIB_NAMESPACE_IDENT(makeConverter)(#v, v)
 
 #define TRACELIB_DEBUG TRACELIB_DEBUG_MSG(0)
 #define TRACELIB_ERROR TRACELIB_ERROR_MSG(0)
