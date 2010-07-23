@@ -25,12 +25,12 @@ class Backtrace
     friend class BacktraceGenerator;
 
 public:
+    explicit Backtrace( const std::vector<StackFrame> &frames );
+
     size_t depth() const;
     const StackFrame &frame( size_t depth ) const;
 
 private:
-    explicit Backtrace( const std::vector<StackFrame> &frames );
-
     std::vector<StackFrame> m_frames;
 };
 
