@@ -1,6 +1,8 @@
 #include "tracelib.h"
 #include "configuration.h"
 
+#include <ctime>
+
 using namespace std;
 
 template <class Iterator>
@@ -28,6 +30,25 @@ unsigned int TracePointSet::actionForTracePoint( const TracePoint *tracePoint )
         return m_actions;
     }
     return IgnoreTracePoint;
+}
+
+TraceEntry::TraceEntry( const TracePoint *tracePoint_, const char *msg )
+    : threadId( getCurrentThreadId() ),
+    timeStamp( std::time( NULL ) ),
+    tracePoint( tracePoint_ ),
+    backtrace( 0 ),
+    variables( 0 ),
+    message( msg )
+{
+}
+
+TraceEntry::~TraceEntry()
+{
+    if ( variables ) {
+        deleteRange( variables->begin(), variables->end() );
+    }
+    delete variables;
+    delete backtrace;
 }
 
 Trace::Trace()

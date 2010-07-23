@@ -5,11 +5,11 @@
 
 #include "backtrace.h"
 #include "filter.h"
+#include "getcurrentthreadid.h"
 #include "output.h"
 #include "serializer.h"
 #include "variabledumping.h"
 
-#include <ctime>
 #include <vector>
 
 #ifdef _MSC_VER
@@ -102,27 +102,12 @@ private:
     const unsigned int m_actions;
 };
 
-struct TraceEntry {
-    TraceEntry( const TracePoint *tracePoint_, const char *msg = 0)
-        : timeStamp( std::time( NULL ) ),
-        tracePoint( tracePoint_ ),
-        backtrace( 0 ),
-        variables( 0 ),
-        message( msg )
-    {
-    }
+struct TraceEntry
+{
+    TraceEntry( const TracePoint *tracePoint_, const char *msg = 0 );
+    ~TraceEntry();
 
-    ~TraceEntry() {
-        if ( variables ) {
-            VariableSnapshot::const_iterator it, end = variables->end();
-            for ( it = variables->begin(); it != end; ++it ) {
-                delete *it;
-            }
-        }
-        delete variables;
-        delete backtrace;
-    }
-
+    const ThreadId threadId;
     const time_t timeStamp;
     const TracePoint *tracePoint;
     VariableSnapshot *variables;

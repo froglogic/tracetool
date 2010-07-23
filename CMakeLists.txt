@@ -67,6 +67,7 @@ IF(WIN32)
             configuration_win.cpp
             networkoutput_win.cpp
             crashhandler_win.cpp
+            getcurrentthreadid_win.cpp
             3rdparty/stackwalker/StackWalker.cpp)
 ENDIF(WIN32)
 
