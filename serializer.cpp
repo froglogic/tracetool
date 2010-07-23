@@ -2,6 +2,8 @@
 #include <ctime>
 #include <sstream>
 
+#include <assert.h>
+
 using namespace std;
 
 TRACELIB_NAMESPACE_BEGIN
@@ -26,7 +28,24 @@ vector<char> PlaintextSerializer::serialize( const TraceEntry &entry )
         str << timestamp;
     }
 
-    str << entry.tracePoint->sourceFile << ":" << entry.tracePoint->lineno << ": " << entry.tracePoint->functionName;
+    switch ( entry.tracePoint->type ) {
+        case TracePoint::ErrorPoint:
+            str << "[ERROR]";
+            break;
+        case TracePoint::DebugPoint:
+            str << "[DEBUG]";
+            break;
+        case TracePoint::LogPoint:
+            str << "[LOG]";
+            break;
+        case TracePoint::WatchPoint:
+            str << "[WATCH]";
+            break;
+        default:
+            assert( !"Unreachable" );
+    }
+
+    str << " " << entry.tracePoint->sourceFile << ":" << entry.tracePoint->lineno << ": " << entry.tracePoint->functionName;
 
     if ( entry.variables && !entry.variables->empty() ) {
         str << "; Variables: { ";
