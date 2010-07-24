@@ -38,6 +38,8 @@ vector<char> PlaintextSerializer::serialize( const TraceEntry &entry )
         str << timestamp;
     }
 
+    str << "Process " << entry.processId << " (Thread " << entry.threadId << "): ";
+
     switch ( entry.tracePoint->type ) {
         case TracePoint::ErrorPoint:
             str << "[ERROR]";
