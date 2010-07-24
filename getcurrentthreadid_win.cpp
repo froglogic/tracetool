@@ -4,6 +4,11 @@
 
 TRACELIB_NAMESPACE_BEGIN
 
+ProcessId getCurrentProcessId()
+{
+    return (ProcessId)::GetCurrentProcessId();
+}
+
 ThreadId getCurrentThreadId()
 {
     return (ThreadId)::GetCurrentThreadId();

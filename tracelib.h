@@ -107,6 +107,7 @@ struct TraceEntry
     TraceEntry( const TracePoint *tracePoint_, const char *msg = 0 );
     ~TraceEntry();
 
+    const ProcessId processId;
     const ThreadId threadId;
     const time_t timeStamp;
     const TracePoint *tracePoint;
