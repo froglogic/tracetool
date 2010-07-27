@@ -129,5 +129,86 @@ string CSVSerializer::escape( const string &s ) const
     return v;
 }
 
+XMLSerializer::XMLSerializer()
+    : m_beautifiedOutput( true )
+{
+}
+
+void XMLSerializer::setBeautifiedOutput( bool beautifiedOutput )
+{
+    m_beautifiedOutput = beautifiedOutput;
+}
+
+vector<char> XMLSerializer::serialize( const TraceEntry &entry )
+{
+    ostringstream str;
+    str << "<traceentry pid=\"" << entry.processId << "\" tid=\"" << entry.threadId << "\" time=\"" << entry.timeStamp << "\">";
+
+    std::string indent;
+    if ( m_beautifiedOutput ) {
+        indent = "\n  ";
+    }
+
+    str << indent << "<type>" << entry.tracePoint->type << "</type>";
+    str << indent << "<verbosity>" << entry.tracePoint->verbosity << "</verbosity>";
+    str << indent << "<location lineno=\"" << entry.tracePoint->lineno << "\"><![CDATA[" << entry.tracePoint->sourceFile << "]]></location>";
+    str << indent << "<function><![CDATA[" << entry.tracePoint->functionName << "]]></function>'";
+    if ( entry.variables ) {
+        str << indent << "<variables>";
+        if ( m_beautifiedOutput ) {
+            indent = "\n    ";
+        }
+        VariableSnapshot::const_iterator it, end = entry.variables->end();
+        for ( it = entry.variables->begin(); it != end; ++it ) {
+            str << indent << "<variable name=\"" << ( *it )->name() << "\"><![CDATA[" << ( *it )->toString() << "]]></variable>";
+        }
+        if ( m_beautifiedOutput ) {
+            indent = "\n  ";
+        }
+        str << indent << "</variables>";
+    }
+
+    if ( entry.backtrace ) {
+        str << indent << "<backtrace>";
+        for ( size_t i = 0; i  < entry.backtrace->depth(); ++i ) {
+            const StackFrame &frame = entry.backtrace->frame( i );
+
+            if ( m_beautifiedOutput ) {
+                indent = "\n    ";
+            }
+            str << indent << "<frame>";
+
+            if ( m_beautifiedOutput ) {
+                indent = "\n      ";
+            }
+            str << indent << "<module><![CDATA[" << frame.module << "]]></module>";
+            str << indent << "<function offset=\"" << frame.functionOffset << "\"><![CDATA[" << frame.function << "]]></function>";
+            str << indent << "<location lineno=\"" << frame.lineNumber << "\"><![CDATA[" << frame.sourceFile << "]]></location>";
+
+            if ( m_beautifiedOutput ) {
+                indent = "\n    ";
+            }
+            str << indent << "</frame>";
+        }
+        if ( m_beautifiedOutput ) {
+            indent = "\n  ";
+        }
+        str << indent << "</backtrace>";
+    }
+    if ( m_beautifiedOutput ) {
+        indent = "\n";
+    }
+    str << indent << "</traceentry>";
+    if ( m_beautifiedOutput ) {
+        str << "\n";
+    }
+
+    const string result = str.str();
+
+    vector<char> buf( result.begin(), result.end() );
+    buf.push_back( '\0' );
+    return buf;
+}
+
 TRACELIB_NAMESPACE_END
 

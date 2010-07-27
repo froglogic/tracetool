@@ -46,6 +46,19 @@ private:
     std::string escape( const std::string &s ) const;
 };
 
+class XMLSerializer : public Serializer
+{
+public:
+    XMLSerializer();
+
+    void setBeautifiedOutput( bool beautifiedOutput );
+
+    virtual std::vector<char> serialize( const TraceEntry &entry );
+
+private:
+    bool m_beautifiedOutput;
+};
+
 TRACELIB_NAMESPACE_END
 
 #endif // !defined(TRACELIB_SERIALIZER_H)

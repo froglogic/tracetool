@@ -288,6 +288,32 @@ Serializer *Configuration::createSerializerFromElement( TiXmlElement *e )
         return new CSVSerializer;
     }
 
+    if ( serializerType == "xml" ) {
+        bool beautifiedOutput = false;
+        for ( TiXmlElement *optionElement = e->FirstChildElement(); optionElement; optionElement = optionElement->NextSiblingElement() ) {
+            if ( optionElement->ValueStr() != "option" ) {
+                m_errorLog->write( "Tracelib Configuration: while reading %s: Unexpected element '%s' in <serializer> element of type xml found.", m_fileName.c_str(), optionElement->Value() );
+                return 0;
+            }
+
+            string optionName;
+            if ( optionElement->QueryStringAttribute( "name", &optionName ) != TIXML_SUCCESS ) {
+                m_errorLog->write( "Tracelib Configuration: while reading %s: Failed to read name property of <serializer> element; ignoring this.", m_fileName.c_str() );
+                continue;
+            }
+
+            if ( optionName == "beautifiedOutput" ) {
+                beautifiedOutput = strcmp( optionElement->GetText(), "yes" ) == 0;
+            } else {
+                m_errorLog->write( "Tracelib Configuration: while reading %s: Unknown <option> element with name '%s' found in xml serializer; ignoring this.", m_fileName.c_str(), optionName.c_str() );
+                continue;
+            }
+        }
+        XMLSerializer *serializer = new XMLSerializer;
+        serializer->setBeautifiedOutput( beautifiedOutput );
+        return serializer;
+    }
+
     m_errorLog->write( "Tracelib Configuration: while reading %s: <serializer> element with unknown type '%s' found.", m_fileName.c_str(), serializerType.c_str() );
     return 0;
 }
