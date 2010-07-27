@@ -60,22 +60,22 @@ public:
 
 TRACELIB_NAMESPACE_BEGIN
     template <>
-    std::string convertVariable<int>( int i ) {
+    VariableValue convertVariable<int>( int i ) {
         std::ostringstream str;
         str << i;
-        return str.str();
+        return VariableValue::stringValue( str.str() );
     }
 
     template <>
-    std::string convertVariable<std::string>( std::string s ) {
-        return s;
+    VariableValue convertVariable<std::string>( std::string s ) {
+        return VariableValue::stringValue( s );
     }
 
     template <>
-    std::string convertVariable<const Person *>( const Person *p ) {
+    VariableValue convertVariable<const Person *>( const Person *p ) {
         char buf[ 32 ];
         sprintf( buf, "0x%08x", p );
-        return &buf[0];
+        return VariableValue::stringValue( &buf[0] );
     }
 TRACELIB_NAMESPACE_END
 

@@ -8,14 +8,32 @@
 
 TRACELIB_NAMESPACE_BEGIN
 
+class VariableValue {
+public:
+    enum Type {
+        String
+    };
+
+    static VariableValue stringValue( const std::string &s );
+
+    Type type() const;
+    const std::string &asString() const;
+
+private:
+    explicit VariableValue( const std::string &s );
+
+    const Type m_type;
+    const std::string m_string;
+};
+
 template <typename T>
-std::string convertVariable( T o );
+VariableValue convertVariable( T o );
 
 class AbstractVariable
 {
 public:
     virtual const char *name() const = 0;
-    virtual std::string toString() const = 0;
+    virtual VariableValue value() const = 0;
 };
 
 template <typename T>
@@ -26,7 +44,7 @@ public:
 
     const char *name() const { return m_name; }
 
-    virtual std::string toString() const {
+    virtual VariableValue value() const {
         return convertVariable( m_o );
     }
 
@@ -36,7 +54,7 @@ private:
 };
 
 template <typename T>
-AbstractVariable *makeConverter(const char *name, const T &o) {
+AbstractVariable *makeConverter( const char *name, const T &o ) {
     return new Variable<T>( name, o );
 }
 

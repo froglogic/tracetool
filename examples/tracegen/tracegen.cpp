@@ -8,10 +8,10 @@
 
 TRACELIB_NAMESPACE_BEGIN
     template <>
-    std::string convertVariable<time_t>( time_t value ) {
+    VariableValue convertVariable<time_t>( time_t value ) {
         std::ostringstream str;
         str << value;
-        return str.str();
+        return VariableValue::stringValue( str.str() );
     }
 TRACELIB_NAMESPACE_END
 

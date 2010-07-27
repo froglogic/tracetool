@@ -9,6 +9,7 @@
 TRACELIB_NAMESPACE_BEGIN
 
 struct TraceEntry;
+class VariableValue;
 
 class Serializer
 {
@@ -34,6 +35,8 @@ public:
     virtual std::vector<char> serialize( const TraceEntry &entry );
 
 private:
+    std::string convertVariableValue( const VariableValue &v ) const;
+
     bool m_showTimestamp;
 };
 
@@ -44,6 +47,7 @@ public:
 
 private:
     std::string escape( const std::string &s ) const;
+    std::string convertVariableValue( const VariableValue &v ) const;
 };
 
 class XMLSerializer : public Serializer
@@ -56,6 +60,8 @@ public:
     virtual std::vector<char> serialize( const TraceEntry &entry );
 
 private:
+    std::string convertVariable( const char *name, const VariableValue &v ) const;
+
     bool m_beautifiedOutput;
 };
 

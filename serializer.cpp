@@ -67,7 +67,7 @@ vector<char> PlaintextSerializer::serialize( const TraceEntry &entry )
         str << "; Variables: { ";
         VariableSnapshot::const_iterator it, end = entry.variables->end();
         for ( it = entry.variables->begin(); it != end; ++it ) {
-            str << ( *it )->name() << "=" << ( *it )->toString() << " ";
+            str << ( *it )->name() << "=" << convertVariableValue( ( *it )->value() ) << " ";
         }
         str << "}";
     }
@@ -90,6 +90,16 @@ vector<char> PlaintextSerializer::serialize( const TraceEntry &entry )
     return buf;
 }
 
+string PlaintextSerializer::convertVariableValue( const VariableValue &v ) const
+{
+    switch ( v.type() ) {
+        case VariableValue::String:
+            return v.asString() + " <String>";
+    }
+    assert( !"Unreachable" );
+    return string();
+}
+
 vector<char> CSVSerializer::serialize( const TraceEntry &entry )
 {
     ostringstream str;
@@ -98,7 +108,7 @@ vector<char> CSVSerializer::serialize( const TraceEntry &entry )
     if ( entry.variables ) {
         VariableSnapshot::const_iterator it, end = entry.variables->end();
         for ( it = entry.variables->begin(); it != end; ++it ) {
-            str << "," << escape( ( *it )->name() ) << "," << escape( ( *it )->toString() );
+            str << "," << escape( ( *it )->name() ) << "," << convertVariableValue( ( *it )->value() );
         }
     }
 
@@ -107,6 +117,16 @@ vector<char> CSVSerializer::serialize( const TraceEntry &entry )
     vector<char> buf( result.begin(), result.end() );
     buf.push_back( '\0' );
     return buf;
+}
+
+string CSVSerializer::convertVariableValue( const VariableValue &v ) const
+{
+    switch ( v.type() ) {
+        case VariableValue::String:
+            return escape( v.asString() ) + ",String";
+    }
+    assert( !"Unreachable" );
+    return string();
 }
 
 string CSVSerializer::escape( const string &s ) const
@@ -160,7 +180,7 @@ vector<char> XMLSerializer::serialize( const TraceEntry &entry )
         }
         VariableSnapshot::const_iterator it, end = entry.variables->end();
         for ( it = entry.variables->begin(); it != end; ++it ) {
-            str << indent << "<variable name=\"" << ( *it )->name() << "\"><![CDATA[" << ( *it )->toString() << "]]></variable>";
+            str << indent << convertVariable( ( *it )->name(), ( *it )->value() );
         }
         if ( m_beautifiedOutput ) {
             indent = "\n  ";
@@ -208,6 +228,20 @@ vector<char> XMLSerializer::serialize( const TraceEntry &entry )
     vector<char> buf( result.begin(), result.end() );
     buf.push_back( '\0' );
     return buf;
+}
+
+string XMLSerializer::convertVariable( const char *n, const VariableValue &v ) const
+{
+    string s = "<variable name=\"";
+    s += n;
+    s += "\" ";
+    switch ( v.type() ) {
+        case VariableValue::String:
+            s += "type=\"string\"><![CDATA[" + v.asString() + "]]></variable>";
+            return s;
+    }
+    assert( !"Unreachable" );
+    return string();
 }
 
 TRACELIB_NAMESPACE_END
