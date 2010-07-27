@@ -7,6 +7,7 @@ ENDIF(MSVC)
 
 ADD_DEFINITIONS(-DHAVE_CONFIG_H -DPCRE_STATIC -DTIXML_USE_STL)
 ADD_SUBDIRECTORY(3rdparty/pcre-8.10 EXCLUDE_FROM_ALL)
+ADD_SUBDIRECTORY(tests)
 
 CONFIGURE_FILE(3rdparty/pcre-8.10/pcre_chartables.c.dist
         ${PROJECT_BINARY_DIR}/pcre_chartables.c
@@ -95,10 +96,4 @@ ENDIF(MSVC)
 IF(WIN32)
     TARGET_LINK_LIBRARIES(traceview ws2_32.lib)
 ENDIF(WIN32)
-
-ADD_EXECUTABLE(test_filter test_filter.cpp)
-TARGET_LINK_LIBRARIES(test_filter tracelib)
-
-ENABLE_TESTING()
-ADD_TEST(NAME test_filter COMMAND test_filter)
 
