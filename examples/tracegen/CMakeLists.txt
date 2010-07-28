@@ -11,7 +11,7 @@ IF(WIN32)
     TARGET_LINK_LIBRARIES(traceview ws2_32.lib)
 ENDIF(WIN32)
 
-CONFIGURE_FILE(${PROJECT_SOURCE_DIR}/examples/tracegen/tracelib.xml
-        ./tracelib.xml
+CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/tracelib.xml
+        ${CMAKE_CURRENT_BINARY_DIR}/tracelib.xml
         COPYONLY)
 

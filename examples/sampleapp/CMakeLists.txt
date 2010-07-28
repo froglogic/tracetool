@@ -6,7 +6,7 @@ IF(MSVC)
     SET_TARGET_PROPERTIES(sampleapp PROPERTIES COMPILE_FLAGS "/FC")
 ENDIF(MSVC)
 
-CONFIGURE_FILE(${PROJECT_SOURCE_DIR}/examples/sampleapp/tracelib.xml
-        ./tracelib.xml
+CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/tracelib.xml
+        ${CMAKE_CURRENT_BINARY_DIR}/tracelib.xml
         COPYONLY)
 
