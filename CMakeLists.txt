@@ -79,3 +79,6 @@ IF(WIN32)
     TARGET_LINK_LIBRARIES(tracelib ws2_32.lib)
 ENDIF(WIN32)
 
+INCLUDE(${CMAKE_ROOT}/Modules/FindDoxygen.cmake)
+ADD_CUSTOM_TARGET(api-docs ${DOXYGEN} Doxyfile COMMENT "Generating API documentation")
+
