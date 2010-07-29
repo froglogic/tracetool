@@ -1,4 +1,5 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+PROJECT(tracelib)
 
 IF(MSVC)
     ADD_DEFINITIONS(-D_CRT_SECURE_NO_DEPRECATE)
@@ -44,6 +45,7 @@ IF(WIN32)
     TARGET_LINK_LIBRARIES(tracelib ws2_32.lib)
 ENDIF(WIN32)
 
+CONFIGURE_FILE(Doxyfile.in ${PROJECT_BINARY_DIR}/Doxyfile)
 INCLUDE(${CMAKE_ROOT}/Modules/FindDoxygen.cmake)
-ADD_CUSTOM_TARGET(api-docs ${DOXYGEN} Doxyfile COMMENT "Generating API documentation")
+ADD_CUSTOM_TARGET(api-docs ${DOXYGEN} \"${PROJECT_BINARY_DIR}/Doxyfile\" COMMENT "Generating API documentation")
 
