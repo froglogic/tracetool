@@ -1,5 +1,0 @@
-# This is a generated file.
-  SET(ENV{srcdir} S:/tracelib/3rdparty/pcre-8.10)
-  SET(ENV{pcregrep} S:/tracelib/3rdparty/pcre-8.10/pcregrep.exe)
-  SET(ENV{pcretest} S:/tracelib/3rdparty/pcre-8.10/pcretest.exe)
-  
