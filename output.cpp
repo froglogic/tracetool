@@ -1,5 +1,7 @@
 #include "output.h"
 
+#include <stdio.h>
+
 using namespace std;
 
 TRACELIB_NAMESPACE_BEGIN

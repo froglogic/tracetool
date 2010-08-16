@@ -3,6 +3,8 @@
 
 #include "tracelib_config.h"
 
+#include <cstdarg>
+#include <cstdio>
 #include <string>
 #include <vector>
 

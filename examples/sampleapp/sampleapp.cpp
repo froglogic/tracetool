@@ -3,6 +3,7 @@
 #include "output.h"
 #include "filter.h"
 
+#include <cstdio>
 #include <string>
 #include <sstream>
 
