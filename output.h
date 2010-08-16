@@ -46,6 +46,8 @@ TRACELIB_NAMESPACE_END
 
 #ifdef _WIN32
 #  include "networkoutput_win.h"
+#else
+#  include "networkoutput_unix.h"
 #endif
 
 #endif // !defined(TRACELIB_OUTPUT_H)

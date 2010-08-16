@@ -5,8 +5,8 @@
 
 TRACELIB_NAMESPACE_BEGIN
 
-typedef unsigned int ProcessId;
-typedef unsigned int ThreadId;
+typedef unsigned long ProcessId;
+typedef unsigned long ThreadId;
 
 ProcessId getCurrentProcessId();
 ThreadId getCurrentThreadId();

@@ -35,6 +35,13 @@ IF(WIN32)
             crashhandler_win.cpp
             getcurrentthreadid_win.cpp
             3rdparty/stackwalker/StackWalker.cpp)
+ELSE(WIN32)
+    SET(TRACELIB_SOURCES
+            ${TRACELIB_SOURCES}
+            backtrace_unix.cpp
+            configuration_unix.cpp
+            networkoutput_unix.cpp
+            getcurrentthreadid_unix.cpp)
 ENDIF(WIN32)
 
 IF(WIN32)
