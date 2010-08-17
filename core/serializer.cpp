@@ -215,6 +215,11 @@ vector<char> XMLSerializer::serialize( const TraceEntry &entry )
         }
         str << indent << "</backtrace>";
     }
+
+    if ( entry.message ) {
+        str << indent << "<message><![CDATA[" << entry.message << "]]></message>";
+    }
+
     if ( m_beautifiedOutput ) {
         indent = "\n";
     }
