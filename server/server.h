@@ -5,6 +5,7 @@
 
 class QTcpServer;
 class QTcpSocket;
+class QSqlDatabase;
 
 struct TraceEntry
 {
@@ -25,7 +26,7 @@ class Server : public QObject
 {
     Q_OBJECT
 public:
-    Server( QObject *parent, unsigned short port );
+    Server( QObject *parent, QSqlDatabase *db, unsigned short port );
 
 private slots:
     void handleNewConnection();
@@ -33,6 +34,7 @@ private slots:
 
 private:
     QTcpServer *m_tcpServer;
+    QSqlDatabase *m_db;
 };
 
 #endif // !defined(TRACE_SERVER_H)

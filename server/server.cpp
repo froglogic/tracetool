@@ -2,6 +2,7 @@
 
 #include <QDomDocument>
 #include <QDebug>
+#include <QSqlDatabase>
 #include <QTcpServer>
 #include <QTcpSocket>
 
@@ -24,9 +25,10 @@ static TraceEntry deserializeTraceEntry( const QDomElement &e )
     return entry;
 }
 
-Server::Server( QObject *parent, unsigned short port )
+Server::Server( QObject *parent, QSqlDatabase *db, unsigned short port )
     : QObject( parent ),
-    m_tcpServer( 0 )
+    m_tcpServer( 0 ),
+    m_db( db )
 {
     m_tcpServer = new QTcpServer( this );
     connect( m_tcpServer, SIGNAL( newConnection() ),
