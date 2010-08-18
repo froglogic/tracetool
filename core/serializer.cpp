@@ -1,5 +1,6 @@
 #include "serializer.h"
 #include "tracelib.h"
+#include "configuration.h"
 
 #include <ctime>
 #include <sstream>
@@ -166,6 +167,9 @@ vector<char> XMLSerializer::serialize( const TraceEntry &entry )
     if ( m_beautifiedOutput ) {
         indent = "\n  ";
     }
+
+    static string myProcessName = Configuration::currentProcessName();
+    str << indent << "<processname><![CDATA[" << myProcessName << "]]></processname>";
 
     str << indent << "<type>" << entry.tracePoint->type << "</type>";
     str << indent << "<verbosity>" << entry.tracePoint->verbosity << "</verbosity>";
