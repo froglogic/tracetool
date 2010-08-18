@@ -18,15 +18,18 @@ static const char *initialDatabaseStatements[] = {
                               " type INTEGER,"
                               " path_id INTEGER,"
                               " line INTEGER,"
-                              " function_id INTEGER);",
+                              " function_id INTEGER,"
+                              " UNIQUE(verbosity, type, path_id, line, function));",
     "CREATE TABLE function_name (id INTEGER PRIMARY KEY AUTOINCREMENT,"
-                                " name TEXT);",
+                                " name TEXT,",
+                                " UNIQUE(name));",
     "CREATE TABLE path_name (id INTEGER PRIMARY KEY AUTOINCREMENT,"
-                            " name TEXT);",
+                            " name TEXT,"
+                            " UNIQUE(name));",
     "CREATE TABLE variable_value (tracepoint_id INTEGER,"
                                  " name TEXT,"
                                  " value TEXT,"
-                                 " UNIQUE (tracepoint_id, name));",
+                                 " UNIQUE(tracepoint_id, name));",
     "CREATE TABLE backtrace (tracepoint_id INTEGER,"
                             " line INTEGER,"
                             " text TEXT);"
