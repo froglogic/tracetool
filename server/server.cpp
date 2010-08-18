@@ -80,10 +80,10 @@ Server::Server( QObject *parent, const QString &databaseFileName, unsigned short
                                 " process_id INTEGER,"
                                 " tid INTEGER,"
                                 " UNIQUE(process_id, tid));",
-        "CREATE TABLE variable_value (tracepoint_id INTEGER,"
-                                     " name TEXT,"
-                                     " value TEXT,"
-                                     " UNIQUE(tracepoint_id, name));",
+        "CREATE TABLE variable (trace_entry_id INTEGER,"
+                               " name TEXT,"
+                               " value TEXT,"
+                               " type INTEGER);",
         "CREATE TABLE backtrace (tracepoint_id INTEGER,"
                                 " line INTEGER,"
                                 " text TEXT);"
@@ -216,6 +216,23 @@ void Server::storeEntry( const TraceEntry &e )
     }
 
     query.exec( QString( "INSERT INTO trace_entry VALUES(NULL, %1, %2, %3, '%4');" ).arg( tracedThreadId ).arg( e.timestamp ).arg( tracepointId ).arg( e.message ) );
+    query.exec( "SELECT last_insert_rowid() FROM trace_entry LIMIT 1;" );
+    query.next();
+    const unsigned int traceentryId = query.value( 0 ).toUInt();
+
+    QList<Variable>::ConstIterator it, end = e.variables.end();
+    for ( it = e.variables.begin(); it != end; ++it ) {
+        int typeCode = 0;
+        switch ( it->type ) {
+            case Variable::StringType:
+                typeCode = 0;
+                break;
+            default:
+                assert( !"Unreachable" );
+        }
+
+        query.exec( QString( "INSERT INTO variable VALUES(%1, '%2', '%3', %4);" ).arg( traceentryId ).arg( it->name ).arg( it->value ).arg( typeCode ) );
+    }
 
     query.exec( "COMMIT;" );
 }
