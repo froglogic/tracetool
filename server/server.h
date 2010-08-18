@@ -28,6 +28,9 @@ class Server : public QObject
 public:
     Server( QObject *parent, QSqlDatabase *db, unsigned short port );
 
+signals:
+    void traceEntryReceived( const TraceEntry &e );
+
 private slots:
     void handleNewConnection();
     void handleIncomingData();

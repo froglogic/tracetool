@@ -53,6 +53,7 @@ void Server::handleIncomingData()
         return;
     }
 
-    TraceEntry e = deserializeTraceEntry( doc.documentElement() );
+    const TraceEntry e = deserializeTraceEntry( doc.documentElement() );
+    emit traceEntryReceived( e );
 }
 
