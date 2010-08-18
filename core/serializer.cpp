@@ -1,5 +1,6 @@
 #include "serializer.h"
 #include "tracelib.h"
+#include "configuration.h"
 
 #include <ctime>
 #include <sstream>
@@ -85,9 +86,7 @@ vector<char> PlaintextSerializer::serialize( const TraceEntry &entry )
 
     const string result = str.str();
 
-    vector<char> buf( result.begin(), result.end() );
-    buf.push_back( '\0' );
-    return buf;
+    return vector<char>( result.begin(), result.end() );
 }
 
 string PlaintextSerializer::convertVariableValue( const VariableValue &v ) const
@@ -169,10 +168,13 @@ vector<char> XMLSerializer::serialize( const TraceEntry &entry )
         indent = "\n  ";
     }
 
+    static string myProcessName = Configuration::currentProcessName();
+    str << indent << "<processname><![CDATA[" << myProcessName << "]]></processname>";
+
     str << indent << "<type>" << entry.tracePoint->type << "</type>";
     str << indent << "<verbosity>" << entry.tracePoint->verbosity << "</verbosity>";
     str << indent << "<location lineno=\"" << entry.tracePoint->lineno << "\"><![CDATA[" << entry.tracePoint->sourceFile << "]]></location>";
-    str << indent << "<function><![CDATA[" << entry.tracePoint->functionName << "]]></function>'";
+    str << indent << "<function><![CDATA[" << entry.tracePoint->functionName << "]]></function>";
     if ( entry.variables ) {
         str << indent << "<variables>";
         if ( m_beautifiedOutput ) {
@@ -229,10 +231,7 @@ vector<char> XMLSerializer::serialize( const TraceEntry &entry )
     }
 
     const string result = str.str();
-
-    vector<char> buf( result.begin(), result.end() );
-    buf.push_back( '\0' );
-    return buf;
+    return vector<char>( result.begin(), result.end() );
 }
 
 string XMLSerializer::convertVariable( const char *n, const VariableValue &v ) const
