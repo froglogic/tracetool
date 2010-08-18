@@ -10,6 +10,7 @@ class QTcpSocket;
 struct TraceEntry
 {
     unsigned int pid;
+    QString processName;
     unsigned int tid;
     time_t timestamp;
     unsigned int verbosity;

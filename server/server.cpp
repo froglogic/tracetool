@@ -18,6 +18,7 @@ static TraceEntry deserializeTraceEntry( const QDomElement &e )
     entry.pid = e.attribute( "pid" ).toUInt();
     entry.tid = e.attribute( "tid" ).toUInt();
     entry.timestamp = e.attribute( "time" ).toULong();
+    entry.processName = e.namedItem( "processname" ).toElement().text();
     entry.verbosity = e.namedItem( "verbosity" ).toElement().text().toUInt();
     entry.type = e.namedItem( "type" ).toElement().text().toUInt();
     entry.path = e.namedItem( "location" ).toElement().text();
@@ -33,8 +34,7 @@ Server::Server( QObject *parent, const QString &databaseFileName, unsigned short
 {
     static const char *schemaStatements[] = {
         "CREATE TABLE trace_entry (id INTEGER PRIMARY KEY AUTOINCREMENT,"
-                                  " pid INTEGER,"
-                                  " tid INTEGER,"
+                                  " traced_thread_id INTEGER,"
                                   " timestamp DATETIME,"
                                   " tracepoint_id INTEGER,"
                                   " message TEXT);",
@@ -51,6 +51,14 @@ Server::Server( QObject *parent, const QString &databaseFileName, unsigned short
         "CREATE TABLE path_name (id INTEGER PRIMARY KEY AUTOINCREMENT,"
                                 " name TEXT,"
                                 " UNIQUE(name));",
+        "CREATE TABLE process (id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                                " name TEXT,"
+                                " pid INTEGER,"
+                                " UNIQUE(name, pid));",
+        "CREATE TABLE traced_thread (id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                                " process_id INTEGER,"
+                                " tid INTEGER,"
+                                " UNIQUE(process_id, tid));",
         "CREATE TABLE variable_value (tracepoint_id INTEGER,"
                                      " name TEXT,"
                                      " value TEXT,"
@@ -144,6 +152,34 @@ void Server::storeEntry( const TraceEntry &e )
         }
     }
 
+    unsigned int processId;
+    {
+        query.exec( QString( "SELECT id FROM process WHERE name='%1' AND pid=%2;" ).arg( e.processName ).arg( e.pid ) );
+        if ( !query.next() ) {
+            query.exec( QString( "INSERT INTO process VALUES(NULL, '%1', %2);" ).arg( e.processName ).arg( e.pid ) );
+            query.exec( "SELECT last_insert_rowid() FROM process LIMIT 1;" );
+            query.next();
+        }
+        processId = query.value( 0 ).toUInt( &ok );
+        if ( !ok ) {
+            qWarning() << "Database corrupt? Got non-numeric integer field";
+        }
+    }
+
+    unsigned int tracedThreadId;
+    {
+        query.exec( QString( "SELECT id FROM traced_thread WHERE process_id=%1 AND tid=%2;" ).arg( processId ).arg( e.tid ) );
+        if ( !query.next() ) {
+            query.exec( QString( "INSERT INTO traced_thread VALUES(NULL, %1, %2);" ).arg( processId ).arg( e.tid ) );
+            query.exec( "SELECT last_insert_rowid() FROM traced_thread LIMIT 1;" );
+            query.next();
+        }
+        tracedThreadId = query.value( 0 ).toUInt( &ok );
+        if ( !ok ) {
+            qWarning() << "Database corrupt? Got non-numeric integer field";
+        }
+    }
+
     unsigned int tracepointId;
     {
         query.exec( QString( "SELECT id FROM trace_point WHERE verbosity=%1 AND type=%2 AND path_id=%3 AND line=%4 AND function_id=%5;" ).arg( e.verbosity ).arg( e.type ).arg( pathId ).arg( e.lineno ).arg( functionId ) );
@@ -158,7 +194,7 @@ void Server::storeEntry( const TraceEntry &e )
         }
     }
 
-    query.exec( QString( "INSERT INTO trace_entry VALUES(NULL, %1, %2, %3, %4, '%5');" ).arg( e.pid ).arg( e.tid ).arg( e.timestamp ).arg( tracepointId ).arg( e.message ) );
+    query.exec( QString( "INSERT INTO trace_entry VALUES(NULL, %1, %2, %3, '%4');" ).arg( tracedThreadId ).arg( e.timestamp ).arg( tracepointId ).arg( e.message ) );
 
     query.exec( "COMMIT;" );
 }
