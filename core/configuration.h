@@ -21,6 +21,7 @@ class Configuration
 {
 public:
     static std::string defaultFileName();
+    static std::string currentProcessName();
 
     static Configuration *fromFile( const std::string &fileName );
     static Configuration *fromMarkup( const std::string &markup );
@@ -30,8 +31,6 @@ public:
     Output *configuredOutput();
 
 private:
-    static std::string currentProcessName();
-
     Configuration();
     bool loadFromFile( const std::string &fileName );
     bool loadFromMarkup( const std::string &markup );
