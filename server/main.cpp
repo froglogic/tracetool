@@ -19,9 +19,9 @@ static const char *initialDatabaseStatements[] = {
                               " path_id INTEGER,"
                               " line INTEGER,"
                               " function_id INTEGER,"
-                              " UNIQUE(verbosity, type, path_id, line, function));",
+                              " UNIQUE(verbosity, type, path_id, line, function_id));",
     "CREATE TABLE function_name (id INTEGER PRIMARY KEY AUTOINCREMENT,"
-                                " name TEXT,",
+                                " name TEXT,"
                                 " UNIQUE(name));",
     "CREATE TABLE path_name (id INTEGER PRIMARY KEY AUTOINCREMENT,"
                             " name TEXT,"
