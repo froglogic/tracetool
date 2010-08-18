@@ -16,7 +16,7 @@ static TraceEntry deserializeTraceEntry( const QDomElement &e )
     entry.pid = e.attribute( "pid" ).toUInt();
     entry.tid = e.attribute( "tid" ).toUInt();
     entry.timestamp = e.attribute( "time" ).toULong();
-    entry.type = e.namedItem( "verbosity" ).toElement().text().toUInt();
+    entry.verbosity = e.namedItem( "verbosity" ).toElement().text().toUInt();
     entry.type = e.namedItem( "type" ).toElement().text().toUInt();
     entry.path = e.namedItem( "location" ).toElement().text();
     entry.lineno = e.namedItem( "location" ).toElement().attribute( "lineno" ).toULong();
