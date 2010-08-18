@@ -205,7 +205,7 @@ void Server::storeEntry( const TraceEntry &e )
     {
         query.exec( QString( "SELECT id FROM trace_point WHERE verbosity=%1 AND type=%2 AND path_id=%3 AND line=%4 AND function_id=%5;" ).arg( e.verbosity ).arg( e.type ).arg( pathId ).arg( e.lineno ).arg( functionId ) );
         if ( !query.next() ) {
-            query.exec( QString( "INSERT OR IGNORE INTO trace_point VALUES(NULL, %1, %2, %3, %4, %5);" ).arg( e.verbosity ).arg( e.type ).arg( pathId ).arg( e.lineno ).arg( functionId ) );
+            query.exec( QString( "INSERT INTO trace_point VALUES(NULL, %1, %2, %3, %4, %5);" ).arg( e.verbosity ).arg( e.type ).arg( pathId ).arg( e.lineno ).arg( functionId ) );
             query.exec( "SELECT last_insert_rowid() FROM trace_point LIMIT 1;" );
             query.next();
         }
