@@ -8,6 +8,15 @@
 class QTcpServer;
 class QTcpSocket;
 
+struct StackFrame
+{
+    QString module;
+    QString function;
+    size_t functionOffset;
+    QString sourceFile;
+    size_t lineNumber;
+};
+
 struct Variable
 {
     QString name;
@@ -27,8 +36,8 @@ struct TraceEntry
     unsigned long lineno;
     QString function;
     QString message;
-    QString backtrace;
     QList<Variable> variables;
+    QList<StackFrame> backtrace;
 };
 
 class Server : public QObject

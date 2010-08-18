@@ -46,6 +46,30 @@ static TraceEntry deserializeTraceEntry( const QDomElement &e )
             n = n.nextSibling();
         }
     }
+
+    QDomElement backtraceElement = e.namedItem( "backtrace" ).toElement();
+    if ( !backtraceElement.isNull() ) {
+        QDomNode n = backtraceElement.firstChild();
+        while ( !n.isNull() ) {
+            QDomElement frameElement = n.toElement();
+
+            StackFrame frame;
+            frame.module = frameElement.namedItem( "module" ).toElement().text();
+
+            QDomElement functionElement = frameElement.namedItem( "function" ).toElement();
+            frame.function = functionElement.text();
+            frame.functionOffset = functionElement.attribute( "offset" ).toUInt();
+
+            QDomElement locationElement = frameElement.namedItem( "location" ).toElement();
+            frame.sourceFile = locationElement.text();
+            frame.lineNumber = locationElement.attribute( "lineno" ).toUInt();
+
+            entry.backtrace.append( frame );
+
+            n = n.nextSibling();
+        }
+    }
+
     return entry;
 }
 
@@ -84,9 +108,13 @@ Server::Server( QObject *parent, const QString &databaseFileName, unsigned short
                                " name TEXT,"
                                " value TEXT,"
                                " type INTEGER);",
-        "CREATE TABLE backtrace (tracepoint_id INTEGER,"
-                                " line INTEGER,"
-                                " text TEXT);"
+        "CREATE TABLE stackframe (trace_entry_id INTEGER,"
+                                " depth INTEGER,"
+                                " module_name TEXT,"
+                                " function_name TEXT,"
+                                " offset INTEGER,"
+                                " file_name TEXT,"
+                                " line INTEGER);"
     };
 
     const bool initializeDatabase = !QFile::exists( databaseFileName );
@@ -220,18 +248,28 @@ void Server::storeEntry( const TraceEntry &e )
     query.next();
     const unsigned int traceentryId = query.value( 0 ).toUInt();
 
-    QList<Variable>::ConstIterator it, end = e.variables.end();
-    for ( it = e.variables.begin(); it != end; ++it ) {
-        int typeCode = 0;
-        switch ( it->type ) {
-            case Variable::StringType:
-                typeCode = 0;
-                break;
-            default:
-                assert( !"Unreachable" );
-        }
+    {
+        QList<Variable>::ConstIterator it, end = e.variables.end();
+        for ( it = e.variables.begin(); it != end; ++it ) {
+            int typeCode = 0;
+            switch ( it->type ) {
+                case Variable::StringType:
+                    typeCode = 0;
+                    break;
+                default:
+                    assert( !"Unreachable" );
+            }
 
-        query.exec( QString( "INSERT INTO variable VALUES(%1, '%2', '%3', %4);" ).arg( traceentryId ).arg( it->name ).arg( it->value ).arg( typeCode ) );
+            query.exec( QString( "INSERT INTO variable VALUES(%1, '%2', '%3', %4);" ).arg( traceentryId ).arg( it->name ).arg( it->value ).arg( typeCode ) );
+        }
+    }
+
+    {
+        unsigned int depthCount = 0;
+        QList<StackFrame>::ConstIterator it, end = e.backtrace.end();
+        for ( it = e.backtrace.begin(); it != end; ++it, ++depthCount ) {
+            query.exec( QString( "INSERT INTO stackframe VALUES(%1, %2, '%3', '%4', %5, '%6', %7);" ).arg( traceentryId ).arg( depthCount ).arg( it->module ).arg( it->function ).arg( it->functionOffset ).arg( it->sourceFile ).arg( it->lineNumber ) );
+        }
     }
 
     query.exec( "COMMIT;" );
