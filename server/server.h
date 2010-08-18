@@ -1,11 +1,19 @@
 #ifndef TRACE_SERVER_H
 #define TRACE_SERVER_H
 
+#include <QList>
 #include <QObject>
 #include <QSqlDatabase>
 
 class QTcpServer;
 class QTcpSocket;
+
+struct Variable
+{
+    QString name;
+    enum { StringType } type;
+    QString value;
+};
 
 struct TraceEntry
 {
@@ -20,7 +28,7 @@ struct TraceEntry
     QString function;
     QString message;
     QString backtrace;
-    QString variables;
+    QList<Variable> variables;
 };
 
 class Server : public QObject

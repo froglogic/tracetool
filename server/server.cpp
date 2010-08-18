@@ -25,6 +25,27 @@ static TraceEntry deserializeTraceEntry( const QDomElement &e )
     entry.lineno = e.namedItem( "location" ).toElement().attribute( "lineno" ).toULong();
     entry.function = e.namedItem( "function" ).toElement().text();
     entry.message = e.namedItem( "message" ).toElement().text();
+
+    QDomElement variablesElement = e.namedItem( "variables" ).toElement();
+    if ( !variablesElement.isNull() ) {
+        QDomNode n = variablesElement.firstChild();
+        while ( !n.isNull() ) {
+            QDomElement varElement = n.toElement();
+
+            Variable var;
+            var.name = varElement.attribute( "name" );
+
+            const QString typeStr = varElement.attribute( "type" );
+            if ( typeStr == "string" ) {
+                var.type = Variable::StringType;
+            }
+            var.value = varElement.text();
+
+            entry.variables.append( var );
+
+            n = n.nextSibling();
+        }
+    }
     return entry;
 }
 
