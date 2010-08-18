@@ -52,9 +52,11 @@ int main( int argc, char **argv )
 
     if ( initializeDatabase ) {
         QSqlQuery query;
+        query.exec( "BEGIN TRANSACTION;" );
         for ( int i = 0; i < sizeof(initialDatabaseStatements) / sizeof(initialDatabaseStatements[0]); ++i ) {
             query.exec( initialDatabaseStatements[i] );
         }
+        query.exec( "COMMIT;" );
     }
 
     Server server( &app, &db, 12382 );
