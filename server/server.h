@@ -2,10 +2,10 @@
 #define TRACE_SERVER_H
 
 #include <QObject>
+#include <QSqlDatabase>
 
 class QTcpServer;
 class QTcpSocket;
-class QSqlDatabase;
 
 struct TraceEntry
 {
@@ -26,7 +26,7 @@ class Server : public QObject
 {
     Q_OBJECT
 public:
-    Server( QObject *parent, QSqlDatabase *db, unsigned short port );
+    Server( QObject *parent, const QString &databaseFileName, unsigned short port );
 
 signals:
     void traceEntryReceived( const TraceEntry &e );
@@ -36,8 +36,10 @@ private slots:
     void handleIncomingData();
 
 private:
+    void storeEntry( const TraceEntry &e );
+
     QTcpServer *m_tcpServer;
-    QSqlDatabase *m_db;
+    QSqlDatabase m_db;
 };
 
 #endif // !defined(TRACE_SERVER_H)

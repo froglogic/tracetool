@@ -1,7 +1,7 @@
 #include "server.h"
 
 #include <QDomDocument>
-#include <QDebug>
+#include <QFile>
 #include <QSqlDatabase>
 #include <QSqlQuery>
 #include <QTcpServer>
@@ -27,9 +27,90 @@ static TraceEntry deserializeTraceEntry( const QDomElement &e )
     return entry;
 }
 
-static void storeEntryInDatabase( const TraceEntry &e, QSqlDatabase *db )
+Server::Server( QObject *parent, const QString &databaseFileName, unsigned short port )
+    : QObject( parent ),
+    m_tcpServer( 0 )
 {
-    QSqlQuery query;
+    static const char *schemaStatements[] = {
+        "CREATE TABLE trace_entry (id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                                  " pid INTEGER,"
+                                  " tid INTEGER,"
+                                  " timestamp DATETIME,"
+                                  " tracepoint_id INTEGER,"
+                                  " message TEXT);",
+        "CREATE TABLE trace_point (id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                                  " verbosity INTEGER,"
+                                  " type INTEGER,"
+                                  " path_id INTEGER,"
+                                  " line INTEGER,"
+                                  " function_id INTEGER,"
+                                  " UNIQUE(verbosity, type, path_id, line, function_id));",
+        "CREATE TABLE function_name (id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                                    " name TEXT,"
+                                    " UNIQUE(name));",
+        "CREATE TABLE path_name (id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                                " name TEXT,"
+                                " UNIQUE(name));",
+        "CREATE TABLE variable_value (tracepoint_id INTEGER,"
+                                     " name TEXT,"
+                                     " value TEXT,"
+                                     " UNIQUE(tracepoint_id, name));",
+        "CREATE TABLE backtrace (tracepoint_id INTEGER,"
+                                " line INTEGER,"
+                                " text TEXT);"
+    };
+
+    const bool initializeDatabase = !QFile::exists( databaseFileName );
+
+    m_db = QSqlDatabase::addDatabase( "QSQLITE" );
+    m_db.setDatabaseName( databaseFileName );
+    if ( !m_db.open() ) {
+        qWarning() << "Failed to open SQL database";
+        return;
+    }
+
+    if ( initializeDatabase ) {
+        QSqlQuery query;
+        query.exec( "BEGIN TRANSACTION;" );
+        for ( int i = 0; i < sizeof(schemaStatements) / sizeof(schemaStatements[0]); ++i ) {
+            query.exec( schemaStatements[i] );
+        }
+        query.exec( "COMMIT;" );
+    }
+
+    m_tcpServer = new QTcpServer( this );
+    connect( m_tcpServer, SIGNAL( newConnection() ),
+             this, SLOT( handleNewConnection() ) );
+
+    m_tcpServer->listen( QHostAddress::Any, port );
+}
+
+void Server::handleNewConnection()
+{
+    QTcpSocket *client = m_tcpServer->nextPendingConnection();
+    connect( client, SIGNAL( readyRead() ), this, SLOT( handleIncomingData() ) );
+}
+
+void Server::handleIncomingData()
+{
+    QTcpSocket *client = (QTcpSocket *)sender(); // XXX yuck
+
+    const QByteArray xmlData = client->readAll();
+
+    QDomDocument doc;
+    if ( !doc.setContent( xmlData ) ) {
+        qWarning() << "Error in incoming XML data";
+        return;
+    }
+
+    const TraceEntry e = deserializeTraceEntry( doc.documentElement() );
+    storeEntry( e );
+    emit traceEntryReceived( e );
+}
+
+void Server::storeEntry( const TraceEntry &e )
+{
+    QSqlQuery query( m_db );
     query.setForwardOnly( true );
 
     query.exec( "BEGIN TRANSACTION;" );
@@ -80,40 +161,5 @@ static void storeEntryInDatabase( const TraceEntry &e, QSqlDatabase *db )
     query.exec( QString( "INSERT INTO trace_entry VALUES(NULL, %1, %2, %3, %4, '%5');" ).arg( e.pid ).arg( e.tid ).arg( e.timestamp ).arg( tracepointId ).arg( e.message ) );
 
     query.exec( "COMMIT;" );
-}
-
-Server::Server( QObject *parent, QSqlDatabase *db, unsigned short port )
-    : QObject( parent ),
-    m_tcpServer( 0 ),
-    m_db( db )
-{
-    m_tcpServer = new QTcpServer( this );
-    connect( m_tcpServer, SIGNAL( newConnection() ),
-             this, SLOT( handleNewConnection() ) );
-
-    m_tcpServer->listen( QHostAddress::Any, port );
-}
-
-void Server::handleNewConnection()
-{
-    QTcpSocket *client = m_tcpServer->nextPendingConnection();
-    connect( client, SIGNAL( readyRead() ), this, SLOT( handleIncomingData() ) );
-}
-
-void Server::handleIncomingData()
-{
-    QTcpSocket *client = (QTcpSocket *)sender(); // XXX yuck
-
-    const QByteArray xmlData = client->readAll();
-
-    QDomDocument doc;
-    if ( !doc.setContent( xmlData ) ) {
-        qWarning() << "Error in incoming XML data";
-        return;
-    }
-
-    const TraceEntry e = deserializeTraceEntry( doc.documentElement() );
-    storeEntryInDatabase( e, m_db );
-    emit traceEntryReceived( e );
 }
 
