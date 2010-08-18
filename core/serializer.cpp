@@ -85,9 +85,7 @@ vector<char> PlaintextSerializer::serialize( const TraceEntry &entry )
 
     const string result = str.str();
 
-    vector<char> buf( result.begin(), result.end() );
-    buf.push_back( '\0' );
-    return buf;
+    return vector<char>( result.begin(), result.end() );
 }
 
 string PlaintextSerializer::convertVariableValue( const VariableValue &v ) const
