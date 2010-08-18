@@ -57,7 +57,7 @@ Server::Server( QObject *parent, const QString &databaseFileName, unsigned short
         "CREATE TABLE trace_entry (id INTEGER PRIMARY KEY AUTOINCREMENT,"
                                   " traced_thread_id INTEGER,"
                                   " timestamp DATETIME,"
-                                  " tracepoint_id INTEGER,"
+                                  " trace_point_id INTEGER,"
                                   " message TEXT);",
         "CREATE TABLE trace_point (id INTEGER PRIMARY KEY AUTOINCREMENT,"
                                   " verbosity INTEGER,"
