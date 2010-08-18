@@ -16,7 +16,9 @@ Output::~Output()
 
 void StdoutOutput::write( const vector<char> &data )
 {
-    fprintf(stdout, "%s\n", &data[0]);
+    vector<char> nullTerminatedData = data;
+    nullTerminatedData.push_back( '\0' );
+    fprintf(stdout, "%s\n", &nullTerminatedData[0]);
 }
 
 void MultiplexingOutput::addOutput( Output *output )
