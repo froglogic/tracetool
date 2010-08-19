@@ -73,7 +73,8 @@ static TraceEntry deserializeTraceEntry( const QDomElement &e )
     return entry;
 }
 
-Server::Server( QObject *parent, const QString &databaseFileName, unsigned short port )
+Server::Server( const QString &databaseFileName, unsigned short port,
+                QObject *parent )
     : QObject( parent ),
     m_tcpServer( 0 )
 {

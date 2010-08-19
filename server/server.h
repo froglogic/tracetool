@@ -45,7 +45,8 @@ class Server : public QObject
 {
     Q_OBJECT
 public:
-    Server( QObject *parent, const QString &databaseFileName, unsigned short port );
+    Server( const QString &databaseFileName, unsigned short port,
+            QObject *parent = 0 );
 
 signals:
     void traceEntryReceived( const TraceEntry &e );
