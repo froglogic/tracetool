@@ -12,7 +12,10 @@
 #else
 # include <ucontext.h>
 # include <dlfcn.h>
-# include <demangle.h>
+#endif
+#include <demangle.h>
+#if defined(__linux)
+# include <bfd.h>
 #endif
 
 using namespace std;
@@ -25,6 +28,13 @@ static pthread_mutex_t trace_mutex;
 
 static char *symbol_buffer;
 static size_t symbol_buffer_length;
+
+#if defined(__linux)
+static bfd *self_bfd;
+static asymbol **self_symbols;
+#endif
+
+extern string processFullName();
 
 #if !defined(__GNUC__) && defined(__sun)
 static int buildBackTrace( uintptr_t p, int, void *user) {
@@ -44,6 +54,70 @@ static int buildBackTrace( uintptr_t p, int, void *user) {
     }
     trace->push_back( frame );
     return 0;
+}
+#endif
+
+#ifdef __linux
+
+struct BfdSymbol {
+    bfd_vma pc;
+    bool found;
+    const char *filename;
+    unsigned int linenr;
+    const char *functionname;
+    unsigned int offset;
+};
+
+static void findAddressInSection( bfd *abfd, asection *section, void *data )
+{
+    BfdSymbol *bfd_sym = (BfdSymbol *)data;
+
+    if ( bfd_sym->found )
+        return;
+
+    if ( ( bfd_get_section_flags( abfd, section ) & SEC_ALLOC) == 0 )
+        return;
+
+    bfd_vma vma = bfd_get_section_vma( abfd, section );
+    if ( bfd_sym->pc < vma )
+        return;
+
+    bfd_size_type size = bfd_get_section_size( section );
+    if ( bfd_sym->pc >= vma + size )
+        return;
+
+    bfd_sym->offset = bfd_sym->pc - vma;
+    bfd_sym->found = bfd_find_nearest_line( abfd,
+            section, self_symbols,  bfd_sym->pc - vma,
+            &bfd_sym->filename, &bfd_sym->functionname, &bfd_sym->linenr );
+}
+
+static bool bfdAddressInfo( bfd_vma addr, StackFrame *frame )
+{
+    BfdSymbol bfd_sym;
+    bfd_sym.pc = addr; //bfd_scan_vma( addr, NULL, 16 );
+    bfd_sym.found = false;
+    bfd_map_over_sections( self_bfd, findAddressInSection, &bfd_sym );
+    if ( bfd_sym.found ) {
+        if ( bfd_sym.functionname ) {
+            char *demangle = bfd_demangle( self_bfd,
+                   bfd_sym.functionname, DMGL_ANSI | DMGL_PARAMS);
+            if ( demangle ) {
+                frame->function = demangle;
+                free( demangle );
+            } else {
+                frame->function = bfd_sym.functionname;
+            }
+        } else {
+            frame->function = "??";
+        }
+        if ( bfd_sym.filename )
+            frame->sourceFile = bfd_sym.filename;
+        frame->lineNumber = bfd_sym.linenr;
+        frame->functionOffset = bfd_sym.offset;
+        return true;
+    }
+    return false;
 }
 #endif
 
@@ -68,6 +142,7 @@ static bool parseLine( const string line, StackFrame *frame )
                 string off = line.substr( pp, pp - pb - 1 );
                 frame->functionOffset = strtol( off.c_str(), NULL, 16 );
             }
+
         }
         frame->module = line.substr( 0, pb );
 
@@ -90,22 +165,91 @@ static void readBacktrace( std::vector<StackFrame> &trace, size_t skip
     void *array[50];
     size_t size = backtrace(array, sizeof(array)/sizeof(void*));
     if ( size > 0 && size < sizeof ( array ) / sizeof ( void* ) ) {
-        char **strs = backtrace_symbols(array, size);
-        if (strs) {
+#if defined(__linux)
+        if ( self_symbols ) {
             for (size_t i = skip; i < size; ++i) {
                 StackFrame frame;
-                if ( parseLine( strs[i], &frame ) ) {
-                    trace.push_back( frame );
-                } else {
-                    fprintf( stderr, "err (%d) %s\n", i, strs[i] );
+                if ( !bfdAddressInfo( (bfd_vma)array[i], &frame ) ) {
+                    fprintf( stderr, "err (%d) %p\n", i, array[i] );
                     frame.function = "??";
                 }
+                trace.push_back( frame );
             }
-            free(strs);
+        } else {
+#endif
+            char **strs = backtrace_symbols(array, size);
+            if (strs) {
+                for (size_t i = skip; i < size; ++i) {
+                    StackFrame frame;
+                    if ( !parseLine( strs[i], &frame ) ) {
+                        fprintf( stderr, "err (%d) %s\n", i, strs[i] );
+                        frame.function = "??";
+                    }
+                    trace.push_back( frame );
+                }
+                free(strs);
+            }
+#if defined(__linux)
         }
+#endif
     }
 #elif defined(__sun)
     walkcontext( context, buildBackTrace, (void*)&trace );
+#endif
+}
+
+static void setupSymbolTable()
+{
+#if defined(__linux)
+    bool success = false;
+    char **matching;
+    self_bfd = bfd_openr( processFullName().c_str(), NULL );
+    if ( !bfd_check_format( self_bfd, bfd_archive) &&
+            bfd_check_format_matches( self_bfd, bfd_object, &matching ) ) {
+
+        if ( bfd_get_file_flags( self_bfd ) & HAS_SYMS ) {
+            bfd_boolean dynamic = false;
+
+            long storage = bfd_get_symtab_upper_bound( self_bfd );
+            if ( !storage ) {
+                storage = bfd_get_dynamic_symtab_upper_bound( self_bfd );
+                dynamic = true;
+            }
+            if ( storage >= 0 ) {
+                long symcnt;
+                self_symbols = (asymbol **)malloc( storage );
+                if (dynamic)
+                    symcnt = bfd_canonicalize_dynamic_symtab( self_bfd, self_symbols );
+                else
+                    symcnt = bfd_canonicalize_symtab( self_bfd, self_symbols );
+                if ( symcnt >= 0 ) {
+                    success = true;
+                } else {
+                    free( self_symbols );
+                    self_symbols = NULL;
+                }
+            }
+        }
+    }
+    if ( !success && self_bfd ) {
+        bfd_close( self_bfd );
+        self_bfd = NULL;
+        fprintf( stderr, "bfd setup failure\n" );
+    }
+#endif
+}
+
+static void cleanupSymbolTable()
+{
+#if defined(__linux)
+    if ( self_bfd ) {
+        bfd_close( self_bfd );
+        self_bfd = NULL;
+        if ( self_symbols ) {
+            free( self_symbols );
+            self_symbols = NULL;
+        }
+    }
 #endif
 }
 
@@ -115,6 +259,7 @@ BacktraceGenerator::BacktraceGenerator()
         pthread_mutex_init( &trace_mutex, NULL );
         symbol_buffer = (char *)malloc( 4096 );
         symbol_buffer_length = 4096;
+        setupSymbolTable();
     }
 }
 
@@ -124,6 +269,7 @@ BacktraceGenerator::~BacktraceGenerator()
         pthread_mutex_destroy( &trace_mutex );
         free( symbol_buffer );
         symbol_buffer = NULL;
+        cleanupSymbolTable();
     }
 }
 
