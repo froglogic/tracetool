@@ -1,6 +1,7 @@
 #ifndef TRACE_SERVER_H
 #define TRACE_SERVER_H
 
+#include <QByteArray>
 #include <QList>
 #include <QObject>
 #include <QSqlDatabase>
@@ -55,6 +56,7 @@ private slots:
 
 private:
     void storeEntry( const TraceEntry &e );
+    void handleTraceEntryXMLData( const QByteArray &data );
 
     QTcpServer *m_tcpServer;
     QSqlDatabase m_db;

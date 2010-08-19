@@ -148,21 +148,35 @@ void Server::handleNewConnection()
     connect( client, SIGNAL( readyRead() ), this, SLOT( handleIncomingData() ) );
 }
 
-void Server::handleIncomingData()
+void Server::handleTraceEntryXMLData( const QByteArray &data )
 {
-    QTcpSocket *client = (QTcpSocket *)sender(); // XXX yuck
-
-    const QByteArray xmlData = client->readAll();
-
+    QString errorMsg;
+    int errorLine, errorColumn;
     QDomDocument doc;
-    if ( !doc.setContent( xmlData ) ) {
-        qWarning() << "Error in incoming XML data";
+    if ( !doc.setContent( data, false, &errorMsg, &errorLine, &errorColumn ) ) {
+        qWarning() << "Error in incoming XML data: in row" << errorLine << "column" << errorColumn << ":" << errorMsg;
+        qWarning() << "Received data:" << data;
         return;
     }
 
     const TraceEntry e = deserializeTraceEntry( doc.documentElement() );
     storeEntry( e );
     emit traceEntryReceived( e );
+}
+
+void Server::handleIncomingData()
+{
+    QTcpSocket *client = (QTcpSocket *)sender(); // XXX yuck
+
+    const QByteArray xmlData = client->readAll();
+    int p = 0;
+    int q = xmlData.indexOf( "<traceentry ", p + 1 );
+    while ( q != -1 ) {
+        handleTraceEntryXMLData( QByteArray::fromRawData( xmlData.data() + p, q - p ) );
+        p = q;
+        q = xmlData.indexOf( "<traceentry ", p + 1 );
+    }
+    handleTraceEntryXMLData( QByteArray::fromRawData( xmlData.data() + p, xmlData.size() - p ) );
 }
 
 void Server::storeEntry( const TraceEntry &e )
