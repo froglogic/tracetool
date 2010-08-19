@@ -37,7 +37,7 @@ static const char *processName()
 #endif
 }
 
-static string processFullName()
+string processFullName()
 {
     string pn =
 #if defined(__GLIBC__)
