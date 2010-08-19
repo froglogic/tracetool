@@ -1,11 +1,29 @@
 #ifndef TRACE_SERVER_H
 #define TRACE_SERVER_H
 
+#include <QByteArray>
+#include <QList>
 #include <QObject>
 #include <QSqlDatabase>
 
 class QTcpServer;
 class QTcpSocket;
+
+struct StackFrame
+{
+    QString module;
+    QString function;
+    size_t functionOffset;
+    QString sourceFile;
+    size_t lineNumber;
+};
+
+struct Variable
+{
+    QString name;
+    enum { StringType } type;
+    QString value;
+};
 
 struct TraceEntry
 {
@@ -19,8 +37,8 @@ struct TraceEntry
     unsigned long lineno;
     QString function;
     QString message;
-    QString backtrace;
-    QString variables;
+    QList<Variable> variables;
+    QList<StackFrame> backtrace;
 };
 
 class Server : public QObject
@@ -38,6 +56,7 @@ private slots:
 
 private:
     void storeEntry( const TraceEntry &e );
+    void handleTraceEntryXMLData( const QByteArray &data );
 
     QTcpServer *m_tcpServer;
     QSqlDatabase m_db;

@@ -25,6 +25,51 @@ static TraceEntry deserializeTraceEntry( const QDomElement &e )
     entry.lineno = e.namedItem( "location" ).toElement().attribute( "lineno" ).toULong();
     entry.function = e.namedItem( "function" ).toElement().text();
     entry.message = e.namedItem( "message" ).toElement().text();
+
+    QDomElement variablesElement = e.namedItem( "variables" ).toElement();
+    if ( !variablesElement.isNull() ) {
+        QDomNode n = variablesElement.firstChild();
+        while ( !n.isNull() ) {
+            QDomElement varElement = n.toElement();
+
+            Variable var;
+            var.name = varElement.attribute( "name" );
+
+            const QString typeStr = varElement.attribute( "type" );
+            if ( typeStr == "string" ) {
+                var.type = Variable::StringType;
+            }
+            var.value = varElement.text();
+
+            entry.variables.append( var );
+
+            n = n.nextSibling();
+        }
+    }
+
+    QDomElement backtraceElement = e.namedItem( "backtrace" ).toElement();
+    if ( !backtraceElement.isNull() ) {
+        QDomNode n = backtraceElement.firstChild();
+        while ( !n.isNull() ) {
+            QDomElement frameElement = n.toElement();
+
+            StackFrame frame;
+            frame.module = frameElement.namedItem( "module" ).toElement().text();
+
+            QDomElement functionElement = frameElement.namedItem( "function" ).toElement();
+            frame.function = functionElement.text();
+            frame.functionOffset = functionElement.attribute( "offset" ).toUInt();
+
+            QDomElement locationElement = frameElement.namedItem( "location" ).toElement();
+            frame.sourceFile = locationElement.text();
+            frame.lineNumber = locationElement.attribute( "lineno" ).toUInt();
+
+            entry.backtrace.append( frame );
+
+            n = n.nextSibling();
+        }
+    }
+
     return entry;
 }
 
@@ -36,7 +81,7 @@ Server::Server( QObject *parent, const QString &databaseFileName, unsigned short
         "CREATE TABLE trace_entry (id INTEGER PRIMARY KEY AUTOINCREMENT,"
                                   " traced_thread_id INTEGER,"
                                   " timestamp DATETIME,"
-                                  " tracepoint_id INTEGER,"
+                                  " trace_point_id INTEGER,"
                                   " message TEXT);",
         "CREATE TABLE trace_point (id INTEGER PRIMARY KEY AUTOINCREMENT,"
                                   " verbosity INTEGER,"
@@ -59,13 +104,17 @@ Server::Server( QObject *parent, const QString &databaseFileName, unsigned short
                                 " process_id INTEGER,"
                                 " tid INTEGER,"
                                 " UNIQUE(process_id, tid));",
-        "CREATE TABLE variable_value (tracepoint_id INTEGER,"
-                                     " name TEXT,"
-                                     " value TEXT,"
-                                     " UNIQUE(tracepoint_id, name));",
-        "CREATE TABLE backtrace (tracepoint_id INTEGER,"
-                                " line INTEGER,"
-                                " text TEXT);"
+        "CREATE TABLE variable (trace_entry_id INTEGER,"
+                               " name TEXT,"
+                               " value TEXT,"
+                               " type INTEGER);",
+        "CREATE TABLE stackframe (trace_entry_id INTEGER,"
+                                " depth INTEGER,"
+                                " module_name TEXT,"
+                                " function_name TEXT,"
+                                " offset INTEGER,"
+                                " file_name TEXT,"
+                                " line INTEGER);"
     };
 
     const bool initializeDatabase = !QFile::exists( databaseFileName );
@@ -99,21 +148,35 @@ void Server::handleNewConnection()
     connect( client, SIGNAL( readyRead() ), this, SLOT( handleIncomingData() ) );
 }
 
-void Server::handleIncomingData()
+void Server::handleTraceEntryXMLData( const QByteArray &data )
 {
-    QTcpSocket *client = (QTcpSocket *)sender(); // XXX yuck
-
-    const QByteArray xmlData = client->readAll();
-
+    QString errorMsg;
+    int errorLine, errorColumn;
     QDomDocument doc;
-    if ( !doc.setContent( xmlData ) ) {
-        qWarning() << "Error in incoming XML data";
+    if ( !doc.setContent( data, false, &errorMsg, &errorLine, &errorColumn ) ) {
+        qWarning() << "Error in incoming XML data: in row" << errorLine << "column" << errorColumn << ":" << errorMsg;
+        qWarning() << "Received data:" << data;
         return;
     }
 
     const TraceEntry e = deserializeTraceEntry( doc.documentElement() );
     storeEntry( e );
     emit traceEntryReceived( e );
+}
+
+void Server::handleIncomingData()
+{
+    QTcpSocket *client = (QTcpSocket *)sender(); // XXX yuck
+
+    const QByteArray xmlData = client->readAll();
+    int p = 0;
+    int q = xmlData.indexOf( "<traceentry ", p + 1 );
+    while ( q != -1 ) {
+        handleTraceEntryXMLData( QByteArray::fromRawData( xmlData.data() + p, q - p ) );
+        p = q;
+        q = xmlData.indexOf( "<traceentry ", p + 1 );
+    }
+    handleTraceEntryXMLData( QByteArray::fromRawData( xmlData.data() + p, xmlData.size() - p ) );
 }
 
 void Server::storeEntry( const TraceEntry &e )
@@ -184,7 +247,7 @@ void Server::storeEntry( const TraceEntry &e )
     {
         query.exec( QString( "SELECT id FROM trace_point WHERE verbosity=%1 AND type=%2 AND path_id=%3 AND line=%4 AND function_id=%5;" ).arg( e.verbosity ).arg( e.type ).arg( pathId ).arg( e.lineno ).arg( functionId ) );
         if ( !query.next() ) {
-            query.exec( QString( "INSERT OR IGNORE INTO trace_point VALUES(NULL, %1, %2, %3, %4, %5);" ).arg( e.verbosity ).arg( e.type ).arg( pathId ).arg( e.lineno ).arg( functionId ) );
+            query.exec( QString( "INSERT INTO trace_point VALUES(NULL, %1, %2, %3, %4, %5);" ).arg( e.verbosity ).arg( e.type ).arg( pathId ).arg( e.lineno ).arg( functionId ) );
             query.exec( "SELECT last_insert_rowid() FROM trace_point LIMIT 1;" );
             query.next();
         }
@@ -195,6 +258,33 @@ void Server::storeEntry( const TraceEntry &e )
     }
 
     query.exec( QString( "INSERT INTO trace_entry VALUES(NULL, %1, %2, %3, '%4');" ).arg( tracedThreadId ).arg( e.timestamp ).arg( tracepointId ).arg( e.message ) );
+    query.exec( "SELECT last_insert_rowid() FROM trace_entry LIMIT 1;" );
+    query.next();
+    const unsigned int traceentryId = query.value( 0 ).toUInt();
+
+    {
+        QList<Variable>::ConstIterator it, end = e.variables.end();
+        for ( it = e.variables.begin(); it != end; ++it ) {
+            int typeCode = 0;
+            switch ( it->type ) {
+                case Variable::StringType:
+                    typeCode = 0;
+                    break;
+                default:
+                    assert( !"Unreachable" );
+            }
+
+            query.exec( QString( "INSERT INTO variable VALUES(%1, '%2', '%3', %4);" ).arg( traceentryId ).arg( it->name ).arg( it->value ).arg( typeCode ) );
+        }
+    }
+
+    {
+        unsigned int depthCount = 0;
+        QList<StackFrame>::ConstIterator it, end = e.backtrace.end();
+        for ( it = e.backtrace.begin(); it != end; ++it, ++depthCount ) {
+            query.exec( QString( "INSERT INTO stackframe VALUES(%1, %2, '%3', '%4', %5, '%6', %7);" ).arg( traceentryId ).arg( depthCount ).arg( it->module ).arg( it->function ).arg( it->functionOffset ).arg( it->sourceFile ).arg( it->lineNumber ) );
+        }
+    }
 
     query.exec( "COMMIT;" );
 }

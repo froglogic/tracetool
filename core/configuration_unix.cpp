@@ -5,7 +5,6 @@
 #include <limits.h>
 #include <string.h>
 #include <cassert>
-#include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
@@ -62,7 +61,6 @@ string processFullName()
     size_t sep1 = path.find( ':' );
     do {
         string file = path.substr( sep0, sep1 - sep0 ) + '/' + pn;
-        fprintf( stderr, "path ex '%s'\n", file.c_str() );
         if ( stat( file.c_str(), &file_stat ) == 0 &&
                 S_ISREG( file_stat.st_mode ) )
             return file;
