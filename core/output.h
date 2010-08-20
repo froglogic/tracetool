@@ -12,6 +12,7 @@ class Output
 public:
     virtual ~Output();
 
+    virtual bool open() { return true; }
     virtual bool canWrite() const { return true; }
     virtual void write( const std::vector<char> &data ) = 0;
 
