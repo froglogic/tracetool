@@ -143,6 +143,7 @@ private:
     void operator=( const Trace &trace );
 
     Serializer *m_serializer;
+    Mutex m_serializerMutex;
     Output *m_output;
     Mutex m_outputMutex;
     std::vector<TracePointSet *> m_tracePointSets;
