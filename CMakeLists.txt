@@ -3,6 +3,7 @@ PROJECT(tracelib)
 
 ADD_SUBDIRECTORY(core)
 ADD_SUBDIRECTORY(server)
+ADD_SUBDIRECTORY(gui)
 ADD_SUBDIRECTORY(3rdparty/pcre-8.10)
 ADD_SUBDIRECTORY(tests)
 ADD_SUBDIRECTORY(examples/sampleapp)
