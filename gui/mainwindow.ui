@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>901</width>
+    <height>367</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>App Stalker</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout_3">
+    <item>
+     <widget class="QWidget" name="widget" native="true">
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <item>
+        <widget class="QPushButton" name="pushButton">
+         <property name="text">
+          <string>Live</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButton_2">
+         <property name="text">
+          <string>Filter...</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>320</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="lineEdit"/>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButton_3">
+         <property name="text">
+          <string>Search</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="QTabWidget" name="tabWidget">
+      <property name="currentIndex">
+       <number>0</number>
+      </property>
+      <widget class="QWidget" name="tab">
+       <attribute name="title">
+        <string>Trace Points</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <item>
+         <widget class="QTableView" name="tracePointsView">
+          <attribute name="horizontalHeaderStretchLastSection">
+           <bool>true</bool>
+          </attribute>
+          <attribute name="horizontalHeaderStretchLastSection">
+           <bool>true</bool>
+          </attribute>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="tab_2">
+       <attribute name="title">
+        <string>Watch Points</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_2">
+        <item>
+         <widget class="QTreeWidget" name="treeWidget">
+          <column>
+           <property name="text">
+            <string>PID</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Application</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>File</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Function</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Variable</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Value</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Old Value</string>
+           </property>
+          </column>
+          <item>
+           <property name="text">
+            <string>12345</string>
+           </property>
+           <property name="text">
+            <string>opm.exe</string>
+           </property>
+           <property name="text">
+            <string>...\src\db.cpp</string>
+           </property>
+           <property name="text">
+            <string>DB::update()</string>
+           </property>
+           <property name="text">
+            <string>Counter (int)</string>
+           </property>
+           <property name="text">
+            <string>3</string>
+           </property>
+           <property name="text">
+            <string>2</string>
+           </property>
+           <item>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="text">
+             <string>NeedUpdate (bool)</string>
+            </property>
+            <property name="text">
+             <string>true</string>
+            </property>
+            <property name="text">
+             <string>&lt;not set&gt;</string>
+            </property>
+           </item>
+          </item>
+          <item>
+           <property name="text">
+            <string>12347</string>
+           </property>
+           <property name="text">
+            <string>monitor.exe</string>
+           </property>
+           <property name="text">
+            <string>..\monitor.cpp</string>
+           </property>
+           <property name="text">
+            <string>Monitor::check()</string>
+           </property>
+           <property name="text">
+            <string>LastCheck (QDateTime)</string>
+           </property>
+           <property name="text">
+            <string>08.07.10 12:30:01</string>
+           </property>
+           <property name="text">
+            <string>08.07.10 12:29:02</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>901</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menu_File">
+    <property name="title">
+     <string>&amp;File</string>
+    </property>
+    <addaction name="actionQuit"/>
+   </widget>
+   <widget class="QMenu" name="menu_Help">
+    <property name="title">
+     <string>&amp;Help</string>
+    </property>
+   </widget>
+   <addaction name="menu_File"/>
+   <addaction name="menu_Help"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionQuit">
+   <property name="text">
+    <string>Quit</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Q</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

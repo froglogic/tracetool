@@ -1,9 +1,8 @@
 #include <QApplication>
 #include <QFile>
 #include <QMessageBox>
-#include <QTableView>
 
-#include "entryitemmodel.h"
+#include "mainwindow.h"
 
 int main(int argc, char **argv)
 {
@@ -17,17 +16,15 @@ int main(int argc, char **argv)
 
     const QString databaseFileName = QFile::decodeName(a.argv()[1]);
 
-    EntryItemModel m;
     QString errMsg;
-    if (!m.setDatabase(databaseFileName, &errMsg)) {
+    MainWindow mw;
+    if (!mw.setDatabase(databaseFileName, &errMsg)) {
         QMessageBox::critical(0, "Database error",
                               errMsg);
         return 2;
     }
 
-    QTableView w;
-    w.setModel(&m);
-    w.show();
+    mw.show();
 
     return a.exec();
 }
