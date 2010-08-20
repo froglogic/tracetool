@@ -137,7 +137,6 @@ public:
 
     void setSerializer( Serializer *serializer );
     void setOutput( Output *output );
-    void addTracePointSet( TracePointSet *tracePointSet );
 
     virtual void handleFileModification( const std::string &fileName, NotificationReason reason );
 
