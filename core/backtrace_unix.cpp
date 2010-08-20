@@ -1,5 +1,7 @@
 #include "backtrace.h"
 
+#include <config.h>
+
 #include <cassert>
 #include <stdio.h>
 #include <stdlib.h>
