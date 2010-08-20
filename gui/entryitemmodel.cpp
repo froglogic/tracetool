@@ -52,7 +52,7 @@ bool EntryItemModel::setDatabase(const QString &databaseFileName,
                         " timestamp,"
                         " process.name,"
                         " process.pid,"
-                        " traced_thread_id,"
+                        " traced_thread.tid,"
                         " path_name.name,"
                         " trace_point.line,"
                         " function_name.name,"
@@ -64,7 +64,8 @@ bool EntryItemModel::setDatabase(const QString &databaseFileName,
                         " trace_point,"
                         " path_name, "
                         " function_name, "
-                        " process "
+                        " process, "
+                        " traced_thread "
                         "WHERE"
                         " trace_entry.trace_point_id = trace_point.id "
                         "AND"
@@ -72,7 +73,10 @@ bool EntryItemModel::setDatabase(const QString &databaseFileName,
                         "AND"
                         " trace_point.path_id = path_name.id "
                         "AND"
-                        " trace_entry.traced_thread_id = process.id");
+                        " trace_entry.traced_thread_id = traced_thread.id "
+                        "AND"
+                        " traced_thread.process_id = process.id");
+
     if (m_db.lastError().isValid()) {
         *errMsg = m_db.lastError().text();
         return false;
