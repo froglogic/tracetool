@@ -26,7 +26,7 @@ static int connectTo( const string host, unsigned short port, ErrorLog *log )
     server.sin_family = AF_INET;
     memcpy( &server.sin_addr.s_addr, he->h_addr, he->h_length );
     server.sin_port = htons( port );
-    if ( connect( sock, (const sockaddr *)&server, sizeof ( server ) ) )
+    if ( !connect( sock, (const sockaddr *)&server, sizeof ( server ) ) )
         return sock;
 
     log->write( "connect: %s\n", strerror( errno ) );
