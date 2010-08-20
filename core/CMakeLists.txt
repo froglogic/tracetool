@@ -36,6 +36,7 @@ IF(WIN32)
             crashhandler_win.cpp
             getcurrentthreadid_win.cpp
             filemodificationmonitor_win.cpp
+            mutex_win.cpp
             ${PROJECT_SOURCE_DIR}/3rdparty/stackwalker/StackWalker.cpp)
 ELSE(WIN32)
     SET(TRACELIB_SOURCES
@@ -44,7 +45,8 @@ ELSE(WIN32)
             configuration_unix.cpp
             networkoutput_unix.cpp
             getcurrentthreadid_unix.cpp
-            filemodificationmonitor_unix.cpp)
+            filemodificationmonitor_unix.cpp
+            mutex_unix.cpp)
 ENDIF(WIN32)
 
 IF(WIN32)
