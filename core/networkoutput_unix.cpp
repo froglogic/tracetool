@@ -33,18 +33,20 @@ static int connectTo( const string host, unsigned short port, ErrorLog *log )
     return -1;
 }
 
-static int writeTo( int fd, const char *data, int length, ErrorLog *log )
+static int writeTo( int fd, const char *data, const int length, ErrorLog *log )
 {
-    int nr;
+    int written = 0;
     do {
-        nr = write( fd, data, length );
-        if ( nr >= 0 || errno != EINTR )
+        int nr = write( fd, data + written, length - written );
+        if ( nr > 0 )
+            written += nr;
+        else if ( nr < 0 && errno != EINTR )
             break;
-    } while ( 1 );
+    } while ( length > written );
 
-    if ( nr < length )
+    if ( length != written )
         log->write( "write: %s\n", strerror( errno ) );
-    return nr;
+    return written;
 }
 
 NetworkOutput::NetworkOutput( ErrorLog *log, const string &host, unsigned short port )
