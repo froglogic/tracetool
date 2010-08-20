@@ -67,7 +67,10 @@ Trace::Trace()
 Trace::~Trace()
 {
     delete m_serializer;
-    delete m_output;
+    {
+        MutexLocker outputLocker( m_outputMutex );
+        delete m_output;
+    }
     deleteRange( m_tracePointSets.begin(), m_tracePointSets.end() );
     delete m_configuration;
 }
@@ -105,9 +108,15 @@ void Trace::visitTracePoint( TracePoint *tracePoint,
         configureTracePoint( tracePoint );
     }
 
-    if ( !tracePoint->active || !m_serializer || !m_output || !m_output->canWrite() ) {
+    if ( !tracePoint->active || !m_serializer ) {
         return;
+    }
 
+    {
+        MutexLocker outputLocker( m_outputMutex );
+        if ( !m_output || !m_output->canWrite() ) {
+            return;
+        }
     }
 
     TraceEntry entry( tracePoint, msg );
@@ -124,13 +133,20 @@ void Trace::visitTracePoint( TracePoint *tracePoint,
 
 void Trace::addEntry( const TraceEntry &entry )
 {
-    if ( !m_serializer || !m_output || !m_output->canWrite() ) {
+    if ( !m_serializer ) {
         return;
+    }
+
+    {
+        MutexLocker outputLocker( m_outputMutex );
+        if ( !m_output || !m_output->canWrite() ) {
+            return;
+        }
     }
 
     vector<char> data = m_serializer->serialize( entry );
     if ( !data.empty() ) {
-        MutexLocker mutexLocker( m_outputMutex );
+        MutexLocker outputLocker( m_outputMutex );
         m_output->write( data );
     }
 }
@@ -143,6 +159,7 @@ void Trace::setSerializer( Serializer *serializer )
 
 void Trace::setOutput( Output *output )
 {
+    MutexLocker outputLocker( m_outputMutex );
     delete m_output;
     m_output = output;
 }
