@@ -1,6 +1,10 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 PROJECT(tracelib)
 
+CONFIGURE_FILE(config-cmake.h.in
+    ${PROJECT_BINARY_DIR}/config.h
+    @ONLY)
+
 ADD_SUBDIRECTORY(core)
 ADD_SUBDIRECTORY(server)
 ADD_SUBDIRECTORY(3rdparty/pcre-8.10)
