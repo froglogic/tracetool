@@ -1,29 +1,32 @@
 #include "mutex.h"
 
-#include <cassert>
-
-using namespace std;
+#include <pthread.h>
 
 TRACELIB_NAMESPACE_BEGIN
 
-Mutex::Mutex() : m_handle( 0 )
+struct MutexHandle {
+    pthread_mutex_t mutex;
+};
+
+Mutex::Mutex() : m_handle( new MutexHandle )
 {
-    assert( !"Mutex operations not implemented on Unix" );
+    pthread_mutex_init( &m_handle->mutex, NULL );
 }
 
 Mutex::~Mutex()
 {
-    assert( !"Mutex operations not implemented on Unix" );
+    pthread_mutex_destroy( &m_handle->mutex );
+    delete m_handle;
 }
 
 void Mutex::lock()
 {
-    assert( !"Mutex operations not implemented on Unix" );
+    pthread_mutex_lock( &m_handle->mutex );
 }
 
 void Mutex::unlock()
 {
-    assert( !"Mutex operations not implemented on Unix" );
+    pthread_mutex_unlock( &m_handle->mutex );
 }
 
 TRACELIB_NAMESPACE_END
