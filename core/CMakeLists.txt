@@ -10,6 +10,9 @@ ADD_DEFINITIONS(-DPCRE_STATIC -DTIXML_USE_STL)
 
 IF(NOT WIN32)
     CHECK_INCLUDE_FILE(bfd.h HAVE_BFD_H)
+    IF(NOT HAVE_BFD_H)
+        MESSAGE(WARNING "Without the bfd.h file backtraces will not contain source file name information. Install the missing SDK (e.g. binutils-dev) to enable this feature.")
+    ENDIF(NOT HAVE_BFD_H)
 ENDIF(NOT WIN32)
 
 SET(TRACELIB_SOURCES
