@@ -15,10 +15,10 @@
 # include <ucontext.h>
 # include <dlfcn.h>
 #endif
-#include <demangle.h>
 #include <dlfcn.h>
 #if HAVE_BFD_H
 # include <bfd.h>
+# include <demangle.h>
 #endif
 
 using namespace std;
