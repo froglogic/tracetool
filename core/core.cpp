@@ -165,7 +165,7 @@ void Trace::visitTracePoint( TracePoint *tracePoint,
 
     {
         MutexLocker outputLocker( m_outputMutex );
-        if ( !m_output || !m_output->canWrite() ) {
+        if ( !m_output || ( !m_output->canWrite() && !m_output->open() ) ) {
             return;
         }
     }
@@ -195,7 +195,7 @@ void Trace::addEntry( const TraceEntry &entry )
 
     if ( !data.empty() ) {
         MutexLocker outputLocker( m_outputMutex );
-        if ( !m_output || !m_output->canWrite() ) {
+        if ( !m_output || ( !m_output->canWrite() && !m_output->open() ) ) {
             return;
         }
         m_output->write( data );
