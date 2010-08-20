@@ -3,6 +3,7 @@
 
 #include "tracelib_config.h"
 
+#include <string>
 #include <vector>
 
 TRACELIB_NAMESPACE_BEGIN
