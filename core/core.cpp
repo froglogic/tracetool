@@ -55,9 +55,12 @@ TraceEntry::~TraceEntry()
 Trace::Trace()
     : m_serializer( 0 ),
     m_output( 0 ),
-    m_configuration( 0 )
+    m_configuration( 0 ),
+    m_configFileMonitor( 0 )
 {
-    reloadConfiguration( Configuration::defaultFileName() );
+    const string cfgFileName = Configuration::defaultFileName();
+    reloadConfiguration( cfgFileName );
+    m_configFileMonitor = FileModificationMonitor::create( cfgFileName, this );
 }
 
 Trace::~Trace()
@@ -77,6 +80,8 @@ Trace::~Trace()
         deleteRange( m_tracePointSets.begin(), m_tracePointSets.end() );
         delete m_configuration;
     }
+
+    delete m_configFileMonitor;
 }
 
 void Trace::reloadConfiguration( const string &fileName )
@@ -208,6 +213,11 @@ void Trace::setOutput( Output *output )
     MutexLocker outputLocker( m_outputMutex );
     delete m_output;
     m_output = output;
+}
+
+void Trace::handleFileModification( const std::string &fileName, NotificationReason reason )
+{
+    reloadConfiguration( fileName );
 }
 
 static Trace *g_activeTrace = 0;

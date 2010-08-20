@@ -4,6 +4,7 @@
 #include "tracelib_config.h"
 
 #include "backtrace.h"
+#include "filemodificationmonitor.h"
 #include "filter.h"
 #include "getcurrentthreadid.h"
 #include "mutex.h"
@@ -121,7 +122,7 @@ struct TraceEntry
     const char * const message;
 };
 
-class Trace
+class Trace : public FileModificationMonitorObserver
 {
 public:
     Trace();
@@ -138,6 +139,8 @@ public:
     void setOutput( Output *output );
     void addTracePointSet( TracePointSet *tracePointSet );
 
+    virtual void handleFileModification( const std::string &fileName, NotificationReason reason );
+
 private:
     Trace( const Trace &trace );
     void operator=( const Trace &trace );
@@ -152,6 +155,7 @@ private:
     Configuration *m_configuration;
     mutable Mutex m_configurationMutex;
     BacktraceGenerator m_backtraceGenerator;
+    FileModificationMonitor *m_configFileMonitor;
 };
 
 Trace *getActiveTrace();
