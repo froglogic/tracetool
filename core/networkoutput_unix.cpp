@@ -55,6 +55,8 @@ NetworkOutput::NetworkOutput( ErrorLog *log, const string &host, unsigned short 
 
 NetworkOutput::~NetworkOutput()
 {
+    if ( m_socket != -1 )
+        ::close( m_socket );
 }
 
 bool NetworkOutput::open()
@@ -74,7 +76,7 @@ void NetworkOutput::write( const vector<char> &data )
     if ( m_socket != -1 ) {
         if ( writeTo( m_socket, &data[0], data.size(), m_error_log ) < data.size() ) {
             ::close( m_socket );
-            m_socket = 1;
+            m_socket = -1;
         }
     }
 }
