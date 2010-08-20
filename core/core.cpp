@@ -130,6 +130,7 @@ void Trace::addEntry( const TraceEntry &entry )
 
     vector<char> data = m_serializer->serialize( entry );
     if ( !data.empty() ) {
+        MutexLocker mutexLocker( m_outputMutex );
         m_output->write( data );
     }
 }

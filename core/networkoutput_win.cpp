@@ -208,8 +208,6 @@ NetworkOutput::NetworkOutput( ErrorLog *errorLog, const string &remoteHost, unsi
                 events,
                 FALSE,
                 INFINITE );
-
-    ::InitializeCriticalSection( &m_socketWriteSection );
 }
 
 NetworkOutput::~NetworkOutput()
@@ -218,7 +216,6 @@ NetworkOutput::~NetworkOutput()
     if ( ::WaitForSingleObject( m_outputThread, 2000 ) == WAIT_TIMEOUT ) {
         ::TerminateThread( m_outputThread, 127 );
     }
-    ::DeleteCriticalSection( &m_socketWriteSection );
     ::WSACleanup();
 }
 
@@ -230,9 +227,7 @@ bool NetworkOutput::canWrite() const
 void NetworkOutput::write( const vector<char> &data )
 {
     if ( canWrite() ) {
-        ::EnterCriticalSection( &m_socketWriteSection );
         send( m_socket, &data[0], data.size(), 0 );
-        ::LeaveCriticalSection( &m_socketWriteSection );
     }
 }
 

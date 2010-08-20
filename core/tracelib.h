@@ -6,6 +6,7 @@
 #include "backtrace.h"
 #include "filter.h"
 #include "getcurrentthreadid.h"
+#include "mutex.h"
 #include "output.h"
 #include "serializer.h"
 #include "variabledumping.h"
@@ -143,6 +144,7 @@ private:
 
     Serializer *m_serializer;
     Output *m_output;
+    Mutex m_outputMutex;
     std::vector<TracePointSet *> m_tracePointSets;
     Configuration *m_configuration;
     BacktraceGenerator m_backtraceGenerator;

@@ -51,7 +51,6 @@ private:
     unsigned short m_remotePort;
     SOCKET m_socket;
     HandleOwner m_connectionEstablishedEvent;
-    CRITICAL_SECTION m_socketWriteSection;
     ErrorLog *m_errorLog;
 };
 
