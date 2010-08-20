@@ -55,13 +55,9 @@ TraceEntry::~TraceEntry()
 Trace::Trace()
     : m_serializer( 0 ),
     m_output( 0 ),
-    m_configuration( Configuration::fromFile( Configuration::defaultFileName() ) )
+    m_configuration( 0 )
 {
-    if ( m_configuration ) {
-        m_serializer = m_configuration->configuredSerializer();
-        m_output = m_configuration->configuredOutput();
-        m_tracePointSets = m_configuration->configuredTracePointSets();
-    }
+    reloadConfiguration( Configuration::defaultFileName() );
 }
 
 Trace::~Trace()
@@ -75,12 +71,57 @@ Trace::~Trace()
         MutexLocker outputLocker( m_outputMutex );
         delete m_output;
     }
-    deleteRange( m_tracePointSets.begin(), m_tracePointSets.end() );
-    delete m_configuration;
+
+    {
+        MutexLocker configurationLocker( m_configurationMutex );
+        deleteRange( m_tracePointSets.begin(), m_tracePointSets.end() );
+        delete m_configuration;
+    }
+}
+
+void Trace::reloadConfiguration( const string &fileName )
+{
+    Configuration *cfg = Configuration::fromFile( fileName );
+    if ( cfg ) {
+        {
+            MutexLocker serializerLocker( m_serializerMutex );
+            delete m_serializer;
+            m_serializer = cfg->configuredSerializer();
+        }
+        {
+            MutexLocker outputLocker( m_outputMutex );
+            delete m_output;
+            m_output = cfg->configuredOutput();
+        }
+        {
+            MutexLocker configurationLocker( m_configurationMutex );
+            deleteRange( m_tracePointSets.begin(), m_tracePointSets.end() );
+            m_tracePointSets = cfg->configuredTracePointSets();
+            delete m_configuration;
+            m_configuration = cfg;
+        }
+    } else {
+        {
+            MutexLocker serializerLocker( m_serializerMutex );
+            delete m_serializer;
+            m_serializer = 0;
+        }
+        {
+            MutexLocker outputLocker( m_outputMutex );
+            delete m_output;
+        }
+        {
+            MutexLocker configurationLocker( m_configurationMutex );
+            deleteRange( m_tracePointSets.begin(), m_tracePointSets.end() );
+            delete m_configuration;
+            m_configuration = 0;
+        }
+    }
 }
 
 void Trace::configureTracePoint( TracePoint *tracePoint ) const
 {
+    MutexLocker configurationLocker( m_configurationMutex );
     tracePoint->lastUsedConfiguration = m_configuration;
 
     if ( m_tracePointSets.empty() ) {

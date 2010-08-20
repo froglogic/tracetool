@@ -142,12 +142,15 @@ private:
     Trace( const Trace &trace );
     void operator=( const Trace &trace );
 
+    void reloadConfiguration( const std::string &fileName );
+
     Serializer *m_serializer;
     Mutex m_serializerMutex;
     Output *m_output;
     Mutex m_outputMutex;
     std::vector<TracePointSet *> m_tracePointSets;
     Configuration *m_configuration;
+    mutable Mutex m_configurationMutex;
     BacktraceGenerator m_backtraceGenerator;
 };
 
