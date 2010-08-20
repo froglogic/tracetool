@@ -112,15 +112,8 @@ void Trace::visitTracePoint( TracePoint *tracePoint,
         configureTracePoint( tracePoint );
     }
 
-    if ( !tracePoint->active ) {
+    if ( !tracePoint->active || !m_serializer || !m_output ) {
         return;
-    }
-
-    {
-        MutexLocker serializerLocker( m_serializerMutex );
-        if ( !m_serializer ) {
-            return;
-        }
     }
 
     {
@@ -144,28 +137,20 @@ void Trace::visitTracePoint( TracePoint *tracePoint,
 
 void Trace::addEntry( const TraceEntry &entry )
 {
+    vector<char> data;
     {
         MutexLocker serializerLocker( m_serializerMutex );
         if ( !m_serializer ) {
             return;
         }
-    }
-
-    {
-        MutexLocker outputLocker( m_outputMutex );
-        if ( !m_output || !m_output->canWrite() ) {
-            return;
-        }
-    }
-
-    vector<char> data;
-    {
-        MutexLocker serializerLocker( m_serializerMutex );
         data = m_serializer->serialize( entry );
     }
 
     if ( !data.empty() ) {
         MutexLocker outputLocker( m_outputMutex );
+        if ( !m_output || !m_output->canWrite() ) {
+            return;
+        }
         m_output->write( data );
     }
 }
