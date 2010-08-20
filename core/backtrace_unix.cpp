@@ -137,17 +137,21 @@ static bool parseLine( const string line, StackFrame *frame )
         int pe = line.find( ')', pb + 1 );
         if ( pe != string::npos ) {
             int pp = line.rfind( '+', pe );
+            if ( pp < pb )
+                pp = (int)string::npos;
 
-            string sym = line.substr( pb+1, (pp > pb ? pp : pe)-pb-1 );
+            string sym = line.substr( pb+1, (pp == string::npos ? pe : pp)-pb-1 );
             int stat;
             abi::__cxa_demangle( sym.c_str(),
                     symbol_buffer,
                     &symbol_buffer_length, &stat );
             if ( stat == 0 )
                 frame->function = symbol_buffer;
+            else
+                frame->function = sym;
 
-            if ( pp != string::npos && pp > pb ) {
-                string off = line.substr( pp, pp - pb - 1 );
+            if ( pp != string::npos ) {
+                string off = line.substr( pp, pe - pp );
                 frame->functionOffset = strtol( off.c_str(), NULL, 16 );
             }
 
