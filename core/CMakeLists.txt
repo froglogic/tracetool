@@ -25,6 +25,7 @@ SET(TRACELIB_SOURCES
         errorlog.cpp
         variabledumping.cpp
         filemodificationmonitor.cpp
+        networkoutput.cpp
         ${PROJECT_SOURCE_DIR}/3rdparty/wildcmp/wildcmp.c
         ${PROJECT_SOURCE_DIR}/3rdparty/tinyxml/tinyxml.cpp
         ${PROJECT_SOURCE_DIR}/3rdparty/tinyxml/tinyxmlerror.cpp
@@ -35,7 +36,6 @@ IF(WIN32)
             ${TRACELIB_SOURCES}
             backtrace_win.cpp
             configuration_win.cpp
-            networkoutput_win.cpp
             crashhandler_win.cpp
             getcurrentthreadid_win.cpp
             filemodificationmonitor_win.cpp
@@ -46,7 +46,6 @@ ELSE(WIN32)
             ${TRACELIB_SOURCES}
             backtrace_unix.cpp
             configuration_unix.cpp
-            networkoutput_unix.cpp
             getcurrentthreadid_unix.cpp
             filemodificationmonitor_unix.cpp
             mutex_unix.cpp)

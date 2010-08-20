@@ -1,13 +1,28 @@
+#ifdef _WIN32
+/* Avoids that winsock.h is included by windows.h; winsock.h conflicts
+ * with winsock2.h
+ */
+#  ifndef WIN32_LEAN_AND_MEAN
+#    define WIN32_LEAN_AND_MEAN
+#  endif
+#endif
+
 #include "output.h"
 #include "errorlog.h"
 
 #include <string.h>
-#include <unistd.h>
 #include <assert.h>
 #include <errno.h>
 #include <sys/types.h>
-#include <sys/socket.h>
-#include <netdb.h>
+
+#ifdef _WIN32
+#  include <windows.h>
+#  include <winsock2.h>
+#else
+#  include <sys/socket.h>
+#  include <unistd.h>
+#  include <netdb.h>
+#endif
 
 using namespace std;
 
@@ -37,7 +52,11 @@ static int writeTo( int fd, const char *data, const int length, ErrorLog *log )
 {
     int written = 0;
     do {
+#ifdef _WIN32
+        int nr = send( fd, data + written, length - written, 0 );
+#else
         int nr = write( fd, data + written, length - written );
+#endif
         if ( nr > 0 )
             written += nr;
         else if ( nr < 0 && errno != EINTR )
@@ -51,12 +70,28 @@ static int writeTo( int fd, const char *data, const int length, ErrorLog *log )
 
 NetworkOutput::NetworkOutput( ErrorLog *log, const string &host, unsigned short port )
     : m_host( host ), m_port( port ), m_socket( -1 ), m_error_log( log )
-{}
+{
+#ifdef _WIN32
+    WSADATA wsaData;
+    int err = ::WSAStartup( MAKEWORD( 2, 2 ), &wsaData );
+    if ( err != 0 ) {
+        log->write( "WSAStartup failed!" );
+        return;
+    }
+
+    if ( LOBYTE( wsaData.wVersion ) != 2 || HIBYTE( wsaData.wVersion ) != 2 ) {
+        log->write( "Failed to get proper WinSock version!" );
+        return;
+    }
+#endif
+}
 
 NetworkOutput::~NetworkOutput()
 {
-    if ( m_socket != -1 )
-        ::close( m_socket );
+    close();
+#ifdef _WIN32
+    ::WSACleanup();
+#endif
 }
 
 bool NetworkOutput::open()
@@ -75,10 +110,19 @@ void NetworkOutput::write( const vector<char> &data )
 {
     if ( m_socket != -1 ) {
         if ( writeTo( m_socket, &data[0], data.size(), m_error_log ) < data.size() ) {
-            ::close( m_socket );
-            m_socket = -1;
+            close();
         }
     }
+}
+
+void NetworkOutput::close()
+{
+#ifdef _WIN32
+    closesocket( m_socket );
+#else
+    ::close( m_socket );
+#endif
+    m_socket = -1;
 }
 
 TRACELIB_NAMESPACE_END

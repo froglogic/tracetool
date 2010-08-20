@@ -7,6 +7,8 @@
 
 TRACELIB_NAMESPACE_BEGIN
 
+class ErrorLog;
+
 class Output
 {
 public:
@@ -43,13 +45,25 @@ private:
     std::vector<Output *> m_outputs;
 };
 
-TRACELIB_NAMESPACE_END
+class NetworkOutput : public Output
+{
+    std::string m_host;
+    unsigned short m_port;
+    int m_socket;
+    ErrorLog *m_error_log;
 
-#ifdef _WIN32
-#  include "networkoutput_win.h"
-#else
-#  include "networkoutput_unix.h"
-#endif
+    void close();
+
+public:
+    NetworkOutput( ErrorLog *errorLog, const std::string &remoteHost, unsigned short remotePort );
+    virtual ~NetworkOutput();
+
+    virtual bool open();
+    virtual bool canWrite() const;
+    virtual void write( const std::vector<char> &data );
+};
+
+TRACELIB_NAMESPACE_END
 
 #endif // !defined(TRACELIB_OUTPUT_H)
 
