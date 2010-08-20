@@ -14,6 +14,7 @@
 # include <dlfcn.h>
 #endif
 #include <demangle.h>
+#include <dlfcn.h>
 #if defined(__linux)
 # include <bfd.h>
 #endif
@@ -115,6 +116,11 @@ static bool bfdAddressInfo( bfd_vma addr, StackFrame *frame )
             frame->sourceFile = bfd_sym.filename;
         frame->lineNumber = bfd_sym.linenr;
         frame->functionOffset = bfd_sym.offset;
+
+        Dl_info dl_info;
+        if ( dladdr( (void*)addr, &dl_info ) )
+            frame->module = dl_info.dli_fname;
+
         return true;
     }
     return false;
