@@ -1,5 +1,6 @@
 SET(GUI_SOURCES
   main.cpp
+  settings.cpp
   mainwindow.cpp
   entryitemmodel.cpp
   ../server/server.cpp)

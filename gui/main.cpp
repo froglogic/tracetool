@@ -3,6 +3,7 @@
 #include <QMessageBox>
 
 #include "mainwindow.h"
+#include "settings.h"
 
 int main(int argc, char **argv)
 {
@@ -16,15 +17,22 @@ int main(int argc, char **argv)
 
     const QString databaseFileName = QFile::decodeName(a.argv()[1]);
 
+    Settings settings;
     QString errMsg;
-    MainWindow mw;
+    MainWindow mw(&settings);
     if (!mw.setDatabase(databaseFileName, &errMsg)) {
         QMessageBox::critical(0, "Database error",
                               errMsg);
         return 2;
     }
 
+    settings.restoreSession();
+
     mw.show();
 
-    return a.exec();
+    int statusCode = a.exec();
+
+    settings.saveSession();
+
+    return statusCode;
 }
