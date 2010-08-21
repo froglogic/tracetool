@@ -128,7 +128,7 @@ Server::Server( const QString &databaseFileName, unsigned short port,
     }
 
     if ( initializeDatabase ) {
-        QSqlQuery query;
+        QSqlQuery query( m_db );
         query.exec( "BEGIN TRANSACTION;" );
         for ( int i = 0; i < sizeof(schemaStatements) / sizeof(schemaStatements[0]); ++i ) {
             query.exec( schemaStatements[i] );
