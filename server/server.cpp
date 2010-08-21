@@ -120,7 +120,7 @@ Server::Server( const QString &databaseFileName, unsigned short port,
 
     const bool initializeDatabase = !QFile::exists( databaseFileName );
 
-    m_db = QSqlDatabase::addDatabase( "QSQLITE" );
+    m_db = QSqlDatabase::addDatabase( "QSQLITE", "server" );
     m_db.setDatabaseName( databaseFileName );
     if ( !m_db.open() ) {
         qWarning() << "Failed to open SQL database";
