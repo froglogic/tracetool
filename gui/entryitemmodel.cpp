@@ -38,7 +38,7 @@ bool EntryItemModel::setDatabase(const QString &databaseFileName,
     }
 
     // will create new db file if necessary
-    m_server = new Server(databaseFileName, 12382);
+    m_server = new Server(databaseFileName, 12382, this);
     
     m_db = QSqlDatabase::addDatabase(driverName, "itemmodel");
     m_db.setDatabaseName(databaseFileName);
