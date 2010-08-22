@@ -1,5 +1,6 @@
 SET(SERVER_SOURCES
         main.cpp
+        database.cpp
         server.cpp)
 
 SET(SERVER_MOCABLES

@@ -3,6 +3,7 @@ SET(GUI_SOURCES
   settings.cpp
   mainwindow.cpp
   entryitemmodel.cpp
+  ../server/database.cpp
   ../server/server.cpp)
 
 SET(GUI_MOCABLES

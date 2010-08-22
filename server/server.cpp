@@ -1,5 +1,7 @@
 #include "server.h"
 
+#include "database.h"
+
 #include <QDomDocument>
 #include <QFile>
 #include <QSqlDatabase>
@@ -79,6 +81,8 @@ Server::Server( const QString &databaseFileName, unsigned short port,
     m_tcpServer( 0 )
 {
     static const char *schemaStatements[] = {
+        "CREATE TABLE schema_downgrade (from_version INTEGER,"
+                                      " statements TEXT);",
         "CREATE TABLE trace_entry (id INTEGER PRIMARY KEY AUTOINCREMENT,"
                                   " traced_thread_id INTEGER,"
                                   " timestamp DATETIME,"
@@ -134,6 +138,12 @@ Server::Server( const QString &databaseFileName, unsigned short port,
             query.exec( schemaStatements[i] );
         }
         query.exec( "COMMIT;" );
+    } else {
+        QString errMsg;
+        if ( !Database::checkCompatibility( m_db, &errMsg ) ) {
+            qWarning() << tr("Error on version check: %1").arg( errMsg );
+            return;
+        }
     }
 
     m_tcpServer = new QTcpServer( this );
