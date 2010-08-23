@@ -48,7 +48,7 @@ static int connectTo( const string host, unsigned short port, ErrorLog *log )
     return -1;
 }
 
-static int writeTo( int fd, const char *data, const int length, ErrorLog *log )
+static size_t writeTo( int fd, const char *data, const int length, ErrorLog *log )
 {
     int written = 0;
     do {
@@ -65,7 +65,8 @@ static int writeTo( int fd, const char *data, const int length, ErrorLog *log )
 
     if ( length != written )
         log->write( "write: %s\n", strerror( errno ) );
-    return written;
+    assert( written >= 0 );
+    return (size_t)written;
 }
 
 NetworkOutput::NetworkOutput( ErrorLog *log, const string &host, unsigned short port )
