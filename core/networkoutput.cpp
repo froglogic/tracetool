@@ -24,6 +24,10 @@
 #  include <netdb.h>
 #endif
 
+#ifdef __FreeBSD__
+#  include <netinet/in.h>
+#endif
+
 using namespace std;
 
 TRACELIB_NAMESPACE_BEGIN
