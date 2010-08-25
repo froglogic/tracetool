@@ -71,10 +71,11 @@ static void testStrictPathFilter()
 
     PathFilter samePathUCFilter;
     samePathUCFilter.setPath( StrictMatch, "C:\\FOO\\BAR\\MYSRC.CPP" );
-    verify( "samePathUCFilter on tpLowerCase", true, samePathUCFilter.acceptsTracePoint( &tpLowerCase ) );
 #ifdef _WIN32
+    verify( "samePathUCFilter on tpLowerCase", true, samePathUCFilter.acceptsTracePoint( &tpLowerCase ) );
     verify( "samePathUCFilter on tpUpperCase", true, samePathUCFilter.acceptsTracePoint( &tpUpperCase ) );
 #else
+    verify( "samePathUCFilter on tpLowerCase", false, samePathUCFilter.acceptsTracePoint( &tpLowerCase ) );
     verify( "samePathUCFilter on tpUpperCase", false, samePathUCFilter.acceptsTracePoint( &tpUpperCase ) );
 #endif
 
