@@ -19,3 +19,4 @@ CONFIGURE_FILE(Doxyfile.in ${PROJECT_BINARY_DIR}/Doxyfile)
 INCLUDE(${CMAKE_ROOT}/Modules/FindDoxygen.cmake)
 ADD_CUSTOM_TARGET(api-docs ${DOXYGEN} \"${PROJECT_BINARY_DIR}/Doxyfile\" COMMENT "Generating API documentation")
 
+ENABLE_TESTING()
