@@ -6,6 +6,7 @@
 #include <QFile>
 #include <QSqlDatabase>
 #include <QSqlDriver>
+#include <QSqlError>
 #include <QSqlField>
 #include <QSqlQuery>
 #include <QTcpServer>
@@ -13,6 +14,7 @@
 #include <QVariant>
 
 #include <cassert>
+#include <stdexcept>
 
 using namespace std;
 
