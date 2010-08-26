@@ -211,9 +211,9 @@ void Server::storeEntry( const TraceEntry &e )
     unsigned int pathId;
     bool ok;
     {
-        query.exec( QString( "SELECT id FROM path_name WHERE name='%1';" ).arg( e.path ) );
+        query.exec( QString( "SELECT id FROM path_name WHERE name=%1;" ).arg( formatValue( e.path ) ) );
         if ( !query.next() ) {
-            query.exec( QString( "INSERT INTO path_name VALUES(NULL, '%1');" ).arg( e.path ) );
+            query.exec( QString( "INSERT INTO path_name VALUES(NULL, %1);" ).arg( formatValue( e.path ) ) );
             query.exec( "SELECT last_insert_rowid() FROM path_name LIMIT 1;" );
             query.next();
         }
@@ -225,9 +225,9 @@ void Server::storeEntry( const TraceEntry &e )
 
     unsigned int functionId;
     {
-        query.exec( QString( "SELECT id FROM function_name WHERE name='%1';" ).arg( e.function ) );
+        query.exec( QString( "SELECT id FROM function_name WHERE name=%1;" ).arg( formatValue( e.function ) ) );
         if ( !query.next() ) {
-            query.exec( QString( "INSERT INTO function_name VALUES(NULL, '%1');" ).arg( e.function ) );
+            query.exec( QString( "INSERT INTO function_name VALUES(NULL, %1);" ).arg( formatValue( e.function ) ) );
             query.exec( "SELECT last_insert_rowid() FROM function_name LIMIT 1;" );
             query.next();
         }
@@ -239,9 +239,9 @@ void Server::storeEntry( const TraceEntry &e )
 
     unsigned int processId;
     {
-        query.exec( QString( "SELECT id FROM process WHERE name='%1' AND pid=%2;" ).arg( e.processName ).arg( e.pid ) );
+        query.exec( QString( "SELECT id FROM process WHERE name=%1 AND pid=%2;" ).arg( formatValue( e.processName ) ).arg( e.pid ) );
         if ( !query.next() ) {
-            query.exec( QString( "INSERT INTO process VALUES(NULL, '%1', %2);" ).arg( e.processName ).arg( e.pid ) );
+            query.exec( QString( "INSERT INTO process VALUES(NULL, %1, %2);" ).arg( formatValue( e.processName ) ).arg( e.pid ) );
             query.exec( "SELECT last_insert_rowid() FROM process LIMIT 1;" );
             query.next();
         }
@@ -280,9 +280,9 @@ void Server::storeEntry( const TraceEntry &e )
     }
 
     query.exec( QString( "INSERT INTO trace_entry VALUES(NULL, %1, %2, %3, %4)" )
-                    .arg( formatValue( tracedThreadId ) )
+                    .arg( tracedThreadId )
                     .arg( formatValue( e.timestamp ) )
-                    .arg( formatValue( tracepointId ) )
+                    .arg( tracepointId )
                     .arg( formatValue( e.message ) ) );
     query.exec( "SELECT last_insert_rowid() FROM trace_entry LIMIT 1;" );
     query.next();
@@ -300,7 +300,7 @@ void Server::storeEntry( const TraceEntry &e )
                     assert( !"Unreachable" );
             }
 
-            query.exec( QString( "INSERT INTO variable VALUES(%1, '%2', '%3', %4);" ).arg( traceentryId ).arg( it->name ).arg( it->value ).arg( typeCode ) );
+            query.exec( QString( "INSERT INTO variable VALUES(%1, %2, %3, %4);" ).arg( traceentryId ).arg( formatValue( it->name ) ).arg( formatValue( it->value ) ).arg( typeCode ) );
         }
     }
 
@@ -308,7 +308,7 @@ void Server::storeEntry( const TraceEntry &e )
         unsigned int depthCount = 0;
         QList<StackFrame>::ConstIterator it, end = e.backtrace.end();
         for ( it = e.backtrace.begin(); it != end; ++it, ++depthCount ) {
-            query.exec( QString( "INSERT INTO stackframe VALUES(%1, %2, '%3', '%4', %5, '%6', %7);" ).arg( traceentryId ).arg( depthCount ).arg( it->module ).arg( it->function ).arg( it->functionOffset ).arg( it->sourceFile ).arg( it->lineNumber ) );
+            query.exec( QString( "INSERT INTO stackframe VALUES(%1, %2, %3, %4, %5, %6, %7);" ).arg( traceentryId ).arg( depthCount ).arg( formatValue( it->module ) ).arg( formatValue( it->function ) ).arg( it->functionOffset ).arg( formatValue( it->sourceFile ) ).arg( it->lineNumber ) );
         }
     }
 
