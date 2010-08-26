@@ -19,6 +19,13 @@ Serializer::~Serializer()
 {
 }
 
+static string timeToString( time_t t )
+{
+    char timestamp[64] = { '\0' };
+    strftime(timestamp, sizeof(timestamp), "%d.%m.%Y %H:%M:%S", localtime(&t));
+    return string( (const char *)&timestamp );
+}
+
 PlaintextSerializer::PlaintextSerializer()
     : m_showTimestamp( true )
 {
@@ -34,12 +41,11 @@ vector<char> PlaintextSerializer::serialize( const TraceEntry &entry )
     ostringstream str;
 
     if ( m_showTimestamp ) {
-        char timestamp[64] = { '\0' };
-        strftime(timestamp, sizeof(timestamp), "%d.%m.%Y %H:%M:%S: ", localtime(&entry.timeStamp));
-        str << timestamp;
+        str << timeToString( entry.timeStamp );
+        str << ": ";
     }
 
-    str << "Process " << entry.process.id << " (Thread " << entry.threadId << "): ";
+    str << "Process " << entry.process.id << " [started at " << timeToString( entry.process.startTime ) << "] (Thread " << entry.threadId << "): ";
 
     switch ( entry.tracePoint->type ) {
         case TracePoint::ErrorPoint:
@@ -161,7 +167,7 @@ void XMLSerializer::setBeautifiedOutput( bool beautifiedOutput )
 vector<char> XMLSerializer::serialize( const TraceEntry &entry )
 {
     ostringstream str;
-    str << "<traceentry pid=\"" << entry.process.id << "\" tid=\"" << entry.threadId << "\" time=\"" << entry.timeStamp << "\">";
+    str << "<traceentry pid=\"" << entry.process.id << "\" process_starttime=\"" << entry.process.startTime << "\" tid=\"" << entry.threadId << "\" time=\"" << entry.timeStamp << "\">";
 
     std::string indent;
     if ( m_beautifiedOutput ) {
