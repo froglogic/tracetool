@@ -111,6 +111,7 @@ private:
 struct TracedProcess
 {
     ProcessId id;
+    time_t startTime;
 };
 
 struct TraceEntry
