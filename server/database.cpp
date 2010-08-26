@@ -13,7 +13,7 @@ int Database::currentVersion( QSqlDatabase db, QString *errMsg )
 {
     assert( errMsg != NULL );
     QSqlQuery query( "SELECT COUNT(*) FROM schema_downgrade;", db );
-    if ( !query.exec() ) {
+    if ( !query.isValid() ) {
         *errMsg = query.lastError().text();
         return -1;
     }
