@@ -118,7 +118,12 @@ void Server::handleTraceEntryXMLData( const QByteArray &data )
     }
 
     const TraceEntry e = deserializeTraceEntry( doc.documentElement() );
-    storeEntry( e );
+    try {
+        storeEntry( e );
+    } catch ( const runtime_error &e ) {
+        qWarning() << e.what();
+        return;
+    }
     emit traceEntryReceived( e );
 }
 
@@ -146,92 +151,118 @@ QString Server::formatValue( const T &v ) const
     return m_db.driver()->formatValue( field );
 }
 
+class Transaction
+{
+public:
+    Transaction( QSqlDatabase db )
+        : m_query( db ), m_commitChanges( true ) {
+        m_query.setForwardOnly( true );
+        m_query.exec( "BEGIN TRANSACTION;" );
+    }
+
+    ~Transaction() {
+        m_query.exec( m_commitChanges ? "COMMIT;" : "ROLLBACK;" );
+    }
+
+    QVariant exec( const QString &statement ) {
+        if ( !m_query.exec( statement ) ) {
+            m_commitChanges = false;
+
+            const QString msg = QString( "Failed to store entry in database: executing SQL command '%1' failed: %2" )
+                            .arg( statement )
+                            .arg( m_query.lastError().text() );
+            throw runtime_error( msg.toLatin1().data() );
+        }
+        if ( m_query.next() ) {
+            return m_query.value( 0 );
+        }
+        return QVariant();
+    }
+
+private:
+    Transaction( const Transaction &other );
+    void operator=( const Transaction &rhs );
+
+    QSqlQuery m_query;
+    bool m_commitChanges;
+};
+
 void Server::storeEntry( const TraceEntry &e )
 {
-    QSqlQuery query( m_db );
-    query.setForwardOnly( true );
-
-    query.exec( "BEGIN TRANSACTION;" );
+    Transaction transaction( m_db );
 
     unsigned int pathId;
     bool ok;
     {
-        query.exec( QString( "SELECT id FROM path_name WHERE name=%1;" ).arg( formatValue( e.path ) ) );
-        if ( !query.next() ) {
-            query.exec( QString( "INSERT INTO path_name VALUES(NULL, %1);" ).arg( formatValue( e.path ) ) );
-            query.exec( "SELECT last_insert_rowid() FROM path_name LIMIT 1;" );
-            query.next();
+        QVariant v = transaction.exec( QString( "SELECT id FROM path_name WHERE name=%1;" ).arg( formatValue( e.path ) ) );
+        if ( !v.isValid() ) {
+            transaction.exec( QString( "INSERT INTO path_name VALUES(NULL, %1);" ).arg( formatValue( e.path ) ) );
+            v = transaction.exec( "SELECT last_insert_rowid() FROM path_name LIMIT 1;" );
         }
-        pathId = query.value( 0 ).toUInt( &ok );
+        pathId = v.toUInt( &ok );
         if ( !ok ) {
-            qWarning() << "Database corrupt? Got non-numeric integer field";
+            throw runtime_error( "Failed to store entry in database: read non-numeric path id from database - corrupt database?" );
         }
     }
 
     unsigned int functionId;
     {
-        query.exec( QString( "SELECT id FROM function_name WHERE name=%1;" ).arg( formatValue( e.function ) ) );
-        if ( !query.next() ) {
-            query.exec( QString( "INSERT INTO function_name VALUES(NULL, %1);" ).arg( formatValue( e.function ) ) );
-            query.exec( "SELECT last_insert_rowid() FROM function_name LIMIT 1;" );
-            query.next();
+        QVariant v = transaction.exec( QString( "SELECT id FROM function_name WHERE name=%1;" ).arg( formatValue( e.function ) ) );
+        if ( !v.isValid() ) {
+            transaction.exec( QString( "INSERT INTO function_name VALUES(NULL, %1);" ).arg( formatValue( e.function ) ) );
+            v = transaction.exec( "SELECT last_insert_rowid() FROM function_name LIMIT 1;" );
         }
-        functionId = query.value( 0 ).toUInt( &ok );
+        functionId = v.toUInt( &ok );
         if ( !ok ) {
-            qWarning() << "Database corrupt? Got non-numeric integer field";
+            throw runtime_error( "Failed to store entry in database: read non-numeric function id from database - corrupt database?" );
         }
     }
 
     unsigned int processId;
     {
-        query.exec( QString( "SELECT id FROM process WHERE name=%1 AND pid=%2;" ).arg( formatValue( e.processName ) ).arg( e.pid ) );
-        if ( !query.next() ) {
-            query.exec( QString( "INSERT INTO process VALUES(NULL, %1, %2);" ).arg( formatValue( e.processName ) ).arg( e.pid ) );
-            query.exec( "SELECT last_insert_rowid() FROM process LIMIT 1;" );
-            query.next();
+        QVariant v = transaction.exec( QString( "SELECT id FROM process WHERE name=%1 AND pid=%2;" ).arg( formatValue( e.processName ) ).arg( e.pid ) );
+        if ( !v.isValid() ) {
+            transaction.exec( QString( "INSERT INTO process VALUES(NULL, %1, %2, 0, 0);" ).arg( formatValue( e.processName ) ).arg( e.pid ) );
+            v = transaction.exec( "SELECT last_insert_rowid() FROM process LIMIT 1;" );
         }
-        processId = query.value( 0 ).toUInt( &ok );
+        processId = v.toUInt( &ok );
         if ( !ok ) {
-            qWarning() << "Database corrupt? Got non-numeric integer field";
+            throw runtime_error( "Failed to store entry in database: read non-numeric process id from database - corrupt database?" );
         }
     }
 
     unsigned int tracedThreadId;
     {
-        query.exec( QString( "SELECT id FROM traced_thread WHERE process_id=%1 AND tid=%2;" ).arg( processId ).arg( e.tid ) );
-        if ( !query.next() ) {
-            query.exec( QString( "INSERT INTO traced_thread VALUES(NULL, %1, %2);" ).arg( processId ).arg( e.tid ) );
-            query.exec( "SELECT last_insert_rowid() FROM traced_thread LIMIT 1;" );
-            query.next();
+        QVariant v = transaction.exec( QString( "SELECT id FROM traced_thread WHERE process_id=%1 AND tid=%2;" ).arg( processId ).arg( e.tid ) );
+        if ( !v.isValid() ) {
+            transaction.exec( QString( "INSERT INTO traced_thread VALUES(NULL, %1, %2);" ).arg( processId ).arg( e.tid ) );
+            v = transaction.exec( "SELECT last_insert_rowid() FROM traced_thread LIMIT 1;" );
         }
-        tracedThreadId = query.value( 0 ).toUInt( &ok );
+        tracedThreadId = v.toUInt( &ok );
         if ( !ok ) {
-            qWarning() << "Database corrupt? Got non-numeric integer field";
+            throw runtime_error( "Failed to store entry in database: read non-numeric traced thread id from database - corrupt database?" );
         }
     }
 
     unsigned int tracepointId;
     {
-        query.exec( QString( "SELECT id FROM trace_point WHERE verbosity=%1 AND type=%2 AND path_id=%3 AND line=%4 AND function_id=%5;" ).arg( e.verbosity ).arg( e.type ).arg( pathId ).arg( e.lineno ).arg( functionId ) );
-        if ( !query.next() ) {
-            query.exec( QString( "INSERT INTO trace_point VALUES(NULL, %1, %2, %3, %4, %5);" ).arg( e.verbosity ).arg( e.type ).arg( pathId ).arg( e.lineno ).arg( functionId ) );
-            query.exec( "SELECT last_insert_rowid() FROM trace_point LIMIT 1;" );
-            query.next();
+        QVariant v = transaction.exec( QString( "SELECT id FROM trace_point WHERE verbosity=%1 AND type=%2 AND path_id=%3 AND line=%4 AND function_id=%5;" ).arg( e.verbosity ).arg( e.type ).arg( pathId ).arg( e.lineno ).arg( functionId ) );
+        if ( !v.isValid() ) {
+            transaction.exec( QString( "INSERT INTO trace_point VALUES(NULL, %1, %2, %3, %4, %5);" ).arg( e.verbosity ).arg( e.type ).arg( pathId ).arg( e.lineno ).arg( functionId ) );
+            v = transaction.exec( "SELECT last_insert_rowid() FROM trace_point LIMIT 1;" );
         }
-        tracepointId = query.value( 0 ).toUInt( &ok );
+        tracepointId = v.toUInt( &ok );
         if ( !ok ) {
-            qWarning() << "Database corrupt? Got non-numeric integer field";
+            throw runtime_error( "Failed to store entry in database: read non-numeric tracepoint id from database - corrupt database?" );
         }
     }
 
-    query.exec( QString( "INSERT INTO trace_entry VALUES(NULL, %1, %2, %3, %4)" )
+    transaction.exec( QString( "INSERT INTO trace_entry VALUES(NULL, %1, %2, %3, %4)" )
                     .arg( tracedThreadId )
                     .arg( formatValue( e.timestamp ) )
                     .arg( tracepointId )
                     .arg( formatValue( e.message ) ) );
-    query.exec( "SELECT last_insert_rowid() FROM trace_entry LIMIT 1;" );
-    query.next();
-    const unsigned int traceentryId = query.value( 0 ).toUInt();
+    const unsigned int traceentryId = transaction.exec( "SELECT last_insert_rowid() FROM trace_entry LIMIT 1;" ).toUInt();
 
     {
         QList<Variable>::ConstIterator it, end = e.variables.end();
@@ -245,7 +276,7 @@ void Server::storeEntry( const TraceEntry &e )
                     assert( !"Unreachable" );
             }
 
-            query.exec( QString( "INSERT INTO variable VALUES(%1, %2, %3, %4);" ).arg( traceentryId ).arg( formatValue( it->name ) ).arg( formatValue( it->value ) ).arg( typeCode ) );
+            transaction.exec( QString( "INSERT INTO variable VALUES(%1, %2, %3, %4);" ).arg( traceentryId ).arg( formatValue( it->name ) ).arg( formatValue( it->value ) ).arg( typeCode ) );
         }
     }
 
@@ -253,10 +284,8 @@ void Server::storeEntry( const TraceEntry &e )
         unsigned int depthCount = 0;
         QList<StackFrame>::ConstIterator it, end = e.backtrace.end();
         for ( it = e.backtrace.begin(); it != end; ++it, ++depthCount ) {
-            query.exec( QString( "INSERT INTO stackframe VALUES(%1, %2, %3, %4, %5, %6, %7);" ).arg( traceentryId ).arg( depthCount ).arg( formatValue( it->module ) ).arg( formatValue( it->function ) ).arg( it->functionOffset ).arg( formatValue( it->sourceFile ) ).arg( it->lineNumber ) );
+            transaction.exec( QString( "INSERT INTO stackframe VALUES(%1, %2, %3, %4, %5, %6, %7);" ).arg( traceentryId ).arg( depthCount ).arg( formatValue( it->module ) ).arg( formatValue( it->function ) ).arg( it->functionOffset ).arg( formatValue( it->sourceFile ) ).arg( it->lineNumber ) );
         }
     }
-
-    query.exec( "COMMIT;" );
 }
 
