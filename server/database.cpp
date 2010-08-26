@@ -93,9 +93,9 @@ static bool upgradeToVersion1(QSqlDatabase db, QString *errMsg)
 	"INSERT INTO process SELECT id, name, pid, start_time, end_time FROM process_backup;",
 	"DROP TABLE process_backup;",
 	"COMMIT;" };
+    QSqlQuery query(db);
     for (unsigned i = 0; i < sizeof(statements)/sizeof(char*); ++i) {
-	QSqlQuery query(statements[i], db);
-	if (!query.exec()) {
+	if (!query.exec(statements[i])) {
 	    *errMsg = query.lastError().text();
 	    return false;
 	}
