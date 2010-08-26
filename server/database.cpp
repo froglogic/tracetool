@@ -133,5 +133,6 @@ bool Database::upgrade(QSqlDatabase db, QString *errMsg)
 	if (!upgradeVersion(db, v, errMsg))
 	    return false;
     }
+    return true;
 }
 
