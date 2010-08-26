@@ -9,6 +9,7 @@
 TRACELIB_NAMESPACE_BEGIN
 
 struct TraceEntry;
+struct ProcessShutdownEvent;
 class VariableValue;
 
 class Serializer
@@ -17,6 +18,7 @@ public:
     virtual ~Serializer();
 
     virtual std::vector<char> serialize( const TraceEntry &entry ) = 0;
+    virtual std::vector<char> serialize( const ProcessShutdownEvent &ev ) = 0;
 
 protected:
     Serializer();
@@ -33,6 +35,7 @@ public:
 
     void setTimestampsShown( bool timestamps );
     virtual std::vector<char> serialize( const TraceEntry &entry );
+    virtual std::vector<char> serialize( const ProcessShutdownEvent &ev );
 
 private:
     std::string convertVariableValue( const VariableValue &v ) const;
@@ -44,6 +47,7 @@ class CSVSerializer : public Serializer
 {
 public:
     virtual std::vector<char> serialize( const TraceEntry &entry );
+    virtual std::vector<char> serialize( const ProcessShutdownEvent &ev );
 
 private:
     std::string escape( const std::string &s ) const;
@@ -58,6 +62,7 @@ public:
     void setBeautifiedOutput( bool beautifiedOutput );
 
     virtual std::vector<char> serialize( const TraceEntry &entry );
+    virtual std::vector<char> serialize( const ProcessShutdownEvent &ev );
 
 private:
     std::string convertVariable( const char *name, const VariableValue &v ) const;

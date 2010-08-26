@@ -37,6 +37,12 @@ const TracedProcess TraceEntry::process = {
     getCurrentProcessStartTime()
 };
 
+ProcessShutdownEvent::ProcessShutdownEvent()
+    : process( &TraceEntry::process ),
+    shutdownTime( std::time( NULL ) )
+{
+}
+
 TraceEntry::TraceEntry( const TracePoint *tracePoint_, const char *msg )
     : threadId( getCurrentThreadId() ),
     timeStamp( std::time( NULL ) ),
@@ -65,10 +71,13 @@ Trace::Trace()
     const string cfgFileName = Configuration::defaultFileName();
     reloadConfiguration( cfgFileName );
     m_configFileMonitor = FileModificationMonitor::create( cfgFileName, this );
+    ShutdownNotifier::self().addObserver( this );
 }
 
 Trace::~Trace()
 {
+    ShutdownNotifier::self().removeObserver( this );
+
     {
         MutexLocker serializerLocker( m_serializerMutex );
         delete m_serializer;
@@ -222,6 +231,35 @@ void Trace::setOutput( Output *output )
 void Trace::handleFileModification( const std::string &fileName, NotificationReason reason )
 {
     reloadConfiguration( fileName );
+}
+
+void Trace::handleProcessShutdown()
+{
+    ProcessShutdownEvent ev;
+
+    vector<char> data;
+    {
+        MutexLocker serializerLocker( m_serializerMutex );
+        if ( !m_serializer ) {
+            return;
+        }
+        data = m_serializer->serialize( ev );
+    }
+
+    if ( !data.empty() ) {
+        MutexLocker outputLocker( m_outputMutex );
+        if ( !m_output || ( !m_output->canWrite() && !m_output->open() ) ) {
+            return;
+        }
+        m_output->write( data );
+
+        /* Delete the output object to make sure it flushes any data which
+         * it might have buffered. We most likely don't need the object anymore
+         * anyway - after all, the process is shutting down.
+         */
+        delete m_output;
+        m_output = 0;
+    }
 }
 
 static Trace *g_activeTrace = 0;

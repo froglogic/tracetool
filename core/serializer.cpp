@@ -95,6 +95,18 @@ vector<char> PlaintextSerializer::serialize( const TraceEntry &entry )
     return vector<char>( result.begin(), result.end() );
 }
 
+vector<char> PlaintextSerializer::serialize( const ProcessShutdownEvent &ev )
+{
+    ostringstream str;
+    str << timeToString( ev.shutdownTime ) << ": Process " << ev.process->id
+        << " [started at " << timeToString( ev.process->startTime ) << "]"
+        << " finished";
+
+    const string result = str.str();
+
+    return vector<char>( result.begin(), result.end() );
+}
+
 string PlaintextSerializer::convertVariableValue( const VariableValue &v ) const
 {
     switch ( v.type() ) {
@@ -122,6 +134,13 @@ vector<char> CSVSerializer::serialize( const TraceEntry &entry )
     vector<char> buf( result.begin(), result.end() );
     buf.push_back( '\0' );
     return buf;
+}
+
+vector<char> CSVSerializer::serialize( const ProcessShutdownEvent &ev )
+{
+    // XXX Implement me
+    assert( !"CSVSerializer::serialize( const ProcessShutdownEvent & ) not implemented!" );
+    return vector<char>();
 }
 
 string CSVSerializer::convertVariableValue( const VariableValue &v ) const
@@ -235,6 +254,20 @@ vector<char> XMLSerializer::serialize( const TraceEntry &entry )
     if ( m_beautifiedOutput ) {
         str << "\n";
     }
+
+    const string result = str.str();
+    return vector<char>( result.begin(), result.end() );
+}
+
+vector<char> XMLSerializer::serialize( const ProcessShutdownEvent &ev )
+{
+    ostringstream str;
+    str << "<shutdownevent pid=\"" << ev.process->id << "\" starttime=\"" << ev.process->startTime << "\" endtime=\"" << ev.shutdownTime << "\">";
+
+    static string myProcessName = Configuration::currentProcessName();
+    str << "<![CDATA[" << myProcessName << "]]>";
+
+    str << "</shutdownevent>";
 
     const string result = str.str();
     return vector<char>( result.begin(), result.end() );

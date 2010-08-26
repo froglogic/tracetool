@@ -10,6 +10,7 @@
 #include "mutex.h"
 #include "output.h"
 #include "serializer.h"
+#include "shutdownnotifier.h"
 #include "variabledumping.h"
 
 #include <vector>
@@ -128,7 +129,16 @@ struct TraceEntry
     const char * const message;
 };
 
-class Trace : public FileModificationMonitorObserver
+struct ProcessShutdownEvent
+{
+    ProcessShutdownEvent();
+
+    const TracedProcess * const process;
+    const time_t shutdownTime;
+};
+
+
+class Trace : public FileModificationMonitorObserver, public ShutdownNotifierObserver
 {
 public:
     Trace();
@@ -145,6 +155,8 @@ public:
     void setOutput( Output *output );
 
     virtual void handleFileModification( const std::string &fileName, NotificationReason reason );
+
+    virtual void handleProcessShutdown();
 
 private:
     Trace( const Trace &trace );
