@@ -65,7 +65,7 @@ QSqlDatabase Database::openAnyVersion(const QString &fileName,
     }
 
     QSqlDatabase db = QSqlDatabase::addDatabase(driverName,
-						"xxx");
+						fileName);
     db.setDatabaseName(fileName);
     if (!db.open()) {
         *errMsg = db.lastError().text();
