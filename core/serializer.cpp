@@ -39,7 +39,7 @@ vector<char> PlaintextSerializer::serialize( const TraceEntry &entry )
         str << timestamp;
     }
 
-    str << "Process " << entry.processId << " (Thread " << entry.threadId << "): ";
+    str << "Process " << entry.process.id << " (Thread " << entry.threadId << "): ";
 
     switch ( entry.tracePoint->type ) {
         case TracePoint::ErrorPoint:
@@ -161,7 +161,7 @@ void XMLSerializer::setBeautifiedOutput( bool beautifiedOutput )
 vector<char> XMLSerializer::serialize( const TraceEntry &entry )
 {
     ostringstream str;
-    str << "<traceentry pid=\"" << entry.processId << "\" tid=\"" << entry.threadId << "\" time=\"" << entry.timeStamp << "\">";
+    str << "<traceentry pid=\"" << entry.process.id << "\" tid=\"" << entry.threadId << "\" time=\"" << entry.timeStamp << "\">";
 
     std::string indent;
     if ( m_beautifiedOutput ) {

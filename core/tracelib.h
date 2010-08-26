@@ -108,12 +108,17 @@ private:
     const unsigned int m_actions;
 };
 
+struct TracedProcess
+{
+    ProcessId id;
+};
+
 struct TraceEntry
 {
     TraceEntry( const TracePoint *tracePoint_, const char *msg = 0 );
     ~TraceEntry();
 
-    static const ProcessId processId;
+    static const TracedProcess process;
     const ThreadId threadId;
     const time_t timeStamp;
     const TracePoint *tracePoint;

@@ -32,7 +32,7 @@ unsigned int TracePointSet::actionForTracePoint( const TracePoint *tracePoint )
     return IgnoreTracePoint;
 }
 
-const ProcessId TraceEntry::processId = getCurrentProcessId();
+const TracedProcess TraceEntry::process = { getCurrentProcessId() };
 
 TraceEntry::TraceEntry( const TracePoint *tracePoint_, const char *msg )
     : threadId( getCurrentThreadId() ),
