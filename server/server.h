@@ -2,6 +2,7 @@
 #define TRACE_SERVER_H
 
 #include <QByteArray>
+#include <QDateTime>
 #include <QList>
 #include <QObject>
 #include <QSqlDatabase>
@@ -30,7 +31,7 @@ struct TraceEntry
     unsigned int pid;
     QString processName;
     unsigned int tid;
-    time_t timestamp;
+    QDateTime timestamp;
     unsigned int verbosity;
     unsigned int type;
     QString path;
@@ -58,6 +59,9 @@ private slots:
 private:
     void storeEntry( const TraceEntry &e );
     void handleTraceEntryXMLData( const QByteArray &data );
+
+    template <typename T>
+    QString formatValue( const T &v ) const;
 
     QTcpServer *m_tcpServer;
     QSqlDatabase m_db;

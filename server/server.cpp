@@ -5,6 +5,8 @@
 #include <QDomDocument>
 #include <QFile>
 #include <QSqlDatabase>
+#include <QSqlDriver>
+#include <QSqlField>
 #include <QSqlQuery>
 #include <QTcpServer>
 #include <QTcpSocket>
@@ -19,7 +21,7 @@ static TraceEntry deserializeTraceEntry( const QDomElement &e )
     TraceEntry entry;
     entry.pid = e.attribute( "pid" ).toUInt();
     entry.tid = e.attribute( "tid" ).toUInt();
-    entry.timestamp = e.attribute( "time" ).toULong();
+    entry.timestamp = QDateTime::fromTime_t( e.attribute( "time" ).toUInt() );
     entry.processName = e.namedItem( "processname" ).toElement().text();
     entry.verbosity = e.namedItem( "verbosity" ).toElement().text().toUInt();
     entry.type = e.namedItem( "type" ).toElement().text().toUInt();
@@ -190,6 +192,15 @@ void Server::handleIncomingData()
     handleTraceEntryXMLData( QByteArray::fromRawData( xmlData.data() + p, xmlData.size() - p ) );
 }
 
+template <typename T>
+QString Server::formatValue( const T &v ) const
+{
+    const QVariant variant = QVariant::fromValue( v );
+    QSqlField field( QString(), variant.type() );
+    field.setValue( variant );
+    return m_db.driver()->formatValue( field );
+}
+
 void Server::storeEntry( const TraceEntry &e )
 {
     QSqlQuery query( m_db );
@@ -268,7 +279,11 @@ void Server::storeEntry( const TraceEntry &e )
         }
     }
 
-    query.exec( QString( "INSERT INTO trace_entry VALUES(NULL, %1, %2, %3, '%4');" ).arg( tracedThreadId ).arg( e.timestamp ).arg( tracepointId ).arg( e.message ) );
+    query.exec( QString( "INSERT INTO trace_entry VALUES(NULL, %1, %2, %3, %4)" )
+                    .arg( formatValue( tracedThreadId ) )
+                    .arg( formatValue( e.timestamp ) )
+                    .arg( formatValue( tracepointId ) )
+                    .arg( formatValue( e.message ) ) );
     query.exec( "SELECT last_insert_rowid() FROM trace_entry LIMIT 1;" );
     query.next();
     const unsigned int traceentryId = query.value( 0 ).toUInt();
