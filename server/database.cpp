@@ -12,8 +12,8 @@ const int Database::expectedVersion = 1;
 int Database::currentVersion( QSqlDatabase db, QString *errMsg )
 {
     assert( errMsg != NULL );
-    QSqlQuery query( "SELECT COUNT(*) FROM schema_downgrade;", db );
-    if ( !query.isValid() ) {
+    QSqlQuery query( db );
+    if ( !query.exec( "SELECT COUNT(*) FROM schema_downgrade;" ) ) {
         *errMsg = query.lastError().text();
         return -1;
     }
@@ -51,7 +51,6 @@ bool Database::checkCompatibility( QSqlDatabase db, QString *errMsg )
 QSqlDatabase Database::openAnyVersion(const QString &fileName,
 				      QString *errMsg)
 {
-    qDebug("openAnyVersion()");
     if (!QFile::exists(fileName)) {
 	*errMsg = QObject::tr("Database %1 not found").arg(fileName);
 	return QSqlDatabase();
