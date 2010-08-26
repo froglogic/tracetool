@@ -85,6 +85,7 @@ Server::Server( const QString &databaseFileName, unsigned short port,
     static const char *schemaStatements[] = {
         "CREATE TABLE schema_downgrade (from_version INTEGER,"
                                       " statements TEXT);",
+        "INSERT (1, 'SELECT * FROM FOO') INTO schema_downgrade;",
         "CREATE TABLE trace_entry (id INTEGER PRIMARY KEY AUTOINCREMENT,"
                                   " traced_thread_id INTEGER,"
                                   " timestamp DATETIME,"
@@ -106,6 +107,8 @@ Server::Server( const QString &databaseFileName, unsigned short port,
         "CREATE TABLE process (id INTEGER PRIMARY KEY AUTOINCREMENT,"
                                 " name TEXT,"
                                 " pid INTEGER,"
+	                        " start_time DATETIME,"
+	                        " end_time DATETIME,"
                                 " UNIQUE(name, pid));",
         "CREATE TABLE traced_thread (id INTEGER PRIMARY KEY AUTOINCREMENT,"
                                 " process_id INTEGER,"
