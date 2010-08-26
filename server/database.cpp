@@ -179,6 +179,17 @@ QSqlDatabase Database::openAnyVersion(const QString &fileName,
 
 bool Database::downgrade(QSqlDatabase db, QString *errMsg)
 {
+    const int current = currentVersion(db, errMsg);
+    if (current == -1)
+	return false;
+    if (current == expectedVersion) {
+	*errMsg = QObject::tr("Database already of right version.");
+	return false;
+    }
+    if (current < expectedVersion) {
+	*errMsg = QObject::tr("Database older than ours.");
+	return false;
+    }
     // ###
     return false;
 }
