@@ -9,6 +9,55 @@
 
 const int Database::expectedVersion = 1;
 
+static const char * const schemaStatements[] = {
+    "CREATE TABLE schema_downgrade (from_version INTEGER,"
+    " statements TEXT);",
+    "CREATE TABLE trace_entry (id INTEGER PRIMARY KEY AUTOINCREMENT,"
+    " traced_thread_id INTEGER,"
+    " timestamp DATETIME,"
+    " trace_point_id INTEGER,"
+    " message TEXT);",
+    "CREATE TABLE trace_point (id INTEGER PRIMARY KEY AUTOINCREMENT,"
+    " verbosity INTEGER,"
+    " type INTEGER,"
+    " path_id INTEGER,"
+    " line INTEGER,"
+    " function_id INTEGER,"
+    " UNIQUE(verbosity, type, path_id, line, function_id));",
+    "CREATE TABLE function_name (id INTEGER PRIMARY KEY AUTOINCREMENT,"
+    " name TEXT,"
+    " UNIQUE(name));",
+    "CREATE TABLE path_name (id INTEGER PRIMARY KEY AUTOINCREMENT,"
+    " name TEXT,"
+    " UNIQUE(name));",
+    "CREATE TABLE process (id INTEGER PRIMARY KEY AUTOINCREMENT,"
+    " name TEXT,"
+    " pid INTEGER,"
+    " start_time DATETIME,"
+    " end_time DATETIME,"
+    " UNIQUE(name, pid));",
+    "CREATE TABLE traced_thread (id INTEGER PRIMARY KEY AUTOINCREMENT,"
+    " process_id INTEGER,"
+    " tid INTEGER,"
+    " UNIQUE(process_id, tid));",
+    "CREATE TABLE variable (trace_entry_id INTEGER,"
+    " name TEXT,"
+    " value TEXT,"
+    " type INTEGER);",
+    "CREATE TABLE stackframe (trace_entry_id INTEGER,"
+    " depth INTEGER,"
+    " module_name TEXT,"
+    " function_name TEXT,"
+    " offset INTEGER,"
+    " file_name TEXT,"
+    " line INTEGER);"
+};
+
+static const char * const downgradeStatementsInsert[] = {
+    0, // can't downgrade further than version 0
+    "INSERT INTO schema_downgrade VALUES(1, 'SELECT * FROM FOOBAR');"
+};
+
 int Database::currentVersion( QSqlDatabase db, QString *errMsg )
 {
     assert( errMsg != NULL );
@@ -48,14 +97,58 @@ bool Database::checkCompatibility( QSqlDatabase db, QString *errMsg )
     return false;
 }
 
-QSqlDatabase Database::openAnyVersion(const QString &fileName,
-				      QString *errMsg)
+// includes version check
+QSqlDatabase Database::open(const QString &fileName,
+			    QString *errMsg)
 {
-    if (!QFile::exists(fileName)) {
-	*errMsg = QObject::tr("Database %1 not found").arg(fileName);
+    QSqlDatabase db = openAnyVersion(fileName, errMsg);
+    if (!db.isValid())
 	return QSqlDatabase();
+    if (!checkCompatibility(db, errMsg))
+	return QSqlDatabase();
+    return db;
+}
+
+QSqlDatabase Database::create(const QString &fileName,
+			      QString *errMsg)
+{
+    // At least with Sqlite this will also create a
+    // new database
+    QSqlDatabase db = openOrCreate(fileName, errMsg);
+    if (!db.isValid())
+	return db;
+
+    QSqlQuery query(db);
+    query.exec("BEGIN TRANSACTION;");
+    for (int i = 0; i < sizeof(schemaStatements) / sizeof(schemaStatements[0]); ++i) {
+	if (!query.exec(schemaStatements[i])) {
+	    *errMsg = QObject::tr("Failed to execute '%1': %2")
+		.arg(schemaStatements[i])
+		.arg(query.lastError().text());
+	    query.exec("ROLLBACK;");
+	    return QSqlDatabase();
+	}
+    }
+    // statements that allow users of older versions
+    // to downgrade a database created by us
+    for (int v = 1; v <= expectedVersion; ++v) {
+	if (!query.exec(downgradeStatementsInsert[v])) {
+	    *errMsg = QObject::tr("Failed to execute '%1': %2")
+		.arg(downgradeStatementsInsert[v])
+		.arg(query.lastError().text());
+	    query.exec("ROLLBACK;");
+	    return QSqlDatabase();
+	}
     }
 
+    query.exec("COMMIT;");
+
+    return db;
+}
+
+QSqlDatabase Database::openOrCreate(const QString &fileName,
+				    QString *errMsg)
+{
     const QString driverName = "QSQLITE";
     if (!QSqlDatabase::isDriverAvailable(driverName)) {
         *errMsg = QObject::tr("Missing required %1 driver.")
@@ -72,6 +165,16 @@ QSqlDatabase Database::openAnyVersion(const QString &fileName,
     }
 
     return db;
+}
+
+QSqlDatabase Database::openAnyVersion(const QString &fileName,
+				      QString *errMsg)
+{
+    if (!QFile::exists(fileName)) {
+	*errMsg = QObject::tr("Database %1 not found").arg(fileName);
+	return QSqlDatabase();
+    }
+    return openOrCreate(fileName, errMsg);
 }
 
 bool Database::downgrade(QSqlDatabase db, QString *errMsg)
@@ -91,6 +194,7 @@ static bool upgradeToVersion1(QSqlDatabase db, QString *errMsg)
 	"CREATE TABLE process (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, pid INTEGER, start_time DATETIME, end_time DATETIME, UNIQUE(name, pid));",
 	"INSERT INTO process SELECT id, name, pid, start_time, end_time FROM process_backup;",
 	"DROP TABLE process_backup;",
+	downgradeStatementsInsert[1],
 	"COMMIT;" };
     QSqlQuery query(db);
     for (unsigned i = 0; i < sizeof(statements)/sizeof(char*); ++i) {

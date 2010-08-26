@@ -82,73 +82,15 @@ Server::Server( const QString &databaseFileName, unsigned short port,
     : QObject( parent ),
     m_tcpServer( 0 )
 {
-    static const char *schemaStatements[] = {
-        "CREATE TABLE schema_downgrade (from_version INTEGER,"
-                                      " statements TEXT);",
-        "INSERT (1, 'SELECT * FROM FOO') INTO schema_downgrade;",
-        "CREATE TABLE trace_entry (id INTEGER PRIMARY KEY AUTOINCREMENT,"
-                                  " traced_thread_id INTEGER,"
-                                  " timestamp DATETIME,"
-                                  " trace_point_id INTEGER,"
-                                  " message TEXT);",
-        "CREATE TABLE trace_point (id INTEGER PRIMARY KEY AUTOINCREMENT,"
-                                  " verbosity INTEGER,"
-                                  " type INTEGER,"
-                                  " path_id INTEGER,"
-                                  " line INTEGER,"
-                                  " function_id INTEGER,"
-                                  " UNIQUE(verbosity, type, path_id, line, function_id));",
-        "CREATE TABLE function_name (id INTEGER PRIMARY KEY AUTOINCREMENT,"
-                                    " name TEXT,"
-                                    " UNIQUE(name));",
-        "CREATE TABLE path_name (id INTEGER PRIMARY KEY AUTOINCREMENT,"
-                                " name TEXT,"
-                                " UNIQUE(name));",
-        "CREATE TABLE process (id INTEGER PRIMARY KEY AUTOINCREMENT,"
-                                " name TEXT,"
-                                " pid INTEGER,"
-	                        " start_time DATETIME,"
-	                        " end_time DATETIME,"
-                                " UNIQUE(name, pid));",
-        "CREATE TABLE traced_thread (id INTEGER PRIMARY KEY AUTOINCREMENT,"
-                                " process_id INTEGER,"
-                                " tid INTEGER,"
-                                " UNIQUE(process_id, tid));",
-        "CREATE TABLE variable (trace_entry_id INTEGER,"
-                               " name TEXT,"
-                               " value TEXT,"
-                               " type INTEGER);",
-        "CREATE TABLE stackframe (trace_entry_id INTEGER,"
-                                " depth INTEGER,"
-                                " module_name TEXT,"
-                                " function_name TEXT,"
-                                " offset INTEGER,"
-                                " file_name TEXT,"
-                                " line INTEGER);"
-    };
-
-    const bool initializeDatabase = !QFile::exists( databaseFileName );
-
-    m_db = QSqlDatabase::addDatabase( "QSQLITE", "server" );
-    m_db.setDatabaseName( databaseFileName );
-    if ( !m_db.open() ) {
-        qWarning() << "Failed to open SQL database";
-        return;
-    }
-
-    if ( initializeDatabase ) {
-        QSqlQuery query( m_db );
-        query.exec( "BEGIN TRANSACTION;" );
-        for ( int i = 0; i < sizeof(schemaStatements) / sizeof(schemaStatements[0]); ++i ) {
-            query.exec( schemaStatements[i] );
-        }
-        query.exec( "COMMIT;" );
+    QString errMsg;
+    if (QFile::exists(databaseFileName)) {
+        m_db = Database::open(databaseFileName, &errMsg);
     } else {
-        QString errMsg;
-        if ( !Database::checkCompatibility( m_db, &errMsg ) ) {
-            qWarning() << tr("Error on version check: %1").arg( errMsg );
-            return;
-        }
+        m_db = Database::create(databaseFileName, &errMsg);
+    }
+    if (!m_db.isValid()) {
+        qWarning() << "Failed to open SQL database: " + errMsg;
+        return;
     }
 
     m_tcpServer = new QTcpServer( this );

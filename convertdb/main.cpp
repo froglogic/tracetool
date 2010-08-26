@@ -22,8 +22,6 @@ static void printHelp(const QString &app)
 	    "\n", qPrintable(app));
 }
 
-#include <QSqlQuery>
-
 static int upgradeDatabase(const QString &upgradeFile)
 {
     QString errMsg;
