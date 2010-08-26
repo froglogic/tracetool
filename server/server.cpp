@@ -22,6 +22,7 @@ static TraceEntry deserializeTraceEntry( const QDomElement &e )
 {
     TraceEntry entry;
     entry.pid = e.attribute( "pid" ).toUInt();
+    entry.processStartTime = QDateTime::fromTime_t( e.attribute( "process_starttime" ).toUInt() );
     entry.tid = e.attribute( "tid" ).toUInt();
     entry.timestamp = QDateTime::fromTime_t( e.attribute( "time" ).toUInt() );
     entry.processName = e.namedItem( "processname" ).toElement().text();
@@ -222,9 +223,9 @@ void Server::storeEntry( const TraceEntry &e )
 
     unsigned int processId;
     {
-        QVariant v = transaction.exec( QString( "SELECT id FROM process WHERE name=%1 AND pid=%2;" ).arg( formatValue( e.processName ) ).arg( e.pid ) );
+        QVariant v = transaction.exec( QString( "SELECT id FROM process WHERE pid=%1 AND start_time=%2;" ).arg( e.pid ).arg( formatValue( e.processStartTime ) ) );
         if ( !v.isValid() ) {
-            transaction.exec( QString( "INSERT INTO process VALUES(NULL, %1, %2, 0, 0);" ).arg( formatValue( e.processName ) ).arg( e.pid ) );
+            transaction.exec( QString( "INSERT INTO process VALUES(NULL, %1, %2, %3, 0);" ).arg( formatValue( e.processName ) ).arg( e.pid ).arg( formatValue( e.processStartTime ) ) );
             v = transaction.exec( "SELECT last_insert_rowid() FROM process LIMIT 1;" );
         }
         processId = v.toUInt( &ok );

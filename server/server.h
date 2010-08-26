@@ -29,6 +29,7 @@ struct Variable
 struct TraceEntry
 {
     unsigned int pid;
+    QDateTime processStartTime;
     QString processName;
     unsigned int tid;
     QDateTime timestamp;
