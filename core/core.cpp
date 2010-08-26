@@ -229,8 +229,7 @@ static Trace *g_activeTrace = 0;
 Trace *getActiveTrace()
 {
     if ( !g_activeTrace ) {
-        static Trace defaultTrace;
-        return &defaultTrace;
+        setActiveTrace( new Trace );
     }
     return g_activeTrace;
 }
