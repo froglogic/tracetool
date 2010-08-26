@@ -89,6 +89,7 @@ int main(int argc, char **argv)
 "stored in newer versions. Specify the --accept-data-loss switch\n"
 "in addition to --downgrade to accept this. It is recommended to\n"
 "perform this operation on a copy of the database.\n");
+            return Error::CommandLineArgs;
 	}
 	return downgradeDatabase(downgradeFile);
     } else {

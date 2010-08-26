@@ -1,11 +1,20 @@
 #include "database.h"
 
 #include <cassert>
+#include <stdexcept>
 #include <QFile>
 #include <QSqlDatabase>
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QVariant>
+
+// just for convenience and encoding safety
+class Qruntime_error : public std::runtime_error
+{
+public:
+    Qruntime_error(const QString &what)
+        : runtime_error(what.toUtf8().constData()) { }
+};
 
 const int Database::expectedVersion = 1;
 
@@ -177,6 +186,45 @@ QSqlDatabase Database::openAnyVersion(const QString &fileName,
     return openOrCreate(fileName, errMsg);
 }
 
+static QString downgradeStatementsForVersion(QSqlDatabase db,
+                                             int version)
+{
+    QSqlQuery query(db);
+    const QString sql = QString("SELECT statements FROM schema_downgrade "
+                                "WHERE from_version = %1").arg(version);
+    if (!query.exec(sql)) {
+        throw Qruntime_error(query.lastError().text());
+    }
+    if (!query.next()) {
+        QString errMsg = QString("Did not find SQL statements for downgrading "
+                                 "from version %1.").arg(version);
+        throw Qruntime_error(errMsg);
+    }
+
+    return query.value(0).toString();
+}
+
+static void downgradeVersion(QSqlDatabase db, int version)
+{
+    QString sql = downgradeStatementsForVersion(db, version);
+    db.transaction();
+    QSqlQuery query(db);
+    if (!query.exec(sql)) {
+        db.rollback();
+        throw Qruntime_error(query.lastError().text());
+    }
+    // even remove the downgrade statements to make the conversion
+    // perfect. remember that they are being used to designate the
+    // current version number.
+    QString del = QString("DELETE FROM schema_downgrade "
+                          "WHERE from_version = %1").arg(version);
+    if (!query.exec(del)) {
+        db.rollback();
+        throw Qruntime_error(query.lastError().text());
+    }
+    db.commit();
+}
+
 bool Database::downgrade(QSqlDatabase db, QString *errMsg)
 {
     const int current = currentVersion(db, errMsg);
@@ -190,8 +238,16 @@ bool Database::downgrade(QSqlDatabase db, QString *errMsg)
 	*errMsg = QObject::tr("Database older than ours.");
 	return false;
     }
-    // ###
-    return false;
+
+    for (int v = current; v > expectedVersion; --v) {
+        try {
+            downgradeVersion(db, v);
+        } catch (const std::exception &e) {
+            *errMsg = QString::fromUtf8(e.what());
+            return false;
+        }
+    }
+    return true;
 }
 
 static bool upgradeToVersion1(QSqlDatabase db, QString *errMsg)
