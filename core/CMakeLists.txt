@@ -47,6 +47,7 @@ ELSE(WIN32)
             ${TRACELIB_SOURCES}
             backtrace_unix.cpp
             configuration_unix.cpp
+            crashhandler_unix.cpp
             getcurrentthreadid_unix.cpp
             filemodificationmonitor_unix.cpp
             mutex_unix.cpp)

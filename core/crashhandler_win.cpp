@@ -1,4 +1,4 @@
-#include "tracelib_config.h"
+#include "crashhandler.h"
 #include "backtrace.h"
 #include "tracelib.h"
 

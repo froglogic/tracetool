@@ -4,6 +4,7 @@
 #include "tracelib_config.h"
 
 #include "backtrace.h"
+#include "crashhandler.h"
 #include "filemodificationmonitor.h"
 #include "filter.h"
 #include "getcurrentthreadid.h"
@@ -177,7 +178,6 @@ private:
 
 Trace *getActiveTrace();
 void setActiveTrace( Trace *trace );
-void installCrashHandler();
 
 TRACELIB_NAMESPACE_END
 
