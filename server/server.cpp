@@ -119,17 +119,8 @@ void Server::handleNewConnection()
     connect( client, SIGNAL( readyRead() ), this, SLOT( handleIncomingData() ) );
 }
 
-void Server::handleTraceEntryXMLData( const QByteArray &data )
+void Server::handleTraceEntryXMLData( const QDomDocument &doc )
 {
-    QString errorMsg;
-    int errorLine, errorColumn;
-    QDomDocument doc;
-    if ( !doc.setContent( data, false, &errorMsg, &errorLine, &errorColumn ) ) {
-        qWarning() << "Error in incoming XML data: in row" << errorLine << "column" << errorColumn << ":" << errorMsg;
-        qWarning() << "Received data:" << data;
-        return;
-    }
-
     const TraceEntry entry = deserializeTraceEntry( doc.documentElement() );
     try {
         storeEntry( entry );
@@ -140,17 +131,8 @@ void Server::handleTraceEntryXMLData( const QByteArray &data )
     emit traceEntryReceived( entry );
 }
 
-void Server::handleShutdownXMLData( const QByteArray &data )
+void Server::handleShutdownXMLData( const QDomDocument &doc )
 {
-    QString errorMsg;
-    int errorLine, errorColumn;
-    QDomDocument doc;
-    if ( !doc.setContent( data, false, &errorMsg, &errorLine, &errorColumn ) ) {
-        qWarning() << "Error in incoming XML data: in row" << errorLine << "column" << errorColumn << ":" << errorMsg;
-        qWarning() << "Received data:" << data;
-        return;
-    }
-
     const ProcessShutdownEvent ev = deserializeShutdownEvent( doc.documentElement() );
     try {
         storeShutdownEvent( ev );
@@ -195,10 +177,19 @@ void Server::handleIncomingData()
 
 void Server::handleDatagram( const QByteArray &datagram )
 {
+    QString errorMsg;
+    int errorLine, errorColumn;
+    QDomDocument doc;
+    if ( !doc.setContent( datagram, false, &errorMsg, &errorLine, &errorColumn ) ) {
+        qWarning() << "Error in incoming XML data: in row" << errorLine << "column" << errorColumn << ":" << errorMsg;
+        qWarning() << "Received datagram:" << datagram;
+        return;
+    }
+
     if ( datagram.startsWith( "<traceentry " ) ) {
-        handleTraceEntryXMLData( datagram );
+        handleTraceEntryXMLData( doc );
     } else if ( datagram.startsWith( "<shutdownevent " ) ) {
-        handleShutdownXMLData( datagram );
+        handleShutdownXMLData( doc );
     } else {
         qWarning() << "Server::handleIncomingData: got unknown datagram:" << datagram;
     }

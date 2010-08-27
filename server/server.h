@@ -3,6 +3,7 @@
 
 #include <QByteArray>
 #include <QDateTime>
+#include <QDomDocument>
 #include <QList>
 #include <QObject>
 #include <QSqlDatabase>
@@ -70,8 +71,8 @@ private:
     void storeEntry( const TraceEntry &e );
     void storeShutdownEvent( const ProcessShutdownEvent &ev );
     void handleDatagram( const QByteArray &datagram );
-    void handleTraceEntryXMLData( const QByteArray &data );
-    void handleShutdownXMLData( const QByteArray &data );
+    void handleTraceEntryXMLData( const QDomDocument &doc );
+    void handleShutdownXMLData( const QDomDocument &doc );
 
     template <typename T>
     QString formatValue( const T &v ) const;
