@@ -7,6 +7,7 @@ using namespace std;
 TRACELIB_NAMESPACE_BEGIN
 
 const struct ShutdownNotifier::GlobalObject {
+    GlobalObject() {}
     ~GlobalObject() {
         ShutdownNotifier::self().notifyObservers();
     }
