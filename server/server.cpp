@@ -130,14 +130,14 @@ void Server::handleTraceEntryXMLData( const QByteArray &data )
         return;
     }
 
-    const TraceEntry e = deserializeTraceEntry( doc.documentElement() );
+    const TraceEntry entry = deserializeTraceEntry( doc.documentElement() );
     try {
-        storeEntry( e );
+        storeEntry( entry );
     } catch ( const runtime_error &e ) {
         qWarning() << e.what();
         return;
     }
-    emit traceEntryReceived( e );
+    emit traceEntryReceived( entry );
 }
 
 void Server::handleShutdownXMLData( const QByteArray &data )
