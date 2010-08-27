@@ -136,9 +136,9 @@ static bool parseLine( const string line, StackFrame *frame )
     if (pb != string::npos ) {
         int pe = line.find( ')', pb + 1 );
         if ( pe != string::npos ) {
-            int pp = line.rfind( '+', pe );
+            size_t pp = line.rfind( '+', pe );
             if ( pp < pb )
-                pp = (int)string::npos;
+                pp = string::npos;
 
             string sym = line.substr( pb+1, (pp == string::npos ? pe : pp)-pb-1 );
             int stat;
