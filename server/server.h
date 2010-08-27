@@ -43,6 +43,14 @@ struct TraceEntry
     QList<StackFrame> backtrace;
 };
 
+struct ProcessShutdownEvent
+{
+    unsigned int pid;
+    QDateTime startTime;
+    QDateTime stopTime;
+    QString name;
+};
+
 class Server : public QObject
 {
     Q_OBJECT
@@ -52,6 +60,7 @@ public:
 
 signals:
     void traceEntryReceived( const TraceEntry &e );
+    void processShutdown( const ProcessShutdownEvent &e );
 
 private slots:
     void handleNewConnection();
@@ -59,7 +68,10 @@ private slots:
 
 private:
     void storeEntry( const TraceEntry &e );
+    void storeShutdownEvent( const ProcessShutdownEvent &ev );
+    void handleDatagram( const QByteArray &datagram );
     void handleTraceEntryXMLData( const QByteArray &data );
+    void handleShutdownXMLData( const QByteArray &data );
 
     template <typename T>
     QString formatValue( const T &v ) const;

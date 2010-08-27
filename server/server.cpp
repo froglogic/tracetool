@@ -80,6 +80,16 @@ static TraceEntry deserializeTraceEntry( const QDomElement &e )
     return entry;
 }
 
+static ProcessShutdownEvent deserializeShutdownEvent( const QDomElement &e )
+{
+    ProcessShutdownEvent ev;
+    ev.pid = e.attribute( "pid" ).toUInt();
+    ev.startTime = QDateTime::fromTime_t( e.attribute( "starttime" ).toUInt() );
+    ev.stopTime = QDateTime::fromTime_t( e.attribute( "endtime" ).toUInt() );
+    ev.name = e.text();
+    return ev;
+}
+
 Server::Server( const QString &databaseFileName, unsigned short port,
                 QObject *parent )
     : QObject( parent ),
@@ -130,6 +140,27 @@ void Server::handleTraceEntryXMLData( const QByteArray &data )
     emit traceEntryReceived( e );
 }
 
+void Server::handleShutdownXMLData( const QByteArray &data )
+{
+    QString errorMsg;
+    int errorLine, errorColumn;
+    QDomDocument doc;
+    if ( !doc.setContent( data, false, &errorMsg, &errorLine, &errorColumn ) ) {
+        qWarning() << "Error in incoming XML data: in row" << errorLine << "column" << errorColumn << ":" << errorMsg;
+        qWarning() << "Received data:" << data;
+        return;
+    }
+
+    const ProcessShutdownEvent ev = deserializeShutdownEvent( doc.documentElement() );
+    try {
+        storeShutdownEvent( ev );
+    } catch ( const runtime_error &e ) {
+        qWarning() << e.what();
+        return;
+    }
+    emit processShutdown( ev );
+}
+
 static int nextDatagramStart( const QByteArray &data, int pos )
 {
     int p = data.indexOf( '<', pos );
@@ -155,11 +186,22 @@ void Server::handleIncomingData()
     int p = 0;
     int q = nextDatagramStart( xmlData, p + 1 );
     while ( q != -1 ) {
-        handleTraceEntryXMLData( QByteArray::fromRawData( xmlData.data() + p, q - p ) );
+        handleDatagram( QByteArray::fromRawData( xmlData.data() + p, q - p ) );
         p = q;
         q = nextDatagramStart( xmlData, p + 1 );
     }
-    handleTraceEntryXMLData( QByteArray::fromRawData( xmlData.data() + p, xmlData.size() - p ) );
+    handleDatagram( QByteArray::fromRawData( xmlData.data() + p, xmlData.size() - p ) );
+}
+
+void Server::handleDatagram( const QByteArray &datagram )
+{
+    if ( datagram.startsWith( "<traceentry " ) ) {
+        handleTraceEntryXMLData( datagram );
+    } else if ( datagram.startsWith( "<shutdownevent " ) ) {
+        handleShutdownXMLData( datagram );
+    } else {
+        qWarning() << "Server::handleIncomingData: got unknown datagram:" << datagram;
+    }
 }
 
 template <typename T>
@@ -307,5 +349,11 @@ void Server::storeEntry( const TraceEntry &e )
             transaction.exec( QString( "INSERT INTO stackframe VALUES(%1, %2, %3, %4, %5, %6, %7);" ).arg( traceentryId ).arg( depthCount ).arg( formatValue( it->module ) ).arg( formatValue( it->function ) ).arg( it->functionOffset ).arg( formatValue( it->sourceFile ) ).arg( it->lineNumber ) );
         }
     }
+}
+
+void Server::storeShutdownEvent( const ProcessShutdownEvent &ev )
+{
+    Transaction transaction( m_db );
+    transaction.exec( QString( "UPDATE process SET end_time=%1 WHERE pid=%2 AND start_time=%3;" ).arg( formatValue( ev.stopTime ) ).arg( ev.pid ).arg( formatValue( ev.startTime ) ) );
 }
 
