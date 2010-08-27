@@ -122,24 +122,14 @@ void Server::handleNewConnection()
 void Server::handleTraceEntryXMLData( const QDomDocument &doc )
 {
     const TraceEntry entry = deserializeTraceEntry( doc.documentElement() );
-    try {
-        storeEntry( entry );
-    } catch ( const runtime_error &e ) {
-        qWarning() << e.what();
-        return;
-    }
+    storeEntry( entry );
     emit traceEntryReceived( entry );
 }
 
 void Server::handleShutdownXMLData( const QDomDocument &doc )
 {
     const ProcessShutdownEvent ev = deserializeShutdownEvent( doc.documentElement() );
-    try {
-        storeShutdownEvent( ev );
-    } catch ( const runtime_error &e ) {
-        qWarning() << e.what();
-        return;
-    }
+    storeShutdownEvent( ev );
     emit processShutdown( ev );
 }
 
@@ -186,12 +176,16 @@ void Server::handleDatagram( const QByteArray &datagram )
         return;
     }
 
-    if ( datagram.startsWith( "<traceentry " ) ) {
-        handleTraceEntryXMLData( doc );
-    } else if ( datagram.startsWith( "<shutdownevent " ) ) {
-        handleShutdownXMLData( doc );
-    } else {
-        qWarning() << "Server::handleIncomingData: got unknown datagram:" << datagram;
+    try {
+        if ( datagram.startsWith( "<traceentry " ) ) {
+            handleTraceEntryXMLData( doc );
+        } else if ( datagram.startsWith( "<shutdownevent " ) ) {
+            handleShutdownXMLData( doc );
+        } else {
+            qWarning() << "Server::handleIncomingData: got unknown datagram:" << datagram;
+        }
+    } catch ( const runtime_error &e ) {
+        qWarning() << e.what();
     }
 }
 
