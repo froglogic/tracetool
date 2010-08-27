@@ -13,6 +13,10 @@ void deleteRange( Iterator begin, Iterator end )
 
 TRACELIB_NAMESPACE_BEGIN
 
+const struct CrashHandlerInstaller {
+    CrashHandlerInstaller() { installCrashHandler(); }
+} g_crashHandlerInstaller;
+
 TracePointSet::TracePointSet( Filter *filter, unsigned int actions )
     : m_filter( filter ),
     m_actions( actions )
