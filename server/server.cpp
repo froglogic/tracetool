@@ -130,17 +130,34 @@ void Server::handleTraceEntryXMLData( const QByteArray &data )
     emit traceEntryReceived( e );
 }
 
+static int nextDatagramStart( const QByteArray &data, int pos )
+{
+    int p = data.indexOf( '<', pos );
+    while ( p != -1 ) {
+        if ( data.size() - p >= sizeof( "<traceentry " ) - 1 &&
+             strncmp( data.data() + p, "<traceentry ", sizeof( "<traceentry " ) - 1 ) == 0 ) {
+            return p;
+        }
+        if ( data.size() - p >= sizeof( "<shutdownevent " ) - 1 &&
+             strncmp( data.data() + p, "<shutdownevent ", sizeof( "<shutdownevent " ) - 1 ) == 0 ) {
+            return p;
+        }
+        p = data.indexOf( '<', p + 1 );
+    }
+    return p;
+}
+
 void Server::handleIncomingData()
 {
     QTcpSocket *client = (QTcpSocket *)sender(); // XXX yuck
 
     const QByteArray xmlData = client->readAll();
     int p = 0;
-    int q = xmlData.indexOf( "<traceentry ", p + 1 );
+    int q = nextDatagramStart( xmlData, p + 1 );
     while ( q != -1 ) {
         handleTraceEntryXMLData( QByteArray::fromRawData( xmlData.data() + p, q - p ) );
         p = q;
-        q = xmlData.indexOf( "<traceentry ", p + 1 );
+        q = nextDatagramStart( xmlData, p + 1 );
     }
     handleTraceEntryXMLData( QByteArray::fromRawData( xmlData.data() + p, xmlData.size() - p ) );
 }
