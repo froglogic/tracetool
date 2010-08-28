@@ -13,8 +13,23 @@ void deleteRange( Iterator begin, Iterator end )
 
 TRACELIB_NAMESPACE_BEGIN
 
+static void recordCrashInTrace()
+{
+    BacktraceGenerator backtraceGenerator;
+    Backtrace *bt = new Backtrace( backtraceGenerator.generate( 8 ) );
+
+    const StackFrame &f = bt->frame( 0 );
+
+    static TracePoint tp( TracePoint::ErrorPoint, 0,
+                          f.sourceFile.c_str(), f.lineNumber, f.function.c_str() );
+    TraceEntry te( &tp, "The application crashed at this point!" );
+    te.backtrace = bt;
+    getActiveTrace()->addEntry( te );
+
+}
+
 const struct CrashHandlerInstaller {
-    CrashHandlerInstaller() { installCrashHandler(); }
+    CrashHandlerInstaller() { installCrashHandler( recordCrashInTrace ); }
 } g_crashHandlerInstaller;
 
 TracePointSet::TracePointSet( Filter *filter, unsigned int actions )

@@ -5,7 +5,8 @@
 
 TRACELIB_NAMESPACE_BEGIN
 
-void installCrashHandler();
+typedef void ( *CrashHandler )();
+void installCrashHandler( CrashHandler handler );
 
 TRACELIB_NAMESPACE_END
 

@@ -27,7 +27,6 @@ SET(TRACELIB_SOURCES
         filemodificationmonitor.cpp
         networkoutput.cpp
         shutdownnotifier.cpp
-        crashhandler.cpp
         ${PROJECT_SOURCE_DIR}/3rdparty/wildcmp/wildcmp.c
         ${PROJECT_SOURCE_DIR}/3rdparty/tinyxml/tinyxml.cpp
         ${PROJECT_SOURCE_DIR}/3rdparty/tinyxml/tinyxmlerror.cpp
