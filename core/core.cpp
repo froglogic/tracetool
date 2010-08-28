@@ -15,13 +15,21 @@ TRACELIB_NAMESPACE_BEGIN
 
 static void recordCrashInTrace()
 {
+    string sourceFile = "<unknown file>";
+    size_t lineNumber = 0;
+    string functionName = "<unknown function>";
+
     BacktraceGenerator backtraceGenerator;
     Backtrace *bt = new Backtrace( backtraceGenerator.generate( 8 ) );
-
-    const StackFrame &f = bt->frame( 0 );
+    if ( bt->depth() > 0 ) {
+        const StackFrame &f = bt->frame( 0 );
+        sourceFile = f.sourceFile;
+        lineNumber = f.lineNumber;
+        functionName = f.function;
+    }
 
     static TracePoint tp( TracePoint::ErrorPoint, 0,
-                          f.sourceFile.c_str(), f.lineNumber, f.function.c_str() );
+                          sourceFile.c_str(), lineNumber, functionName.c_str() );
     TraceEntry te( &tp, "The application crashed at this point!" );
     te.backtrace = bt;
     getActiveTrace()->addEntry( te );
