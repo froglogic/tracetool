@@ -3,6 +3,12 @@
 #include <string>
 #include <iostream>
 
+#ifdef _WIN32
+#  include <windows.h>
+#else
+#  include <unistd.h>
+#endif
+
 using namespace std;
 
 static void printHelp(const char *appName)
@@ -71,6 +77,32 @@ static void test_getCurrentThreadId()
     }
 }
 
+static void sleepMilliSeconds(int msecs)
+{
+#ifdef _WIN32
+    ::Sleep(msecs);
+#else
+    ::usleep(msecs * 1000);
+#endif
+}
+
+static void test_getCurrentProcessStartTime()
+{
+    {
+        sleepMilliSeconds(1000);
+        time_t t = getCurrentProcessStartTime();
+        assertTrue("Non-zero after some time", t > 0);
+    }
+
+    {
+        time_t t0 = getCurrentProcessStartTime();
+        sleepMilliSeconds(1000);
+        time_t t1 = getCurrentProcessStartTime();
+        assertTrue("Start time grows", t1 > t0);
+        assertTrue("Time not growing too fast", t1 < t0 + 2);
+    }
+}
+
 TRACELIB_NAMESPACE_END
 
 int main(int argc, char **argv)
@@ -93,6 +125,8 @@ int main(int argc, char **argv)
         TRACELIB_NAMESPACE_IDENT(test_getCurrentProcessId)();
     } else if (arg1 == "--threadid") {
         TRACELIB_NAMESPACE_IDENT(test_getCurrentThreadId)();
+    } else if (arg1 == "--starttime") {
+        TRACELIB_NAMESPACE_IDENT(test_getCurrentProcessStartTime)();
     } else {
         cout << appName << ": Unknown option '" << arg1 << "'" << endl;
         suggestHelp(appName);
