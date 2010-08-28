@@ -14,6 +14,20 @@ ENDIF(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD")
 ADD_DEFINITIONS(-DPCRE_STATIC -DTIXML_USE_STL)
 
 IF(NOT WIN32)
+    # If we cannot use execinfo.h and backtrace() out of the box, try to find
+    # libexecinfo which provides (roughly) the same functionality.
+    TRY_COMPILE(HAS_EXECINFO
+                ${PROJECT_BINARY_DIR}/config-tests
+                ${PROJECT_SOURCE_DIR}/config-tests/execinfo.c)
+    IF(NOT HAS_EXECINFO)
+        CHECK_INCLUDE_FILE(execinfo.h HAVE_EXECINFO_H)
+        FIND_LIBRARY(LIB_EXECINFO execinfo)
+        IF(NOT HAVE_EXECINFO_H OR NOT LIB_EXECINFO)
+            MESSAGE(FATAL_ERROR
+                    "Could not find libexecinfo.so, which is needed for backtrace generation.")
+        ENDIF(NOT HAVE_EXECINFO_H OR NOT LIB_EXECINFO)
+    ENDIF(NOT HAS_EXECINFO)
+
     CHECK_INCLUDE_FILE(bfd.h HAVE_BFD_H)
     IF(NOT HAVE_BFD_H)
         MESSAGE(WARNING "Without the bfd.h file backtraces will not contain source file name information. Install the missing SDK (e.g. binutils-dev) to enable this feature.")
@@ -72,5 +86,8 @@ ELSE(WIN32)
     IF(HAVE_BFD_H)
         TARGET_LINK_LIBRARIES(tracelib bfd)
     ENDIF(HAVE_BFD_H)
+    IF(LIB_EXECINFO)
+        TARGET_LINK_LIBRARIES(tracelib ${LIB_EXECINFO})
+    ENDIF(LIB_EXECINFO)
 ENDIF(WIN32)
 
