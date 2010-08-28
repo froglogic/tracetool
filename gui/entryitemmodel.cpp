@@ -113,10 +113,9 @@ QVariant EntryItemModel::data(const QModelIndex& index, int role) const
                                                   QModelIndex());
         QVariant v = m_queryModel->data(foreign, Qt::DisplayRole);
         //  qDebug("v.type: %s v.str: %s", v.typeName(), qPrintable(v.toString()));
-        // ### Why does Sqlite not return the right type? driver bug?
+        // ### Sqlite stores DATETIME values as strings
         if (index.column() == TimeFieldIndex) {
-            QDateTime dt;
-            dt.setTime_t(v.toLongLong());
+            QDateTime dt = QDateTime::fromString(v.toString(), Qt::ISODate);
             return dt;
         }
         return v;
