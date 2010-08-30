@@ -28,9 +28,9 @@ static void testVerbosityFilter()
     VerbosityFilter highVerbosityFilter;
     highVerbosityFilter.setMaximumVerbosity( 2 );
 
-    static TracePoint lowVerbosityTP( TracePoint::LogPoint, 1, NULL, 0, NULL );
-    static TracePoint mediumVerbosityTP(TracePoint::LogPoint,  2, NULL, 0, NULL );
-    static TracePoint highVerbosityTP( TracePoint::LogPoint, 3, NULL, 0, NULL );
+    static TracePoint lowVerbosityTP( TracePointType::Log, 1, NULL, 0, NULL );
+    static TracePoint mediumVerbosityTP(TracePointType::Log,  2, NULL, 0, NULL );
+    static TracePoint highVerbosityTP( TracePointType::Log, 3, NULL, 0, NULL );
 
     verify( "lowVerbosityFilter on lowVerbosityTP", false, lowVerbosityFilter.acceptsTracePoint( &lowVerbosityTP ) );
     verify( "lowVerbosityFilter on mediumVerbosityTP", false, lowVerbosityFilter.acceptsTracePoint( &mediumVerbosityTP ) );
@@ -47,8 +47,8 @@ static void testVerbosityFilter()
 
 static void testStrictPathFilter()
 {
-    static TracePoint tpLowerCase( TracePoint::LogPoint, 0, "c:\\foo\\bar\\mysrc.cpp", 0, NULL );
-    static TracePoint tpUpperCase( TracePoint::LogPoint, 0, "C:\\Foo\\Bar\\mysrc.cpp", 0, NULL );
+    static TracePoint tpLowerCase( TracePointType::Log, 0, "c:\\foo\\bar\\mysrc.cpp", 0, NULL );
+    static TracePoint tpUpperCase( TracePointType::Log, 0, "C:\\Foo\\Bar\\mysrc.cpp", 0, NULL );
 
     PathFilter emptyPathFilter;
     emptyPathFilter.setPath( StrictMatch, "" );
@@ -91,8 +91,8 @@ static void testStrictPathFilter()
 
 static void testWildcardPathFilter()
 {
-    static TracePoint tpLowerCase( TracePoint::LogPoint, 0, "c:\\foo\\bar\\mysrc.cpp", 0, NULL );
-    static TracePoint tpUpperCase( TracePoint::LogPoint, 0, "C:\\Foo\\Bar\\mysrc.cpp", 0, NULL );
+    static TracePoint tpLowerCase( TracePointType::Log, 0, "c:\\foo\\bar\\mysrc.cpp", 0, NULL );
+    static TracePoint tpUpperCase( TracePointType::Log, 0, "C:\\Foo\\Bar\\mysrc.cpp", 0, NULL );
 
     PathFilter emptyPathFilter;
     emptyPathFilter.setPath( WildcardMatch, "" );
