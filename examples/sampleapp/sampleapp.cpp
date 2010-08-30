@@ -9,18 +9,6 @@
 
 TRACELIB_NAMESPACE_BEGIN
     template <>
-    VariableValue convertVariable<int>( int i ) {
-        std::ostringstream str;
-        str << i;
-        return VariableValue::stringValue( str.str() );
-    }
-
-    template <>
-    VariableValue convertVariable<std::string>( std::string s ) {
-        return VariableValue::stringValue( s );
-    }
-
-    template <>
     VariableValue convertVariable<const Person *>( const Person *p ) {
         char buf[ 32 ];
         sprintf( buf, "0x%08x", p );
