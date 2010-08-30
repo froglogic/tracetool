@@ -15,6 +15,8 @@ MainWindow::MainWindow(Settings *settings,
 
     connect(action_Open_Trace, SIGNAL(triggered()),
 	    this, SLOT(openTrace()));
+    connect(actionQuit, SIGNAL(triggered()),
+            qApp, SLOT(quit()));
 }
 
 MainWindow::~MainWindow()
