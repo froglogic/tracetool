@@ -28,7 +28,8 @@
 #  error "Unsupported compiler!"
 #endif
 
-#define TRACELIB_VARIABLE_SNAPSHOT_MSG(verbosity, vars, msg) \
+#ifndef NDEBUG
+#  define TRACELIB_VARIABLE_SNAPSHOT_MSG(verbosity, vars, msg) \
 { \
     static TRACELIB_NAMESPACE_IDENT(TracePoint) tracePoint(TRACELIB_NAMESPACE_IDENT(TracePoint)::WatchPoint, (verbosity), TRACELIB_CURRENT_FILE_NAME, TRACELIB_CURRENT_LINE_NUMBER, TRACELIB_CURRENT_FUNCTION_NAME); \
     TRACELIB_NAMESPACE_IDENT(VariableSnapshot) *variableSnapshot = new TRACELIB_NAMESPACE_IDENT(VariableSnapshot); \
@@ -36,13 +37,17 @@
     TRACELIB_NAMESPACE_IDENT(getActiveTrace)()->visitTracePoint( &tracePoint, (msg), variableSnapshot ); \
 }
 
-#define TRACELIB_VISIT_TRACEPOINT_MSG(type, verbosity, msg) \
+#  define TRACELIB_VISIT_TRACEPOINT_MSG(type, verbosity, msg) \
 { \
     static TRACELIB_NAMESPACE_IDENT(TracePoint) tracePoint(type, (verbosity), TRACELIB_CURRENT_FILE_NAME, TRACELIB_CURRENT_LINE_NUMBER, TRACELIB_CURRENT_FUNCTION_NAME); \
     TRACELIB_NAMESPACE_IDENT(getActiveTrace)()->visitTracePoint( &tracePoint, msg ); \
 }
-
-#define TRACELIB_VAR(v) TRACELIB_NAMESPACE_IDENT(makeConverter)(#v, v)
+#  define TRACELIB_VAR(v) TRACELIB_NAMESPACE_IDENT(makeConverter)(#v, v)
+#else
+#  define TRACELIB_VARIABLE_SNAPSHOT_MSG(verbosity, vars, msg) (void)0;
+#  define TRACELIB_VISIT_TRACEPOINT_MSG(type, verbosity, msg) (void)0;
+#  define TRACELIB_VAR(v) (void)0;
+#endif
 
 #define TRACELIB_DEBUG TRACELIB_DEBUG_MSG(0)
 #define TRACELIB_ERROR TRACELIB_ERROR_MSG(0)
