@@ -1,5 +1,6 @@
 #include "entryitemmodel.h"
 
+#include "../core/tracelib.h"
 #include "../server/server.h"
 
 #include <QDateTime>
@@ -25,6 +26,15 @@ const int MessageFieldIndex = 10;
 const int MessageFieldIndex = 9;
 #endif
 
+static QString tracePointTypeAsString(int i)
+{
+    // ### could do some caching here
+    // ### assert range - just in case
+    TRACELIB_NAMESPACE_IDENT(TracePointType::Value) t =
+        static_cast<TRACELIB_NAMESPACE_IDENT(TracePointType::Value)>(i);
+    QString s = TRACELIB_NAMESPACE_IDENT(TracePointType::valueAsString(t));
+    return s;
+}
 
 EntryItemModel::EntryItemModel(QObject *parent )
     : QAbstractTableModel(parent),
@@ -135,6 +145,12 @@ QVariant EntryItemModel::data(const QModelIndex& index, int role) const
         if (index.column() == TimeFieldIndex) {
             QDateTime dt = QDateTime::fromString(v.toString(), Qt::ISODate);
             return dt;
+        }
+        if (index.column() == TypeFieldIndex) {
+            bool ok;
+            int i = v.toInt(&ok);
+            assert(ok);
+            return tracePointTypeAsString(i);
         }
         return v;
     }
