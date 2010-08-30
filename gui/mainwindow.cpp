@@ -18,10 +18,15 @@ MainWindow::MainWindow(Settings *settings,
     setupUi(this);
     m_settings->registerRestorable("MainWindow", this);
 
+    // File menu
     connect(action_Open_Trace, SIGNAL(triggered()),
-	    this, SLOT(openTrace()));
+	    this, SLOT(fileOpenTrace()));
     connect(actionQuit, SIGNAL(triggered()),
             qApp, SLOT(quit()));
+
+    // Help menu
+    connect(action_About, SIGNAL(triggered()),
+            this, SLOT(helpAbout()));
 }
 
 MainWindow::~MainWindow()
@@ -69,7 +74,7 @@ bool MainWindow::restoreSessionState(const QVariant &state)
     return restoreGeometry(geo) && restoreState(docks);
 }
 
-void MainWindow::openTrace()
+void MainWindow::fileOpenTrace()
 {
     QString fn = QFileDialog::getOpenFileName(this, tr("Open Trace"),
 					      QDir::currentPath(),
@@ -83,6 +88,16 @@ void MainWindow::openTrace()
 		  tr("Error opening trace file: %1").arg(errMsg));
 	return;
     }
+}
+
+void MainWindow::helpAbout()
+{
+    const QString title = tr("About %1").arg(windowTitle());
+    const QString txt = tr("<qt>Copyright %1 froglogic GmbH\n"
+                           "<br><br>"
+                           "Build with Qt %2 on %3.")
+        .arg(2010).arg(QT_VERSION_STR).arg(__DATE__);
+    QMessageBox::information(this, title, txt);
 }
 
 void MainWindow::showError(const QString &title,

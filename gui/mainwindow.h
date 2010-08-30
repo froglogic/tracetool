@@ -29,7 +29,8 @@ protected:
     bool restoreSessionState(const QVariant &state);
 
 private slots:
-    void openTrace();
+    void fileOpenTrace();
+    void helpAbout();
 
 private:
     void showError(const QString &title, const QString &message);
