@@ -1,7 +1,8 @@
 SET(SERVER_SOURCES
         main.cpp
         database.cpp
-        server.cpp)
+        server.cpp
+        ../convertdb/getopt.cpp)
 
 SET(SERVER_MOCABLES
         server.h)
