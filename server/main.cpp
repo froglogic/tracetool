@@ -1,5 +1,6 @@
 #include "server.h"
 
+#include "../core/tracelib_config.h"
 #include "../convertdb/getopt.h"
 
 #include <QCoreApplication>
@@ -56,7 +57,7 @@ int main( int argc, char **argv )
 	     << ".trace suffix. " << endl;
 	return Error::CommandLineArgs;
     }
-    int port = 12382; // ### use globally configurable default
+    int port = TRACELIB_DEFAULT_PORT;
     if (!portStr.isEmpty()) {
 	bool ok;
 	port = portStr.toInt(&ok);
