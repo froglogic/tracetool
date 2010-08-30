@@ -5,7 +5,31 @@
  * @file tracelib_config.h
  * @brief Provides convenience macros which simplify access to the tracelib API.
  *
- * You can find a lot of macros here.
+ * This file contains a set of preprocessor defines which simplify access to the
+ * tracelib API as well as a few macros for performing build-time configuration
+ * of the tracelib library.
+ *
+ * The following macros are available to logging trace entries:
+ * \li #TRACELIB_TRACE, #TRACELIB_TRACE_MSG: Log generic trace entries
+ * \li #TRACELIB_DEBUG, #TRACELIB_DEBUG_MSG: Log debug trace entries
+ * \li #TRACELIB_ERROR, #TRACELIB_ERROR_MSG: Log error trace entries
+ * \li #TRACELIB_WATCH, #TRACELIB_WATCH_MSG: Log trace entries with values of variables
+ *
+ * Furthermore, three macros are available for configuring the namespace within
+ * which all symbols of the tracelib library are to be defined. This is useful
+ * for avoiding symbol clashes with existing definitions when linking the
+ * tracelib library into applications or libraries:
+ *
+ * \li #TRACELIB_NAMESPACE_BEGIN opens the namespace of the tracelib library
+ * \li #TRACELIB_NAMESPACE_END closes the namespace of the tracelib library
+ * \li #TRACELIB_NAMESPACE_IDENT fully-qualifies the given identifier using the
+ * tracelib namespace
+ *
+ * Finally, a macro is available for performing some build-time configuration:
+ *
+ * \li #TRACELIB_DEFAULT_PORT contains the default port to be used when
+ * writing out trace data over the network and no port information was found
+ * in the configuration file.
  */
 
 /**
@@ -31,9 +55,9 @@
 #define TRACELIB_NAMESPACE_IDENT(x) ea::trace::x
 
 /**
- * @begin Opens the namespace which contains all tracelib symbols.
+ * @brief Opens the namespace which contains all tracelib symbols.
  *
- * This macro (together with TRACELIB_NAMESPACE_END) is needed when declaring
+ * This macro (together with #TRACELIB_NAMESPACE_END) is needed when declaring
  * or definiong symbols which should reside in the same namespace as the rest
  * of the tracelib library. In particular, it is needed when implementing
  * specializations of the convertVariable template function, as in this
@@ -60,9 +84,9 @@
 #define TRACELIB_NAMESPACE_BEGIN namespace ea { namespace trace {
 
 /**
- * @begin Closes the namespace which contains all tracelib symbols.
+ * @brief Closes the namespace which contains all tracelib symbols.
  *
- * This macro (together with TRACELIB_NAMESPACE_BEGIN) is needed when declaring
+ * This macro (together with #TRACELIB_NAMESPACE_BEGIN) is needed when declaring
  * or definiong symbols which should reside in the same namespace as the rest
  * of the tracelib library. In particular, it is needed when implementing
  * specializations of the convertVariable template function, as in this
