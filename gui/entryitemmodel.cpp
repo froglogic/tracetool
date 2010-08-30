@@ -153,6 +153,13 @@ QVariant EntryItemModel::data(const QModelIndex& index, int role) const
             return tracePointTypeAsString(i);
         }
         return v;
+    } else if (role == Qt::ToolTipRole) {
+        // Just forward the tool tip request for now to make viewing
+        // of cut-off content possible.
+        // ### consider displaying additional info. Like start/end
+        // ### time of an application.
+        // ### supress when nothing valuable to show and not cut off
+        return data(index, Qt::DisplayRole);
     }
 
     return QVariant();
