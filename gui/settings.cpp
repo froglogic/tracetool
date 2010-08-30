@@ -1,5 +1,7 @@
 #include "settings.h"
 
+#include "../core/tracelib_config.h"
+
 #include <cassert>
 #include <QDebug>
 #include <QSettings>
@@ -7,6 +9,8 @@
 const char companyName[] = "froglogic";
 const char productName[] = "appstalker";
 const char sessionGroup[] = "Session";
+const char databaseGroup[] = "Database";
+const char serverGroup[] = "Server";
 
 Settings::Settings()
 {
@@ -20,7 +24,15 @@ bool Settings::save() const
     QSettings qs(QSettings::IniFormat, QSettings::UserScope,
                  companyName, productName);
 
-    // ###
+    // [Database]
+    qs.beginGroup(databaseGroup);
+    qs.setValue("File", m_databaseFile);
+    qs.endGroup();
+
+    // [Server]
+    qs.beginGroup(serverGroup);
+    qs.setValue("Port", m_serverPort);
+    qs.endGroup();
 
     qs.sync();
     return qs.status() == QSettings::NoError;
@@ -31,7 +43,15 @@ bool Settings::load()
     QSettings qs(QSettings::IniFormat, QSettings::UserScope,
                  companyName, productName);
 
-    // ###
+    // [Database]
+    qs.beginGroup(databaseGroup);
+    m_databaseFile = qs.value("File", QString()).toString();
+    qs.endGroup();
+
+    // [Server]
+    qs.beginGroup(serverGroup);
+    m_serverPort = qs.value("Port", TRACELIB_DEFAULT_PORT).toInt();
+    qs.endGroup();
 
     return qs.status() == QSettings::NoError;
 

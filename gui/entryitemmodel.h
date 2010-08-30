@@ -15,7 +15,9 @@ public:
     EntryItemModel(QObject *parent = 0);
     ~EntryItemModel();
 
-    bool setDatabase(const QString &databaseFileName, QString *errMsg);
+    bool setDatabase(const QString &databaseFileName,
+                     int serverPort,
+                     QString *errMsg);
 
     int columnCount(const QModelIndex & parent = QModelIndex()) const;
     int rowCount(const QModelIndex & parent = QModelIndex()) const;

@@ -30,10 +30,14 @@ bool MainWindow::setDatabase(const QString &databaseFileName, QString *errMsg)
     }
 
     m_model = new EntryItemModel(this);
-    if (!m_model->setDatabase(databaseFileName, errMsg)) {
+    if (!m_model->setDatabase(databaseFileName,
+			      m_settings->serverPort(),
+			      errMsg)) {
 	delete m_model; m_model = NULL;
         return false;
     }
+
+    m_settings->setDatabaseFile(databaseFileName);
 
     tracePointsView->setModel(m_model);
 

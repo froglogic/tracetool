@@ -40,6 +40,7 @@ EntryItemModel::~EntryItemModel()
 }
 
 bool EntryItemModel::setDatabase(const QString &databaseFileName,
+                                 int serverPort,
                                  QString *errMsg)
 {
     const QString driverName = "QSQLITE";
@@ -49,7 +50,7 @@ bool EntryItemModel::setDatabase(const QString &databaseFileName,
     }
 
     // will create new db file if necessary
-    m_server = new Server(databaseFileName, 12382, this);
+    m_server = new Server(databaseFileName, serverPort, this);
     
     m_db = QSqlDatabase::addDatabase(driverName, "itemmodel");
     m_db.setDatabaseName(databaseFileName);

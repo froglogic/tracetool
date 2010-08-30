@@ -24,10 +24,23 @@ public:
     bool saveSession();
     bool restoreSession() const;
 
+    // [Database]
+    void setDatabaseFile(const QString &file) {
+	m_databaseFile = file;
+    }
+    QString databaseFile() const { return m_databaseFile; }
+
+    // [Server]
+    void setServerPort(int port) { m_serverPort = port; }
+    int serverPort() const { return m_serverPort; }
+
 private:
     bool load();
 
     QMap<QString, RestorableObject*> m_restorables;
+
+    QString m_databaseFile;
+    int m_serverPort;
 };
 
 #endif
