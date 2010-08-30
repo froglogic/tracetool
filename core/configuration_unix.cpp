@@ -48,7 +48,8 @@ string processFullName()
         return pn;
 
     if ( pn.find( '/' ) != string::npos ) {
-        char buf[PATH_MAX + 1];
+        char buf[PATH_MAX + 1] = { 0 }; // make valgrind happy
+
         if ( getcwd( buf, PATH_MAX ) &&
                 realpath( ( string( buf ) + '/' + pn ).c_str(), buf ) ) {
             return buf;
