@@ -48,16 +48,16 @@ vector<char> PlaintextSerializer::serialize( const TraceEntry &entry )
     str << "Process " << entry.process.id << " [started at " << timeToString( entry.process.startTime ) << "] (Thread " << entry.threadId << "): ";
 
     switch ( entry.tracePoint->type ) {
-        case TracePoint::ErrorPoint:
+        case TracePointType::Error:
             str << "[ERROR]";
             break;
-        case TracePoint::DebugPoint:
+        case TracePointType::Debug:
             str << "[DEBUG]";
             break;
-        case TracePoint::LogPoint:
+        case TracePointType::Log:
             str << "[LOG]";
             break;
-        case TracePoint::WatchPoint:
+        case TracePointType::Watch:
             str << "[WATCH]";
             break;
         default:

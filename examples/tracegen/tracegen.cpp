@@ -6,15 +6,6 @@
 #include <time.h>
 #include <sstream>
 
-TRACELIB_NAMESPACE_BEGIN
-    template <>
-    VariableValue convertVariable<time_t>( time_t value ) {
-        std::ostringstream str;
-        str << value;
-        return VariableValue::stringValue( str.str() );
-    }
-TRACELIB_NAMESPACE_END
-
 static VOID CALLBACK timerProc( HWND, UINT, UINT_PTR, DWORD )
 {
     TRACELIB_WATCH(TRACELIB_VAR(time(NULL)))

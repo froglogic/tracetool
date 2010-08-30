@@ -13,6 +13,7 @@ class EntryItemModel : public QAbstractTableModel
     Q_OBJECT
 public:
     EntryItemModel(QObject *parent = 0);
+    ~EntryItemModel();
 
     bool setDatabase(const QString &databaseFileName, QString *errMsg);
 

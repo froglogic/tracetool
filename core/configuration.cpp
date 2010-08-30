@@ -366,7 +366,7 @@ Output *Configuration::createOutputFromElement( TiXmlElement *e )
 
     if ( outputType == "tcp" ) {
         string hostname;
-        unsigned short port = 0;
+        unsigned short port = TRACELIB_DEFAULT_PORT;
         for ( TiXmlElement *optionElement = e->FirstChildElement(); optionElement; optionElement = optionElement->NextSiblingElement() ) {
             if ( optionElement->ValueStr() != "option" ) {
                 m_errorLog->write( "Tracelib Configuration: while reading %s: Unexpected element '%s' in <output> element of type tcp found.", m_fileName.c_str(), optionElement->Value() );

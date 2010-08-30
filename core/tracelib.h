@@ -28,44 +28,66 @@
 #  error "Unsupported compiler!"
 #endif
 
-#define TRACELIB_VARIABLE_SNAPSHOT_MSG(verbosity, vars, msg) \
+#ifndef NDEBUG
+#  define TRACELIB_VARIABLE_SNAPSHOT_MSG(verbosity, vars, msg) \
 { \
-    static TRACELIB_NAMESPACE_IDENT(TracePoint) tracePoint(TRACELIB_NAMESPACE_IDENT(TracePoint)::WatchPoint, (verbosity), TRACELIB_CURRENT_FILE_NAME, TRACELIB_CURRENT_LINE_NUMBER, TRACELIB_CURRENT_FUNCTION_NAME); \
+    static TRACELIB_NAMESPACE_IDENT(TracePoint) tracePoint(TRACELIB_NAMESPACE_IDENT(TracePointType)::Watch, (verbosity), TRACELIB_CURRENT_FILE_NAME, TRACELIB_CURRENT_LINE_NUMBER, TRACELIB_CURRENT_FUNCTION_NAME); \
     TRACELIB_NAMESPACE_IDENT(VariableSnapshot) *variableSnapshot = new TRACELIB_NAMESPACE_IDENT(VariableSnapshot); \
     (*variableSnapshot) << vars; \
     TRACELIB_NAMESPACE_IDENT(getActiveTrace)()->visitTracePoint( &tracePoint, (msg), variableSnapshot ); \
 }
 
-#define TRACELIB_VISIT_TRACEPOINT_MSG(type, verbosity, msg) \
+#  define TRACELIB_VISIT_TRACEPOINT_MSG(type, verbosity, msg) \
 { \
     static TRACELIB_NAMESPACE_IDENT(TracePoint) tracePoint(type, (verbosity), TRACELIB_CURRENT_FILE_NAME, TRACELIB_CURRENT_LINE_NUMBER, TRACELIB_CURRENT_FUNCTION_NAME); \
     TRACELIB_NAMESPACE_IDENT(getActiveTrace)()->visitTracePoint( &tracePoint, msg ); \
 }
-
-#define TRACELIB_VAR(v) TRACELIB_NAMESPACE_IDENT(makeConverter)(#v, v)
-
-#define TRACELIB_DEBUG TRACELIB_DEBUG_MSG(0)
-#define TRACELIB_ERROR TRACELIB_ERROR_MSG(0)
-#define TRACELIB_TRACE TRACELIB_TRACE_MSG(0)
-#define TRACELIB_WATCH(vars) TRACELIB_WATCH_MSG(0, vars)
-#define TRACELIB_DEBUG_MSG(msg) TRACELIB_VISIT_TRACEPOINT_MSG(TRACELIB_NAMESPACE_IDENT(TracePoint)::DebugPoint, 1, msg)
-#define TRACELIB_ERROR_MSG(msg) TRACELIB_VISIT_TRACEPOINT_MSG(TRACELIB_NAMESPACE_IDENT(TracePoint)::ErrorPoint, 1, msg)
-#define TRACELIB_TRACE_MSG(msg) TRACELIB_VISIT_TRACEPOINT_MSG(TRACELIB_NAMESPACE_IDENT(TracePoint)::LogPoint, 1, msg)
-#define TRACELIB_WATCH_MSG(msg, vars) TRACELIB_VARIABLE_SNAPSHOT_MSG(1, vars, msg)
+#  define TRACELIB_VAR(v) TRACELIB_NAMESPACE_IDENT(makeConverter)(#v, v)
+#else
+#  define TRACELIB_VARIABLE_SNAPSHOT_MSG(verbosity, vars, msg) (void)0;
+#  define TRACELIB_VISIT_TRACEPOINT_MSG(type, verbosity, msg) (void)0;
+#  define TRACELIB_VAR(v) (void)0;
+#endif
 
 TRACELIB_NAMESPACE_BEGIN
 
 class Configuration;
 
-struct TracePoint {
-    enum Type {
-        ErrorPoint,
-        DebugPoint,
-        LogPoint,
-        WatchPoint
+struct TracePointType {
+    enum Value {
+        None = 0
+#define TRACELIB_TRACEPOINTTYPE(name) ,name
+#include "tracepointtypes.def"
+#undef TRACELIB_TRACEPOINTTYPE
     };
 
-    TracePoint( Type type_, unsigned short verbosity_, const char *sourceFile_, unsigned int lineno_, const char *functionName_ )
+    static const int *values() {
+        static const int a[] = {
+            None,
+#define TRACELIB_TRACEPOINTTYPE(name) name,
+#include "tracepointtypes.def"
+#undef TRACELIB_TRACEPOINTTYPE
+            -1
+        };
+        return a;
+    }
+
+    static const char *valueAsString( Value v ) {
+#define TRACELIB_TRACEPOINTTYPE(name) static const char str_##name[] = #name;
+#include "tracepointtypes.def"
+#undef TRACELIB_TRACEPOINTTYPE
+        switch ( v ) {
+            case None: return "None";
+#define TRACELIB_TRACEPOINTTYPE(name) case name: return str_##name;
+#include "tracepointtypes.def"
+#undef TRACELIB_TRACEPOINTTYPE
+        }
+        return 0;
+    }
+};
+
+struct TracePoint {
+    TracePoint( TracePointType::Value type_, unsigned short verbosity_, const char *sourceFile_, unsigned int lineno_, const char *functionName_ )
         : type( type_ ),
         verbosity( verbosity_ ),
         sourceFile( sourceFile_ ),
@@ -78,7 +100,7 @@ struct TracePoint {
     {
     }
 
-    const Type type;
+    const TracePointType::Value type;
     const unsigned short verbosity;
     const char * const sourceFile;
     const unsigned int lineno;

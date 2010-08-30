@@ -7,6 +7,8 @@
 #include <QSqlQueryModel>
 #include <cassert>
 
+// #define SHOW_VERBOSITY
+
 const int IdFieldIndex = 0;
 const int TimeFieldIndex = 1;
 const int ApplicationFieldIndex = 2;
@@ -16,8 +18,12 @@ const int FileFieldIndex = 5;
 const int LineFieldIndex = 6;
 const int FunctionFieldIndex = 7;
 const int TypeFieldIndex = 8;
+#ifdef SHOW_VERBOSITY
 const int VerbosityFieldIndex = 9;
 const int MessageFieldIndex = 10;
+#else
+const int MessageFieldIndex = 9;
+#endif
 
 
 EntryItemModel::EntryItemModel(QObject *parent )
@@ -26,6 +32,11 @@ EntryItemModel::EntryItemModel(QObject *parent )
       m_server(NULL)
 
 {
+}
+
+EntryItemModel::~EntryItemModel()
+{
+    delete m_queryModel;
 }
 
 bool EntryItemModel::setDatabase(const QString &databaseFileName,
@@ -57,7 +68,9 @@ bool EntryItemModel::setDatabase(const QString &databaseFileName,
                         " trace_point.line,"
                         " function_name.name,"
                         " trace_point.type,"
+#ifdef SHOW_VERBOSITY
                         " trace_point.verbosity,"
+#endif
                         " message "
                         "FROM"
                         " trace_entry,"
@@ -88,7 +101,11 @@ bool EntryItemModel::setDatabase(const QString &databaseFileName,
 
 int EntryItemModel::columnCount(const QModelIndex & parent) const
 {
+#ifdef SHOW_VERBOSITY
     return 11;
+#else
+    return 10;
+#endif
 }
 
 int EntryItemModel::rowCount(const QModelIndex & parent) const
@@ -147,8 +164,10 @@ QVariant EntryItemModel::headerData(int section, Qt::Orientation orientation,
             return tr("Function");
         case TypeFieldIndex:
             return tr("Type");
+#ifdef SHOW_VERBOSITY
         case VerbosityFieldIndex:
             return tr("Verbosity");
+#endif
         case MessageFieldIndex:
             return tr("Message");
         default:
