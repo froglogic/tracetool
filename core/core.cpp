@@ -28,7 +28,7 @@ static void recordCrashInTrace()
         functionName = f.function;
     }
 
-    static TracePoint tp( TracePoint::ErrorPoint, 0,
+    static TracePoint tp( TracePointType::Error, 0,
                           sourceFile.c_str(), lineNumber, functionName.c_str() );
     TraceEntry te( &tp, "The application crashed at this point!" );
     te.backtrace = bt;
