@@ -21,7 +21,7 @@ using namespace std;
 static void printUsage(const string &app)
 {
     cout << "Usage: " << app << " --help" << endl
-         << "       " << app << " <.trace-file>" << endl;
+         << "       " << app << " [--port <port>] <.trace-file>" << endl;
 }
 
 int main( int argc, char **argv )
@@ -30,8 +30,9 @@ int main( int argc, char **argv )
 
     GetOpt opt;
     bool help;
-    QString traceFile;
+    QString traceFile, portStr;
     opt.addSwitch("help", &help);
+    opt.addOption('p', "port", &portStr);
     opt.addOptionalArgument("trace_file", &traceFile);
     if (!opt.parse()) {
 	cout << "Invalid command line argument. Try --help." << endl;
@@ -55,8 +56,19 @@ int main( int argc, char **argv )
 	     << ".trace suffix. " << endl;
 	return Error::CommandLineArgs;
     }
+    int port = 12382; // ### use globally configurable default
+    if (!portStr.isEmpty()) {
+	bool ok;
+	port = portStr.toInt(&ok);
+	if (!ok) {
+	    cout << "Invalid port number '"
+		 << portStr.toLocal8Bit().constData()
+		 << "' given." << endl;
+	    return Error::CommandLineArgs;
+	}
+    }
 
-    Server server(traceFile, 12382);
+    Server server(traceFile, port);
 
     return app.exec();
 }
