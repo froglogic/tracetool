@@ -5,5 +5,7 @@
 #define TRACELIB_NAMESPACE_BEGIN namespace ea { namespace trace {
 #define TRACELIB_NAMESPACE_END } }
 
+#define TRACELIB_DEFAULT_PORT 12382
+
 #endif // !defined(TRACELIB_CONFIG_H)
 
