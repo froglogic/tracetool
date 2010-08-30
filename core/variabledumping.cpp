@@ -1,4 +1,5 @@
 #include "variabledumping.h"
+#include "config.h"
 
 #include <sstream>
 
@@ -67,3 +68,44 @@ TRACELIB_SPECIALIZE_CONVERISON_USING_SSTREAM(std::string)
 #undef TRACELIB_SPECIALIZE_CONVERISON_USING_SSTREAM
 
 TRACELIB_NAMESPACE_END
+
+#ifdef HAVE_QT
+#  include <QtCore/QByteArray>
+#  include <QChar>
+#  include <QDate>
+#  include <QDateTime>
+#  include <QString>
+#  include <QStringList>
+#  include <QTime>
+#  include <QVariant>
+
+TRACELIB_NAMESPACE_BEGIN
+
+template <typename T>
+string stringFromQVariant( const T &val )
+{
+    return QVariant::fromValue( val ).toString().toUtf8().data();
+}
+
+#  define TRACELIB_SPECIALIZE_CONVERSION_USING_QVARIANT(T) \
+template <> \
+VariableValue convertVariable( T val ) { \
+    return VariableValue::stringValue( stringFromQVariant( val ) ); \
+}
+
+TRACELIB_SPECIALIZE_CONVERSION_USING_QVARIANT(QString)
+TRACELIB_SPECIALIZE_CONVERSION_USING_QVARIANT(QByteArray)
+TRACELIB_SPECIALIZE_CONVERSION_USING_QVARIANT(QChar)
+TRACELIB_SPECIALIZE_CONVERSION_USING_QVARIANT(QDate)
+TRACELIB_SPECIALIZE_CONVERSION_USING_QVARIANT(QDateTime)
+TRACELIB_SPECIALIZE_CONVERSION_USING_QVARIANT(qlonglong)
+TRACELIB_SPECIALIZE_CONVERSION_USING_QVARIANT(QStringList)
+TRACELIB_SPECIALIZE_CONVERSION_USING_QVARIANT(QTime)
+TRACELIB_SPECIALIZE_CONVERSION_USING_QVARIANT(qulonglong)
+
+#  undef TRACELIB_SPECIALIZE_CONVERSION_USING_QVARIANT
+
+TRACELIB_NAMESPACE_END
+
+#endif
+
