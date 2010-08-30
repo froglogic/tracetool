@@ -8,10 +8,13 @@ MainWindow::MainWindow(Settings *settings,
                        QWidget *parent, Qt::WindowFlags flags)
     : QMainWindow(parent, flags),
       m_settings(settings),
-      m_model(new EntryItemModel(this))
+      m_model(NULL)
 {
     setupUi(this);
     m_settings->registerRestorable("MainWindow", this);
+
+    connect(action_Open_Trace, SIGNAL(triggered()),
+	    this, SLOT(openTrace()));
 }
 
 MainWindow::~MainWindow()
@@ -20,7 +23,15 @@ MainWindow::~MainWindow()
 
 bool MainWindow::setDatabase(const QString &databaseFileName, QString *errMsg)
 {
+    // Delete model(s) that might have existed previously
+    if (m_model) {
+	tracePointsView->setModel(NULL);
+	delete m_model; m_model = NULL;
+    }
+
+    m_model = new EntryItemModel(this);
     if (!m_model->setDatabase(databaseFileName, errMsg)) {
+	delete m_model; m_model = NULL;
         return false;
     }
 
@@ -47,3 +58,24 @@ bool MainWindow::restoreSessionState(const QVariant &state)
     return restoreGeometry(geo) && restoreState(docks);
 }
 
+void MainWindow::openTrace()
+{
+    QString fn = QFileDialog::getOpenFileName(this, tr("Open Trace"),
+					      QDir::currentPath(),
+					      tr("Trace Files (*.trace)"));
+    if (fn.isEmpty())
+	return;
+
+    QString errMsg;
+    if (!setDatabase(fn, &errMsg)) {
+	showError(tr("Open Error"),
+		  tr("Error opening trace file: %1").arg(errMsg));
+	return;
+    }
+}
+
+void MainWindow::showError(const QString &title,
+			   const QString &message)
+{
+    QMessageBox::critical(this, title, message);
+}

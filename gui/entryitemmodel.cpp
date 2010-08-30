@@ -34,6 +34,11 @@ EntryItemModel::EntryItemModel(QObject *parent )
 {
 }
 
+EntryItemModel::~EntryItemModel()
+{
+    delete m_queryModel;
+}
+
 bool EntryItemModel::setDatabase(const QString &databaseFileName,
                                  QString *errMsg)
 {

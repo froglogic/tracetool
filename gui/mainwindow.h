@@ -23,9 +23,14 @@ protected:
     QVariant sessionState() const;
     bool restoreSessionState(const QVariant &state);
 
+private slots:
+    void openTrace();
+
 private:
+    void showError(const QString &title, const QString &message);
+
     Settings* const m_settings;
-    EntryItemModel * const m_model;
+    EntryItemModel* m_model;
 };
 
 #endif
