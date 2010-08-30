@@ -1,3 +1,8 @@
+/**********************************************************************
+** Copyright (C) 2010 froglogic GmbH.
+** All rights reserved.
+**********************************************************************/
+
 #include "serializer.h"
 #include "tracelib.h"
 #include "configuration.h"

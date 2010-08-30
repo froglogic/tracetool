@@ -1,3 +1,8 @@
+/**********************************************************************
+** Copyright (C) 2010 froglogic GmbH.
+** All rights reserved.
+**********************************************************************/
+
 #ifndef TRACELIB_CONFIG_H
 #define TRACELIB_CONFIG_H
 

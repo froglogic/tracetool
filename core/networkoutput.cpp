@@ -1,3 +1,8 @@
+/**********************************************************************
+** Copyright (C) 2010 froglogic GmbH.
+** All rights reserved.
+**********************************************************************/
+
 #ifdef _WIN32
 /* Avoids that winsock.h is included by windows.h; winsock.h conflicts
  * with winsock2.h

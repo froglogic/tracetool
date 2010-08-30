@@ -1,3 +1,8 @@
+/**********************************************************************
+** Copyright (C) 2010 froglogic GmbH.
+** All rights reserved.
+**********************************************************************/
+
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <stdlib.h>

@@ -1,3 +1,8 @@
+/**********************************************************************
+** Copyright (C) 2010 froglogic GmbH.
+** All rights reserved.
+**********************************************************************/
+
 #ifndef TRACELIB_FILEMODIFICATIONMONITOR_WIN_H
 #define TRACELIB_FILEMODIFICATIONMONITOR_WIN_H
 

@@ -1,3 +1,8 @@
+/**********************************************************************
+** Copyright (C) 2010 froglogic GmbH.
+** All rights reserved.
+**********************************************************************/
+
 #ifndef ENTRYITEMMODEL_H
 #define ENTRYITEMMODEL_H
 

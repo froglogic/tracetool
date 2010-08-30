@@ -1,3 +1,8 @@
+/**********************************************************************
+** Copyright (C) 2010 froglogic GmbH.
+** All rights reserved.
+**********************************************************************/
+
 #ifndef TRACELIB_SHUTDOWNNOTIFIER_H
 #define TRACELIB_SHUTDOWNNOTIFIER_H
 

@@ -1,3 +1,8 @@
+/**********************************************************************
+** Copyright (C) 2010 froglogic GmbH.
+** All rights reserved.
+**********************************************************************/
+
 #define QT_NO_CAST_ASCII
 #define QT_NO_ASCII_CAST
 
