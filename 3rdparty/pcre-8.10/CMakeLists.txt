@@ -487,7 +487,7 @@ ENDIF(PCRE_BUILD_TESTS)
 # Installation
 SET(CMAKE_INSTALL_ALWAYS 1)
 
-INSTALL(TARGETS pcre pcreposix pcrecpp pcregrep
+INSTALL(TARGETS pcre pcrecpp
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib)
