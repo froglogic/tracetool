@@ -10,6 +10,8 @@
 #include <QtGui>
 #include <QtSql>
 
+#include "../core/tracelib.h"
+
 MainWindow::MainWindow(Settings *settings,
                        QWidget *parent, Qt::WindowFlags flags)
     : QMainWindow(parent, flags),
@@ -148,9 +150,12 @@ bool MainWindow::rebuildWatchTree(const QString &databaseFileName, QString *errM
 
         }
 
+        using TRACELIB_NAMESPACE_IDENT(VariableType);
+
+        const VariableType::Value varType = static_cast<VariableType::Value>( query.value( 6 ).toInt() );
         const QString varName = QString( "%1 (%2)" )
                                     .arg( query.value( 5 ).toString() )
-                                    .arg( query.value( 6 ).toString() );
+                                    .arg( VariableType::valueAsString( varType ) );
         const QString varValue = query.value( 7 ).toString();
         new QTreeWidgetItem( functionItem,
                              QStringList() << QString() << varName << varValue );
