@@ -118,9 +118,9 @@ bool EntryItemModel::setDatabase(const QString &databaseFileName,
 int EntryItemModel::columnCount(const QModelIndex & parent) const
 {
 #ifdef SHOW_VERBOSITY
-    return 11;
-#else
     return 10;
+#else
+    return 9;
 #endif
 }
 
@@ -141,17 +141,18 @@ QModelIndex EntryItemModel::index(int row, int column,
 QVariant EntryItemModel::data(const QModelIndex& index, int role) const
 {
     if (role == Qt::DisplayRole) {
+        int dbField = index.column() + 1;
         QModelIndex foreign = m_queryModel->index(index.row(),
-                                                  index.column(),
+                                                  dbField,
                                                   QModelIndex());
         QVariant v = m_queryModel->data(foreign, Qt::DisplayRole);
         //  qDebug("v.type: %s v.str: %s", v.typeName(), qPrintable(v.toString()));
         // ### Sqlite stores DATETIME values as strings
-        if (index.column() == TimeFieldIndex) {
+        if (dbField == TimeFieldIndex) {
             QDateTime dt = QDateTime::fromString(v.toString(), Qt::ISODate);
             return dt;
         }
-        if (index.column() == TypeFieldIndex) {
+        if (dbField == TypeFieldIndex) {
             bool ok;
             int i = v.toInt(&ok);
             assert(ok);
@@ -174,9 +175,8 @@ QVariant EntryItemModel::headerData(int section, Qt::Orientation orientation,
                                     int role) const
 {
     if (role == Qt::DisplayRole && orientation == Qt::Horizontal) {
-        switch (section) {
-        case IdFieldIndex:
-            return tr("Id");
+        int dbField = section + 1;
+        switch (dbField) {
         case TimeFieldIndex:
             return tr("Time");
         case ApplicationFieldIndex:
@@ -203,6 +203,9 @@ QVariant EntryItemModel::headerData(int section, Qt::Orientation orientation,
             assert(!"Invalid section value");
             return QString();
         }
+    } else if (role == Qt::DisplayRole && orientation == Qt::Vertical) {
+        QModelIndex dbIndex = m_queryModel->index(section, IdFieldIndex);
+        return m_queryModel->data(dbIndex, Qt::DisplayRole);        
     }
 
     return QAbstractTableModel::headerData(section, orientation, role);
