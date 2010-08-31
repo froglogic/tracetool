@@ -29,9 +29,10 @@ IF(NOT WIN32)
     ENDIF(NOT HAS_EXECINFO)
 
     CHECK_INCLUDE_FILE(bfd.h HAVE_BFD_H)
-    IF(NOT HAVE_BFD_H)
-        MESSAGE(WARNING "Without the bfd.h file backtraces will not contain source file name information. Install the missing SDK (e.g. binutils-dev) to enable this feature.")
-    ENDIF(NOT HAVE_BFD_H)
+    CHECK_INCLUDE_FILE(demangle.h HAVE_DEMANGLE_H)
+    IF(NOT HAVE_BFD_H OR NOT HAVE_DEMANGLE_H)
+        MESSAGE(WARNING "Without the bfd.h and demangle.h file backtraces will not contain source file name information. Install the missing SDK (e.g. binutils-dev) to enable this feature.")
+    ENDIF(NOT HAVE_BFD_H OR NOT HAVE_DEMANGLE_H)
 ENDIF(NOT WIN32)
 
 FIND_PACKAGE(Qt4 COMPONENTS QtCore)

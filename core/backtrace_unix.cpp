@@ -21,7 +21,7 @@
 # include <dlfcn.h>
 #endif
 #include <dlfcn.h>
-#if HAVE_BFD_H
+#if HAVE_BFD_H && HAVE_DEMANGLE_H
 # include <bfd.h>
 # include <demangle.h>
 #endif
@@ -37,7 +37,7 @@ static pthread_mutex_t trace_mutex;
 static char *symbol_buffer;
 static size_t symbol_buffer_length;
 
-#if HAVE_BFD_H
+#if HAVE_BFD_H && HAVE_DEMANGLE_H
 static bfd *self_bfd;
 static asymbol **self_symbols;
 #endif
@@ -65,7 +65,7 @@ static int buildBackTrace( uintptr_t p, int, void *user) {
 }
 #endif
 
-#if HAVE_BFD_H
+#if HAVE_BFD_H && HAVE_DEMANGLE_H
 
 struct BfdSymbol {
     bfd_vma pc;
@@ -182,7 +182,7 @@ static void readBacktrace( std::vector<StackFrame> &trace, size_t skip
     void *array[50];
     size_t size = backtrace(array, sizeof(array)/sizeof(void*));
     if ( size > 0 && size < sizeof ( array ) / sizeof ( void* ) ) {
-#if HAVE_BFD_H
+#if HAVE_BFD_H && HAVE_DEMANGLE_H
         if ( self_symbols ) {
             for (size_t i = skip; i < size; ++i) {
                 StackFrame frame;
@@ -206,7 +206,7 @@ static void readBacktrace( std::vector<StackFrame> &trace, size_t skip
                 }
                 free(strs);
             }
-#if HAVE_BFD_H
+#if HAVE_BFD_H && HAVE_DEMANGLE_H
         }
 #endif
     }
@@ -217,7 +217,7 @@ static void readBacktrace( std::vector<StackFrame> &trace, size_t skip
 
 static void setupSymbolTable()
 {
-#if HAVE_BFD_H
+#if HAVE_BFD_H && HAVE_DEMANGLE_H
     bool success = false;
     char **matching;
     self_bfd = bfd_openr( processFullName().c_str(), NULL );
@@ -258,7 +258,7 @@ static void setupSymbolTable()
 
 static void cleanupSymbolTable()
 {
-#if HAVE_BFD_H
+#if HAVE_BFD_H && HAVE_DEMANGLE_H
     if ( self_bfd ) {
         bfd_close( self_bfd );
         self_bfd = NULL;
