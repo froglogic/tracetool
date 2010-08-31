@@ -10,7 +10,6 @@ ADD_SUBDIRECTORY(convertdb)
 ADD_SUBDIRECTORY(3rdparty/pcre-8.10)
 ADD_SUBDIRECTORY(tests)
 ADD_SUBDIRECTORY(examples/sampleapp)
-ADD_SUBDIRECTORY(examples/tracegen)
 ADD_SUBDIRECTORY(examples/addressbook)
 
 CONFIGURE_FILE(config-cmake.h.in
