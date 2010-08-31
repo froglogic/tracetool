@@ -52,6 +52,7 @@ VariableValue convertVariable( T val ) { \
     return VariableValue::stringValue( stringFromStringStream( val ) ); \
 }
 
+TRACELIB_SPECIALIZE_CONVERISON_USING_SSTREAM(bool)
 TRACELIB_SPECIALIZE_CONVERISON_USING_SSTREAM(short)
 TRACELIB_SPECIALIZE_CONVERISON_USING_SSTREAM(unsigned short)
 TRACELIB_SPECIALIZE_CONVERISON_USING_SSTREAM(int)
