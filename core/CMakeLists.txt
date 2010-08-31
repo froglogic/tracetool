@@ -102,3 +102,24 @@ ELSE(WIN32)
     ENDIF(LIB_EXECINFO)
 ENDIF(WIN32)
 
+# Installation
+INSTALL(TARGETS tracelib RUNTIME DESTINATION bin
+                         LIBRARY DESTINATION lib
+                         ARCHIVE DESTINATION lib COMPONENT devel)
+INSTALL(FILES 
+        tracelib.h 
+        tracelib_config.h 
+        backtrace.h 
+        crashhandler.h 
+        filemodificationmonitor.h 
+        filter.h 
+        getcurrentthreadid.h 
+        mutex.h 
+        output.h 
+        serializer.h 
+        shutdownnotifier.h 
+        variabledumping.h 
+        variabletypes.def
+        tracepointtypes.def
+        DESTINATION include/tracelib COMPONENT devel)
+

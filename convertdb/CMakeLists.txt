@@ -9,3 +9,9 @@ INCLUDE(${QT_USE_FILE})
 ADD_EXECUTABLE(convertdb ${CONVERTDB_SOURCES})
 TARGET_LINK_LIBRARIES(convertdb ${QT_LIBRARIES})
 
+# Installation
+
+INSTALL(TARGETS convertdb RUNTIME DESTINATION bin
+                          LIBRARY DESTINATION lib
+                          ARCHIVE DESTINATION lib COMPONENT devel)
+

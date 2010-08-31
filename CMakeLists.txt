@@ -20,6 +20,9 @@ CONFIGURE_FILE(Doxyfile.in ${PROJECT_BINARY_DIR}/Doxyfile)
 INCLUDE(${CMAKE_ROOT}/Modules/FindDoxygen.cmake)
 ADD_CUSTOM_TARGET(api-docs ${DOXYGEN} \"${PROJECT_BINARY_DIR}/Doxyfile\" COMMENT "Generating API documentation")
 
+# Installation of api docs
+INSTALL(DIRECTORY ${PROJECT_BINARY_DIR}/doc/html DESTINATION share/doc/tracelib COMPONENT devel)
+
 ## Package Creation Setup
 # See http://www.paraview.org/Wiki/CMake:CPackConfiguration for documentation of variables
 SET(CPACK_PACKAGE_VERSION_MAJOR "1")
