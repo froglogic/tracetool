@@ -61,7 +61,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="title">
@@ -76,12 +76,6 @@
           <attribute name="verticalHeaderVisible">
            <bool>false</bool>
           </attribute>
-          <attribute name="verticalHeaderVisible">
-           <bool>false</bool>
-          </attribute>
-          <attribute name="horizontalHeaderStretchLastSection">
-           <bool>true</bool>
-          </attribute>
          </widget>
         </item>
        </layout>
@@ -92,25 +86,10 @@
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
-         <widget class="QTreeWidget" name="treeWidget">
+         <widget class="QTreeWidget" name="watchPointTree">
           <column>
            <property name="text">
-            <string>PID</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>Application</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>File</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>Function</string>
+            <string>Position</string>
            </property>
           </column>
           <column>
@@ -123,80 +102,6 @@
             <string>Value</string>
            </property>
           </column>
-          <column>
-           <property name="text">
-            <string>Old Value</string>
-           </property>
-          </column>
-          <item>
-           <property name="text">
-            <string>12345</string>
-           </property>
-           <property name="text">
-            <string>opm.exe</string>
-           </property>
-           <property name="text">
-            <string>...\src\db.cpp</string>
-           </property>
-           <property name="text">
-            <string>DB::update()</string>
-           </property>
-           <property name="text">
-            <string>Counter (int)</string>
-           </property>
-           <property name="text">
-            <string>3</string>
-           </property>
-           <property name="text">
-            <string>2</string>
-           </property>
-           <item>
-            <property name="text">
-             <string/>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-            <property name="text">
-             <string>NeedUpdate (bool)</string>
-            </property>
-            <property name="text">
-             <string>true</string>
-            </property>
-            <property name="text">
-             <string>&lt;not set&gt;</string>
-            </property>
-           </item>
-          </item>
-          <item>
-           <property name="text">
-            <string>12347</string>
-           </property>
-           <property name="text">
-            <string>monitor.exe</string>
-           </property>
-           <property name="text">
-            <string>..\monitor.cpp</string>
-           </property>
-           <property name="text">
-            <string>Monitor::check()</string>
-           </property>
-           <property name="text">
-            <string>LastCheck (QDateTime)</string>
-           </property>
-           <property name="text">
-            <string>08.07.10 12:30:01</string>
-           </property>
-           <property name="text">
-            <string>08.07.10 12:29:02</string>
-           </property>
-          </item>
          </widget>
         </item>
        </layout>
@@ -211,7 +116,7 @@
      <x>0</x>
      <y>0</y>
      <width>901</width>
-     <height>25</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_Help">

@@ -34,6 +34,7 @@ private slots:
 
 private:
     void showError(const QString &title, const QString &message);
+    bool rebuildWatchTree(const QString &databaseFileName, QString *errMsg);
 
     Settings* const m_settings;
     EntryItemModel* m_model;

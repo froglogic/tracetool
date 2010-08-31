@@ -8,6 +8,7 @@
 #include "entryitemmodel.h"
 
 #include <QtGui>
+#include <QtSql>
 
 MainWindow::MainWindow(Settings *settings,
                        QWidget *parent, Qt::WindowFlags flags)
@@ -33,6 +34,131 @@ MainWindow::~MainWindow()
 {
 }
 
+bool MainWindow::rebuildWatchTree(const QString &databaseFileName, QString *errMsg)
+{
+    const QString driverName = "QSQLITE";
+    if (!QSqlDatabase::isDriverAvailable(driverName)) {
+        *errMsg = tr("Missing required %1 driver.").arg(driverName);
+        return false;
+    }
+
+    QSqlDatabase db = QSqlDatabase::addDatabase(driverName, "watchmodel");
+    db.setDatabaseName(databaseFileName);
+    if (!db.open()) {
+        *errMsg = db.lastError().text();
+        return false;
+    }
+
+    QSqlQuery query( db );
+    bool result = query.exec( "SELECT"
+                "  process.name,"
+                "  process.pid,"
+                "  path_name.name,"
+                "  trace_point.line,"
+                "  function_name.name,"
+                "  variable.name,"
+                "  variable.type,"
+                "  variable.value"
+                " FROM"
+                "  traced_thread,"
+                "  process,"
+                "  path_name,"
+                "  trace_point,"
+                "  function_name,"
+                "  variable,"
+                "  trace_entry"
+                " WHERE"
+                "  trace_entry.id IN ("
+                "    SELECT"
+                "      DISTINCT trace_entry_id"
+                "    FROM"
+                "      variable"
+                "    WHERE"
+                "      trace_entry_id IN ("
+                "        SELECT"
+                "          MAX(id)"
+                "        FROM"
+                "          trace_entry"
+                "        GROUP BY trace_point_id"
+                "      )"
+                "  )"
+                " AND"
+                "  variable.trace_entry_id = trace_entry.id"
+                " AND"
+                "  traced_thread.id = trace_entry.traced_thread_id"
+                " AND"
+                "  process.id = traced_thread.process_id"
+                " AND"
+                "  trace_point.id = trace_entry.trace_point_id"
+                " AND"
+                "  path_name.id = trace_point.path_id"
+                " AND"
+                "  function_name.id = trace_point.function_id;" );
+
+    if (!result) {
+        *errMsg = query.lastError().text();
+        return false;
+    }
+
+    typedef QMap<QString, QTreeWidgetItem *> ItemMap;
+    ItemMap applicationItems, sourceFileItems, functionItems;
+
+    while ( query.next() ) {
+        QTreeWidgetItem *applicationItem = 0;
+        {
+            const QString application = QString( "%1 (PID %2)" )
+                                            .arg( query.value( 0 ).toString() )
+                                            .arg( query.value( 1 ).toString() );
+            ItemMap::ConstIterator it = applicationItems.find( application );
+            if ( it != applicationItems.end() ) {
+                applicationItem = *it;
+            } else {
+                applicationItem = new QTreeWidgetItem( watchPointTree,
+                                                       QStringList() << application );
+                applicationItems[ application ] = applicationItem;
+            }
+        }
+
+        QTreeWidgetItem *sourceFileItem = 0;
+        {
+            const QString sourceFile = query.value( 2 ).toString();
+            ItemMap::ConstIterator it = sourceFileItems.find( sourceFile );
+            if ( it != sourceFileItems.end() ) {
+                sourceFileItem = *it;
+            } else {
+                sourceFileItem = new QTreeWidgetItem( applicationItem,
+                                                      QStringList() << sourceFile );
+                sourceFileItems[ sourceFile ] = sourceFileItem;
+            }
+        }
+
+        QTreeWidgetItem *functionItem = 0;
+        {
+            const QString function = QString( "%1 (line %2)" )
+                                        .arg( query.value( 4 ).toString() )
+                                        .arg( query.value( 3 ).toString() );
+            ItemMap::ConstIterator it = functionItems.find( function );
+            if ( it != functionItems.end() ) {
+                functionItem = *it;
+            } else {
+                functionItem = new QTreeWidgetItem( sourceFileItem,
+                                                    QStringList() << function );
+                functionItems[ function ] = functionItem;
+            }
+
+        }
+
+        const QString varName = QString( "%1 (%2)" )
+                                    .arg( query.value( 5 ).toString() )
+                                    .arg( query.value( 6 ).toString() );
+        const QString varValue = query.value( 7 ).toString();
+        new QTreeWidgetItem( functionItem,
+                             QStringList() << QString() << varName << varValue );
+    }
+
+    return true;
+}
+
 bool MainWindow::setDatabase(const QString &databaseFileName, QString *errMsg)
 {
     // Delete model(s) that might have existed previously
@@ -52,6 +178,8 @@ bool MainWindow::setDatabase(const QString &databaseFileName, QString *errMsg)
     m_settings->setDatabaseFile(databaseFileName);
 
     tracePointsView->setModel(m_model);
+
+    rebuildWatchTree(databaseFileName, errMsg);
 
     return true;
 }
