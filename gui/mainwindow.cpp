@@ -95,7 +95,7 @@ void MainWindow::helpAbout()
     const QString title = tr("About %1").arg(windowTitle());
     const QString txt = tr("<qt>Copyright %1 froglogic GmbH\n"
                            "<br><br>"
-                           "Build with Qt %2 on %3.")
+                           "Built with Qt %2 on %3.")
         .arg(2010).arg(QT_VERSION_STR).arg(__DATE__);
     QMessageBox::information(this, title, txt);
 }
