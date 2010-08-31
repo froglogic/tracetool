@@ -114,12 +114,21 @@ vector<char> PlaintextSerializer::serialize( const ProcessShutdownEvent &ev )
 
 string PlaintextSerializer::convertVariableValue( const VariableValue &v ) const
 {
+    ostringstream str;
     switch ( v.type() ) {
         case VariableType::String:
-            return v.asString() + " <String>";
+            str << v.asString();
+        case VariableType::Number:
+            str << v.asNumber();
+        case VariableType::Float:
+            str << v.asFloat();
+        case VariableType::Boolean:
+            str << v.asBoolean();
+        default:
+            assert( !"Unreachable" );
     }
-    assert( !"Unreachable" );
-    return string();
+    str << " <" << VariableType::valueAsString( v.type() ) << ">";
+    return str.str();
 }
 
 vector<char> CSVSerializer::serialize( const TraceEntry &entry )
@@ -150,12 +159,23 @@ vector<char> CSVSerializer::serialize( const ProcessShutdownEvent &ev )
 
 string CSVSerializer::convertVariableValue( const VariableValue &v ) const
 {
+    ostringstream str;
     switch ( v.type() ) {
         case VariableType::String:
-            return escape( v.asString() ) + ",String";
+            str << v.asString();
+        case VariableType::Number:
+            str << v.asNumber();
+        case VariableType::Float:
+            str << v.asFloat();
+        case VariableType::Boolean:
+            str << v.asBoolean();
+        default:
+            assert( !"Unreachable" );
     }
-    assert( !"Unreachable" );
-    return string();
+    string result = escape( str.str() );
+    result += ",";
+    result += VariableType::valueAsString( v.type() );
+    return result;
 }
 
 string CSVSerializer::escape( const string &s ) const
@@ -280,16 +300,26 @@ vector<char> XMLSerializer::serialize( const ProcessShutdownEvent &ev )
 
 string XMLSerializer::convertVariable( const char *n, const VariableValue &v ) const
 {
-    string s = "<variable name=\"";
-    s += n;
-    s += "\" ";
+    ostringstream str;
+    str << "<variable name=\"" << n << "\" ";
     switch ( v.type() ) {
         case VariableType::String:
-            s += "type=\"string\"><![CDATA[" + v.asString() + "]]></variable>";
-            return s;
+            str << "type=\"string\"><![CDATA[" << v.asString() + "]]>";
+            break;
+        case VariableType::Number:
+            str << "type=\"number\">" << v.asNumber();
+            break;
+        case VariableType::Float:
+            str << "type=\"float\">" << v.asFloat();
+            break;
+        case VariableType::Boolean:
+            str << "type=\"boolean\">" << v.asBoolean();
+            break;
+        default:
+            assert( !"Unreachable" );
     }
-    assert( !"Unreachable" );
-    return string();
+    str << "</variable>";
+    return str.str();
 }
 
 TRACELIB_NAMESPACE_END

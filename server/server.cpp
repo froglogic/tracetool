@@ -51,6 +51,12 @@ static TraceEntry deserializeTraceEntry( const QDomElement &e )
             const QString typeStr = varElement.attribute( "type" );
             if ( typeStr == "string" ) {
                 var.type = VariableType::String;
+            } else if ( typeStr == "number" ) {
+                var.type = VariableType::Number;
+            } else if ( typeStr == "float" ) {
+                var.type = VariableType::Float;
+            } else if ( typeStr == "boolean" ) {
+                var.type = VariableType::Boolean;
             }
             var.value = varElement.text();
 

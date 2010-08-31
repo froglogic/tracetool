@@ -14,7 +14,34 @@ TRACELIB_NAMESPACE_BEGIN
 
 VariableValue VariableValue::stringValue( const string &s )
 {
-    return VariableValue( s );
+    VariableValue var;
+    var.m_type = VariableType::String;
+    var.m_string = s;
+    return var;
+}
+
+VariableValue VariableValue::numberValue( unsigned long v )
+{
+    VariableValue var;
+    var.m_type = VariableType::Number;
+    var.m_primitiveValue.number = v;
+    return var;
+}
+
+VariableValue VariableValue::booleanValue( bool v )
+{
+    VariableValue var;
+    var.m_type = VariableType::Boolean;
+    var.m_primitiveValue.boolean = v;
+    return var;
+}
+
+VariableValue VariableValue::floatValue( long double v )
+{
+    VariableValue var;
+    var.m_type = VariableType::Float;
+    var.m_primitiveValue.float_ = v;
+    return var;
 }
 
 VariableType::Value VariableValue::type() const
@@ -27,9 +54,23 @@ const string &VariableValue::asString() const
     return m_string;
 }
 
-VariableValue::VariableValue( const string &s )
-    : m_type( VariableType::String ),
-    m_string( s )
+unsigned long VariableValue::asNumber() const
+{
+    return m_primitiveValue.number;
+}
+
+bool VariableValue::asBoolean() const
+{
+    return m_primitiveValue.boolean;
+}
+
+long double VariableValue::asFloat() const
+{
+    return m_primitiveValue.float_;
+}
+
+VariableValue::VariableValue()
+    : m_type( VariableType::Unknown )
 {
 }
 

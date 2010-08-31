@@ -49,15 +49,26 @@ struct VariableType {
 class VariableValue {
 public:
     static VariableValue stringValue( const std::string &s );
+    static VariableValue numberValue( unsigned long v );
+    static VariableValue booleanValue( bool v );
+    static VariableValue floatValue( long double v );
 
     VariableType::Value type() const;
     const std::string &asString() const;
+    unsigned long asNumber() const;
+    bool asBoolean() const;
+    long double asFloat() const;
 
 private:
-    explicit VariableValue( const std::string &s );
+    VariableValue();
 
-    const VariableType::Value m_type;
-    const std::string m_string;
+    VariableType::Value m_type;
+    std::string m_string;
+    union {
+        unsigned long number;
+        bool boolean;
+        long double float_;
+    } m_primitiveValue;
 };
 
 template <typename T>
