@@ -20,6 +20,12 @@ CONFIGURE_FILE(Doxyfile.in ${PROJECT_BINARY_DIR}/Doxyfile)
 INCLUDE(${CMAKE_ROOT}/Modules/FindDoxygen.cmake)
 ADD_CUSTOM_TARGET(api-docs ${DOXYGEN} \"${PROJECT_BINARY_DIR}/Doxyfile\" COMMENT "Generating API documentation")
 
+## Package Creation Setup
+# See http://www.paraview.org/Wiki/CMake:CPackConfiguration for documentation of variables
+SET(CPACK_PACKAGE_VERSION_MAJOR "1")
+SET(CPACK_PACKAGE_VERSION_MINOR "0")
+SET(CPACK_PACKAGE_VERSION_PATCH "0")
+SET(CPACK_PACKAGE_VENDOR "froglogic GmbH")
 IF(WIN32)
     SET(CPACK_GENERATOR "ZIP")
 ELSEIF(APPLE)
