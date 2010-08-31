@@ -289,6 +289,11 @@ void MainWindow::editAdd()
 {
     Dialog dialog(this);
     if (dialog.exec()) {
+        TRACELIB_WATCH_MSG("Values returned by Add Entry dialog",
+                           TRACELIB_VAR(dialog.forename())
+                           << TRACELIB_VAR(dialog.surname())
+                           << TRACELIB_VAR(dialog.email())
+                           << TRACELIB_VAR(dialog.phone()));
         int row = tableWidget->rowCount() == 0
                 ? 0 :tableWidget->currentRow();
         tableWidget->insertRow(row);
