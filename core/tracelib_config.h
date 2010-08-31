@@ -8,32 +8,32 @@
 
 /**
  * @file tracelib_config.h
- * @brief Provides convenience macros which simplify access to the tracelib API.
+ * @brief Provides convenience macros to simplify access to the tracelib API.
  *
  * This file contains a set of preprocessor defines which simplify access to the
  * tracelib API as well as a few macros for performing build-time configuration
  * of the tracelib library.
  *
- * The following macros are available to logging trace entries:
+ * The following macros are available for logging trace entries:
  * \li #TRACELIB_TRACE, #TRACELIB_TRACE_MSG: Log generic trace entries
  * \li #TRACELIB_DEBUG, #TRACELIB_DEBUG_MSG: Log debug trace entries
  * \li #TRACELIB_ERROR, #TRACELIB_ERROR_MSG: Log error trace entries
- * \li #TRACELIB_WATCH, #TRACELIB_WATCH_MSG: Log trace entries with values of variables
+ * \li #TRACELIB_WATCH, #TRACELIB_WATCH_MSG: Log trace entries with variables's values
  *
- * Furthermore, three macros are available for configuring the namespace within
- * which all symbols of the tracelib library are to be defined. This is useful
+ * In addition, three macros are available for configuring the namespace within
+ * which all the tracelib library's symbols are to be defined. This is useful
  * for avoiding symbol clashes with existing definitions when linking the
  * tracelib library into applications or libraries:
  *
- * \li #TRACELIB_NAMESPACE_BEGIN opens the namespace of the tracelib library
- * \li #TRACELIB_NAMESPACE_END closes the namespace of the tracelib library
+ * \li #TRACELIB_NAMESPACE_BEGIN opens the tracelib library's namespace
+ * \li #TRACELIB_NAMESPACE_END closes the tracelib library's namespace
  * \li #TRACELIB_NAMESPACE_IDENT fully-qualifies the given identifier using the
  * tracelib namespace
  *
- * Finally, a macro is available for performing some build-time configuration:
+ * There is also a macro is available for performing some build-time configuration:
  *
  * \li #TRACELIB_DEFAULT_PORT contains the default port to be used when
- * writing out trace data over the network and no port information was found
+ * sending trace data over the network and no port information was found
  * in the configuration file.
  */
 
@@ -41,7 +41,7 @@
  * @brief Yield the fully qualified name for an identifier in the tracelib library.
  *
  * This macro should be used for directly accessing C++ identifiers (such as
- * class names) of the tracelib library. Since all symbols of the library might be
+ * class names) in the tracelib library. Since all the library's symbols might be
  * enclosed in a namespace, code which is not within that namespace must use the
  * fully qualified name:
  *
@@ -60,10 +60,10 @@
 #define TRACELIB_NAMESPACE_IDENT(x) ea::trace::x
 
 /**
- * @brief Opens the namespace which contains all tracelib symbols.
+ * @brief Opens the namespace which contains all the tracelib symbols.
  *
  * This macro (together with #TRACELIB_NAMESPACE_END) is needed when declaring
- * or definiong symbols which should reside in the same namespace as the rest
+ * or defining symbols which should reside in the same namespace as the rest
  * of the tracelib library. In particular, it is needed when implementing
  * specializations of the convertVariable template function, as in this
  * example:
@@ -89,40 +89,24 @@
 #define TRACELIB_NAMESPACE_BEGIN namespace ea { namespace trace {
 
 /**
- * @brief Closes the namespace which contains all tracelib symbols.
+ * @brief Closes the namespace which contains all the tracelib symbols.
  *
  * This macro (together with #TRACELIB_NAMESPACE_BEGIN) is needed when declaring
- * or definiong symbols which should reside in the same namespace as the rest
+ * or defining symbols which should reside in the same namespace as the rest
  * of the tracelib library. In particular, it is needed when implementing
- * specializations of the convertVariable template function, as in this
- * example:
- *
- * \code
- * #include "tracelib.h"
- *
- * // Specialize convertVariable to be able to log custom Person objects.
- * // convertVariable specializations are expected to be defined in the same
- * // namespace as the rest of the tracelib library.
- *
- * TRACELIB_NAMESPACE_BEGIN
- * template <>
- * VariableValue convertVariable( const Person &p ) {
- *     const std::string s = p.lastName() + ", " + p.firstName();
- *     return VariableValue::fromString( s );
- * }
- * TRACELIB_NAMESPACE_END
- * \endcode
+ * specializations of the convertVariable template function. (See
+ * #TRACELIB_NAMESPACE_BEGIN for an example.)
  *
  * \sa TRACELIB_NAMESPACE_BEGIN TRACELIB_NAMESPACE_IDENT
  */
 #define TRACELIB_NAMESPACE_END } }
 
 /**
- * @brief Default port to write trace data to when using network output mode.
+ * @brief Default port to write trace data to when sending over a network.
  *
- * This macro defines the default port which should be used when writing the
+ * This macro defines the default port which should be used when sending the
  * trace data to the remote host specified in the configuration file. It can
- * be overridden using the <port> element of the configuration file:
+ * be overridden using the configuration file's <port> element:
  *
  * \code
  * <tracelibConfiguration>
@@ -146,9 +130,9 @@
 #define TRACELIB_DEFAULT_PORT 12382
 
 /**
- * @brief Add a debug entry to the trace of the current thread.
+ * @brief Add a debug entry to the current thread's trace.
  *
- * This macro adds a 'debug' entry to the trace of the current thread without
+ * This macro adds a 'debug' entry to the current thread's trace without
  * specifying any custom message. It's equivalent to TRACELIB_DEBUG_MSG(0).
  *
  * \sa TRACELIB_DEBUG_MSG
@@ -156,9 +140,9 @@
 #define TRACELIB_DEBUG TRACELIB_DEBUG_MSG(0)
 
 /**
- * @brief Add a error entry to the trace of the current thread.
+ * @brief Add an error entry to the current thread's trace.
  *
- * This macro adds a 'erro' entry to the trace of the current thread without
+ * This macro adds a 'error' entry to the current thread's trace without
  * specifying any custom message. It's equivalent to TRACELIB_ERROR_MSG(0).
  *
  * \sa TRACELIB_ERROR_MSG
@@ -166,9 +150,9 @@
 #define TRACELIB_ERROR TRACELIB_ERROR_MSG(0)
 
 /**
- * @brief Add a generic trace entry to the trace of the current thread.
+ * @brief Add a generic trace entry to the current thread's trace.
  *
- * This macro adds a 'trace' entry to the trace of the current thread without
+ * This macro adds a 'trace' entry to the current thread's trace without
  * specifying any custom message. It's equivalent to TRACELIB_TRACE_MSG(0).
  *
  * \sa TRACELIB_TRACE_MSG
@@ -176,12 +160,12 @@
 #define TRACELIB_TRACE TRACELIB_TRACE_MSG(0)
 
 /**
- * @brief Add a watch point entry togetherto the trace of the current thread.
+ * @brief Add a watch point entry to the current thread's trace.
  *
  * This macro is equivalent to TRACELIB_WATCH_MSG(0, vars).
  *
- * @param[in] vars A list of TRACELIB_VAR invocations which enclose the variables
- * to be logged.
+ * @param[in] vars A list of TRACELIB_VAR invocations which specify the
+ * variables to be logged.
  *
  * \sa TRACELIB_WATCH_MSG
  */
@@ -190,11 +174,11 @@
 /**
  * @brief Add a debug entry together with an optional message.
  *
- * This function adds a new entry to the trace for the current thread.
+ * This function adds a new entry to the current thread's trace.
  *
  * @param[in] msg A C string containing the UTF-8 encoded message to add to
  * the trace. A null pointer is acceptable and will result in no message being
- * logged. Ownership of the referenced memory remains with the caller.
+ * logged. The caller retains ownership of the string.
  *
  * \code
  * void read_file( const char *fn ) {
@@ -212,24 +196,14 @@
 #define TRACELIB_DEBUG_MSG(msg) TRACELIB_VISIT_TRACEPOINT_MSG(TRACELIB_NAMESPACE_IDENT(TracePointType)::Debug, 1, msg)
 
 /**
- * @brief Add a error entry together with an optional message.
+ * @brief Add an error entry together with an optional message.
  *
- * This function adds a new entry to the trace for the current thread.
+ * This function adds a new entry to the current thread's trace.
  *
  * @param[in] msg A C string containing the UTF-8 encoded message to add to
  * the trace. A null pointer is acceptable and will result in no message being
- * logged. Ownership of the referenced memory remains with the caller.
- *
- * \code
- * void read_file( const char *fn ) {
- *     FILE *f = fopen( fn, "r" );
- *     if ( !f ) {
- *         TRACELIB_ERROR_MSG("Failed to open file for reading");
- *     }
- *     TRACELIB_DEBUG_MSG("Opened file for reading");
- *     ...
- * }
- * \endcode
+ * logged. The caller retains ownership of the string. (See
+ * #TRACELIB_DEBUG_MSG for an example.)
  *
  * \sa TRACELIB_ERROR
  */
@@ -238,11 +212,11 @@
 /**
  * @brief Add a trace entry together with an optional message.
  *
- * This function adds a new entry to the trace for the current thread.
+ * This function adds a new entry to the current thread's trace.
  *
  * @param[in] msg A C string containing the UTF-8 encoded message to add to
  * the trace. A null pointer is acceptable and will result in no message being
- * logged. Ownership of the referenced memory remains with the caller.
+ * logged. The caller retains ownership of the string.
  *
  * \code
  * int get_largest_value( int a, int b, int c ) {
@@ -263,19 +237,19 @@
 /**
  * @brief Add a watch point entry together with an optional message.
  *
- * This function adds a new entry to the trace for the current thread.
+ * This function adds a new entry to the current thread's trace.
  *
  * @param[in] msg A C string containing the UTF-8 encoded message to add to
  * the trace. A null pointer is acceptable and will result in no message being
- * logged. Ownership of the referenced memory remains with the caller.
- * @param[in] vars A list of TRACELIB_VAR invocations which enclose the variables
+ * logged. The caller retains ownership of the string.
+ * @param[in] vars A list of TRACELIB_VARs which specify the variables
  * to be logged.
  *
  * \code
  * bool is_nonnegative_number( const char *s ) {
- *     TRACE_WATCH_MSG("is_nonnegative_number called", TRACE_VAR(s));
+ *     TRACELIB_WATCH_MSG("is_nonnegative_number called", TRACELIB_VAR(s));
  *     while ( *s && *s >= '0' && *s <= '9' ) ++s;
- *     TRACE_WATCH_MSG("is_nonnegative_number exiting", TRACE_VAR(s) << TRACE_VAR(*s == '\0'));
+ *     TRACELIB_WATCH_MSG("is_nonnegative_number exiting", TRACELIB_VAR(s) << TRACELIB_VAR(*s == '\0'));
  *     return *s == '\0';
  * }
  * \endcode
