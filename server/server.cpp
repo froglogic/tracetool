@@ -47,9 +47,10 @@ static TraceEntry deserializeTraceEntry( const QDomElement &e )
             Variable var;
             var.name = varElement.attribute( "name" );
 
+            using TRACELIB_NAMESPACE_IDENT(VariableType);
             const QString typeStr = varElement.attribute( "type" );
             if ( typeStr == "string" ) {
-                var.type = Variable::StringType;
+                var.type = VariableType::String;
             }
             var.value = varElement.text();
 
@@ -319,16 +320,7 @@ void Server::storeEntry( const TraceEntry &e )
     {
         QList<Variable>::ConstIterator it, end = e.variables.end();
         for ( it = e.variables.begin(); it != end; ++it ) {
-            int typeCode = 0;
-            switch ( it->type ) {
-                case Variable::StringType:
-                    typeCode = 0;
-                    break;
-                default:
-                    assert( !"Unreachable" );
-            }
-
-            transaction.exec( QString( "INSERT INTO variable VALUES(%1, %2, %3, %4);" ).arg( traceentryId ).arg( formatValue( it->name ) ).arg( formatValue( it->value ) ).arg( typeCode ) );
+            transaction.exec( QString( "INSERT INTO variable VALUES(%1, %2, %3, %4);" ).arg( traceentryId ).arg( formatValue( it->name ) ).arg( formatValue( it->value ) ).arg( it->type ) );
         }
     }
 

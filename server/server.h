@@ -13,6 +13,8 @@
 #include <QObject>
 #include <QSqlDatabase>
 
+#include "../core/tracelib.h"
+
 class QTcpServer;
 class QTcpSocket;
 
@@ -28,7 +30,7 @@ struct StackFrame
 struct Variable
 {
     QString name;
-    enum { StringType } type;
+    TRACELIB_NAMESPACE_IDENT(VariableType)::Value type;
     QString value;
 };
 
