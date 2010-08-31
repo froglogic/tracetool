@@ -19,3 +19,12 @@ CONFIGURE_FILE(config-cmake.h.in
 CONFIGURE_FILE(Doxyfile.in ${PROJECT_BINARY_DIR}/Doxyfile)
 INCLUDE(${CMAKE_ROOT}/Modules/FindDoxygen.cmake)
 ADD_CUSTOM_TARGET(api-docs ${DOXYGEN} \"${PROJECT_BINARY_DIR}/Doxyfile\" COMMENT "Generating API documentation")
+
+if(WIN32)
+    set(CPACK_GENERATOR "ZIP")
+elseif(APPLE)
+    set(CPACK_GENERATOR "Bundle")
+else(WIN32)
+    set(CPACK_GENERATOR "TGZ")
+endif(WIN32)
+include(CPack)
