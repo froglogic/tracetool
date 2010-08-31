@@ -115,7 +115,7 @@ vector<char> PlaintextSerializer::serialize( const ProcessShutdownEvent &ev )
 string PlaintextSerializer::convertVariableValue( const VariableValue &v ) const
 {
     switch ( v.type() ) {
-        case VariableValue::String:
+        case VariableType::String:
             return v.asString() + " <String>";
     }
     assert( !"Unreachable" );
@@ -151,7 +151,7 @@ vector<char> CSVSerializer::serialize( const ProcessShutdownEvent &ev )
 string CSVSerializer::convertVariableValue( const VariableValue &v ) const
 {
     switch ( v.type() ) {
-        case VariableValue::String:
+        case VariableType::String:
             return escape( v.asString() ) + ",String";
     }
     assert( !"Unreachable" );
@@ -284,7 +284,7 @@ string XMLSerializer::convertVariable( const char *n, const VariableValue &v ) c
     s += n;
     s += "\" ";
     switch ( v.type() ) {
-        case VariableValue::String:
+        case VariableType::String:
             s += "type=\"string\"><![CDATA[" + v.asString() + "]]></variable>";
             return s;
     }

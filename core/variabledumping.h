@@ -13,21 +13,50 @@
 
 TRACELIB_NAMESPACE_BEGIN
 
-class VariableValue {
-public:
-    enum Type {
-        String
+struct VariableType {
+    enum Value {
+        Unknown = 0
+#define TRACELIB_VARIABLETYPE(name) ,name
+#include "variabletypes.def"
+#undef TRACELIB_VARIABLETYPE
     };
 
+    static const int *values() {
+        static const int a[] = {
+            Unknown,
+#define TRACELIB_VARIABLETYPE(name) name,
+#include "variabletypes.def"
+#undef TRACELIB_VARIABLETYPE
+            -1
+        };
+        return a;
+    }
+
+    static const char *valueAsString( Value v ) {
+#define TRACELIB_VARIABLETYPE(name) static const char str_##name[] = #name;
+#include "variabletypes.def"
+#undef TRACELIB_VARIABLETYPE
+        switch ( v ) {
+            case Unknown: return "Unknown";
+#define TRACELIB_VARIABLETYPE(name) case name: return str_##name;
+#include "variabletypes.def"
+#undef TRACELIB_VARIABLETYPE
+        }
+        return 0;
+    }
+};
+
+class VariableValue {
+public:
     static VariableValue stringValue( const std::string &s );
 
-    Type type() const;
+    VariableType::Value type() const;
     const std::string &asString() const;
 
 private:
     explicit VariableValue( const std::string &s );
 
-    const Type m_type;
+    const VariableType::Value m_type;
     const std::string m_string;
 };
 

@@ -17,7 +17,7 @@ VariableValue VariableValue::stringValue( const string &s )
     return VariableValue( s );
 }
 
-VariableValue::Type VariableValue::type() const
+VariableType::Value VariableValue::type() const
 {
     return m_type;
 }
@@ -28,7 +28,7 @@ const string &VariableValue::asString() const
 }
 
 VariableValue::VariableValue( const string &s )
-    : m_type( String ),
+    : m_type( VariableType::String ),
     m_string( s )
 {
 }
