@@ -1,0 +1,11 @@
+ <!DOCTYPE RCC><RCC version="1.0">
+ <qresource>
+     <file>images/editadd.png</file>
+     <file>images/editdelete.png</file>
+     <file>images/filenew.png</file>
+     <file>images/fileopen.png</file>
+     <file>images/filequit.png</file>
+     <file>images/filesave.png</file>
+     <file>images/filesaveas.png</file>
+ </qresource>
+ </RCC>
