@@ -38,6 +38,7 @@ private slots:
     void editRemove();
     void setDirty(bool on=true);
     void updateUi();
+    void timerTriggered();
 
 private:
     void clear();

@@ -14,6 +14,7 @@
 #include <QtCore/QFile>
 #include <QtCore/QTextStream>
 #include <QtCore/QMetaProperty>
+#include <QtCore/QTimer>
 #include <QtGui/QItemEditorFactory>
 #include <QtGui/QAction>
 #include <QtGui/QApplication>
@@ -27,6 +28,7 @@
 #include <QtGui/QTableWidget>
 #include <QtGui/QToolBar>
 
+#include "tracelib.h"
 
 const int COLUMNS = 4;
 
@@ -104,6 +106,15 @@ MainWindow::MainWindow(QWidget *parent)
     statusBar()->showMessage("Ready", 5000);
     setWindowTitle(tr("Address Book"));
     updateUi();
+
+    QTimer *t = new QTimer( this );
+    connect( t, SIGNAL( timeout() ), SLOT( timerTriggered() ) );
+    t->start( 500 );
+}
+
+void MainWindow::timerTriggered()
+{
+    TRACELIB_TRACE_MSG( "Qt eventloop still running" );
 }
 
 
@@ -157,11 +168,13 @@ void MainWindow::fileNew()
     clear();
     setWindowTitle(tr("Address Book - Unnamed"));
     updateUi();
+    TRACELIB_WATCH( TRACELIB_VAR(dirty) << TRACELIB_VAR(windowTitle()) << TRACELIB_VAR(filename) );
 }
 
 
 void MainWindow::clear()
 {
+    TRACELIB_TRACE;
     tableWidget->clear();
     tableWidget->setColumnCount(COLUMNS);
     tableWidget->setRowCount(0);
@@ -191,6 +204,7 @@ void MainWindow::load(const QString &name)
 {
     QFile file(name);
     if (!file.open(QIODevice::ReadOnly|QIODevice::Text)) {
+        TRACELIB_ERROR_MSG( QString( "Failed to load input file '%1'" ).arg( name ).toUtf8().data() );
         QMessageBox::warning(this, tr("Address Book - Error"),
                 tr("Failed to read file: %1").arg(file.errorString()));
         return;
