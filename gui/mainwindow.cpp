@@ -95,7 +95,9 @@ bool MainWindow::rebuildWatchTree(const QString &databaseFileName, QString *errM
                 " AND"
                 "  path_name.id = trace_point.path_id"
                 " AND"
-                "  function_name.id = trace_point.function_id;" );
+                "  function_name.id = trace_point.function_id"
+                " ORDER BY"
+                "  process.name" );
 
     if (!result) {
         *errMsg = query.lastError().text();

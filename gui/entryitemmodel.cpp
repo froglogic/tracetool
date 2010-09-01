@@ -118,7 +118,9 @@ bool EntryItemModel::queryForEntries(QString *errMsg)
                         "AND"
                         " trace_entry.traced_thread_id = traced_thread.id "
                         "AND"
-                        " traced_thread.process_id = process.id");
+                        " traced_thread.process_id = process.id "
+                        "ORDER BY"
+                        " trace_entry.timestamp");
 
     if (m_db.lastError().isValid()) {
         *errMsg = m_db.lastError().text();
