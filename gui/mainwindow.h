@@ -31,6 +31,7 @@ protected:
 private slots:
     void fileOpenTrace();
     void helpAbout();
+    void toggleFreezeState();
 
 private:
     void showError(const QString &title, const QString &message);

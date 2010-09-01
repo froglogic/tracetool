@@ -21,6 +21,9 @@ MainWindow::MainWindow(Settings *settings,
     setupUi(this);
     m_settings->registerRestorable("MainWindow", this);
 
+    connect(freezeButton, SIGNAL(clicked()),
+            this, SLOT(toggleFreezeState()));
+
     // File menu
     connect(action_Open_Trace, SIGNAL(triggered()),
 	    this, SLOT(fileOpenTrace()));
@@ -240,3 +243,14 @@ void MainWindow::showError(const QString &title,
 {
     QMessageBox::critical(this, title, message);
 }
+
+void MainWindow::toggleFreezeState()
+{
+    if (freezeButton->isChecked()) {
+        m_model->suspend();
+    } else {
+        m_model->resume();
+        tracePointsView->verticalScrollBar()->setValue(tracePointsView->verticalScrollBar()->maximum());
+    }
+}
+
