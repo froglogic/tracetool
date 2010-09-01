@@ -9,8 +9,8 @@
 #include "../server/server.h"
 
 #include <QDateTime>
+#include <QSqlDriver>
 #include <QSqlError>
-#include <QSqlQueryModel>
 #include <cassert>
 
 // #define SHOW_VERBOSITY
@@ -43,7 +43,6 @@ static QString tracePointTypeAsString(int i)
 
 EntryItemModel::EntryItemModel(QObject *parent )
     : QAbstractTableModel(parent),
-      m_queryModel(new QSqlQueryModel(this)),
       m_server(NULL)
 
 {
@@ -51,7 +50,6 @@ EntryItemModel::EntryItemModel(QObject *parent )
 
 EntryItemModel::~EntryItemModel()
 {
-    delete m_queryModel;
 }
 
 bool EntryItemModel::setDatabase(const QString &databaseFileName,
@@ -74,6 +72,16 @@ bool EntryItemModel::setDatabase(const QString &databaseFileName,
         return false;
     }
 
+    if (!queryForEntries(errMsg))
+        return false;
+
+    reset();
+
+    return true;
+}
+
+bool EntryItemModel::queryForEntries(QString *errMsg)
+{
     m_query = m_db.exec("SELECT"
                         " trace_entry.id,"
                         " timestamp,"
@@ -110,7 +118,15 @@ bool EntryItemModel::setDatabase(const QString &databaseFileName,
         *errMsg = m_db.lastError().text();
         return false;
     }
-    m_queryModel->setQuery(m_query);
+
+    if (m_query.driver()->hasFeature(QSqlDriver::QuerySize)) {
+        m_querySize = m_query.size();
+    } else {
+        m_querySize = 0;
+        while (m_query.next()) {
+            ++m_querySize;
+        }
+    }
 
     return true;
 }
@@ -126,7 +142,7 @@ int EntryItemModel::columnCount(const QModelIndex & parent) const
 
 int EntryItemModel::rowCount(const QModelIndex & parent) const
 {
-    return m_queryModel->rowCount(QModelIndex());
+    return m_querySize;
 }
 
 QModelIndex EntryItemModel::index(int row, int column,
@@ -142,10 +158,8 @@ QVariant EntryItemModel::data(const QModelIndex& index, int role) const
 {
     if (role == Qt::DisplayRole) {
         int dbField = index.column() + 1;
-        QModelIndex foreign = m_queryModel->index(index.row(),
-                                                  dbField,
-                                                  QModelIndex());
-        QVariant v = m_queryModel->data(foreign, Qt::DisplayRole);
+        ((EntryItemModel *)this)->m_query.seek(index.row());
+        QVariant v = m_query.value(dbField);
         //  qDebug("v.type: %s v.str: %s", v.typeName(), qPrintable(v.toString()));
         // ### Sqlite stores DATETIME values as strings
         if (dbField == TimeFieldIndex) {
@@ -204,8 +218,8 @@ QVariant EntryItemModel::headerData(int section, Qt::Orientation orientation,
             return QString();
         }
     } else if (role == Qt::DisplayRole && orientation == Qt::Vertical) {
-        QModelIndex dbIndex = m_queryModel->index(section, IdFieldIndex);
-        return m_queryModel->data(dbIndex, Qt::DisplayRole);        
+        ((EntryItemModel *)this)->m_query.seek(section);
+        return m_query.value(IdFieldIndex);
     }
 
     return QAbstractTableModel::headerData(section, orientation, role);

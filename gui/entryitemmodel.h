@@ -11,7 +11,6 @@
 #include <QSqlQuery>
 
 class Server;
-class QSqlQueryModel;
 
 class EntryItemModel : public QAbstractTableModel
 {
@@ -35,9 +34,11 @@ public:
                         int role = Qt::DisplayRole) const;
 
 private:
+    bool queryForEntries(QString *errMsg);
+
     QSqlDatabase m_db;
     QSqlQuery m_query;
-    QSqlQueryModel *m_queryModel;
+    int m_querySize;
     Server *m_server;
     
 };
