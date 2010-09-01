@@ -165,7 +165,7 @@ int main(int argc, char **argv)
     }
 
     QString errMsg;
-    QSqlDatabase db = Database::openAnyVersion(traceFile, &errMsg);
+    QSqlDatabase db = Database::open(traceFile, &errMsg);
     if (!db.isValid()) {
         fprintf(stderr, "Open error: %s\n", qPrintable(errMsg));
         return Error::Open;
