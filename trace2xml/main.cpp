@@ -46,7 +46,7 @@ static QString tracePointTypeAsString(int i)
 
 static bool toXml(const QSqlDatabase db, FILE *output, QString *errMsg)
 {
-    const QString header("<?xml version='1.0'?>\n"
+    const char header[] = "<?xml version='1.0'?>\n"
                          "<!DOCTYPE trace [\n"
                          "  <!ELEMENT trace (traceentry*)>\n"
                          "  <!ELEMENT traceentry (timestamp, process, threadid,\n"
@@ -64,9 +64,9 @@ static bool toXml(const QSqlDatabase db, FILE *output, QString *errMsg)
                          "  <!ELEMENT type (#PCDATA)>\n"
                          "  <!ELEMENT message (#PCDATA)>\n"
                          "]>\n"
-                         "<trace>\n");
-    const QString footer("</trace>\n");
-    const QString entryTpl("  <traceentry id=\"%s\" type=\"%s\">\n"
+                         "<trace>\n";
+    const char footer[] = "</trace>\n";
+    const char entryTpl[] = "  <traceentry id=\"%s\" type=\"%s\">\n"
                            "    <timestamp>%s</timestamp>\n"
                            "    <process pid=\"%s\"><![CDATA[%s]]></process>\n"
                            "    <threadid>%s</threadid>\n"
@@ -76,7 +76,7 @@ static bool toXml(const QSqlDatabase db, FILE *output, QString *errMsg)
                            "      <function><![CDATA[%s]]></function>\n"
                            "    </tracepoint>\n"
                            "    <message><![CDATA[%s]]></message>\n"
-                           "  </traceentry>\n");
+                           "  </traceentry>\n";
 
     QSqlQuery resultSet = db.exec("SELECT"
                                   " trace_entry.id,"
@@ -114,25 +114,25 @@ static bool toXml(const QSqlDatabase db, FILE *output, QString *errMsg)
         return false;
     }
 
-    fprintf( output, qPrintable(header));
+    fprintf(output, "%s", header);
 
     while (resultSet.next()) {
         //TODO: reference fields by name
-        fprintf(output, qPrintable(entryTpl),
-                qPrintable(resultSet.value(0).toString()),
-                qPrintable(tracePointTypeAsString(resultSet.value(8).toInt())), //type
-                qPrintable(resultSet.value(1).toString()),
-                qPrintable(resultSet.value(3).toString()), //pid
-                qPrintable(resultSet.value(2).toString()), //process name
-                qPrintable(resultSet.value(4).toString()),
-                qPrintable(resultSet.value(5).toString()),
-                qPrintable(resultSet.value(6).toString()),
-                qPrintable(resultSet.value(7).toString()),
-                qPrintable(resultSet.value(9).toString()));
+        fprintf(output, entryTpl,
+                resultSet.value(0).toString().toUtf8().constData(),
+                tracePointTypeAsString(resultSet.value(8).toInt()).toUtf8().constData(), //type
+                resultSet.value(1).toString().toUtf8().constData(),
+                resultSet.value(3).toString().toUtf8().constData(), //pid
+                resultSet.value(2).toString().toUtf8().constData(), //process name
+                resultSet.value(4).toString().toUtf8().constData(),
+                resultSet.value(5).toString().toUtf8().constData(),
+                resultSet.value(6).toString().toUtf8().constData(),
+                resultSet.value(7).toString().toUtf8().constData(),
+                resultSet.value(9).toString().toUtf8().constData());
     }
     resultSet.finish();
 
-    fprintf( output, qPrintable(footer));
+    fprintf(output, "%s", footer);
 
     fflush( output );
     return true;
