@@ -37,9 +37,9 @@ static QString tracePointTypeAsString(int i)
 {
     // ### could do some caching here
     // ### assert range - just in case
-    TRACELIB_NAMESPACE_IDENT(TracePointType::Value) t =
-        static_cast<TRACELIB_NAMESPACE_IDENT(TracePointType::Value)>(i);
-    QString s = TRACELIB_NAMESPACE_IDENT(TracePointType::valueAsString(t));
+    using TRACELIB_NAMESPACE_IDENT(TracePointType);
+    TracePointType::Value t =  static_cast<TracePointType::Value>(i);
+    QString s = TracePointType::valueAsString(t);
     return s;
 }
 
