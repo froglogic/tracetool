@@ -17,12 +17,14 @@ CONFIGURE_FILE(config-cmake.h.in
     ${PROJECT_BINARY_DIR}/config.h
     @ONLY)
 
-CONFIGURE_FILE(Doxyfile.in ${PROJECT_BINARY_DIR}/Doxyfile)
-INCLUDE(${CMAKE_ROOT}/Modules/FindDoxygen.cmake)
-ADD_CUSTOM_TARGET(api-docs ${DOXYGEN} \"${PROJECT_BINARY_DIR}/Doxyfile\" COMMENT "Generating API documentation")
+FIND_PACKAGE(Doxygen)
+IF(DOXYGEN_FOUND)
+    CONFIGURE_FILE(Doxyfile.in ${PROJECT_BINARY_DIR}/Doxyfile)
+    ADD_CUSTOM_TARGET(api-docs ALL ${DOXYGEN_EXECUTABLE} \"${PROJECT_BINARY_DIR}/Doxyfile\" COMMENT "Generating API documentation")
 
-# Installation of api docs
-INSTALL(DIRECTORY ${PROJECT_BINARY_DIR}/doc/html DESTINATION share/doc/tracelib COMPONENT devel)
+    # Installation of api docs
+    INSTALL(DIRECTORY ${PROJECT_BINARY_DIR}/doc/html DESTINATION share/doc/tracelib COMPONENT devel)
+ENDIF(DOXYGEN_FOUND)
 
 ## Package Creation Setup
 # See http://www.paraview.org/Wiki/CMake:CPackConfiguration for documentation of variables
