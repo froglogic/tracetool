@@ -86,12 +86,14 @@ class ServerSocket : public QTcpServer
 {
 public:
     ServerSocket( Server *server );
+    ~ServerSocket();
 
 protected:
     virtual void incomingConnection( int socketDescriptor );
 
 private:
     Server *m_server;
+    QList<NetworkingThread *> m_networkingThreads;
 };
 
 class Server : public QObject
@@ -121,7 +123,6 @@ private:
 
     ServerSocket *m_tcpServer;
     QSqlDatabase m_db;
-    QList<NetworkingThread *> m_networkingThreads;
 };
 
 #endif // !defined(TRACE_SERVER_H)

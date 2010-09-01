@@ -133,10 +133,23 @@ ServerSocket::ServerSocket( Server *server )
 {
 }
 
+ServerSocket::~ServerSocket()
+{
+    QList<NetworkingThread *>::Iterator it, end = m_networkingThreads.end();
+    for ( it = m_networkingThreads.begin(); it != end; ++it ) {
+        ( *it )->quit();
+    }
+
+    for ( it = m_networkingThreads.begin(); it != end; ++it ) {
+        ( *it )->wait();
+    }
+}
+
 void ServerSocket::incomingConnection( int socketDescriptor )
 {
     NetworkingThread *thread = new NetworkingThread( socketDescriptor,
                                                      this );
+    m_networkingThreads.push_back( thread );
     connect( thread, SIGNAL( dataReceived( const QByteArray & ) ),
              m_server, SLOT( handleIncomingData( const QByteArray & ) ),
              Qt::QueuedConnection );
@@ -168,14 +181,6 @@ Server::Server( const QString &databaseFileName, unsigned short port,
 
 Server::~Server()
 {
-    QList<NetworkingThread *>::Iterator it, end = m_networkingThreads.end();
-    for ( it = m_networkingThreads.begin(); it != end; ++it ) {
-        ( *it )->quit();
-    }
-
-    for ( it = m_networkingThreads.begin(); it != end; ++it ) {
-        ( *it )->wait();
-    }
 }
 
 void Server::handleTraceEntryXMLData( const QDomDocument &doc )
