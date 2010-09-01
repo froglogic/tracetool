@@ -117,6 +117,7 @@ Server::Server( const QString &databaseFileName, unsigned short port,
         qWarning() << "Failed to open SQL database: " + errMsg;
         return;
     }
+    m_db.exec( "PRAGMA synchronous=OFF;");
 
     m_tcpServer = new QTcpServer( this );
     connect( m_tcpServer, SIGNAL( newConnection() ),
