@@ -32,10 +32,10 @@ ENDIF(DOXYGEN_FOUND)
 
 # Generate CMake config-Module
 SET(INCLUDE_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/include)
-CONFIGURE_FILE(${PROJECT_SOURCE_DIR}/tracelibVersion.cmake.in ${PROJECT_BINARY_DIR}/tracelibVersion.cmake @ONLY)
+CONFIGURE_FILE(${PROJECT_SOURCE_DIR}/tracelibConfigVersion.cmake.in ${PROJECT_BINARY_DIR}/tracelibConfigVersion.cmake @ONLY)
 CONFIGURE_FILE(${PROJECT_SOURCE_DIR}/tracelibConfig.cmake.in ${PROJECT_BINARY_DIR}/tracelibConfig.cmake @ONLY)
 INSTALL(FILES ${PROJECT_BINARY_DIR}/tracelibConfig.cmake
-              ${PROJECT_BINARY_DIR}/tracelibVersion.cmake
+              ${PROJECT_BINARY_DIR}/tracelibConfigVersion.cmake
               DESTINATION lib/cmake/tracelib COMPONENT devel)
 INSTALL(EXPORT tracelibTargets
               DESTINATION lib/cmake/tracelib COMPONENT devel
