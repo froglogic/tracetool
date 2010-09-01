@@ -123,14 +123,24 @@ static bool bfdAddressInfo( bfd_vma addr, StackFrame *frame )
             frame->sourceFile = bfd_sym.filename;
         frame->lineNumber = bfd_sym.linenr;
         frame->functionOffset = bfd_sym.offset;
-
-        Dl_info dl_info;
-        if ( dladdr( (void*)addr, &dl_info ) )
-            frame->module = dl_info.dli_fname;
-
-        return true;
     }
-    return false;
+
+    Dl_info dl_info;
+    if ( dladdr( (void*)addr, &dl_info ) ) {
+        frame->module = dl_info.dli_fname;
+        if ( !bfd_sym.found ) {
+            char buf[48];
+            snprintf( buf, sizeof ( buf ), "[%p + %p]",
+                    dl_info.dli_fbase, (char*)addr - (char*)dl_info.dli_fbase );
+            frame->function = buf;
+        }
+    } else if ( !bfd_sym.found ) {
+        char buf[32];
+        snprintf( buf, sizeof ( buf ), "[%p]", (void*)addr );
+        frame->function = buf;
+    }
+
+    return true;
 }
 #endif
 
