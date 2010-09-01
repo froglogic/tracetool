@@ -9,8 +9,10 @@
 #include "../server/server.h"
 
 #include <QDateTime>
+#include <QDebug>
 #include <QSqlDriver>
 #include <QSqlError>
+#include <QTimer>
 #include <cassert>
 
 // #define SHOW_VERBOSITY
@@ -46,6 +48,9 @@ EntryItemModel::EntryItemModel(QObject *parent )
       m_server(NULL)
 
 {
+    QTimer *insertionTimer = new QTimer(this);
+    connect(insertionTimer, SIGNAL(timeout()), SLOT(insertNewTraceEntries()));
+    insertionTimer->start(250);
 }
 
 EntryItemModel::~EntryItemModel()
@@ -62,8 +67,11 @@ bool EntryItemModel::setDatabase(const QString &databaseFileName,
         return false;
     }
 
+    assert( !m_server );
     // will create new db file if necessary
     m_server = new Server(databaseFileName, serverPort, this);
+    connect(m_server, SIGNAL(traceEntryReceived(const TraceEntry &)),
+            SLOT(handleNewTraceEntry(const TraceEntry &)));
     
     m_db = QSqlDatabase::addDatabase(driverName, "itemmodel");
     m_db.setDatabaseName(databaseFileName);
@@ -74,8 +82,6 @@ bool EntryItemModel::setDatabase(const QString &databaseFileName,
 
     if (!queryForEntries(errMsg))
         return false;
-
-    reset();
 
     return true;
 }
@@ -223,5 +229,25 @@ QVariant EntryItemModel::headerData(int section, Qt::Orientation orientation,
     }
 
     return QAbstractTableModel::headerData(section, orientation, role);
+}
+
+void EntryItemModel::handleNewTraceEntry(const TraceEntry &e)
+{
+    m_newTraceEntries.push_back(e);
+}
+
+void EntryItemModel::insertNewTraceEntries()
+{
+    if (m_newTraceEntries.empty())
+        return;
+
+    beginInsertRows(QModelIndex(), m_querySize, m_querySize + m_newTraceEntries.size() - 1);
+    QString errorMsg;
+    if (!queryForEntries(&errorMsg)) {
+        qDebug() << "EntryItemModel::insertNewTraceEntries: failed: " << errorMsg;
+    }
+    endInsertRows();
+
+    m_newTraceEntries.clear();
 }
 

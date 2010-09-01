@@ -11,6 +11,7 @@
 #include <QSqlQuery>
 
 class Server;
+struct TraceEntry;
 
 class EntryItemModel : public QAbstractTableModel
 {
@@ -33,6 +34,10 @@ public:
     QVariant headerData(int section, Qt::Orientation orientation,
                         int role = Qt::DisplayRole) const;
 
+private slots:
+    void handleNewTraceEntry(const TraceEntry &e);
+    void insertNewTraceEntries();
+
 private:
     bool queryForEntries(QString *errMsg);
 
@@ -40,7 +45,7 @@ private:
     QSqlQuery m_query;
     int m_querySize;
     Server *m_server;
-    
+    QList<TraceEntry> m_newTraceEntries;
 };
 
 #endif
