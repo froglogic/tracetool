@@ -13,11 +13,10 @@
 #include <QObject>
 #include <QSqlDatabase>
 #include <QTcpServer>
+#include <QTcpSocket>
 #include <QThread>
 
 #include "../core/tracelib.h"
-
-class QTcpSocket;
 
 struct StackFrame
 {
@@ -60,6 +59,19 @@ struct ProcessShutdownEvent
     QString name;
 };
 
+class ClientSocket : public QTcpSocket
+{
+    Q_OBJECT
+public:
+    ClientSocket( QObject *parent = 0 );
+
+signals:
+    void dataReceived( const QByteArray &data );
+
+private slots:
+    void handleIncomingData();
+};
+
 class NetworkingThread : public QThread
 {
     Q_OBJECT
@@ -72,12 +84,9 @@ signals:
 protected:
     virtual void run();
 
-private slots:
-    void handleIncomingData();
-
 private:
     int m_socketDescriptor;
-    QTcpSocket *m_clientSocket;
+    ClientSocket *m_clientSocket;
 };
 
 class Server;

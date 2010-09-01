@@ -14,8 +14,6 @@
 #include <QSqlError>
 #include <QSqlField>
 #include <QSqlQuery>
-#include <QTcpServer>
-#include <QTcpSocket>
 #include <QVariant>
 
 #include <cassert>
@@ -102,6 +100,20 @@ static ProcessShutdownEvent deserializeShutdownEvent( const QDomElement &e )
     return ev;
 }
 
+ClientSocket::ClientSocket( QObject *parent )
+    : QTcpSocket( parent )
+{
+    connect( this, SIGNAL( readyRead() ),
+             this, SLOT( handleIncomingData() ) );
+}
+
+void ClientSocket::handleIncomingData()
+{
+    const QByteArray data = readAll();
+    assert( !data.isEmpty() );
+    emit dataReceived( data );
+}
+
 NetworkingThread::NetworkingThread( int socketDescriptor, QObject *parent )
     : QThread( parent ),
     m_socketDescriptor( socketDescriptor ),
@@ -111,20 +123,13 @@ NetworkingThread::NetworkingThread( int socketDescriptor, QObject *parent )
 
 void NetworkingThread::run()
 {
-    m_clientSocket = new QTcpSocket;
+    m_clientSocket = new ClientSocket;
     m_clientSocket->setSocketDescriptor( m_socketDescriptor );
-    connect( m_clientSocket, SIGNAL( readyRead() ),
-             this, SLOT( handleIncomingData() ) );
+    connect( m_clientSocket, SIGNAL( dataReceived( const QByteArray & ) ),
+             this, SIGNAL( dataReceived( const QByteArray & ) ),
+             Qt::QueuedConnection );
     exec();
     delete m_clientSocket;
-}
-
-void NetworkingThread::handleIncomingData()
-{
-    const QByteArray data = m_clientSocket->readAll();
-    if ( !data.isEmpty() ) { // XXX Why is this empty sometimes?
-        emit dataReceived( data );
-    }
 }
 
 ServerSocket::ServerSocket( Server *server )
@@ -151,8 +156,7 @@ void ServerSocket::incomingConnection( int socketDescriptor )
                                                      this );
     m_networkingThreads.push_back( thread );
     connect( thread, SIGNAL( dataReceived( const QByteArray & ) ),
-             m_server, SLOT( handleIncomingData( const QByteArray & ) ),
-             Qt::QueuedConnection );
+             m_server, SLOT( handleIncomingData( const QByteArray & ) ) );
     connect( thread, SIGNAL( finished() ),
              thread, SLOT( deleteLater() ) );
     thread->start();
