@@ -1,0 +1,36 @@
+#########################################################################
+#
+# tracelib Configuration File 
+#
+# This file sets various CMake Variables
+#
+# TRACELIB_INCLUDE_DIR   - The Include Directory for all KDEVPLATFORM libraries
+# TRACELIB_LIBRARIES     - the interfaces library
+#
+# Copyright 2010  froglogic GmbH <squish@froglogic.com>
+# Redistribution and use is allowed according to the terms of the BSD license.
+######################################################################
+
+GET_FILENAME_COMPONENT(_TRACELIB_CURRENT_DIR  "${CMAKE_CURRENT_LIST_FILE}" PATH)
+
+IF(NOT WIN32)
+# This is needed on non-win32 platforms, as lib-install-dir might be in a 
+# totally different prefix than include-install-dir. So instead hardcode the
+# absolute path during buildtime
+set( TRACELIB_INCLUDE_DIR "@INCLUDE_INSTALL_DIR@/tracelib" )
+
+ELSE(NOT WIN32)
+
+SET( TRACELIB_INCLUDE_DIR "${_TRACELIB_CURRENT_DIR}/../../../include/tracelib" )
+
+ENDIF(NOT WIN32)
+
+IF( NOT TARGET tracelibImport__tracelib )
+    INCLUDE("${_TRACELIB_CURRENT_DIR}/tracelibTargets.cmake")
+ENDIF( NOT TARGET tracelibImport__tracelib )
+
+SET(TRACELIB_LIBRARIES tracelibImport__tracelib)
+
+MARK_AS_ADVANCED(
+    TRACELIB_LIBRARIES
+)
