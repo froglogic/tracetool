@@ -9,6 +9,7 @@
 #include <QAbstractTableModel>
 #include <QSqlDatabase>
 #include <QSqlQuery>
+class QTimer;
 
 class Server;
 struct TraceEntry;
@@ -34,6 +35,9 @@ public:
     QVariant headerData(int section, Qt::Orientation orientation,
                         int role = Qt::DisplayRole) const;
 
+    void suspend();
+    void resume();
+
 private slots:
     void handleNewTraceEntry(const TraceEntry &e);
     void insertNewTraceEntries();
@@ -45,7 +49,9 @@ private:
     QSqlQuery m_query;
     int m_querySize;
     Server *m_server;
-    QList<TraceEntry> m_newTraceEntries;
+    unsigned int m_numNewEntries;
+    QTimer *m_databasePollingTimer;
+    bool m_suspended;
 };
 
 #endif

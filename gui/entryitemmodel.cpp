@@ -45,12 +45,15 @@ static QString tracePointTypeAsString(int i)
 
 EntryItemModel::EntryItemModel(QObject *parent )
     : QAbstractTableModel(parent),
-      m_server(NULL)
+      m_server(NULL),
+      m_numNewEntries(0),
+      m_databasePollingTimer(NULL),
+      m_suspended(false)
 
 {
-    QTimer *insertionTimer = new QTimer(this);
-    connect(insertionTimer, SIGNAL(timeout()), SLOT(insertNewTraceEntries()));
-    insertionTimer->start(250);
+    m_databasePollingTimer = new QTimer(this);
+    m_databasePollingTimer->setSingleShot(true);
+    connect(m_databasePollingTimer, SIGNAL(timeout()), SLOT(insertNewTraceEntries()));
 }
 
 EntryItemModel::~EntryItemModel()
@@ -235,21 +238,35 @@ QVariant EntryItemModel::headerData(int section, Qt::Orientation orientation,
 
 void EntryItemModel::handleNewTraceEntry(const TraceEntry &e)
 {
-    m_newTraceEntries.push_back(e);
+    ++m_numNewEntries;
+    if (!m_suspended && !m_databasePollingTimer->isActive()) {
+        m_databasePollingTimer->start(200);
+    }
+}
+
+void EntryItemModel::suspend()
+{
+    m_suspended = true;
+}
+
+void EntryItemModel::resume()
+{
+    m_suspended = false;
+    insertNewTraceEntries();
 }
 
 void EntryItemModel::insertNewTraceEntries()
 {
-    if (m_newTraceEntries.empty())
+    if (m_numNewEntries == 0)
         return;
 
-    beginInsertRows(QModelIndex(), m_querySize, m_querySize + m_newTraceEntries.size() - 1);
+    beginInsertRows(QModelIndex(), m_querySize, m_querySize + m_numNewEntries - 1);
     QString errorMsg;
     if (!queryForEntries(&errorMsg)) {
         qDebug() << "EntryItemModel::insertNewTraceEntries: failed: " << errorMsg;
     }
     endInsertRows();
 
-    m_newTraceEntries.clear();
+    m_numNewEntries = 0;
 }
 
