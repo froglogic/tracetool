@@ -105,7 +105,7 @@ INLINE_INHERITED_MEMB  = NO
 # path before files name in the file list and in the header files. If set
 # to NO the shortest path that makes the file name unique will be used.
 
-FULL_PATH_NAMES        = YES
+FULL_PATH_NAMES        = NO
 
 # If the FULL_PATH_NAMES tag is set to YES then the STRIP_FROM_PATH tag
 # can be used to strip a user-defined part of the path. Stripping is
@@ -337,14 +337,14 @@ EXTRACT_ANON_NSPACES   = NO
 # various overviews, but no documentation section is generated.
 # This option has no effect if EXTRACT_ALL is enabled.
 
-HIDE_UNDOC_MEMBERS     = NO
+HIDE_UNDOC_MEMBERS     = YES
 
 # If the HIDE_UNDOC_CLASSES tag is set to YES, Doxygen will hide all
 # undocumented classes that are normally visible in the class hierarchy.
 # If set to NO (the default) these classes will be included in the various
 # overviews. This option has no effect if EXTRACT_ALL is enabled.
 
-HIDE_UNDOC_CLASSES     = NO
+HIDE_UNDOC_CLASSES     = YES
 
 # If the HIDE_FRIEND_COMPOUNDS tag is set to YES, Doxygen will hide all
 # friend (class|struct|union) declarations.
