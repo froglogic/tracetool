@@ -12,10 +12,11 @@
 #include <QList>
 #include <QObject>
 #include <QSqlDatabase>
+#include <QTcpServer>
+#include <QThread>
 
 #include "../core/tracelib.h"
 
-class QTcpServer;
 class QTcpSocket;
 
 struct StackFrame
@@ -59,20 +60,54 @@ struct ProcessShutdownEvent
     QString name;
 };
 
+class NetworkingThread : public QThread
+{
+    Q_OBJECT
+public:
+    NetworkingThread( int socketDescriptor, QObject *parent = 0 );
+
+signals:
+    void dataReceived( const QByteArray &data );
+
+protected:
+    virtual void run();
+
+private slots:
+    void handleIncomingData();
+
+private:
+    int m_socketDescriptor;
+    QTcpSocket *m_clientSocket;
+};
+
+class Server;
+
+class ServerSocket : public QTcpServer
+{
+public:
+    ServerSocket( Server *server );
+
+protected:
+    virtual void incomingConnection( int socketDescriptor );
+
+private:
+    Server *m_server;
+};
+
 class Server : public QObject
 {
     Q_OBJECT
 public:
     Server( const QString &databaseFileName, unsigned short port,
             QObject *parent = 0 );
+    virtual ~Server();
+
+public slots:
+    void handleIncomingData(const QByteArray &data);
 
 signals:
     void traceEntryReceived( const TraceEntry &e );
     void processShutdown( const ProcessShutdownEvent &e );
-
-private slots:
-    void handleNewConnection();
-    void handleIncomingData();
 
 private:
     void storeEntry( const TraceEntry &e );
@@ -84,8 +119,9 @@ private:
     template <typename T>
     QString formatValue( const T &v ) const;
 
-    QTcpServer *m_tcpServer;
+    ServerSocket *m_tcpServer;
     QSqlDatabase m_db;
+    QList<NetworkingThread *> m_networkingThreads;
 };
 
 #endif // !defined(TRACE_SERVER_H)

@@ -102,6 +102,49 @@ static ProcessShutdownEvent deserializeShutdownEvent( const QDomElement &e )
     return ev;
 }
 
+NetworkingThread::NetworkingThread( int socketDescriptor, QObject *parent )
+    : QThread( parent ),
+    m_socketDescriptor( socketDescriptor ),
+    m_clientSocket( 0 )
+{
+}
+
+void NetworkingThread::run()
+{
+    m_clientSocket = new QTcpSocket;
+    m_clientSocket->setSocketDescriptor( m_socketDescriptor );
+    connect( m_clientSocket, SIGNAL( readyRead() ),
+             this, SLOT( handleIncomingData() ) );
+    exec();
+    delete m_clientSocket;
+}
+
+void NetworkingThread::handleIncomingData()
+{
+    const QByteArray data = m_clientSocket->readAll();
+    if ( !data.isEmpty() ) { // XXX Why is this empty sometimes?
+        emit dataReceived( data );
+    }
+}
+
+ServerSocket::ServerSocket( Server *server )
+    : QTcpServer( server ),
+    m_server( server )
+{
+}
+
+void ServerSocket::incomingConnection( int socketDescriptor )
+{
+    NetworkingThread *thread = new NetworkingThread( socketDescriptor,
+                                                     this );
+    connect( thread, SIGNAL( dataReceived( const QByteArray & ) ),
+             m_server, SLOT( handleIncomingData( const QByteArray & ) ),
+             Qt::QueuedConnection );
+    connect( thread, SIGNAL( finished() ),
+             thread, SLOT( deleteLater() ) );
+    thread->start();
+}
+
 Server::Server( const QString &databaseFileName, unsigned short port,
                 QObject *parent )
     : QObject( parent ),
@@ -119,17 +162,20 @@ Server::Server( const QString &databaseFileName, unsigned short port,
     }
     m_db.exec( "PRAGMA synchronous=OFF;");
 
-    m_tcpServer = new QTcpServer( this );
-    connect( m_tcpServer, SIGNAL( newConnection() ),
-             this, SLOT( handleNewConnection() ) );
-
+    m_tcpServer = new ServerSocket( this );
     m_tcpServer->listen( QHostAddress::Any, port );
 }
 
-void Server::handleNewConnection()
+Server::~Server()
 {
-    QTcpSocket *client = m_tcpServer->nextPendingConnection();
-    connect( client, SIGNAL( readyRead() ), this, SLOT( handleIncomingData() ) );
+    QList<NetworkingThread *>::Iterator it, end = m_networkingThreads.end();
+    for ( it = m_networkingThreads.begin(); it != end; ++it ) {
+        ( *it )->quit();
+    }
+
+    for ( it = m_networkingThreads.begin(); it != end; ++it ) {
+        ( *it )->wait();
+    }
 }
 
 void Server::handleTraceEntryXMLData( const QDomDocument &doc )
@@ -163,11 +209,8 @@ static int nextDatagramStart( const QByteArray &data, int pos )
     return p;
 }
 
-void Server::handleIncomingData()
+void Server::handleIncomingData( const QByteArray &xmlData )
 {
-    QTcpSocket *client = (QTcpSocket *)sender(); // XXX yuck
-
-    const QByteArray xmlData = client->readAll();
     int p = 0;
     int q = nextDatagramStart( xmlData, p + 1 );
     while ( q != -1 ) {
