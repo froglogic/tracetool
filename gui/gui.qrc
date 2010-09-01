@@ -1,0 +1,5 @@
+<RCC>
+  <qresource prefix="icons">
+    <file>lo32-action-nexterror.png</file>
+  </qresource>
+</RCC>
