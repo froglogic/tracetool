@@ -2,6 +2,7 @@ SET(GUI_SOURCES
   main.cpp
   settings.cpp
   mainwindow.cpp
+  entryfilter.cpp
   filterform.cpp
   entryitemmodel.cpp
   watchtree.cpp

@@ -6,22 +6,17 @@
 #ifndef SETTINGS_H
 #define SETTINGS_H
 
+#include "restorableobject.h"
+
 #include <QList>
-#include <QVariant>
 
-class RestorableObject
-{
-public:
-    virtual ~RestorableObject() { }
-
-    virtual QVariant sessionState() const = 0;
-    virtual bool restoreSessionState(const QVariant &state) = 0;
-};
+class EntryFilter;
 
 class Settings
 {
 public:
     Settings();
+    ~Settings();
 
     bool save() const;
 
@@ -39,6 +34,9 @@ public:
     void setServerPort(int port) { m_serverPort = port; }
     int serverPort() const { return m_serverPort; }
 
+    // [Filter]
+    EntryFilter* entryFilter() { return m_entryFilter; }
+
 private:
     bool load();
 
@@ -46,6 +44,7 @@ private:
 
     QString m_databaseFile;
     int m_serverPort;
+    EntryFilter* m_entryFilter;
 };
 
 #endif

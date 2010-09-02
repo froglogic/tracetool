@@ -5,6 +5,7 @@
 
 #include "settings.h"
 
+#include "entryfilter.h"
 #include "../core/tracelib_config.h"
 
 #include <cassert>
@@ -19,9 +20,17 @@ const char serverGroup[] = "Server";
 
 Settings::Settings()
 {
+    m_entryFilter = new EntryFilter();
+    registerRestorable("Filter", m_entryFilter);
+
     if (!load()) {
         qWarning() << "Failed to load settings";
     }
+}
+
+Settings::~Settings()
+{
+    delete m_entryFilter;
 }
 
 bool Settings::save() const

@@ -17,6 +17,13 @@ public:
     explicit FilterForm(Settings *settings,
                         QWidget *parent = 0, Qt::WindowFlags flags = 0);
 
+protected:
+    void accept();
+
+private:
+    void saveSettings();
+    void restoreSettings();
+
     Settings* const m_settings;
 };
 
