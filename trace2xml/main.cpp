@@ -55,8 +55,11 @@ static bool toXml(const QSqlDatabase db, FILE *output, QString *errMsg)
         "  <!ATTLIST traceentry id CDATA #REQUIRED\n"
         "                       type CDATA #REQUIRED>\n"
         "  <!ELEMENT timestamp (#PCDATA)>\n"
-        "  <!ELEMENT process (#PCDATA)>\n"
-        "  <!ATTLIST process pid CDATA #REQUIRED>\n"
+        "  <!ELEMENT process (pid, name, starttime, endtime)>\n"
+        "  <!ELEMENT pid (#PCDATA)>\n"
+        "  <!ELEMENT name (#PCDATA)>\n"
+        "  <!ELEMENT starttime (#PCDATA)>\n"
+        "  <!ELEMENT endtime (#PCDATA)>\n"
         "  <!ELEMENT threadid (#PCDATA)>\n"
         "  <!ELEMENT tracepoint (pathname, line, function)>\n"
         "  <!ELEMENT pathname (#PCDATA)>\n"
@@ -70,7 +73,12 @@ static bool toXml(const QSqlDatabase db, FILE *output, QString *errMsg)
     const char entryTpl[] =
         "  <traceentry id=\"%s\" type=\"%s\">\n"
         "    <timestamp>%s</timestamp>\n"
-        "    <process pid=\"%s\"><![CDATA[%s]]></process>\n"
+        "    <process>\n"
+        "      <pid>%s</pid>\n"
+        "      <name><![CDATA[%s]]></name>\n"
+        "      <starttime>%s</starttime>\n"
+        "      <endtime>%s</endtime>\n"
+        "    </process>\n"
         "    <threadid>%s</threadid>\n"
         "    <tracepoint>\n"
         "      <pathname><![CDATA[%s]]></pathname>\n"
@@ -85,6 +93,8 @@ static bool toXml(const QSqlDatabase db, FILE *output, QString *errMsg)
                                   " timestamp,"
                                   " process.name,"
                                   " process.pid,"
+                                  " process.start_time,"
+                                  " process.end_time,"
                                   " traced_thread.tid,"
                                   " path_name.name,"
                                   " trace_point.line,"
@@ -122,7 +132,7 @@ static bool toXml(const QSqlDatabase db, FILE *output, QString *errMsg)
         //TODO: reference fields by name
         fprintf(output, entryTpl,
                 resultSet.value(0).toString().toUtf8().constData(),
-                tracePointTypeAsString(resultSet.value(8).toInt()).toUtf8().constData(), //type
+                tracePointTypeAsString(resultSet.value(10).toInt()).toUtf8().constData(), //type
                 resultSet.value(1).toString().toUtf8().constData(),
                 resultSet.value(3).toString().toUtf8().constData(), //pid
                 resultSet.value(2).toString().toUtf8().constData(), //process name
@@ -130,7 +140,9 @@ static bool toXml(const QSqlDatabase db, FILE *output, QString *errMsg)
                 resultSet.value(5).toString().toUtf8().constData(),
                 resultSet.value(6).toString().toUtf8().constData(),
                 resultSet.value(7).toString().toUtf8().constData(),
-                resultSet.value(9).toString().toUtf8().constData());
+                resultSet.value(8).toString().toUtf8().constData(),
+                resultSet.value(9).toString().toUtf8().constData(),
+                resultSet.value(11).toString().toUtf8().constData());
     }
     resultSet.finish();
 
