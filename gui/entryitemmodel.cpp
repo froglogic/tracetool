@@ -160,7 +160,7 @@ QVariant EntryItemModel::data(const QModelIndex& index, int role) const
 {
     if (role == Qt::DisplayRole) {
         int dbField = index.column() + 1;
-        ((EntryItemModel *)this)->m_query.seek(index.row());
+        const_cast<EntryItemModel*>(this)->m_query.seek(index.row());
         QVariant v = m_query.value(dbField);
         //  qDebug("v.type: %s v.str: %s", v.typeName(), qPrintable(v.toString()));
         // ### Sqlite stores DATETIME values as strings
@@ -220,7 +220,7 @@ QVariant EntryItemModel::headerData(int section, Qt::Orientation orientation,
             return QString();
         }
     } else if (role == Qt::DisplayRole && orientation == Qt::Vertical) {
-        ((EntryItemModel *)this)->m_query.seek(section);
+        const_cast<EntryItemModel*>(this)->m_query.seek(section);
         return m_query.value(IdFieldIndex);
     }
 
