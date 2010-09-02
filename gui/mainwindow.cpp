@@ -5,6 +5,7 @@
 
 #include "mainwindow.h"
 
+#include "filterform.h"
 #include "entryitemmodel.h"
 
 #include <QtGui>
@@ -21,8 +22,11 @@ MainWindow::MainWindow(Settings *settings,
     setupUi(this);
     m_settings->registerRestorable("MainWindow", this);
 
+    // buttons
     connect(freezeButton, SIGNAL(clicked()),
             this, SLOT(toggleFreezeState()));
+    connect(filterButton, SIGNAL(clicked()),
+            this, SLOT(openFilterForm()));
 
     // File menu
     connect(action_Open_Trace, SIGNAL(triggered()),
@@ -254,3 +258,9 @@ void MainWindow::toggleFreezeState()
     }
 }
 
+void MainWindow::openFilterForm()
+{
+    FilterForm form(m_settings, this);
+    if (form.exec() == QDialog::Accepted) {
+    }
+}

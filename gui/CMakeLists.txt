@@ -2,6 +2,7 @@ SET(GUI_SOURCES
   main.cpp
   settings.cpp
   mainwindow.cpp
+  filterform.cpp
   entryitemmodel.cpp
   ../convertdb/getopt.cpp
   ../server/database.cpp
@@ -9,11 +10,13 @@ SET(GUI_SOURCES
 
 SET(GUI_MOCABLES
   mainwindow.h
+  filterform.h
   entryitemmodel.h
   ../server/server.h)
 
 SET(GUI_UIS
-  mainwindow.ui)
+  mainwindow.ui
+  filterform.ui)
 
 SET(GUI_RCCS 
   gui.qrc)

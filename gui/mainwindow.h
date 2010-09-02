@@ -32,6 +32,7 @@ private slots:
     void fileOpenTrace();
     void helpAbout();
     void toggleFreezeState();
+    void openFilterForm();
 
 private:
     void showError(const QString &title, const QString &message);
