@@ -11,3 +11,7 @@ CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/tracelib.xml
         ${CMAKE_CURRENT_BINARY_DIR}/tracelib.xml
         COPYONLY)
 
+INSTALL(TARGETS sampleapp RUNTIME DESTINATION examples/sampleapp
+                          LIBRARY DESTINATION lib
+                          ARCHIVE DESTINATION lib COMPONENT devel)
+INSTALL(FILES tracelib.xml DESTINATION examples/sampleapp)

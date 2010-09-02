@@ -29,3 +29,8 @@ CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/tracelib.xml
         ${CMAKE_CURRENT_BINARY_DIR}/tracelib.xml
         COPYONLY)
 
+INSTALL(TARGETS addressbook RUNTIME DESTINATION examples/addressbook
+                            LIBRARY DESTINATION lib
+                            ARCHIVE DESTINATION lib COMPONENT devel)
+INSTALL(FILES tracelib.xml MyAddresses.adr DESTINATION examples/addressbook)
+
