@@ -118,10 +118,14 @@ INSTALL(TARGETS tracelib EXPORT tracelibTargets
                          RUNTIME DESTINATION bin
                          LIBRARY DESTINATION lib
                          ARCHIVE DESTINATION lib COMPONENT devel)
-INSTALL(TARGETS tracelib_qtsupport EXPORT tracelib_qtsupportTargets
-                                   RUNTIME DESTINATION bin
-                                   LIBRARY DESTINATION lib
-                                   ARCHIVE DESTINATION lib COMPONENT devel)
+
+IF(QT4_FOUND)
+    INSTALL(TARGETS tracelib_qtsupport EXPORT tracelib_qtsupportTargets
+                                       RUNTIME DESTINATION bin
+                                       LIBRARY DESTINATION lib
+                                       ARCHIVE DESTINATION lib COMPONENT devel)
+ENDIF(QT4_FOUND)
+
 INSTALL(FILES 
         tracelib.h 
         tracelib_config.h 
