@@ -12,6 +12,7 @@
 
 class EntryItemModel;
 class Server;
+class WatchTree;
 
 class MainWindow : public QMainWindow, private Ui::MainWindow,
                    public RestorableObject
@@ -37,10 +38,10 @@ private slots:
 
 private:
     void showError(const QString &title, const QString &message);
-    bool rebuildWatchTree(const QString &databaseFileName, QString *errMsg);
 
     Settings* const m_settings;
     EntryItemModel* m_entryItemModel;
+    WatchTree* m_watchTree;
     Server *m_server;
 };
 

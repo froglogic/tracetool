@@ -4,6 +4,7 @@ SET(GUI_SOURCES
   mainwindow.cpp
   filterform.cpp
   entryitemmodel.cpp
+  watchtree.cpp
   ../convertdb/getopt.cpp
   ../server/database.cpp
   ../server/server.cpp)
@@ -12,6 +13,7 @@ SET(GUI_MOCABLES
   mainwindow.h
   filterform.h
   entryitemmodel.h
+  watchtree.h
   ../server/server.h)
 
 SET(GUI_UIS

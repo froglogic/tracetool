@@ -87,32 +87,6 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="tab_2">
-       <attribute name="title">
-        <string>Watch Points</string>
-       </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_2">
-        <item>
-         <widget class="QTreeWidget" name="watchPointTree">
-          <column>
-           <property name="text">
-            <string>Position</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>Variable</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>Value</string>
-           </property>
-          </column>
-         </widget>
-        </item>
-       </layout>
-      </widget>
      </widget>
     </item>
    </layout>
