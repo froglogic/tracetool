@@ -60,6 +60,7 @@ SET(TRACELIB_SOURCES
         ${PROJECT_SOURCE_DIR}/3rdparty/tinyxml/tinyxmlparser.cpp)
 
 IF(WIN32)
+    ADD_DEFINITIONS(-DSTACKWALKER_NO_GETUSERNAME)
     SET(TRACELIB_SOURCES
             ${TRACELIB_SOURCES}
             backtrace_win.cpp
