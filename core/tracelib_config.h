@@ -30,11 +30,14 @@
  * \li #TRACELIB_NAMESPACE_IDENT fully-qualifies the given identifier using the
  * tracelib namespace
  *
- * There is also a macro is available for performing some build-time configuration:
+ * There are also two macros available for performing some build-time
+ * configuration:
  *
  * \li #TRACELIB_DEFAULT_PORT contains the default port to be used when
  * sending trace data over the network and no port information was found
  * in the configuration file.
+ * \li #TRACELIB_DEFAULT_CONFIGFILE_NAME contains the name of the default
+ * configuration file to use in case no other name was specified at runtime.
  */
 
 /**
@@ -128,6 +131,15 @@
  * \endcode
  */
 #define TRACELIB_DEFAULT_PORT 12382
+
+/**
+ * @brief Default name of configuration file.
+ *
+ * This macro contains the default name of the configuration file to load. The
+ * default name is used in case no other name was specified at runtime, for
+ * instance by setting the TRACELIB_CONFIG_FILE environment variable.
+ */
+#define TRACELIB_DEFAULT_CONFIGFILE_NAME "tracelib.xml"
 
 /**
  * @brief Add a debug entry to the current thread's trace.

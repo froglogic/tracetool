@@ -89,7 +89,7 @@ string Configuration::defaultFileName()
         return env;
 
     string pn = processFullName();
-    return pn.substr( 0, pn.rfind( '/' ) ) + "/tracelib.xml";
+    return pn.substr( 0, pn.rfind( '/' ) ) + "/" TRACELIB_DEFAULT_CONFIGFILE_NAME;
 }
 
 /* XXX Consider encoding issues; this function should return UTF-8 encoded

@@ -32,7 +32,7 @@ static void testProcessName()
             Configuration::currentProcessName() );
     verify( "Configuration::defaultFileName",
             true,
-            Configuration::defaultFileName().rfind( "tracelib.xml" ) != string::npos );
+            Configuration::defaultFileName().rfind( TRACELIB_DEFAULT_CONFIGFILE_NAME ) != string::npos );
 }
 
 TRACELIB_NAMESPACE_END

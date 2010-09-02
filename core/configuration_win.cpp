@@ -29,7 +29,9 @@ string Configuration::defaultFileName()
     if ( defaultName.empty() ) {
         ::GetModuleFileName( NULL, buf, sizeof( buf ) );
         char *lastSeparator = strrchr( buf, '\\' );
-        strcpy( lastSeparator + 1, "tracelib.xml" ); // XXX Guard against buffer overflow
+
+        // XXX Guard against buffer overflow
+        strcpy( lastSeparator + 1, TRACELIB_DEFAULT_CONFIGFILE_NAME );
         defaultName = &buf[0];
     }
     return defaultName;
