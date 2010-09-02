@@ -64,7 +64,7 @@ static size_t writeTo( int fd, const char *data, const int length, ErrorLog *log
 #ifdef _WIN32
         int nr = send( fd, data + written, length - written, 0 );
 #else
-        int nr = write( fd, data + written, length - written );
+        int nr = send( fd, data + written, length - written, MSG_NOSIGNAL );
 #endif
         if ( nr > 0 )
             written += nr;
