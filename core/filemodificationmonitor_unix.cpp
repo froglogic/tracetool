@@ -5,7 +5,7 @@
 
 #include "filemodificationmonitor_unix.h"
 
-#include <cassert>
+#include <cstdio>
 
 using namespace std;
 
@@ -19,7 +19,7 @@ UnixFileModificationMonitor::UnixFileModificationMonitor( const string &fileName
 
 bool UnixFileModificationMonitor::start()
 {
-    assert( !"UnixFileModificationMonitor not implemented!" );
+    fprintf( stderr, "UnixFileModificationMonitor not implemented!\n" );
     return false;
 }
 
