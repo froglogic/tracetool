@@ -127,10 +127,16 @@ IF(QT4_FOUND)
                                        ARCHIVE DESTINATION lib COMPONENT devel)
 ENDIF(QT4_FOUND)
 
-INSTALL(FILES 
-        tracelib.h 
-        tracelib_config.h 
-        variabledumping.h 
+SET(TRACELIB_PUBLIC_HEADERS
+        tracelib.h
+        tracelib_config.h
+        variabledumping.h)
+FOREACH(ARG ${TRACELIB_PUBLIC_HEADERS})
+    SET(TRACELIB_PUBLIC_HEADERS_WS "${TRACELIB_PUBLIC_HEADERS_WS} ${ARG}")
+ENDFOREACH(ARG ${TRACELIB_PUBLIC_HEADERS})
+SET(TRACELIB_PUBLIC_HEADERS_WS "${TRACELIB_PUBLIC_HEADERS_WS}" PARENT_SCOPE)
+
+INSTALL(FILES ${TRACELIB_PUBLIC_HEADERS}
         variabletypes.def
         tracepointtypes.def
         DESTINATION include/tracelib COMPONENT devel)
