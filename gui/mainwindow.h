@@ -40,7 +40,7 @@ private:
     bool rebuildWatchTree(const QString &databaseFileName, QString *errMsg);
 
     Settings* const m_settings;
-    EntryItemModel* m_model;
+    EntryItemModel* m_entryItemModel;
     Server *m_server;
 };
 

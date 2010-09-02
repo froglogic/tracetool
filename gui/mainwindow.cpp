@@ -18,7 +18,7 @@ MainWindow::MainWindow(Settings *settings,
                        QWidget *parent, Qt::WindowFlags flags)
     : QMainWindow(parent, flags),
       m_settings(settings),
-      m_model(NULL),
+      m_entryItemModel(NULL),
       m_server(NULL)
 {
     setupUi(this);
@@ -178,28 +178,28 @@ bool MainWindow::rebuildWatchTree(const QString &databaseFileName, QString *errM
 bool MainWindow::setDatabase(const QString &databaseFileName, QString *errMsg)
 {
     // Delete model(s) that might have existed previously
-    if (m_model) {
+    if (m_entryItemModel) {
 	tracePointsView->setModel(NULL);
-	delete m_model; m_model = NULL;
+	delete m_entryItemModel; m_entryItemModel = NULL;
     }
 
     delete m_server; m_server = NULL;
     // will create new db file if necessary
     m_server = new Server(databaseFileName, m_settings->serverPort(), this);
 
-    m_model = new EntryItemModel(this);
-    if (!m_model->setDatabase(databaseFileName, errMsg)) {
-	delete m_model; m_model = NULL;
+    m_entryItemModel = new EntryItemModel(this);
+    if (!m_entryItemModel->setDatabase(databaseFileName, errMsg)) {
+	delete m_entryItemModel; m_entryItemModel = NULL;
 	delete m_server; m_server = NULL;
         return false;
     }
 
     connect(m_server, SIGNAL(traceEntryReceived(const TraceEntry &)),
-            m_model, SLOT(handleNewTraceEntry(const TraceEntry &)));
+            m_entryItemModel, SLOT(handleNewTraceEntry(const TraceEntry &)));
 
     m_settings->setDatabaseFile(databaseFileName);
 
-    tracePointsView->setModel(m_model);
+    tracePointsView->setModel(m_entryItemModel);
 
     rebuildWatchTree(databaseFileName, errMsg);
 
@@ -259,9 +259,9 @@ void MainWindow::showError(const QString &title,
 void MainWindow::toggleFreezeState()
 {
     if (freezeButton->isChecked()) {
-        m_model->suspend();
+        m_entryItemModel->suspend();
     } else {
-        m_model->resume();
+        m_entryItemModel->resume();
         tracePointsView->verticalScrollBar()->setValue(tracePointsView->verticalScrollBar()->maximum());
     }
 }
