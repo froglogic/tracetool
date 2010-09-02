@@ -43,7 +43,7 @@ IF(QT4_FOUND)
 ENDIF(QT4_FOUND)
 
 SET(TRACELIB_SOURCES
-        core.cpp
+        trace.cpp
         serializer.cpp
         output.cpp
         filter.cpp
