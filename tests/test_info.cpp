@@ -3,7 +3,7 @@
 ** All rights reserved.
 **********************************************************************/
 
-#include "tracelib.h"
+#include "getcurrentthreadid.h"
 
 #include <string>
 #include <iostream>

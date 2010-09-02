@@ -4,6 +4,7 @@
 **********************************************************************/
 
 #include "tracelib.h"
+#include "filter.h"
 
 #include <iostream>
 

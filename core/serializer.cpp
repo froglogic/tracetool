@@ -4,7 +4,7 @@
 **********************************************************************/
 
 #include "serializer.h"
-#include "tracelib.h"
+#include "trace.h"
 #include "configuration.h"
 
 #include <ctime>

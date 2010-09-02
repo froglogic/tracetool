@@ -54,6 +54,7 @@ SET(TRACELIB_SOURCES
         filemodificationmonitor.cpp
         networkoutput.cpp
         shutdownnotifier.cpp
+        tracelib.cpp
         ${PROJECT_SOURCE_DIR}/3rdparty/wildcmp/wildcmp.c
         ${PROJECT_SOURCE_DIR}/3rdparty/tinyxml/tinyxml.cpp
         ${PROJECT_SOURCE_DIR}/3rdparty/tinyxml/tinyxmlerror.cpp
@@ -129,15 +130,6 @@ ENDIF(QT4_FOUND)
 INSTALL(FILES 
         tracelib.h 
         tracelib_config.h 
-        backtrace.h 
-        crashhandler.h 
-        filemodificationmonitor.h 
-        filter.h 
-        getcurrentthreadid.h 
-        mutex.h 
-        output.h 
-        serializer.h 
-        shutdownnotifier.h 
         variabledumping.h 
         variabletypes.def
         tracepointtypes.def

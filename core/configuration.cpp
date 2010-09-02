@@ -5,7 +5,7 @@
 
 #include "configuration.h"
 #include "errorlog.h"
-#include "tracelib.h"
+#include "trace.h"
 
 #include "3rdparty/tinyxml/tinyxml.h"
 
