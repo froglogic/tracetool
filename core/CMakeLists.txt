@@ -59,6 +59,9 @@ SET(TRACELIB_SOURCES
         ${PROJECT_SOURCE_DIR}/3rdparty/tinyxml/tinyxmlerror.cpp
         ${PROJECT_SOURCE_DIR}/3rdparty/tinyxml/tinyxmlparser.cpp)
 
+SET(TRACELIB_QTSUPPORT_SOURCES
+        variabledumping_qt.cpp)
+
 IF(WIN32)
     ADD_DEFINITIONS(-DSTACKWALKER_NO_GETUSERNAME)
     SET(TRACELIB_SOURCES
@@ -90,9 +93,6 @@ ENDIF(WIN32)
 ADD_LIBRARY(tracelib STATIC ${TRACELIB_SOURCES})
 TARGET_LINK_LIBRARIES(tracelib pcre pcrecpp)
 TARGET_LINK_LIBRARIES(tracelib LINK_INTERFACE_LIBRARIES pcre pcrecpp)
-IF(QT4_FOUND)
-    TARGET_LINK_LIBRARIES(tracelib ${QT_LIBRARIES})
-ENDIF(QT4_FOUND)
 
 IF(WIN32)
     TARGET_LINK_LIBRARIES(tracelib ws2_32.lib)
@@ -108,11 +108,20 @@ ELSE(WIN32)
     ENDIF(LIB_EXECINFO)
 ENDIF(WIN32)
 
+IF(QT4_FOUND)
+    ADD_LIBRARY(tracelib_qtsupport STATIC ${TRACELIB_QTSUPPORT_SOURCES})
+    TARGET_LINK_LIBRARIES(tracelib_qtsupport ${QT_LIBRARIES})
+ENDIF(QT4_FOUND)
+
 # Installation
 INSTALL(TARGETS tracelib EXPORT tracelibTargets
                          RUNTIME DESTINATION bin
                          LIBRARY DESTINATION lib
                          ARCHIVE DESTINATION lib COMPONENT devel)
+INSTALL(TARGETS tracelib_qtsupport EXPORT tracelib_qtsupportTargets
+                                   RUNTIME DESTINATION bin
+                                   LIBRARY DESTINATION lib
+                                   ARCHIVE DESTINATION lib COMPONENT devel)
 INSTALL(FILES 
         tracelib.h 
         tracelib_config.h 
