@@ -44,14 +44,24 @@ static QString tracePointTypeAsString(int i)
     return s;
 }
 
+static QString variableTypeAsString(int i)
+{
+    using TRACELIB_NAMESPACE_IDENT(VariableType);
+    VariableType::Value t =  static_cast<VariableType::Value>(i);
+    QString s = VariableType::valueAsString(t);
+    return s;
+}
+
 static bool toXml(const QSqlDatabase db, FILE *output, QString *errMsg)
 {
+    using TRACELIB_NAMESPACE_IDENT(TracePointType);
+
     const char header[] =
         "<?xml version='1.0'?>\n"
         "<!DOCTYPE trace [\n"
         "  <!ELEMENT trace (traceentry*)>\n"
         "  <!ELEMENT traceentry (timestamp, process, threadid,\n"
-        "                        tracepoint, message)>\n"
+        "                        tracepoint, message, variables?)>\n"
         "  <!ATTLIST traceentry id CDATA #REQUIRED\n"
         "                       type CDATA #REQUIRED>\n"
         "  <!ELEMENT timestamp (#PCDATA)>\n"
@@ -67,10 +77,14 @@ static bool toXml(const QSqlDatabase db, FILE *output, QString *errMsg)
         "  <!ELEMENT function (#PCDATA)>\n"
         "  <!ELEMENT type (#PCDATA)>\n"
         "  <!ELEMENT message (#PCDATA)>\n"
+        "  <!ELEMENT variables (variable)*>\n"
+        "  <!ELEMENT variable (name, value, type)*>\n"
+        "  <!ELEMENT value (#PCDATA)>\n"
+        // name and type are already declared
         "]>\n"
         "<trace>\n";
     const char footer[] = "</trace>\n";
-    const char entryTpl[] =
+    const char traceentryTpl0[] =
         "  <traceentry id=\"%s\" type=\"%s\">\n"
         "    <timestamp>%s</timestamp>\n"
         "    <process>\n"
@@ -86,7 +100,26 @@ static bool toXml(const QSqlDatabase db, FILE *output, QString *errMsg)
         "      <function><![CDATA[%s]]></function>\n"
         "    </tracepoint>\n"
         "    <message><![CDATA[%s]]></message>\n"
+        "    <variables>\n";
+    const char traceentryTpl1[] =
+        "    </variables>\n"
         "  </traceentry>\n";
+    const char variableTpl[] =
+        "      <variable>\n"
+        "        <name><![CDATA[%s]]></name>\n"
+        "        <value><![CDATA[%s]]></value>\n"
+        "        <type><![CDATA[%s]]></type>\n"
+        "      </variable>\n";
+
+    QSqlQuery getVariablesQuery(db);
+    getVariablesQuery.prepare("SELECT"
+                              " name,"
+                              " value,"
+                              " type "
+                              "FROM"
+                              " variable "
+                              "WHERE"
+                              " trace_entry_id = :trace_entry_id");
 
     QSqlQuery resultSet = db.exec("SELECT"
                                   " trace_entry.id,"
@@ -130,7 +163,7 @@ static bool toXml(const QSqlDatabase db, FILE *output, QString *errMsg)
 
     while (resultSet.next()) {
         //TODO: reference fields by name
-        fprintf(output, entryTpl,
+        fprintf(output, traceentryTpl0,
                 resultSet.value(0).toString().toUtf8().constData(),
                 tracePointTypeAsString(resultSet.value(10).toInt()).toUtf8().constData(), //type
                 resultSet.value(1).toString().toUtf8().constData(),
@@ -143,6 +176,25 @@ static bool toXml(const QSqlDatabase db, FILE *output, QString *errMsg)
                 resultSet.value(8).toString().toUtf8().constData(),
                 resultSet.value(9).toString().toUtf8().constData(),
                 resultSet.value(11).toString().toUtf8().constData());
+
+        if (resultSet.value(10).toInt() == TracePointType::Watch) {
+            int traceEntryId = resultSet.value(0).toInt();
+            getVariablesQuery.bindValue(0, traceEntryId);
+            getVariablesQuery.exec();
+            if (db.lastError().isValid()) {
+                *errMsg = db.lastError().text();
+                return false;
+            }
+            while (getVariablesQuery.next()) {
+                fprintf(output, variableTpl,
+                        getVariablesQuery.value(0).toString().toUtf8().constData(),
+                        getVariablesQuery.value(1).toString().toUtf8().constData(),
+                        variableTypeAsString(getVariablesQuery.value(2).toInt()).toUtf8().constData());
+            }
+            getVariablesQuery.finish();
+        }
+
+        fprintf(output, traceentryTpl1);
     }
     resultSet.finish();
 
