@@ -109,7 +109,7 @@
  *
  * This macro defines the default port which should be used when sending the
  * trace data to the remote host specified in the configuration file. It can
- * be overridden using the configuration file's <port> element:
+ * be overridden using the configuration file's \c \<port\> element:
  *
  * \code
  * <tracelibConfiguration>
