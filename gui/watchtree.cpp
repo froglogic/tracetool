@@ -15,7 +15,8 @@ WatchTree::WatchTree( QWidget *parent )
     static const char * columns[] = {
         "Position",
         "Name",
-        "Value"
+        "Value",
+        "Old Value"
     };
 
     setColumnCount( sizeof( columns ) / sizeof( columns[0] ) );
@@ -211,9 +212,14 @@ bool WatchTree::showNewTraceEntries( QString *errMsg )
             }
         }
 
+        const QString currentValue = variableItem->item->data( 2, Qt::DisplayRole ).toString();
         const QString varValue = query.value( 7 ).toString();
-        variableItem->item->setData( 2, Qt::DisplayRole, varValue );
-        variableItem->item->setData( 2, Qt::ToolTipRole, varValue );
+        if ( currentValue != varValue ) {
+            variableItem->item->setData( 3, Qt::DisplayRole, currentValue );
+            variableItem->item->setData( 3, Qt::ToolTipRole, currentValue );
+            variableItem->item->setData( 2, Qt::DisplayRole, varValue );
+            variableItem->item->setData( 2, Qt::ToolTipRole, varValue );
+        }
     }
 
     setUpdatesEnabled( true );
