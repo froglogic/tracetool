@@ -11,7 +11,6 @@
 #include <QSqlQuery>
 class QTimer;
 
-class Server;
 struct TraceEntry;
 
 class EntryItemModel : public QAbstractTableModel
@@ -22,7 +21,6 @@ public:
     ~EntryItemModel();
 
     bool setDatabase(const QString &databaseFileName,
-                     int serverPort,
                      QString *errMsg);
 
     int columnCount(const QModelIndex & parent = QModelIndex()) const;
@@ -38,8 +36,10 @@ public:
     void suspend();
     void resume();
 
-private slots:
+public slots:
     void handleNewTraceEntry(const TraceEntry &e);
+
+private slots:
     void insertNewTraceEntries();
 
 private:
@@ -48,7 +48,6 @@ private:
     QSqlDatabase m_db;
     QSqlQuery m_query;
     int m_querySize;
-    Server *m_server;
     unsigned int m_numNewEntries;
     QTimer *m_databasePollingTimer;
     bool m_suspended;

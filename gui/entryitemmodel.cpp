@@ -6,7 +6,6 @@
 #include "entryitemmodel.h"
 
 #include "../core/tracelib.h"
-#include "../server/server.h"
 
 #include <QDateTime>
 #include <QDebug>
@@ -45,7 +44,6 @@ static QString tracePointTypeAsString(int i)
 
 EntryItemModel::EntryItemModel(QObject *parent )
     : QAbstractTableModel(parent),
-      m_server(NULL),
       m_numNewEntries(0),
       m_databasePollingTimer(NULL),
       m_suspended(false)
@@ -61,7 +59,6 @@ EntryItemModel::~EntryItemModel()
 }
 
 bool EntryItemModel::setDatabase(const QString &databaseFileName,
-                                 int serverPort,
                                  QString *errMsg)
 {
     const QString driverName = "QSQLITE";
@@ -70,12 +67,6 @@ bool EntryItemModel::setDatabase(const QString &databaseFileName,
         return false;
     }
 
-    assert( !m_server );
-    // will create new db file if necessary
-    m_server = new Server(databaseFileName, serverPort, this);
-    connect(m_server, SIGNAL(traceEntryReceived(const TraceEntry &)),
-            SLOT(handleNewTraceEntry(const TraceEntry &)));
-    
     m_db = QSqlDatabase::addDatabase(driverName, "itemmodel");
     m_db.setDatabaseName(databaseFileName);
     if (!m_db.open()) {

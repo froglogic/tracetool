@@ -11,6 +11,7 @@
 #include "settings.h"
 
 class EntryItemModel;
+class Server;
 
 class MainWindow : public QMainWindow, private Ui::MainWindow,
                    public RestorableObject
@@ -40,6 +41,7 @@ private:
 
     Settings* const m_settings;
     EntryItemModel* m_model;
+    Server *m_server;
 };
 
 #endif

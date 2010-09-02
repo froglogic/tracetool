@@ -12,12 +12,14 @@
 #include <QtSql>
 
 #include "../core/tracelib.h"
+#include "../server/server.h"
 
 MainWindow::MainWindow(Settings *settings,
                        QWidget *parent, Qt::WindowFlags flags)
     : QMainWindow(parent, flags),
       m_settings(settings),
-      m_model(NULL)
+      m_model(NULL),
+      m_server(NULL)
 {
     setupUi(this);
     m_settings->registerRestorable("MainWindow", this);
@@ -181,13 +183,19 @@ bool MainWindow::setDatabase(const QString &databaseFileName, QString *errMsg)
 	delete m_model; m_model = NULL;
     }
 
+    delete m_server; m_server = NULL;
+    // will create new db file if necessary
+    m_server = new Server(databaseFileName, m_settings->serverPort(), this);
+
     m_model = new EntryItemModel(this);
-    if (!m_model->setDatabase(databaseFileName,
-			      m_settings->serverPort(),
-			      errMsg)) {
+    if (!m_model->setDatabase(databaseFileName, errMsg)) {
 	delete m_model; m_model = NULL;
+	delete m_server; m_server = NULL;
         return false;
     }
+
+    connect(m_server, SIGNAL(traceEntryReceived(const TraceEntry &)),
+            m_model, SLOT(handleNewTraceEntry(const TraceEntry &)));
 
     m_settings->setDatabaseFile(databaseFileName);
 
