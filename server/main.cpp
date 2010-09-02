@@ -18,7 +18,7 @@ namespace Error
 {
     const int None = 0;
     const int CommandLineArgs = 1;
-};
+}
 
 using namespace std;
 

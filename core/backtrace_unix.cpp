@@ -149,7 +149,7 @@ static bool parseLine( const string line, StackFrame *frame )
 # if defined(__GNUC__) && __GNUC__ - 0 > 2
     size_t pb = line.find( '(' );
     if (pb != string::npos ) {
-        int pe = line.find( ')', pb + 1 );
+        size_t pe = line.find( ')', pb + 1 );
         if ( pe != string::npos ) {
             size_t pp = line.rfind( '+', pe );
             if ( pp < pb )
@@ -209,7 +209,7 @@ static void readBacktrace( std::vector<StackFrame> &trace, size_t skip
                 for (size_t i = skip; i < size; ++i) {
                     StackFrame frame;
                     if ( !parseLine( strs[i], &frame ) ) {
-                        fprintf( stderr, "err (%d) %s\n", i, strs[i] );
+                        fprintf( stderr, "err (%d) %s\n", int(i), strs[i] );
                         frame.function = "??";
                     }
                     trace.push_back( frame );

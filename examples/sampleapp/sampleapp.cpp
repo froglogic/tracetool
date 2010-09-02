@@ -16,7 +16,7 @@ TRACELIB_NAMESPACE_BEGIN
     template <>
     VariableValue convertVariable<const Person *>( const Person *p ) {
         char buf[ 32 ];
-        sprintf( buf, "0x%08x", p );
+        sprintf( buf, "0x%p", static_cast<const void*>(p) );
         return VariableValue::stringValue( &buf[0] );
     }
 TRACELIB_NAMESPACE_END

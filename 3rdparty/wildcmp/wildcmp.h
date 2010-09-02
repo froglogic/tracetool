@@ -12,6 +12,6 @@ int wildicmp(const char *wild, const char *string);
 }
 #endif
 
-#endif // !defined(WILDCMP_H)
+#endif /* !defined(WILDCMP_H) */
 
 

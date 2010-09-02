@@ -205,11 +205,11 @@ static int nextDatagramStart( const QByteArray &data, int pos )
 {
     int p = data.indexOf( '<', pos );
     while ( p != -1 ) {
-        if ( data.size() - p >= sizeof( "<traceentry " ) - 1 &&
+        if ( data.size() - p >= int(sizeof( "<traceentry " ) - 1) &&
              strncmp( data.data() + p, "<traceentry ", sizeof( "<traceentry " ) - 1 ) == 0 ) {
             return p;
         }
-        if ( data.size() - p >= sizeof( "<shutdownevent " ) - 1 &&
+        if ( data.size() - p >= int(sizeof( "<shutdownevent " ) - 1) &&
              strncmp( data.data() + p, "<shutdownevent ", sizeof( "<shutdownevent " ) - 1 ) == 0 ) {
             return p;
         }

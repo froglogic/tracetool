@@ -79,8 +79,8 @@ TraceEntry::TraceEntry( const TracePoint *tracePoint_, const char *msg )
     : threadId( getCurrentThreadId() ),
     timeStamp( std::time( NULL ) ),
     tracePoint( tracePoint_ ),
-    backtrace( 0 ),
     variables( 0 ),
+    backtrace( 0 ),
     message( msg )
 {
 }
@@ -184,7 +184,7 @@ void Trace::configureTracePoint( TracePoint *tracePoint ) const
 
     vector<TracePointSet *>::const_iterator it, end = m_tracePointSets.end();
     for ( it = m_tracePointSets.begin(); it != end; ++it ) {
-        const int action = ( *it )->actionForTracePoint( tracePoint );
+        const unsigned int action = ( *it )->actionForTracePoint( tracePoint );
         if ( action == TracePointSet::IgnoreTracePoint ) {
             continue;
         }

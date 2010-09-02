@@ -3,6 +3,12 @@ PROJECT(tracelib)
 
 INCLUDE_DIRECTORIES(${PROJECT_BINARY_DIR})
 
+IF(CMAKE_COMPILER_IS_GNUCC)
+    # TODO: consider adding -Wconversion
+    ADD_DEFINITIONS(-Wall -pedantic -Wwrite-strings -Wcast-align
+                    -Wchar-subscripts -Wno-long-long)
+ENDIF(CMAKE_COMPILER_IS_GNUCC)
+
 ADD_SUBDIRECTORY(core)
 ADD_SUBDIRECTORY(server)
 ADD_SUBDIRECTORY(gui)

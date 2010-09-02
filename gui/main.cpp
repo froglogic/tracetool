@@ -19,7 +19,7 @@ namespace Error
     const int None = 0;
     const int CommandLineArgs = 1;
     const int Open = 2;
-};
+}
 
 using namespace std;
 

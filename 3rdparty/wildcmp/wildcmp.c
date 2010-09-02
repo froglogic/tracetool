@@ -1,14 +1,14 @@
 #include "wildcmp.h"
 
-#include <ctype.h> // for tolower
-#include <stddef.h> // for NULL
+#include <ctype.h> /* for tolower */
+#include <stddef.h> /* for NULL */
 
 /* The wildcmp function was taken from http://www.codeproject.com/KB/string/wildcmp.aspx; the
  * wildicmp (case insensitive wildcard comparison) was based on it.
  */
 
 int wildcmp(const char *wild, const char *string) {
-  // Written by Jack Handy - jakkhandy@hotmail.com
+  /* Written by Jack Handy - jakkhandy@hotmail.com */
 
   const char *cp = NULL, *mp = NULL;
 

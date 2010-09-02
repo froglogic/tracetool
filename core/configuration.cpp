@@ -43,10 +43,10 @@ Configuration *Configuration::fromMarkup( const string &markup )
 }
 
 Configuration::Configuration()
-    : m_configuredSerializer( 0 ),
+    : m_fileName( "<null>"),
+    m_configuredSerializer( 0 ),
     m_configuredOutput( 0 ),
-    m_errorLog( new DebugViewErrorLog ),
-    m_fileName( "<null>")
+    m_errorLog( new DebugViewErrorLog )
 {
 }
 

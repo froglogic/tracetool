@@ -22,7 +22,7 @@ namespace Error
     const int Open = 2;
     const int File = 3;
     const int Transformation = 4;
-};
+}
 
 static void printHelp(const QString &app)
 {

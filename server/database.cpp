@@ -134,7 +134,7 @@ QSqlDatabase Database::create(const QString &fileName,
 
     QSqlQuery query(db);
     query.exec("BEGIN TRANSACTION;");
-    for (int i = 0; i < sizeof(schemaStatements) / sizeof(schemaStatements[0]); ++i) {
+    for (unsigned i = 0; i < sizeof(schemaStatements) / sizeof(schemaStatements[0]); ++i) {
 	if (!query.exec(schemaStatements[i])) {
 	    *errMsg = QObject::tr("Failed to execute '%1': %2")
 		.arg(schemaStatements[i])

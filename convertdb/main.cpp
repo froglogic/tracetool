@@ -17,7 +17,7 @@ namespace Error
     const int CommandLineArgs = 1;
     const int Open = 2;
     const int Conversion = 3;
-};
+}
 
 static void printHelp(const QString &app)
 {
