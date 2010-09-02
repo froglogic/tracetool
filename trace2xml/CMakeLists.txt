@@ -3,6 +3,10 @@ SET(TRACE2XML_SOURCES
         ../convertdb/getopt.cpp
         ../server/database.cpp)
 
+IF(MSVC)
+    ADD_DEFINITIONS(-D_CRT_SECURE_NO_DEPRECATE)
+ENDIF(MSVC)
+
 FIND_PACKAGE(Qt4 4.5.0 COMPONENTS QtSql QtCore REQUIRED)
 INCLUDE(${QT_USE_FILE})
 
