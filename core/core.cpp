@@ -103,6 +103,7 @@ Trace::Trace()
     const string cfgFileName = Configuration::defaultFileName();
     reloadConfiguration( cfgFileName );
     m_configFileMonitor = FileModificationMonitor::create( cfgFileName, this );
+    m_configFileMonitor->start();
     ShutdownNotifier::self().addObserver( this );
 }
 
