@@ -35,6 +35,7 @@ private slots:
     void helpAbout();
     void toggleFreezeState();
     void openFilterForm();
+    void viewShowColumnsDialog();
 
 private:
     void showError(const QString &title, const QString &message);

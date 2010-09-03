@@ -4,6 +4,7 @@ SET(GUI_SOURCES
   mainwindow.cpp
   entryfilter.cpp
   filterform.cpp
+  columnsform.cpp
   entryitemmodel.cpp
   watchtree.cpp
   ../convertdb/getopt.cpp
@@ -14,12 +15,14 @@ SET(GUI_MOCABLES
   mainwindow.h
   entryfilter.h
   filterform.h
+  columnsform.h
   entryitemmodel.h
   watchtree.h
   ../server/server.h)
 
 SET(GUI_UIS
   mainwindow.ui
+  columnsform.ui
   filterform.ui)
 
 SET(GUI_RCCS 

@@ -6,6 +6,7 @@
 #include "mainwindow.h"
 
 #include "filterform.h"
+#include "columnsform.h"
 #include "entryitemmodel.h"
 #include "watchtree.h"
 
@@ -40,6 +41,10 @@ MainWindow::MainWindow(Settings *settings,
 	    this, SLOT(fileOpenTrace()));
     connect(actionQuit, SIGNAL(triggered()),
             qApp, SLOT(quit()));
+
+    // View menu
+    connect(actionColumns, SIGNAL(triggered()),
+	    this, SLOT(viewShowColumnsDialog()));
 
     // Help menu
     connect(action_About, SIGNAL(triggered()),
@@ -156,3 +161,11 @@ void MainWindow::openFilterForm()
         m_entryItemModel->reApplyFilter();
     }
 }
+
+void MainWindow::viewShowColumnsDialog()
+{
+    ColumnsForm form(m_settings, this);
+    if (form.exec() == QDialog::Accepted) {
+    }
+}
+
