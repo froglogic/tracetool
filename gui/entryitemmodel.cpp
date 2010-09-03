@@ -5,6 +5,7 @@
 
 #include "entryitemmodel.h"
 
+#include "entryfilter.h"
 #include "../core/tracelib.h"
 
 #include <QDateTime>
@@ -42,16 +43,18 @@ static QString tracePointTypeAsString(int i)
     return s;
 }
 
-EntryItemModel::EntryItemModel(QObject *parent )
+EntryItemModel::EntryItemModel(EntryFilter *filter, QObject *parent )
     : QAbstractTableModel(parent),
       m_numNewEntries(0),
       m_databasePollingTimer(NULL),
-      m_suspended(false)
+      m_suspended(false),
+      m_filter(filter)
 
 {
     m_databasePollingTimer = new QTimer(this);
     m_databasePollingTimer->setSingleShot(true);
     connect(m_databasePollingTimer, SIGNAL(timeout()), SLOT(insertNewTraceEntries()));
+    connect(m_filter, SIGNAL(changed()), SLOT(reApplyFilter()));
 }
 
 EntryItemModel::~EntryItemModel()
@@ -78,6 +81,21 @@ bool EntryItemModel::setDatabase(const QString &databaseFileName,
         return false;
 
     return true;
+}
+
+static QString filterClause(EntryFilter *f)
+{
+    QString sql;
+    // ### implement for other criteria
+    // ### take care of escaping
+    if (!f->application().isEmpty()) {
+        sql += QString("process.name LIKE '%%1%'").arg(f->application());
+    }
+
+    if (sql.isEmpty())
+        return sql;
+
+    return "AND " + sql + " ";
 }
 
 bool EntryItemModel::queryForEntries(QString *errMsg)
@@ -112,7 +130,8 @@ bool EntryItemModel::queryForEntries(QString *errMsg)
                         "AND"
                         " trace_entry.traced_thread_id = traced_thread.id "
                         "AND"
-                        " traced_thread.process_id = process.id "
+                        " traced_thread.process_id = process.id " +
+                        filterClause(m_filter) +
                         "ORDER BY"
                         " trace_entry.id");
 
@@ -229,6 +248,10 @@ QVariant EntryItemModel::headerData(int section, Qt::Orientation orientation,
 
 void EntryItemModel::handleNewTraceEntry(const TraceEntry &e)
 {
+    // Ignore entries that don't match the current filter
+    if (!m_filter->matches(e))
+        return;
+
     ++m_numNewEntries;
     if (!m_suspended && !m_databasePollingTimer->isActive()) {
         m_databasePollingTimer->start(200);
@@ -259,5 +282,15 @@ void EntryItemModel::insertNewTraceEntries()
     endInsertRows();
 
     m_numNewEntries = 0;
+}
+
+void EntryItemModel::reApplyFilter()
+{
+    beginResetModel();
+    QString errorMsg;
+    if (!queryForEntries(&errorMsg)) {
+        qDebug() << "EntryItemModel::reApplyFilter: failed: " << errorMsg;
+    }
+    endResetModel();
 }
 

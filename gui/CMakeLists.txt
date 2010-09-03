@@ -12,6 +12,7 @@ SET(GUI_SOURCES
 
 SET(GUI_MOCABLES
   mainwindow.h
+  entryfilter.h
   filterform.h
   entryitemmodel.h
   watchtree.h

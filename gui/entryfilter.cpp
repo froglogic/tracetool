@@ -5,7 +5,17 @@
 
 #include "entryfilter.h"
 
+#include "../server/server.h"
+
 typedef QMap<QString, QVariant> StorageMap;
+
+bool EntryFilter::matches(const TraceEntry &e) const
+{
+    // Check is analog to LIKE %..% clause in model using a SQL query
+    if (!m_application.isEmpty() && !e.processName.contains(m_application))
+        return false;
+    return true;
+}
 
 QVariant EntryFilter::sessionState() const
 {
@@ -36,7 +46,8 @@ bool EntryFilter::restoreSessionState(const QVariant &state)
     m_message = map["Message"].toString();
     m_type = map["Type"].toInt();
 
-    return true;
+    emit changed();
 
+    return true;
 }
 

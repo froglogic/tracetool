@@ -8,12 +8,17 @@
 
 #include "restorableobject.h"
 
+#include <QObject>
 #include <QString>
 
-class EntryFilter : public RestorableObject
+struct TraceEntry;
+
+class EntryFilter : public QObject,
+                    public RestorableObject
 {
+    Q_OBJECT
 public:
-    EntryFilter() : m_type(-1) { }
+    EntryFilter(QObject *parent = 0) : QObject(parent), m_type(-1) { }
 
     QString application() const { return m_application; }
     void setApplication(const QString &app) { m_application = app; }
@@ -33,8 +38,19 @@ public:
     int type() const { return m_type; }
     void setType(int t) { m_type = t; }
 
+    bool matches(const TraceEntry &e) const;
+
+// from RestorableObject interface
     QVariant sessionState() const;
     bool restoreSessionState(const QVariant &state);
+
+    // ### Instead of this manual call consider firing event on each
+    // ### set*() call. Will likely require some laziness mechanism on
+    // ### the receiver side to reduce the number of update.
+    void emitChanged() { emit changed(); }
+
+signals:
+    void changed();
 
 private:
     QString m_application;

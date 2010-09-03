@@ -12,12 +12,13 @@
 class QTimer;
 
 struct TraceEntry;
+class EntryFilter;
 
 class EntryItemModel : public QAbstractTableModel
 {
     Q_OBJECT
 public:
-    EntryItemModel(QObject *parent = 0);
+    EntryItemModel(EntryFilter *filter, QObject *parent = 0);
     ~EntryItemModel();
 
     bool setDatabase(const QString &databaseFileName,
@@ -38,6 +39,7 @@ public:
 
 public slots:
     void handleNewTraceEntry(const TraceEntry &e);
+    void reApplyFilter();
 
 private slots:
     void insertNewTraceEntries();
@@ -51,6 +53,7 @@ private:
     unsigned int m_numNewEntries;
     QTimer *m_databasePollingTimer;
     bool m_suspended;
+    EntryFilter *m_filter;
 };
 
 #endif

@@ -44,6 +44,8 @@ void FilterForm::saveSettings()
     f->setFunction(funcEdit->text());
     f->setMessage(messageEdit->text());
     f->setType(typeCombo->itemData(typeCombo->currentIndex()).toInt());
+
+    f->emitChanged();
 }
 
 void FilterForm::restoreSettings()

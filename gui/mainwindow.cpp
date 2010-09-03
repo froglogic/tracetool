@@ -62,7 +62,7 @@ bool MainWindow::setDatabase(const QString &databaseFileName, QString *errMsg)
     // will create new db file if necessary
     m_server = new Server(databaseFileName, m_settings->serverPort(), this);
 
-    m_entryItemModel = new EntryItemModel(this);
+    m_entryItemModel = new EntryItemModel(m_settings->entryFilter(), this);
     if (!m_entryItemModel->setDatabase(databaseFileName, errMsg)) {
 	delete m_entryItemModel; m_entryItemModel = NULL;
 	delete m_server; m_server = NULL;
@@ -153,5 +153,6 @@ void MainWindow::openFilterForm()
 {
     FilterForm form(m_settings, this);
     if (form.exec() == QDialog::Accepted) {
+        m_entryItemModel->reApplyFilter();
     }
 }
