@@ -49,6 +49,7 @@ struct TraceEntry
     QString message;
     QList<Variable> variables;
     QList<StackFrame> backtrace;
+    unsigned long stackPosition;
 };
 
 struct ProcessShutdownEvent

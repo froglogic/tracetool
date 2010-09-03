@@ -30,7 +30,8 @@ static const char * const schemaStatements[] = {
     " traced_thread_id INTEGER,"
     " timestamp DATETIME,"
     " trace_point_id INTEGER,"
-    " message TEXT);",
+    " message TEXT,"
+    " stack_position INTEGER);",
     "CREATE TABLE trace_point (id INTEGER PRIMARY KEY AUTOINCREMENT,"
     " verbosity INTEGER,"
     " type INTEGER,"

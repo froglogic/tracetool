@@ -29,6 +29,7 @@ static TraceEntry deserializeTraceEntry( const QDomElement &e )
     entry.tid = e.attribute( "tid" ).toUInt();
     entry.timestamp = QDateTime::fromTime_t( e.attribute( "time" ).toUInt() );
     entry.processName = e.namedItem( "processname" ).toElement().text();
+    entry.stackPosition = e.namedItem( "stackposition" ).toElement().text().toULong();
     entry.verbosity = e.namedItem( "verbosity" ).toElement().text().toUInt();
     entry.type = e.namedItem( "type" ).toElement().text().toUInt();
     entry.path = e.namedItem( "location" ).toElement().text();
@@ -369,11 +370,12 @@ void Server::storeEntry( const TraceEntry &e )
         }
     }
 
-    transaction.exec( QString( "INSERT INTO trace_entry VALUES(NULL, %1, %2, %3, %4)" )
+    transaction.exec( QString( "INSERT INTO trace_entry VALUES(NULL, %1, %2, %3, %4, %5)" )
                     .arg( tracedThreadId )
                     .arg( formatValue( e.timestamp ) )
                     .arg( tracepointId )
-                    .arg( formatValue( e.message ) ) );
+                    .arg( formatValue( e.message ) )
+                    .arg( e.stackPosition ) );
     const unsigned int traceentryId = transaction.exec( "SELECT last_insert_rowid() FROM trace_entry LIMIT 1;" ).toUInt();
 
     {
