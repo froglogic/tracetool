@@ -151,13 +151,13 @@
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
-     <string>View</string>
+     <string>&amp;View</string>
     </property>
     <addaction name="actionColumns"/>
    </widget>
    <addaction name="menu_File"/>
-   <addaction name="menu_Help"/>
    <addaction name="menuView"/>
+   <addaction name="menu_Help"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionQuit">

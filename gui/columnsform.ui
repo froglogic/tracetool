@@ -62,20 +62,28 @@
     </rect>
    </property>
    <property name="text">
-    <string>u</string>
+    <string/>
+   </property>
+   <property name="icon">
+    <iconset>
+     <normaloff>go-up.png</normaloff>go-up.png</iconset>
    </property>
   </widget>
   <widget class="QPushButton" name="downButton">
    <property name="geometry">
     <rect>
      <x>0</x>
-     <y>140</y>
+     <y>130</y>
      <width>31</width>
      <height>24</height>
     </rect>
    </property>
    <property name="text">
-    <string>d</string>
+    <string/>
+   </property>
+   <property name="icon">
+    <iconset>
+     <normaloff>go-down.png</normaloff>go-down.png</iconset>
    </property>
   </widget>
   <widget class="QLabel" name="label">
