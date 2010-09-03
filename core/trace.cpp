@@ -81,7 +81,8 @@ TraceEntry::TraceEntry( const TracePoint *tracePoint_, const char *msg )
     tracePoint( tracePoint_ ),
     variables( 0 ),
     backtrace( 0 ),
-    message( msg )
+    message( msg ),
+    stackPosition( reinterpret_cast<size_t>( &stackPosition ) )
 {
 }
 

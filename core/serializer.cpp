@@ -154,6 +154,7 @@ vector<char> XMLSerializer::serialize( const TraceEntry &entry )
     static string myProcessName = Configuration::currentProcessName();
     str << indent << "<processname><![CDATA[" << myProcessName << "]]></processname>";
 
+    str << indent << "<stackposition>" << entry.stackPosition << "</stackposition>";
     str << indent << "<type>" << entry.tracePoint->type << "</type>";
     str << indent << "<verbosity>" << entry.tracePoint->verbosity << "</verbosity>";
     str << indent << "<location lineno=\"" << entry.tracePoint->lineno << "\"><![CDATA[" << entry.tracePoint->sourceFile << "]]></location>";

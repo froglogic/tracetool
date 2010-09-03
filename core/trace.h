@@ -62,6 +62,7 @@ struct TraceEntry
     VariableSnapshot *variables;
     Backtrace *backtrace;
     const char * const message;
+    const size_t stackPosition;
 };
 
 struct ProcessShutdownEvent
