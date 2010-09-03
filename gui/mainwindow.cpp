@@ -162,6 +162,7 @@ void MainWindow::toggleFreezeState()
 void MainWindow::postRestore()
 {
     m_filterForm->restoreSettings();
+    updateColumns();
 }
 
 void MainWindow::filterChange()

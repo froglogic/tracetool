@@ -65,8 +65,8 @@
     <string/>
    </property>
    <property name="icon">
-    <iconset>
-     <normaloff>go-up.png</normaloff>go-up.png</iconset>
+    <iconset resource="gui.qrc">
+     <normaloff>:/icons/go-up.png</normaloff>:/icons/go-up.png</iconset>
    </property>
   </widget>
   <widget class="QPushButton" name="downButton">
@@ -82,8 +82,8 @@
     <string/>
    </property>
    <property name="icon">
-    <iconset>
-     <normaloff>go-down.png</normaloff>go-down.png</iconset>
+    <iconset resource="gui.qrc">
+     <normaloff>:/icons/go-down.png</normaloff>:/icons/go-down.png</iconset>
    </property>
   </widget>
   <widget class="QLabel" name="label">
@@ -133,7 +133,9 @@
    </property>
   </widget>
  </widget>
- <resources/>
+ <resources>
+  <include location="gui.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>buttonBox</sender>

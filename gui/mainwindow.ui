@@ -71,8 +71,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>925</width>
-         <height>468</height>
+         <width>94</width>
+         <height>24</height>
         </rect>
        </property>
        <attribute name="label">
@@ -89,8 +89,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>340</width>
-         <height>232</height>
+         <width>925</width>
+         <height>488</height>
         </rect>
        </property>
        <attribute name="label">
@@ -132,7 +132,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>901</width>
+     <width>943</width>
      <height>21</height>
     </rect>
    </property>
@@ -183,7 +183,7 @@
   </action>
   <action name="actionColumns">
    <property name="text">
-    <string>Columns</string>
+    <string>Columns...</string>
    </property>
   </action>
  </widget>
