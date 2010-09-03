@@ -17,23 +17,12 @@
 
 // #define SHOW_VERBOSITY
 
-const int IdFieldIndex = 0;
-const int TimeFieldIndex = 1;
-const int ApplicationFieldIndex = 2;
-const int PIDFieldIndex = 3;
-const int ThreadFieldIndex = 4;
-const int FileFieldIndex = 5;
-const int LineFieldIndex = 6;
-const int FunctionFieldIndex = 7;
-const int TypeFieldIndex = 8;
-#ifdef SHOW_VERBOSITY
-const int VerbosityFieldIndex = 9;
-const int MessageFieldIndex = 10;
-const int StackPositionFieldIndex = 11;
-#else
-const int MessageFieldIndex = 9;
-const int StackPositionFieldIndex = 10;
-#endif
+typedef QVariant (*DataFormatter)( const QVariant &v );
+
+static QVariant timeFormatter( const QVariant &v )
+{
+    return QDateTime::fromString(v.toString(), Qt::ISODate);
+}
 
 static QString tracePointTypeAsString(int i)
 {
@@ -44,6 +33,41 @@ static QString tracePointTypeAsString(int i)
     QString s = TracePointType::valueAsString(t);
     return s;
 }
+
+static QVariant typeFormatter( const QVariant &v )
+{
+    bool ok;
+    int i = v.toInt(&ok);
+    assert(ok);
+    return tracePointTypeAsString(i);
+}
+
+static QVariant stackPositionFormatter( const QVariant &v )
+{
+    bool ok;
+    qulonglong i = v.toULongLong(&ok);
+    assert(ok);
+    return QString( "0x%1" ).arg( QString::number( i, 16 ) );
+}
+
+static const struct {
+    const char *name;
+    DataFormatter formatterFn;
+} g_fields[] = {
+    { "Time", timeFormatter },
+    { "Application", 0 },
+    { "PID", 0 },
+    { "Thread", 0 },
+    { "File", 0 },
+    { "Line", 0 },
+    { "Function", 0 },
+    { "Type", typeFormatter },
+#ifdef SHOW_VERBOSITY
+    { "Verbosity", 0 },
+#endif
+    { "Message", 0 },
+    { "Stack Position", stackPositionFormatter }
+};
 
 EntryItemModel::EntryItemModel(EntryFilter *filter, QObject *parent )
     : QAbstractTableModel(parent),
@@ -157,11 +181,7 @@ bool EntryItemModel::queryForEntries(QString *errMsg)
 
 int EntryItemModel::columnCount(const QModelIndex & parent) const
 {
-#ifdef SHOW_VERBOSITY
-    return 11;
-#else
-    return 10;
-#endif
+    return static_cast<int>( sizeof(g_fields) / sizeof(g_fields[0]) );
 }
 
 int EntryItemModel::rowCount(const QModelIndex & parent) const
@@ -184,24 +204,8 @@ QVariant EntryItemModel::data(const QModelIndex& index, int role) const
         int dbField = index.column() + 1;
         const_cast<EntryItemModel*>(this)->m_query.seek(index.row());
         QVariant v = m_query.value(dbField);
-        //  qDebug("v.type: %s v.str: %s", v.typeName(), qPrintable(v.toString()));
-        // ### Sqlite stores DATETIME values as strings
-        if (dbField == TimeFieldIndex) {
-            QDateTime dt = QDateTime::fromString(v.toString(), Qt::ISODate);
-            return dt;
-        }
-        if (dbField == StackPositionFieldIndex) {
-            bool ok;
-            qulonglong i = v.toULongLong(&ok);
-            assert(ok);
-            return QString( "0x%1" ).arg( QString::number( i, 16 ) );
-        }
-        if (dbField == TypeFieldIndex) {
-            bool ok;
-            int i = v.toInt(&ok);
-            assert(ok);
-            return tracePointTypeAsString(i);
-        }
+        if ( g_fields[index.column()].formatterFn )
+            return g_fields[index.column()].formatterFn( v );
         return v;
     } else if (role == Qt::ToolTipRole) {
         // Just forward the tool tip request for now to make viewing
@@ -219,39 +223,11 @@ QVariant EntryItemModel::headerData(int section, Qt::Orientation orientation,
                                     int role) const
 {
     if (role == Qt::DisplayRole && orientation == Qt::Horizontal) {
-        int dbField = section + 1;
-        switch (dbField) {
-        case TimeFieldIndex:
-            return tr("Time");
-        case ApplicationFieldIndex:
-            return tr("Application");
-        case PIDFieldIndex:
-            return tr("PID");
-        case ThreadFieldIndex:
-            return tr("Thread");
-        case FileFieldIndex:
-            return tr("File");
-        case LineFieldIndex:
-            return tr("Line");
-        case FunctionFieldIndex:
-            return tr("Function");
-        case TypeFieldIndex:
-            return tr("Type");
-#ifdef SHOW_VERBOSITY
-        case VerbosityFieldIndex:
-            return tr("Verbosity");
-#endif
-        case MessageFieldIndex:
-            return tr("Message");
-        case StackPositionFieldIndex:
-            return tr("Stack Position");
-        default:
-            assert(!"Invalid section value");
-            return QString();
-        }
+        assert((section >= 0 && section < columnCount()) || !"Invalid section value");
+        return tr(g_fields[section].name);
     } else if (role == Qt::DisplayRole && orientation == Qt::Vertical) {
         const_cast<EntryItemModel*>(this)->m_query.seek(section);
-        return m_query.value(IdFieldIndex);
+        return m_query.value(0);
     }
 
     return QAbstractTableModel::headerData(section, orientation, role);
