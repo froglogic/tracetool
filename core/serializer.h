@@ -48,17 +48,6 @@ private:
     bool m_showTimestamp;
 };
 
-class CSVSerializer : public Serializer
-{
-public:
-    virtual std::vector<char> serialize( const TraceEntry &entry );
-    virtual std::vector<char> serialize( const ProcessShutdownEvent &ev );
-
-private:
-    std::string escape( const std::string &s ) const;
-    std::string convertVariableValue( const VariableValue &v ) const;
-};
-
 class XMLSerializer : public Serializer
 {
 public:

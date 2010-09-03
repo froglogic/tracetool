@@ -288,10 +288,6 @@ Serializer *Configuration::createSerializerFromElement( TiXmlElement *e )
         return serializer;
     }
 
-    if ( serializerType == "csv" ) {
-        return new CSVSerializer;
-    }
-
     if ( serializerType == "xml" ) {
         bool beautifiedOutput = false;
         for ( TiXmlElement *optionElement = e->FirstChildElement(); optionElement; optionElement = optionElement->NextSiblingElement() ) {
