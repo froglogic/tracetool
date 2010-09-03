@@ -18,16 +18,17 @@ class EntryFilter : public QObject,
 {
     Q_OBJECT
 public:
-    EntryFilter(QObject *parent = 0) : QObject(parent), m_type(-1) { }
+    EntryFilter(QObject *parent = 0) :
+        QObject(parent), m_processId(-1), m_threadId(-1), m_type(-1) { }
 
     QString application() const { return m_application; }
     void setApplication(const QString &app) { m_application = app; }
 
-    QString processId() const { return m_processId; }
-    void setProcessId(const QString &pid) { m_processId = pid; }
+    int processId() const { return m_processId; }
+    void setProcessId(int pid) { m_processId = pid; }
 
-    QString threadId() const { return m_threadId; }
-    void setThreadId(const QString &tid) { m_threadId = tid; }
+    int threadId() const { return m_threadId; }
+    void setThreadId(int tid) { m_threadId = tid; }
 
     QString function() const { return m_function; }
     void setFunction(const QString &func) { m_function = func; }
@@ -54,8 +55,8 @@ signals:
 
 private:
     QString m_application;
-    QString m_processId;
-    QString m_threadId;
+    int m_processId;
+    int m_threadId;
     QString m_function;
     QString m_message;
     int m_type;

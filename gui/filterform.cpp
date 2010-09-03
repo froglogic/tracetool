@@ -39,8 +39,11 @@ void FilterForm::saveSettings()
 {
     EntryFilter *f = m_settings->entryFilter();
     f->setApplication(appEdit->text());
-    f->setProcessId(pidEdit->text());
-    f->setThreadId(tidEdit->text());
+    bool ok;
+    int pid = pidEdit->text().toInt(&ok);
+    f->setProcessId(ok ? pid : -1);
+    int tid = tidEdit->text().toInt(&ok);
+    f->setThreadId(ok ? tid : -1);
     f->setFunction(funcEdit->text());
     f->setMessage(messageEdit->text());
     f->setType(typeCombo->itemData(typeCombo->currentIndex()).toInt());
@@ -52,8 +55,14 @@ void FilterForm::restoreSettings()
 {
     EntryFilter *f = m_settings->entryFilter();
     appEdit->setText(f->application());
-    pidEdit->setText(f->processId());
-    tidEdit->setText(f->threadId());
+    if (f->processId() != -1)
+        pidEdit->setText(QString::number(f->processId()));
+    else
+        pidEdit->clear();
+    if (f->threadId() != -1)
+        tidEdit->setText(QString::number(f->threadId()));
+    else
+        tidEdit->clear();
     funcEdit->setText(f->function());
     messageEdit->setText(f->message());
     int idx = typeCombo->findData(f->type());
