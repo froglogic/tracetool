@@ -253,6 +253,10 @@ void WatchTree::reApplyFilter()
 {
     m_dirty = true;
 
+    deleteItemMap( m_applicationItems );
+    m_applicationItems.clear();
+    clear();
+
     QString errMsg;
     if (!showNewTraceEntries(&errMsg)) {
         qDebug() << "WatchTree::reApplyFilter: failed: " << errMsg;
