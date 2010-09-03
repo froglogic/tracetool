@@ -1,5 +1,7 @@
 <RCC>
   <qresource prefix="icons">
+    <file>arrow-left.png</file>
+    <file>arrow-right.png</file>
     <file>lo32-action-nexterror.png</file>
     <file>go-up.png</file>
     <file>go-down.png</file>
