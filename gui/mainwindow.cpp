@@ -28,6 +28,12 @@ MainWindow::MainWindow(Settings *settings,
     setupUi(this);
     m_settings->registerRestorable("MainWindow", this);
 
+    tracePointsSearchWidget->setFields( QStringList()
+            << tr( "Application" )
+            << tr( "File" )
+            << tr( "Function" )
+            << tr( "Message" ) );
+
     m_watchTree = new WatchTree(settings->entryFilter());
     tabWidget->addTab( m_watchTree, tr( "Watch Points" ) );
 
