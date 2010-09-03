@@ -91,6 +91,9 @@ int main(int argc, char **argv)
 
     settings.restoreSession();
 
+    // ### ugly
+    mw.postRestore();
+
     mw.show();
 
     int statusCode = a.exec();

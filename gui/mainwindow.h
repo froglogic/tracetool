@@ -13,6 +13,7 @@
 class EntryItemModel;
 class Server;
 class WatchTree;
+class FilterForm;
 
 class MainWindow : public QMainWindow, private Ui::MainWindow,
                    public RestorableObject
@@ -25,6 +26,8 @@ public:
 
     bool setDatabase(const QString &databaseFileName, QString *errMsg);
 
+    void postRestore();
+    
 protected:
     // from RestorableObject interface
     QVariant sessionState() const;
@@ -34,9 +37,9 @@ private slots:
     void fileOpenTrace();
     void helpAbout();
     void toggleFreezeState();
-    void openFilterForm();
     void viewShowColumnsDialog();
     void updateColumns();
+    void filterChange();
 
 private:
     void showError(const QString &title, const QString &message);
@@ -44,6 +47,7 @@ private:
     Settings* const m_settings;
     EntryItemModel* m_entryItemModel;
     WatchTree* m_watchTree;
+    FilterForm *m_filterForm;
     Server *m_server;
 };
 

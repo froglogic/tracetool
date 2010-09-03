@@ -34,8 +34,6 @@ MainWindow::MainWindow(Settings *settings,
     // buttons
     connect(freezeButton, SIGNAL(clicked()),
             this, SLOT(toggleFreezeState()));
-    connect(filterButton, SIGNAL(clicked()),
-            this, SLOT(openFilterForm()));
 
     // File menu
     connect(action_Open_Trace, SIGNAL(triggered()),
@@ -50,6 +48,12 @@ MainWindow::MainWindow(Settings *settings,
     // Help menu
     connect(action_About, SIGNAL(triggered()),
             this, SLOT(helpAbout()));
+
+    delete dummyWidget;
+    m_filterForm = new FilterForm(m_settings);
+    gridLayout->addWidget(m_filterForm);
+    connect(m_filterForm, SIGNAL(filterApplied()),
+            this, SLOT(filterChange()));
 }
 
 MainWindow::~MainWindow()
@@ -155,12 +159,15 @@ void MainWindow::toggleFreezeState()
     }
 }
 
-void MainWindow::openFilterForm()
+void MainWindow::postRestore()
 {
-    FilterForm form(m_settings, this);
-    if (form.exec() == QDialog::Accepted) {
-        m_entryItemModel->reApplyFilter();
-    }
+    m_filterForm->restoreSettings();
+}
+
+void MainWindow::filterChange()
+{
+    // switch to entry view
+    toolBox->setCurrentIndex(1);
 }
 
 void MainWindow::viewShowColumnsDialog()

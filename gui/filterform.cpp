@@ -8,10 +8,8 @@
 #include "entryfilter.h"
 #include "../core/tracelib.h"
 
-FilterForm::FilterForm(Settings *settings,
-                       QWidget *parent, Qt::WindowFlags flags)
-    : QDialog(parent, flags),
-      m_settings(settings)
+FilterForm::FilterForm(Settings *settings, QWidget *parent)
+    : m_settings(settings)
 {
     setupUi(this);
 
@@ -26,13 +24,14 @@ FilterForm::FilterForm(Settings *settings,
         typeCombo->addItem(typeName, t);
     }
 
-    restoreSettings();
+    connect(applyButton, SIGNAL(clicked()),
+            this, SLOT(apply()));
 }
 
-void FilterForm::accept()
+void FilterForm::apply()
 {
     saveSettings();
-    QDialog::accept();
+    emit filterApplied();
 }
 
 void FilterForm::saveSettings()

@@ -6,23 +6,26 @@
 #ifndef FILTERFORM_H
 #define FILTERFORM_H
 
-#include <QDialog>
+#include <QWidget>
 #include "ui_filterform.h"
 #include "settings.h"
 
-class FilterForm : public QDialog, private Ui::FilterForm
+class FilterForm : public QWidget, private Ui::FilterForm
 {
     Q_OBJECT
 public:
-    explicit FilterForm(Settings *settings,
-                        QWidget *parent = 0, Qt::WindowFlags flags = 0);
+    explicit FilterForm(Settings *settings, QWidget *parent = 0);
 
-protected:
-    void accept();
+signals:
+    void filterApplied();
+
+public slots:
+    void apply();
+
+    void restoreSettings();
 
 private:
     void saveSettings();
-    void restoreSettings();
 
     Settings* const m_settings;
 };
