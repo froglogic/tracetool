@@ -21,7 +21,7 @@ public:
         : runtime_error(what.toUtf8().constData()) { }
 };
 
-const int Database::expectedVersion = 1;
+const int Database::expectedVersion = 2;
 
 static const char * const schemaStatements[] = {
     "CREATE TABLE schema_downgrade (from_version INTEGER,"
@@ -70,7 +70,8 @@ static const char * const schemaStatements[] = {
 
 static const char * const downgradeStatementsInsert[] = {
     0, // can't downgrade further than version 0
-    "INSERT INTO schema_downgrade VALUES(1, 'SELECT * FROM FOOBAR');"
+    "INSERT INTO schema_downgrade VALUES(1, 'NOT IMPLEMENTED');"
+    "INSERT INTO schema_downgrade VALUES(2, 'NOT IMPLEMENTED');"
 };
 
 int Database::currentVersion( QSqlDatabase db, QString *errMsg )
@@ -279,12 +280,21 @@ static bool upgradeToVersion1(QSqlDatabase db, QString *errMsg)
     return true;
 }
 
+static bool upgradeToVersion2(QSqlDatabase /*db*/, QString *errMsg)
+{
+    *errMsg = "Automatic upgrade to version 2 is not implemented";
+    return false;
+}
+
 static bool upgradeVersion(QSqlDatabase db, int version,
 			   QString *errMsg)
 {
     switch (version) {
     case 0:
 	return upgradeToVersion1(db, errMsg);
+	break;
+    case 1:
+	return upgradeToVersion2(db, errMsg);
 	break;
     default:
 	*errMsg = QObject::tr("Unhandled upgrade step");
