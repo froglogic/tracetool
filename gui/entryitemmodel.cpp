@@ -111,15 +111,14 @@ bool EntryItemModel::setDatabase(const QString &databaseFileName,
 
 static QString filterClause(EntryFilter *f)
 {
-    QString sql;
-    // ### implement for other criteria
-    // ### take care of escaping
-    if (!f->application().isEmpty()) {
-        sql += QString("process.name LIKE '%%1%'").arg(f->application());
-    }
-
+    QString sql = f->whereClause("process.name",
+                                 "process.pid",
+                                 "traced_thread.tid",
+                                 "function_name.name",
+                                 "message",
+                                 "trace_point.type");
     if (sql.isEmpty())
-        return sql;
+        return QString();
 
     return "AND " + sql + " ";
 }

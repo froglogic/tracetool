@@ -41,7 +41,15 @@ public:
 
     bool matches(const TraceEntry &e) const;
 
-// from RestorableObject interface
+    // for WHERE clauses in SQL queries
+    QString whereClause(const QString &appField,
+                        const QString &pidField,
+                        const QString &tidField,
+                        const QString &funcField,
+                        const QString &msgField,
+                        const QString &typeField) const;
+
+    // from RestorableObject interface
     QVariant sessionState() const;
     bool restoreSessionState(const QVariant &state);
 
