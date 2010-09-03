@@ -70,7 +70,7 @@ static const char * const schemaStatements[] = {
 
 static const char * const downgradeStatementsInsert[] = {
     0, // can't downgrade further than version 0
-    "INSERT INTO schema_downgrade VALUES(1, 'NOT IMPLEMENTED');"
+    "INSERT INTO schema_downgrade VALUES(1, 'NOT IMPLEMENTED');",
     "INSERT INTO schema_downgrade VALUES(2, 'NOT IMPLEMENTED');"
 };
 
