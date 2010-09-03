@@ -43,40 +43,22 @@ void UnlabelledLineEdit::paintEvent( QPaintEvent *e )
     }
 }
 
-SearchWidget::SearchWidget( const QStringList &fields, QWidget *parent )
+SearchWidget::SearchWidget( QWidget *parent )
     : QWidget( parent ),
-    m_lineEdit( 0 )
+    m_lineEdit( 0 ),
+    m_buttonLayout( 0 )
 {
     m_lineEdit = new UnlabelledLineEdit( this );
     connect( m_lineEdit, SIGNAL( textEdited( const QString & ) ),
              this, SLOT( termEdited( const QString & ) ) );
     m_lineEdit->setPlaceholderText( "Search trace data..." );
 
-    QHBoxLayout *buttonLayout = new QHBoxLayout;
-    QStringList::ConstIterator it, end = fields.end();
-    for ( it = fields.begin(); it != end; ++it ) {
-        QPushButton *fieldButton = new QPushButton( *it );
-        connect( fieldButton, SIGNAL( clicked() ),
-                 this, SLOT( fieldsChanged() ) );
-
-        fieldButton->setCheckable( true );
-
-        QFont f = fieldButton->font();
-        f.setPointSize( ( f.pointSize() * 90 ) / 100 );
-        fieldButton->setFont( f );
-
-        buttonLayout->addWidget( fieldButton );
-
-        m_fieldButtons.append( fieldButton );
-
-        fieldButton->hide();
-
-    }
-    buttonLayout->addStretch();
+    m_buttonLayout = new QHBoxLayout;
+    m_buttonLayout->addStretch();
 
     QVBoxLayout *layout = new QVBoxLayout( this );
     layout->addWidget( m_lineEdit );
-    layout->addLayout( buttonLayout );
+    layout->addLayout( m_buttonLayout );
     layout->addStretch();
 }
 
@@ -104,5 +86,36 @@ void SearchWidget::termEdited( const QString &newTerm )
 void SearchWidget::fieldsChanged()
 {
     emitSearchCriteria();
+}
+
+void SearchWidget::setFields( const QStringList &fields )
+{
+    qDeleteAll( m_fieldButtons );
+    m_fieldButtons.clear();
+
+    int width = 0;
+
+    QStringList::ConstIterator it, end = fields.end();
+    for ( it = fields.begin(); it != end; ++it ) {
+        QPushButton *fieldButton = new QPushButton( *it );
+        connect( fieldButton, SIGNAL( clicked() ),
+                 this, SLOT( fieldsChanged() ) );
+
+        fieldButton->setCheckable( true );
+
+        QFont f = fieldButton->font();
+        f.setPointSize( ( f.pointSize() * 90 ) / 100 );
+        fieldButton->setFont( f );
+
+        m_buttonLayout->insertWidget( 0, fieldButton );
+
+        m_fieldButtons.append( fieldButton );
+
+        width += fieldButton->sizeHint().width();
+
+        fieldButton->hide();
+    }
+
+    setMinimumWidth( qMax( width, m_lineEdit->minimumWidth() ) );
 }
 

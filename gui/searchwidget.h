@@ -8,6 +8,7 @@
 
 #include <QLineEdit>
 
+class QHBoxLayout;
 class QPushButton;
 class QStringList;
 
@@ -30,9 +31,9 @@ class SearchWidget : public QWidget
 {
     Q_OBJECT
 public:
-    SearchWidget( const QStringList &fields,
-                  QWidget *parent = 0 );
+    SearchWidget( QWidget *parent = 0 );
 
+    void setFields( const QStringList &fields );
 signals:
     void searchCriteriaChanged( const QString &term,
                                 const QStringList &fields );
@@ -46,6 +47,7 @@ private:
 
     UnlabelledLineEdit *m_lineEdit;
     QList<QPushButton *> m_fieldButtons;
+    QHBoxLayout *m_buttonLayout;
 };
 
 #endif // !defined(SEARCHWIDGET_H)
