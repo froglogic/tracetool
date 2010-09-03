@@ -11,6 +11,7 @@
 #include <QMap>
 
 struct TraceEntry;
+class EntryFilter;
 
 struct TreeItem;
 typedef QMap<QString, TreeItem *> ItemMap;
@@ -26,7 +27,7 @@ class WatchTree : public QTreeWidget
 {
     Q_OBJECT
 public:
-    WatchTree( QWidget *parent = 0 );
+    WatchTree(EntryFilter *filter, QWidget *parent = 0);
     virtual ~WatchTree();
 
     bool setDatabase( const QString &databaseFileName,
@@ -39,6 +40,7 @@ public slots:
 
 private slots:
     bool showNewTraceEntries( QString *errMsg = 0 );
+    void reApplyFilter();
 
 private:
     ItemMap m_applicationItems;
@@ -46,6 +48,7 @@ private:
     QTimer *m_databasePollingTimer;
     bool m_dirty;
     bool m_suspended;
+    EntryFilter *m_filter;
 };
 
 #endif // !defined(WATCHTREE_H)

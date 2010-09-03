@@ -26,7 +26,7 @@ MainWindow::MainWindow(Settings *settings,
     setupUi(this);
     m_settings->registerRestorable("MainWindow", this);
 
-    m_watchTree = new WatchTree;
+    m_watchTree = new WatchTree(settings->entryFilter());
     tabWidget->addTab( m_watchTree, tr( "Watch Points" ) );
 
     // buttons

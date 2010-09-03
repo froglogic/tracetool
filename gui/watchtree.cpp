@@ -1,16 +1,18 @@
 #include "watchtree.h"
 
+#include "entryfilter.h"
 #include "../server/server.h"
 
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QTimer>
 
-WatchTree::WatchTree( QWidget *parent )
+WatchTree::WatchTree(EntryFilter *filter, QWidget *parent)
     : QTreeWidget( parent ),
     m_databasePollingTimer( 0 ),
     m_dirty( false ),
-    m_suspended( false )
+    m_suspended(false),
+    m_filter(filter)
 {
     static const char * columns[] = {
         "Position",
@@ -27,6 +29,7 @@ WatchTree::WatchTree( QWidget *parent )
     m_databasePollingTimer = new QTimer(this);
     m_databasePollingTimer->setSingleShot(true);
     connect(m_databasePollingTimer, SIGNAL(timeout()), SLOT(showNewTraceEntries()));
+    connect(m_filter, SIGNAL(changed()), SLOT(reApplyFilter()));
 }
 
 static void deleteItemMap( ItemMap &m )
@@ -78,6 +81,8 @@ void WatchTree::resume()
 
 void WatchTree::handleNewTraceEntry( const TraceEntry &e )
 {
+    if (!m_filter->matches(e))
+        return;
     if ( e.variables.isEmpty() ) {
         return;
     }
@@ -86,6 +91,20 @@ void WatchTree::handleNewTraceEntry( const TraceEntry &e )
     if ( !m_suspended && !m_databasePollingTimer->isActive() ) {
         m_databasePollingTimer->start( 250 );
     }
+}
+
+static QString filterClause(EntryFilter *f)
+{
+    QString sql = f->whereClause("process.name",
+                                 "process.pid",
+                                 "traced_thread.tid",
+                                 "function_name.name",
+                                 "message",
+                                 "trace_point.type");
+    if (sql.isEmpty())
+        return QString();
+
+    return " AND " + sql + " ";
 }
 
 bool WatchTree::showNewTraceEntries( QString *errMsg )
@@ -138,7 +157,8 @@ bool WatchTree::showNewTraceEntries( QString *errMsg )
                 " AND"
                 "  path_name.id = trace_point.path_id"
                 " AND"
-                "  function_name.id = trace_point.function_id"
+                "  function_name.id = trace_point.function_id" +
+                filterClause(m_filter) +
                 " ORDER BY"
                 "  process.name" );
 
@@ -229,3 +249,12 @@ bool WatchTree::showNewTraceEntries( QString *errMsg )
     return true;
 }
 
+void WatchTree::reApplyFilter()
+{
+    m_dirty = true;
+
+    QString errMsg;
+    if (!showNewTraceEntries(&errMsg)) {
+        qDebug() << "WatchTree::reApplyFilter: failed: " << errMsg;
+    }
+}
