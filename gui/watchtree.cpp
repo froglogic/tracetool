@@ -28,7 +28,8 @@ WatchTree::WatchTree(EntryFilter *filter, QWidget *parent)
 
     m_databasePollingTimer = new QTimer(this);
     m_databasePollingTimer->setSingleShot(true);
-    connect(m_databasePollingTimer, SIGNAL(timeout()), SLOT(showNewTraceEntries()));
+    connect(m_databasePollingTimer, SIGNAL(timeout()),
+            SLOT(showNewTraceEntriesFireAndForget()));
     connect(m_filter, SIGNAL(changed()), SLOT(reApplyFilter()));
 }
 
@@ -76,7 +77,10 @@ void WatchTree::suspend()
 void WatchTree::resume()
 {
     m_suspended = false;
-    showNewTraceEntries();
+    QString errMsg;
+    if (!showNewTraceEntries(&errMsg)) {
+        qDebug() << "WatchTree::resume: failed: " << errMsg;
+    }
 }
 
 void WatchTree::handleNewTraceEntry( const TraceEntry &e )
@@ -247,6 +251,17 @@ bool WatchTree::showNewTraceEntries( QString *errMsg )
     m_dirty = false;
 
     return true;
+}
+
+// for use as a slot
+// ### better replace all stderr output in this file with a signal to
+// ### be handled by the main window.
+void WatchTree::showNewTraceEntriesFireAndForget()
+{
+    QString errMsg;
+    if (!showNewTraceEntries(&errMsg)) {
+        qDebug() << "WatchTree::reApplyFilter: failed: " << errMsg;
+    }
 }
 
 void WatchTree::reApplyFilter()

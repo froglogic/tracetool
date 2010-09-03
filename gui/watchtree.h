@@ -39,10 +39,11 @@ public slots:
     void handleNewTraceEntry( const TraceEntry &e );
 
 private slots:
-    bool showNewTraceEntries( QString *errMsg = 0 );
+    void showNewTraceEntriesFireAndForget();
     void reApplyFilter();
 
 private:
+    bool showNewTraceEntries( QString *errMsg );
     ItemMap m_applicationItems;
     QSqlDatabase m_db;
     QTimer *m_databasePollingTimer;
