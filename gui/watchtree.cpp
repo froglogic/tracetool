@@ -15,7 +15,6 @@ WatchTree::WatchTree(EntryFilter *filter, QWidget *parent)
     m_filter(filter)
 {
     static const char * columns[] = {
-        "Position",
         "Name",
         "Value",
         "Old Value"
@@ -231,7 +230,7 @@ bool WatchTree::showNewTraceEntries( QString *errMsg )
                 variableItem = *it;
             } else {
                 variableItem = new TreeItem( new QTreeWidgetItem( functionItem->item,
-                                                    QStringList() << QString() << varName ) );
+                                                    QStringList() << varName ) );
                 functionItem->children[ varName ] = variableItem;
             }
         }
@@ -239,10 +238,10 @@ bool WatchTree::showNewTraceEntries( QString *errMsg )
         const QString currentValue = variableItem->item->data( 2, Qt::DisplayRole ).toString();
         const QString varValue = query.value( 7 ).toString();
         if ( currentValue != varValue ) {
-            variableItem->item->setData( 3, Qt::DisplayRole, currentValue );
-            variableItem->item->setData( 3, Qt::ToolTipRole, currentValue );
-            variableItem->item->setData( 2, Qt::DisplayRole, varValue );
-            variableItem->item->setData( 2, Qt::ToolTipRole, varValue );
+            variableItem->item->setData( 2, Qt::DisplayRole, currentValue );
+            variableItem->item->setData( 2, Qt::ToolTipRole, currentValue );
+            variableItem->item->setData( 1, Qt::DisplayRole, varValue );
+            variableItem->item->setData( 1, Qt::ToolTipRole, varValue );
         }
     }
 
