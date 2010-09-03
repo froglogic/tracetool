@@ -1,0 +1,8 @@
+<tracelibConfiguration>
+<process>
+  <name>hello_instrumented.exe</name>
+  <output type="stdout"/>
+  <serializer type="plaintext"/>
+</process>
+</tracelibConfiguration>
+
