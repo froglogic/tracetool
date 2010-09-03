@@ -8,6 +8,7 @@ SET(GUI_SOURCES
   columnsform.cpp
   entryitemmodel.cpp
   watchtree.cpp
+  searchwidget.cpp
   ../convertdb/getopt.cpp
   ../server/database.cpp
   ../server/server.cpp)
@@ -20,6 +21,7 @@ SET(GUI_MOCABLES
   columnsform.h
   entryitemmodel.h
   watchtree.h
+  searchwidget.h
   ../server/server.h)
 
 SET(GUI_UIS
