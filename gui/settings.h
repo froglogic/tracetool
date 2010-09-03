@@ -11,6 +11,7 @@
 #include <QList>
 
 class EntryFilter;
+class ColumnsInfo;
 
 class Settings
 {
@@ -37,6 +38,9 @@ public:
     // [Filter]
     EntryFilter* entryFilter() { return m_entryFilter; }
 
+    // [ColumnsInfo]
+    ColumnsInfo* columnsInfo() { return m_columnsInfo; }
+
 private:
     bool load();
 
@@ -45,6 +49,7 @@ private:
     QString m_databaseFile;
     int m_serverPort;
     EntryFilter* m_entryFilter;
+    ColumnsInfo *m_columnsInfo;
 };
 
 #endif

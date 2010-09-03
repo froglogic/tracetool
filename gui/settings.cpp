@@ -6,6 +6,7 @@
 #include "settings.h"
 
 #include "entryfilter.h"
+#include "columnsinfo.h"
 #include "../core/tracelib_config.h"
 
 #include <cassert>
@@ -22,6 +23,8 @@ Settings::Settings()
 {
     m_entryFilter = new EntryFilter();
     registerRestorable("Filter", m_entryFilter);
+    m_columnsInfo = new ColumnsInfo();
+    registerRestorable("ColumnsInfo", m_columnsInfo);
 
     if (!load()) {
         qWarning() << "Failed to load settings";
@@ -31,6 +34,7 @@ Settings::Settings()
 Settings::~Settings()
 {
     delete m_entryFilter;
+    delete m_columnsInfo;
 }
 
 bool Settings::save() const

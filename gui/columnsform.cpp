@@ -5,7 +5,7 @@
 
 #include "columnsform.h"
 
-#include "entryfilter.h"
+#include "columnsinfo.h"
 #include "../core/tracelib.h"
 
 ColumnsForm::ColumnsForm(Settings *settings,
@@ -14,6 +14,11 @@ ColumnsForm::ColumnsForm(Settings *settings,
       m_settings(settings)
 {
     setupUi(this);
+
+    connect(toInvisible, SIGNAL(clicked()),
+            this, SLOT(moveToInvisible()));
+    connect(toVisible, SIGNAL(clicked()),
+            this, SLOT(moveToVisible()));
 
     restoreSettings();
 }
@@ -24,27 +29,33 @@ void ColumnsForm::accept()
     QDialog::accept();
 }
 
+void ColumnsForm::moveToInvisible()
+{
+    QListWidgetItem *ci = listWidgetVisible->currentItem();
+    if ( ci ) {
+        listWidgetVisible->takeItem( listWidgetVisible->currentRow() );
+        listWidgetInvisible->addItem( ci->text() );
+    } 
+}
+
+void ColumnsForm::moveToVisible()
+{
+    QListWidgetItem *ci = listWidgetInvisible->currentItem();
+    if ( ci ) {
+        listWidgetInvisible->takeItem( listWidgetInvisible->currentRow() );
+        listWidgetVisible->addItem( ci->text() );
+    } 
+}
+
 void ColumnsForm::saveSettings()
 {
 }
 
 void ColumnsForm::restoreSettings()
 {
-/*
-    EntryFilter *f = m_settings->entryFilter();
-    appEdit->setText(f->application());
-    if (f->processId() != -1)
-        pidEdit->setText(QString::number(f->processId()));
+    ColumnsInfo *f = m_settings->columnsInfo();
+    if ( f->isVisible( ColumnsInfo::Time ) )
+        listWidgetVisible->addItem( "Time" );
     else
-        pidEdit->clear();
-    if (f->threadId() != -1)
-        tidEdit->setText(QString::number(f->threadId()));
-    else
-        tidEdit->clear();
-    funcEdit->setText(f->function());
-    messageEdit->setText(f->message());
-    int idx = typeCombo->findData(f->type());
-    if (idx != -1)
-        typeCombo->setCurrentIndex(idx);
-*/
+        listWidgetInvisible->addItem( "Time" );
 }

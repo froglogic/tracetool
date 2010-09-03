@@ -3,6 +3,7 @@ SET(GUI_SOURCES
   settings.cpp
   mainwindow.cpp
   entryfilter.cpp
+  columnsinfo.cpp
   filterform.cpp
   columnsform.cpp
   entryitemmodel.cpp
@@ -14,6 +15,7 @@ SET(GUI_SOURCES
 SET(GUI_MOCABLES
   mainwindow.h
   entryfilter.h
+  columnsinfo.h
   filterform.h
   columnsform.h
   entryitemmodel.h

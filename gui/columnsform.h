@@ -20,6 +20,10 @@ public:
 protected:
     void accept();
 
+private slots:
+    void moveToInvisible();
+    void moveToVisible();
+
 private:
     void saveSettings();
     void restoreSettings();
