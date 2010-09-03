@@ -61,7 +61,8 @@ static bool toXml(const QSqlDatabase db, FILE *output, QString *errMsg)
         "<!DOCTYPE trace [\n"
         "  <!ELEMENT trace (traceentry*)>\n"
         "  <!ELEMENT traceentry (timestamp, process, threadid,\n"
-        "                        tracepoint, message, variables?)>\n"
+        "                        tracepoint, message, stackposition,\n"
+        "                        variables?)>\n"
         "  <!ATTLIST traceentry id CDATA #REQUIRED\n"
         "                       type CDATA #REQUIRED>\n"
         "  <!ELEMENT timestamp (#PCDATA)>\n"
@@ -77,6 +78,7 @@ static bool toXml(const QSqlDatabase db, FILE *output, QString *errMsg)
         "  <!ELEMENT function (#PCDATA)>\n"
         "  <!ELEMENT type (#PCDATA)>\n"
         "  <!ELEMENT message (#PCDATA)>\n"
+        "  <!ELEMENT stackposition (#PCDATA)>\n"
         "  <!ELEMENT variables (variable)*>\n"
         "  <!ELEMENT variable (name, value, type)*>\n"
         "  <!ELEMENT value (#PCDATA)>\n"
@@ -100,6 +102,7 @@ static bool toXml(const QSqlDatabase db, FILE *output, QString *errMsg)
         "      <function><![CDATA[%s]]></function>\n"
         "    </tracepoint>\n"
         "    <message><![CDATA[%s]]></message>\n"
+        "    <stackposition>%s</stackposition>\n"
         "    <variables>\n";
     const char traceentryTpl1[] =
         "    </variables>\n"
@@ -134,7 +137,8 @@ static bool toXml(const QSqlDatabase db, FILE *output, QString *errMsg)
                                   " function_name.name,"
                                   " trace_point.type,"
                                   //" trace_point.verbosity,"
-                                  " message "
+                                  " message, "
+                                  " trace_entry.stack_position "
                                   "FROM"
                                   " trace_entry,"
                                   " trace_point,"
@@ -175,7 +179,8 @@ static bool toXml(const QSqlDatabase db, FILE *output, QString *errMsg)
                 resultSet.value(7).toString().toUtf8().constData(),
                 resultSet.value(8).toString().toUtf8().constData(),
                 resultSet.value(9).toString().toUtf8().constData(),
-                resultSet.value(11).toString().toUtf8().constData());
+                resultSet.value(11).toString().toUtf8().constData(),
+                resultSet.value(12).toString().toUtf8().constData());
 
         if (resultSet.value(10).toInt() == TracePointType::Watch) {
             int traceEntryId = resultSet.value(0).toInt();
