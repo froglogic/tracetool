@@ -121,7 +121,7 @@ INSTALL(TARGETS tracelib EXPORT tracelibTargets
                          ARCHIVE DESTINATION lib COMPONENT devel)
 
 IF(QT4_FOUND)
-    INSTALL(TARGETS tracelib_qtsupport EXPORT tracelib_qtsupportTargets
+    INSTALL(TARGETS tracelib_qtsupport EXPORT tracelibTargets
                                        RUNTIME DESTINATION bin
                                        LIBRARY DESTINATION lib
                                        ARCHIVE DESTINATION lib COMPONENT devel)
