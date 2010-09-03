@@ -16,6 +16,7 @@ WatchTree::WatchTree(EntryFilter *filter, QWidget *parent)
 {
     static const char * columns[] = {
         "Name",
+        "Type",
         "Value",
         "Old Value"
     };
@@ -219,18 +220,16 @@ bool WatchTree::showNewTraceEntries( QString *errMsg )
 
         TreeItem *variableItem = 0;
         {
-            using TRACELIB_NAMESPACE_IDENT(VariableType);
-
-            const VariableType::Value varType = static_cast<VariableType::Value>( query.value( 6 ).toInt() );
-            const QString varName = QString( "%1 (%2)" )
-                                        .arg( query.value( 5 ).toString() )
-                                        .arg( VariableType::valueAsString( varType ) );
+            const QString varName = query.value( 5 ).toString();
             ItemMap::ConstIterator it = functionItem->children.find( varName );
             if ( it != functionItem->children.end() ) {
                 variableItem = *it;
             } else {
+                using TRACELIB_NAMESPACE_IDENT(VariableType);
+                const VariableType::Value varType = static_cast<VariableType::Value>( query.value( 6 ).toInt() );
                 variableItem = new TreeItem( new QTreeWidgetItem( functionItem->item,
-                                                    QStringList() << varName ) );
+                                                    QStringList() << varName
+                                                                  << VariableType::valueAsString( varType ) ) );
                 functionItem->children[ varName ] = variableItem;
             }
         }
@@ -238,10 +237,10 @@ bool WatchTree::showNewTraceEntries( QString *errMsg )
         const QString currentValue = variableItem->item->data( 2, Qt::DisplayRole ).toString();
         const QString varValue = query.value( 7 ).toString();
         if ( currentValue != varValue ) {
-            variableItem->item->setData( 2, Qt::DisplayRole, currentValue );
-            variableItem->item->setData( 2, Qt::ToolTipRole, currentValue );
-            variableItem->item->setData( 1, Qt::DisplayRole, varValue );
-            variableItem->item->setData( 1, Qt::ToolTipRole, varValue );
+            variableItem->item->setData( 3, Qt::DisplayRole, currentValue );
+            variableItem->item->setData( 3, Qt::ToolTipRole, currentValue );
+            variableItem->item->setData( 2, Qt::DisplayRole, varValue );
+            variableItem->item->setData( 2, Qt::ToolTipRole, varValue );
         }
     }
 
