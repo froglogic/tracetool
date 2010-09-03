@@ -47,15 +47,41 @@ void ColumnsForm::moveToVisible()
     } 
 }
 
+#define setVisible(columnName)  \
+    f->setVisible( ColumnsInfo::columnName, listWidgetVisible->findItems( #columnName, Qt::MatchExactly ).count() > 0 );
+
 void ColumnsForm::saveSettings()
 {
+    ColumnsInfo *f = m_settings->columnsInfo();
+    setVisible( Time );
+    setVisible( Application );
+    setVisible( PID );
+    setVisible( Thread );
+    setVisible( File );
+    setVisible( Line );
+    setVisible( Function );
+    setVisible( Type );
+    setVisible( Message );
+    setVisible( StackPosition );
 }
+
+#define addColumnName(columnName)  \
+    if ( f->isVisible( ColumnsInfo::columnName ) ) \
+        listWidgetVisible->addItem( #columnName ); \
+    else \
+        listWidgetInvisible->addItem( #columnName ); 
 
 void ColumnsForm::restoreSettings()
 {
     ColumnsInfo *f = m_settings->columnsInfo();
-    if ( f->isVisible( ColumnsInfo::Time ) )
-        listWidgetVisible->addItem( "Time" );
-    else
-        listWidgetInvisible->addItem( "Time" );
+    addColumnName( Time );
+    addColumnName( Application );
+    addColumnName( PID );
+    addColumnName( Thread );
+    addColumnName( File );
+    addColumnName( Line );
+    addColumnName( Function );
+    addColumnName( Type );
+    addColumnName( Message );
+    addColumnName( StackPosition );
 }

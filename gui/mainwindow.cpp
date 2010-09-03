@@ -9,6 +9,7 @@
 #include "columnsform.h"
 #include "entryitemmodel.h"
 #include "watchtree.h"
+#include "columnsinfo.h"
 
 #include <QtGui>
 #include <QtSql>
@@ -166,6 +167,23 @@ void MainWindow::viewShowColumnsDialog()
 {
     ColumnsForm form(m_settings, this);
     if (form.exec() == QDialog::Accepted) {
+        updateColumns();
     }
+}
+
+void MainWindow::updateColumns()
+{
+    ColumnsInfo *ci = m_settings->columnsInfo();
+    int i = 0;
+    tracePointsView->setColumnHidden( i++, !ci->isVisible( ColumnsInfo::Time ) );
+    tracePointsView->setColumnHidden( i++, !ci->isVisible( ColumnsInfo::Application ) );
+    tracePointsView->setColumnHidden( i++, !ci->isVisible( ColumnsInfo::PID ) );
+    tracePointsView->setColumnHidden( i++, !ci->isVisible( ColumnsInfo::Thread ) );
+    tracePointsView->setColumnHidden( i++, !ci->isVisible( ColumnsInfo::File ) );
+    tracePointsView->setColumnHidden( i++, !ci->isVisible( ColumnsInfo::Line ) );
+    tracePointsView->setColumnHidden( i++, !ci->isVisible( ColumnsInfo::Function ) );
+    tracePointsView->setColumnHidden( i++, !ci->isVisible( ColumnsInfo::Type ) );
+    tracePointsView->setColumnHidden( i++, !ci->isVisible( ColumnsInfo::Message ) );
+    tracePointsView->setColumnHidden( i++, !ci->isVisible( ColumnsInfo::StackPosition ) );
 }
 

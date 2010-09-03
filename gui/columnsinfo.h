@@ -21,11 +21,12 @@ public:
 #ifdef SHOW_VERBOSITY
                      Verbosity,
 #endif
-                     Message, Stack, Position, LastColumnName };
+                     Message, StackPosition, LastColumnName };
 
     ColumnsInfo(QObject *parent = 0);
 
     bool isVisible( ColumnName cname ) const;
+    void setVisible( ColumnName cname, bool visible );
 
     // from RestorableObject interface
     QVariant sessionState() const;
