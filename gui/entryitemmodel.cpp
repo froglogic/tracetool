@@ -29,8 +29,10 @@ const int TypeFieldIndex = 8;
 #ifdef SHOW_VERBOSITY
 const int VerbosityFieldIndex = 9;
 const int MessageFieldIndex = 10;
+const int StackPositionFieldIndex = 11;
 #else
 const int MessageFieldIndex = 9;
+const int StackPositionFieldIndex = 10;
 #endif
 
 static QString tracePointTypeAsString(int i)
@@ -113,7 +115,8 @@ bool EntryItemModel::queryForEntries(QString *errMsg)
 #ifdef SHOW_VERBOSITY
                         " trace_point.verbosity,"
 #endif
-                        " message "
+                        " message,"
+                        " trace_entry.stack_position "
                         "FROM"
                         " trace_entry,"
                         " trace_point,"
@@ -155,9 +158,9 @@ bool EntryItemModel::queryForEntries(QString *errMsg)
 int EntryItemModel::columnCount(const QModelIndex & parent) const
 {
 #ifdef SHOW_VERBOSITY
-    return 10;
+    return 11;
 #else
-    return 9;
+    return 10;
 #endif
 }
 
@@ -186,6 +189,12 @@ QVariant EntryItemModel::data(const QModelIndex& index, int role) const
         if (dbField == TimeFieldIndex) {
             QDateTime dt = QDateTime::fromString(v.toString(), Qt::ISODate);
             return dt;
+        }
+        if (dbField == StackPositionFieldIndex) {
+            bool ok;
+            qulonglong i = v.toULongLong(&ok);
+            assert(ok);
+            return QString( "0x%1" ).arg( QString::number( i, 16 ) );
         }
         if (dbField == TypeFieldIndex) {
             bool ok;
@@ -234,6 +243,8 @@ QVariant EntryItemModel::headerData(int section, Qt::Orientation orientation,
 #endif
         case MessageFieldIndex:
             return tr("Message");
+        case StackPositionFieldIndex:
+            return tr("Stack Position");
         default:
             assert(!"Invalid section value");
             return QString();
