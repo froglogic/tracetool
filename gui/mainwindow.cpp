@@ -78,7 +78,8 @@ bool MainWindow::setDatabase(const QString &databaseFileName, QString *errMsg)
     // will create new db file if necessary
     m_server = new Server(databaseFileName, m_settings->serverPort(), this);
 
-    m_entryItemModel = new EntryItemModel(m_settings->entryFilter(), this);
+    m_entryItemModel = new EntryItemModel(m_settings->entryFilter(),
+                                          m_settings->columnsInfo(), this);
     if (!m_entryItemModel->setDatabase(databaseFileName, errMsg)) {
 	delete m_entryItemModel; m_entryItemModel = NULL;
 	delete m_server; m_server = NULL;
@@ -191,17 +192,10 @@ void MainWindow::viewShowColumnsDialog()
 
 void MainWindow::updateColumns()
 {
-    ColumnsInfo *ci = m_settings->columnsInfo();
-    int i = 0;
-    tracePointsView->setColumnHidden( i++, !ci->isVisible( ColumnsInfo::Time ) );
-    tracePointsView->setColumnHidden( i++, !ci->isVisible( ColumnsInfo::Application ) );
-    tracePointsView->setColumnHidden( i++, !ci->isVisible( ColumnsInfo::PID ) );
-    tracePointsView->setColumnHidden( i++, !ci->isVisible( ColumnsInfo::Thread ) );
-    tracePointsView->setColumnHidden( i++, !ci->isVisible( ColumnsInfo::File ) );
-    tracePointsView->setColumnHidden( i++, !ci->isVisible( ColumnsInfo::Line ) );
-    tracePointsView->setColumnHidden( i++, !ci->isVisible( ColumnsInfo::Function ) );
-    tracePointsView->setColumnHidden( i++, !ci->isVisible( ColumnsInfo::Type ) );
-    tracePointsView->setColumnHidden( i++, !ci->isVisible( ColumnsInfo::Message ) );
-    tracePointsView->setColumnHidden( i++, !ci->isVisible( ColumnsInfo::StackPosition ) );
+    const ColumnsInfo *ci = m_settings->columnsInfo();
+    for (int i = 0; i < ci->columnCount(); ++i) {
+        // ### could fetch names here, too
+        tracePointsView->setColumnHidden(i, !ci->isVisible(i));
+    }
 }
 

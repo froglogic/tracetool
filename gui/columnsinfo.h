@@ -17,16 +17,22 @@ class ColumnsInfo : public QObject,
 {
     Q_OBJECT
 public:
-    enum ColumnName { Time = 0, Application, PID, Thread, File, Line, Function, Type,
-#ifdef SHOW_VERBOSITY
-                     Verbosity,
-#endif
-                     Message, StackPosition, LastColumnName = StackPosition };
-
     ColumnsInfo(QObject *parent = 0);
 
-    bool isVisible( ColumnName cname ) const;
-    void setVisible( ColumnName cname, bool visible );
+    int columnCount() const;
+
+    QString columnName(int realIndex) const;
+    int indexByName(const QString &name) const;
+    QString columnCaption(int realIndex) const;
+
+    bool isVisible(int visualIndex) const;
+    QList<int> visibleColumns() const;
+    QList<int> invisibleColumns() const;
+
+    void setSorting(const QList<int> &visible,
+                    const QList<int> &invisible);
+
+    int unmap(int visibleIndex) const;
 
     // from RestorableObject interface
     QVariant sessionState() const;
@@ -36,7 +42,9 @@ signals:
     void changed();
 
 private:
-    QVector<bool> m_visible;
+    void setDefaultState(); // does not emit changed() so far
+
+    QVector<int> m_visualToReal;
 };
 
 #endif

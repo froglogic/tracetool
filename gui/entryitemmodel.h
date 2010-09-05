@@ -14,12 +14,13 @@ class QTimer;
 
 struct TraceEntry;
 class EntryFilter;
+class ColumnsInfo;
 
 class EntryItemModel : public QAbstractTableModel
 {
     Q_OBJECT
 public:
-    EntryItemModel(EntryFilter *filter, QObject *parent = 0);
+    EntryItemModel(EntryFilter *filter, ColumnsInfo *ci, QObject *parent = 0);
     ~EntryItemModel();
 
     bool setDatabase(const QString &databaseFileName,
@@ -56,6 +57,7 @@ private:
     QTimer *m_databasePollingTimer;
     bool m_suspended;
     EntryFilter *m_filter;
+    ColumnsInfo *m_columnsInfo;
     QSet<unsigned int> m_highlightedEntryIds;
 };
 

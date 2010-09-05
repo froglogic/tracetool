@@ -6,6 +6,7 @@
 #include "entryitemmodel.h"
 
 #include "entryfilter.h"
+#include "columnsinfo.h"
 #include "../core/tracelib.h"
 
 #include <QBrush>
@@ -70,13 +71,14 @@ static const struct {
     { "Stack Position", stackPositionFormatter }
 };
 
-EntryItemModel::EntryItemModel(EntryFilter *filter, QObject *parent )
+EntryItemModel::EntryItemModel(EntryFilter *filter, ColumnsInfo *ci,
+                               QObject *parent )
     : QAbstractTableModel(parent),
       m_numNewEntries(0),
       m_databasePollingTimer(NULL),
       m_suspended(false),
-      m_filter(filter)
-
+      m_filter(filter),
+      m_columnsInfo(ci)
 {
     m_databasePollingTimer = new QTimer(this);
     m_databasePollingTimer->setSingleShot(true);
@@ -126,6 +128,7 @@ static QString filterClause(EntryFilter *f)
 
 bool EntryItemModel::queryForEntries(QString *errMsg)
 {
+    // ### respect hidden columns might speed things up
     m_query = m_db.exec("SELECT"
                         " trace_entry.id,"
                         " timestamp,"
@@ -201,11 +204,13 @@ QModelIndex EntryItemModel::index(int row, int column,
 QVariant EntryItemModel::data(const QModelIndex& index, int role) const
 {
     if (role == Qt::DisplayRole) {
-        int dbField = index.column() + 1;
+        // undo possible column reordering 
+        int realColumn = m_columnsInfo->unmap(index.column());
+        int dbField = realColumn + 1; // id field is used in header
         const_cast<EntryItemModel*>(this)->m_query.seek(index.row());
         QVariant v = m_query.value(dbField);
-        if ( g_fields[index.column()].formatterFn )
-            return g_fields[index.column()].formatterFn( v );
+        if ( g_fields[realColumn].formatterFn )
+            return g_fields[realColumn].formatterFn( v );
         return v;
     } else if (role == Qt::ToolTipRole) {
         // Just forward the tool tip request for now to make viewing
@@ -230,7 +235,8 @@ QVariant EntryItemModel::headerData(int section, Qt::Orientation orientation,
 {
     if (role == Qt::DisplayRole && orientation == Qt::Horizontal) {
         assert((section >= 0 && section < columnCount()) || !"Invalid section value");
-        return tr(g_fields[section].name);
+        int realSection = m_columnsInfo->unmap(section);
+        return tr(g_fields[realSection].name);
     } else if (role == Qt::DisplayRole && orientation == Qt::Vertical) {
         const_cast<EntryItemModel*>(this)->m_query.seek(section);
         return m_query.value(0);

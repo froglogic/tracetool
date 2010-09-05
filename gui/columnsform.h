@@ -21,6 +21,8 @@ protected:
     void accept();
 
 private slots:
+    void moveUp();
+    void moveDown();
     void moveToInvisible();
     void moveToVisible();
 

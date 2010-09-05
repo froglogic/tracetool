@@ -9,9 +9,18 @@ TARGET_LINK_LIBRARIES(test_info tracelib)
 ADD_EXECUTABLE(test_processname test_processname.cpp)
 TARGET_LINK_LIBRARIES(test_processname tracelib)
 
+FIND_PACKAGE(Qt4 4.5.0 COMPONENTS QtGui QtCore QtSql QtNetwork QtXml QtSql REQUIRED)
+INCLUDE(${QT_USE_FILE})
+QT4_WRAP_CPP(TESTSESSION_MOC_SOURCES ../gui/columnsinfo.h)
+ADD_EXECUTABLE(test_session test_session.cpp
+                            ../gui/columnsinfo.cpp
+                            ${TESTSESSION_MOC_SOURCES})
+TARGET_LINK_LIBRARIES(test_session ${QT_LIBRARIES})
+
 ENABLE_TESTING()
 ADD_TEST(NAME test_filter COMMAND test_filter)
 ADD_TEST(NAME test_processid COMMAND test_info --processid)
 ADD_TEST(NAME test_threadid COMMAND test_info --threadid)
 ADD_TEST(NAME test_starttime COMMAND test_info --starttime)
 ADD_TEST(NAME test_processname COMMAND test_processname)
+ADD_TEST(NAME test_columninfo COMMAND test_session --columns)

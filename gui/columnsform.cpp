@@ -6,7 +6,10 @@
 #include "columnsform.h"
 
 #include "columnsinfo.h"
-#include "../core/tracelib.h"
+
+#include <cassert>
+
+const int RealIndexDataRole = Qt::UserRole;
 
 ColumnsForm::ColumnsForm(Settings *settings,
                        QWidget *parent, Qt::WindowFlags flags)
@@ -15,6 +18,10 @@ ColumnsForm::ColumnsForm(Settings *settings,
 {
     setupUi(this);
 
+    connect(upButton, SIGNAL(clicked()),
+            this, SLOT(moveUp()));
+    connect(downButton, SIGNAL(clicked()),
+            this, SLOT(moveDown()));
     connect(toInvisible, SIGNAL(clicked()),
             this, SLOT(moveToInvisible()));
     connect(toVisible, SIGNAL(clicked()),
@@ -31,57 +38,89 @@ void ColumnsForm::accept()
 
 void ColumnsForm::moveToInvisible()
 {
-    QListWidgetItem *ci = listWidgetVisible->currentItem();
-    if ( ci ) {
-        listWidgetVisible->takeItem( listWidgetVisible->currentRow() );
-        listWidgetInvisible->addItem( ci->text() );
-    } 
+    int row = listWidgetVisible->currentRow();
+    if (row != -1) {
+        QListWidgetItem *ci = listWidgetVisible->takeItem(row);
+        listWidgetInvisible->addItem(ci);
+    }
 }
 
 void ColumnsForm::moveToVisible()
 {
-    QListWidgetItem *ci = listWidgetInvisible->currentItem();
-    if ( ci ) {
-        listWidgetInvisible->takeItem( listWidgetInvisible->currentRow() );
-        listWidgetVisible->addItem( ci->text() );
-    } 
+    int row = listWidgetInvisible->currentRow();
+    if (row != -1) {
+        QListWidgetItem *ci = listWidgetInvisible->takeItem(row);
+        listWidgetVisible->addItem(ci);
+    }
 }
 
-#define setVisible(columnName)  \
-    f->setVisible( ColumnsInfo::columnName, listWidgetVisible->findItems( #columnName, Qt::MatchExactly ).count() > 0 );
+void ColumnsForm::moveUp()
+{
+    int row = listWidgetVisible->currentRow();
+    if (row >= 1) {
+        QListWidgetItem *item = listWidgetVisible->takeItem(row);
+        listWidgetVisible->insertItem(row - 1, item);
+        listWidgetVisible->setCurrentRow(row - 1);
+    }
+}
+
+void ColumnsForm::moveDown()
+{
+    int row = listWidgetVisible->currentRow();
+    if (row + 1 < listWidgetVisible->count()) {
+        QListWidgetItem *item = listWidgetVisible->takeItem(row);
+        listWidgetVisible->insertItem(row + 1, item);
+        listWidgetVisible->setCurrentRow(row + 1);
+    }
+}
 
 void ColumnsForm::saveSettings()
 {
-    ColumnsInfo *f = m_settings->columnsInfo();
-    setVisible( Time );
-    setVisible( Application );
-    setVisible( PID );
-    setVisible( Thread );
-    setVisible( File );
-    setVisible( Line );
-    setVisible( Function );
-    setVisible( Type );
-    setVisible( Message );
-    setVisible( StackPosition );
-}
+    QList<int> visibleColumns;
+    for (int row = 0; row < listWidgetVisible->count(); ++row) {
+        QListWidgetItem *item = listWidgetVisible->item(row);
+        QVariant data = item->data(RealIndexDataRole);
+        assert(data.isValid());
+        bool ok;
+        int realIndex = data.toInt(&ok);
+        assert(ok);
+        visibleColumns.append(realIndex);
+    }
+    QList<int> invisibleColumns;
+    for (int row = 0; row < listWidgetInvisible->count(); ++row) {
+        QListWidgetItem *item = listWidgetInvisible->item(row);
+        QVariant data = item->data(RealIndexDataRole);
+        assert(data.isValid());
+        bool ok;
+        int realIndex = data.toInt(&ok);
+        assert(ok);
+        invisibleColumns.append(realIndex);
+    }
 
-#define addColumnName(columnName)  \
-    if ( f->isVisible( ColumnsInfo::columnName ) ) \
-        listWidgetVisible->addItem( #columnName ); \
-    else \
-        listWidgetInvisible->addItem( #columnName ); 
+    m_settings->columnsInfo()->setSorting(visibleColumns, invisibleColumns);
+}
 
 void ColumnsForm::restoreSettings()
 {
-    ColumnsInfo *f = m_settings->columnsInfo();
-    addColumnName( Time );
-    addColumnName( Application );
-    addColumnName( PID );
-    addColumnName( Thread );
-    addColumnName( File );
-    addColumnName( Line );
-    addColumnName( Function );
-    addColumnName( Type );
-    addColumnName( Message );
-    addColumnName( StackPosition );
+    const ColumnsInfo *inf = m_settings->columnsInfo();
+
+    const QList<int> visibleColumns = inf->visibleColumns();
+    QListIterator<int> it(visibleColumns);
+    while (it.hasNext()) {
+        int realIndex = it.next();
+        const QString name = inf->columnName(realIndex);
+        QListWidgetItem *item = new QListWidgetItem(name);
+        item->setData(RealIndexDataRole, realIndex);
+        listWidgetVisible->addItem(item);
+    }
+
+    const QList<int> invisibleColumns = inf->invisibleColumns();
+    it = invisibleColumns;
+    while (it.hasNext()) {
+        int realIndex = it.next();
+        const QString name = inf->columnName(realIndex);
+        QListWidgetItem *item = new QListWidgetItem(name);
+        item->setData(RealIndexDataRole, realIndex);
+        listWidgetInvisible->addItem(item);
+    }
 }
