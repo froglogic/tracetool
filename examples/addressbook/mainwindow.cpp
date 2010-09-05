@@ -109,7 +109,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     QTimer *t = new QTimer( this );
     connect( t, SIGNAL( timeout() ), SLOT( timerTriggered() ) );
-    t->start( 500 );
+    t->start( 1000 );
 }
 
 void MainWindow::timerTriggered()
