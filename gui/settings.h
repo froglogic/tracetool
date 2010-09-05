@@ -9,6 +9,7 @@
 #include "restorableobject.h"
 
 #include <QList>
+#include <QStringList>
 
 class EntryFilter;
 class ColumnsInfo;
@@ -47,6 +48,11 @@ public:
     // [ColumnsInfo]
     ColumnsInfo* columnsInfo() { return m_columnsInfo; }
 
+    // [Configuration]
+    void addConfigurationFile(const QString &fileName);
+    bool hasConfigurationFiles() const { return m_configFiles.isEmpty(); }
+    QStringList configurationFiles() const { return m_configFiles; }
+
 private:
     bool load();
 
@@ -57,6 +63,7 @@ private:
     EntryFilter* m_entryFilter;
     ColumnsInfo *m_columnsInfo;
     int m_softLimit, m_hardLimit;
+    QStringList m_configFiles;
 };
 
 #endif

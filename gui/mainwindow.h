@@ -35,6 +35,9 @@ protected:
 
 private slots:
     void fileOpenTrace();
+    void fileOpenConfiguration();
+    void configFilesAboutToShow();
+    void openRecentConfigFile();
     void helpAbout();
     void toggleFreezeState();
     void editColumns();
@@ -43,6 +46,7 @@ private slots:
     void filterChange();
 
 private:
+    bool openConfigurationFile(const QString &fileName);
     void showError(const QString &title, const QString &message);
 
     Settings* const m_settings;
@@ -50,6 +54,7 @@ private:
     WatchTree* m_watchTree;
     FilterForm *m_filterForm;
     Server *m_server;
+    QMenu *m_configFilesMenu;
 };
 
 #endif

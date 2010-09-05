@@ -166,6 +166,10 @@
      <string>&amp;File</string>
     </property>
     <addaction name="action_Open_Trace"/>
+    <addaction name="separator"/>
+    <addaction name="actionOpen_Configuration"/>
+    <addaction name="actionRecent_Configurations"/>
+    <addaction name="separator"/>
     <addaction name="actionQuit"/>
    </widget>
    <widget class="QMenu" name="menu_Edit">
@@ -182,7 +186,7 @@
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionQuit">
    <property name="text">
-    <string>Quit</string>
+    <string>&amp;Quit</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Q</string>
@@ -209,6 +213,19 @@
   <action name="actionStorage">
    <property name="text">
     <string>&amp;Storage Settings...</string>
+   </property>
+  </action>
+  <action name="actionOpen_Configuration">
+   <property name="text">
+    <string>Open &amp;Configuration...</string>
+   </property>
+  </action>
+  <action name="actionRecent_Configurations">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Recent Configurations</string>
    </property>
   </action>
  </widget>

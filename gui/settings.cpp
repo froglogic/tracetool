@@ -12,12 +12,14 @@
 #include <cassert>
 #include <QDebug>
 #include <QSettings>
+#include <QStringList>
 
 const char companyName[] = "froglogic";
 const char productName[] = "appstalker";
 const char sessionGroup[] = "Session";
 const char databaseGroup[] = "Database";
 const char serverGroup[] = "Server";
+const char configGroup[] = "Configuration";
 
 const int defaultSoftLimit = 1500000;
 const int defaultHardLimit = defaultSoftLimit + 500000;
@@ -50,13 +52,18 @@ bool Settings::save() const
     // [Database]
     qs.beginGroup(databaseGroup);
     qs.setValue("File", m_databaseFile);
+    qs.setValue("SoftLimit", m_softLimit);
+    qs.setValue("HardLimit", m_hardLimit);
+    qs.endGroup();
+
+    // [Configuration]
+    qs.beginGroup(configGroup);
+    qs.setValue("Files", m_configFiles);
     qs.endGroup();
 
     // [Server]
     qs.beginGroup(serverGroup);
     qs.setValue("Port", m_serverPort);
-    qs.setValue("SoftLimit", m_softLimit);
-    qs.setValue("HardLimit", m_hardLimit);
     qs.endGroup();
 
     qs.sync();
@@ -71,13 +78,18 @@ bool Settings::load()
     // [Database]
     qs.beginGroup(databaseGroup);
     m_databaseFile = qs.value("File", QString()).toString();
+    m_softLimit = qs.value("SoftLimit", defaultSoftLimit).toInt();
+    m_hardLimit = qs.value("HardLimit", defaultHardLimit).toInt();
+    qs.endGroup();
+
+    // [Configuration]
+    qs.beginGroup(configGroup);
+    m_configFiles = qs.value("Files", QStringList()).toStringList();
     qs.endGroup();
 
     // [Server]
     qs.beginGroup(serverGroup);
     m_serverPort = qs.value("Port", TRACELIB_DEFAULT_PORT).toInt();
-    m_softLimit = qs.value("SoftLimit", defaultSoftLimit).toInt();
-    m_hardLimit = qs.value("HardLimit", defaultHardLimit).toInt();
 
     qs.endGroup();
 
@@ -147,4 +159,13 @@ void Settings::setHardLimit(int bytes)
 {
     // ### shrink database?
     m_hardLimit = bytes;
+}
+
+void Settings::addConfigurationFile(const QString &fileName)
+{
+    if (m_configFiles.contains(fileName))
+        return;
+    m_configFiles.prepend(fileName);
+    while (m_configFiles.size() > 10)
+        m_configFiles.removeLast();
 }

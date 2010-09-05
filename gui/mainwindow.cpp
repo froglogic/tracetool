@@ -12,6 +12,7 @@
 #include "columnsinfo.h"
 #include "storageview.h"
 
+#include <cassert>
 #include <QtGui>
 #include <QtSql>
 
@@ -45,6 +46,13 @@ MainWindow::MainWindow(Settings *settings,
     // File menu
     connect(action_Open_Trace, SIGNAL(triggered()),
 	    this, SLOT(fileOpenTrace()));
+    connect(actionOpen_Configuration, SIGNAL(triggered()),
+            this, SLOT(fileOpenConfiguration()));
+    m_configFilesMenu = new QMenu(menu_File);
+    connect(m_configFilesMenu, SIGNAL(aboutToShow()),
+            this, SLOT(configFilesAboutToShow()));
+    actionRecent_Configurations->setMenu(m_configFilesMenu);
+    actionRecent_Configurations->setEnabled(!m_settings->hasConfigurationFiles());
     connect(actionQuit, SIGNAL(triggered()),
             qApp, SLOT(quit()));
 
@@ -143,6 +151,53 @@ void MainWindow::fileOpenTrace()
 		  tr("Error opening trace file: %1").arg(errMsg));
 	return;
     }
+}
+
+void MainWindow::fileOpenConfiguration()
+{
+    QString fn = QFileDialog::getOpenFileName(this,
+                                              tr("Open Configuration File"),
+					      QDir::currentPath(),
+					      tr("Configuration File (*.xml)"));
+    if (fn.isEmpty())
+	return;
+
+    openConfigurationFile(fn);
+}
+
+bool MainWindow::openConfigurationFile(const QString &fileName)
+{
+    // ###
+
+    m_settings->addConfigurationFile(fileName);
+    actionRecent_Configurations->setEnabled(true);
+
+    return true;
+}
+
+void MainWindow::configFilesAboutToShow()
+{
+    // refresh sub-menu with list of recently opened config files
+    m_configFilesMenu->clear();
+    const QStringList configFiles = m_settings->configurationFiles();
+    QStringList::const_iterator it, end = configFiles.end();
+    int index = 0;
+    for (it = configFiles.begin(); it != end; ++it, ++index) {
+        QString txt = tr("&%1. %2").arg(index).arg(*it);
+        QAction *act = m_configFilesMenu->addAction(txt);
+        act->setData(*it); // for retrieval in connected slot
+        connect(act, SIGNAL(triggered()), this, SLOT(openRecentConfigFile()));
+    }
+}
+
+void MainWindow::openRecentConfigFile()
+{
+    QAction *act = qobject_cast<QAction*>(sender());
+    assert(act);
+    assert(act->data().isValid());
+    QString fileName = act->data().toString();
+    assert(!fileName.isEmpty());
+    (void)openConfigurationFile(fileName);
 }
 
 void MainWindow::helpAbout()
