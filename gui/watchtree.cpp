@@ -14,7 +14,7 @@ WatchTree::WatchTree(EntryFilter *filter, QWidget *parent)
     m_suspended(false),
     m_filter(filter)
 {
-    static const char * columns[] = {
+    static const char * const columns[] = {
         "Name",
         "Type",
         "Value",
@@ -173,6 +173,10 @@ bool WatchTree::showNewTraceEntries( QString *errMsg )
 
     setUpdatesEnabled( false );
 
+    QIcon iconExe(":/icons/application-x-executable.png");
+    QIcon iconSrc(":/icons/text-x-csrc.png");
+    QIcon iconFunc(":/icons/application-sxw.png");
+
     while ( query.next() ) {
         TreeItem *applicationItem = 0;
         {
@@ -185,6 +189,7 @@ bool WatchTree::showNewTraceEntries( QString *errMsg )
             } else {
                 applicationItem = new TreeItem( new QTreeWidgetItem( this,
                                                        QStringList() << application ) );
+                applicationItem->item->setIcon(0, iconExe);
                 m_applicationItems[ application ] = applicationItem;
             }
         }
@@ -198,6 +203,7 @@ bool WatchTree::showNewTraceEntries( QString *errMsg )
             } else {
                 sourceFileItem = new TreeItem( new QTreeWidgetItem( applicationItem->item,
                                                       QStringList() << sourceFile ) );
+                sourceFileItem->item->setIcon(0, iconSrc);
                 applicationItem->children[ sourceFile ] = sourceFileItem;
             }
         }
@@ -213,6 +219,7 @@ bool WatchTree::showNewTraceEntries( QString *errMsg )
             } else {
                 functionItem = new TreeItem( new QTreeWidgetItem( sourceFileItem->item,
                                                     QStringList() << function ) );
+                functionItem->item->setIcon(0, iconFunc);
                 sourceFileItem->children[ function ] = functionItem;
             }
 

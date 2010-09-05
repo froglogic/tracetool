@@ -5,5 +5,8 @@
     <file>lo32-action-nexterror.png</file>
     <file>go-up.png</file>
     <file>go-down.png</file>
+    <file>application-x-executable.png</file>
+    <file>text-x-csrc.png</file>
+    <file>application-sxw.png</file>
   </qresource>
 </RCC>
