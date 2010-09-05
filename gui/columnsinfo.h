@@ -17,11 +17,11 @@ class ColumnsInfo : public QObject,
 {
     Q_OBJECT
 public:
-    enum ColumnName { Time, Application, PID, Thread, File, Line, Function, Type,
+    enum ColumnName { Time = 0, Application, PID, Thread, File, Line, Function, Type,
 #ifdef SHOW_VERBOSITY
                      Verbosity,
 #endif
-                     Message, StackPosition, LastColumnName };
+                     Message, StackPosition, LastColumnName = StackPosition };
 
     ColumnsInfo(QObject *parent = 0);
 

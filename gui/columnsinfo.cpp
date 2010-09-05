@@ -10,7 +10,7 @@
 typedef QMap<QString, QVariant> StorageMap;
 
 ColumnsInfo::ColumnsInfo(QObject *parent)
-    : m_visible(LastColumnName, true)
+    : m_visible(LastColumnName + 1, true)
 {
 }
 
