@@ -37,7 +37,8 @@ private slots:
     void fileOpenTrace();
     void helpAbout();
     void toggleFreezeState();
-    void viewShowColumnsDialog();
+    void editColumns();
+    void editStorage();
     void updateColumns();
     void filterChange();
 

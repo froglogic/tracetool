@@ -10,6 +10,7 @@
 #include "entryitemmodel.h"
 #include "watchtree.h"
 #include "columnsinfo.h"
+#include "storageview.h"
 
 #include <QtGui>
 #include <QtSql>
@@ -47,9 +48,11 @@ MainWindow::MainWindow(Settings *settings,
     connect(actionQuit, SIGNAL(triggered()),
             qApp, SLOT(quit()));
 
-    // View menu
+    // Edit menu
     connect(actionColumns, SIGNAL(triggered()),
-	    this, SLOT(viewShowColumnsDialog()));
+	    this, SLOT(editColumns()));
+    connect(actionStorage, SIGNAL(triggered()),
+	    this, SLOT(editStorage()));
 
     // Help menu
     connect(action_About, SIGNAL(triggered()),
@@ -182,11 +185,19 @@ void MainWindow::filterChange()
     toolBox->setCurrentIndex(1);
 }
 
-void MainWindow::viewShowColumnsDialog()
+void MainWindow::editColumns()
 {
     ColumnsForm form(m_settings, this);
     if (form.exec() == QDialog::Accepted) {
         updateColumns();
+    }
+}
+
+void MainWindow::editStorage()
+{
+    StorageView dlg(m_settings, this);
+    if (dlg.exec() == QDialog::Accepted) {
+        // ###?
     }
 }
 

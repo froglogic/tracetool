@@ -34,6 +34,12 @@ public:
     // [Server]
     void setServerPort(int port) { m_serverPort = port; }
     int serverPort() const { return m_serverPort; }
+    
+    void setSoftLimit(int bytes);
+    int softLimit() const { return m_softLimit; }
+
+    void setHardLimit(int bytes);
+    int hardLimit() const { return m_hardLimit; }
 
     // [Filter]
     EntryFilter* entryFilter() { return m_entryFilter; }
@@ -50,6 +56,7 @@ private:
     int m_serverPort;
     EntryFilter* m_entryFilter;
     ColumnsInfo *m_columnsInfo;
+    int m_softLimit, m_hardLimit;
 };
 
 #endif

@@ -6,6 +6,7 @@ SET(GUI_SOURCES
   columnsinfo.cpp
   filterform.cpp
   columnsform.cpp
+  storageview.cpp
   entryitemmodel.cpp
   watchtree.cpp
   searchwidget.cpp
@@ -19,6 +20,7 @@ SET(GUI_MOCABLES
   columnsinfo.h
   filterform.h
   columnsform.h
+  storageview.h
   entryitemmodel.h
   watchtree.h
   searchwidget.h
@@ -27,6 +29,7 @@ SET(GUI_MOCABLES
 SET(GUI_UIS
   mainwindow.ui
   columnsform.ui
+  storageview.ui
   filterform.ui)
 
 SET(GUI_RCCS 

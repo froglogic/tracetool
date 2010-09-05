@@ -80,7 +80,7 @@
          <x>0</x>
          <y>0</y>
          <width>925</width>
-         <height>474</height>
+         <height>489</height>
         </rect>
        </property>
        <attribute name="label">
@@ -145,7 +145,7 @@
      <x>0</x>
      <y>0</y>
      <width>943</width>
-     <height>24</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_Help">
@@ -161,14 +161,15 @@
     <addaction name="action_Open_Trace"/>
     <addaction name="actionQuit"/>
    </widget>
-   <widget class="QMenu" name="menuView">
+   <widget class="QMenu" name="menu_Edit">
     <property name="title">
-     <string>&amp;View</string>
+     <string>&amp;Edit</string>
     </property>
     <addaction name="actionColumns"/>
+    <addaction name="actionStorage"/>
    </widget>
    <addaction name="menu_File"/>
-   <addaction name="menuView"/>
+   <addaction name="menu_Edit"/>
    <addaction name="menu_Help"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
@@ -195,7 +196,12 @@
   </action>
   <action name="actionColumns">
    <property name="text">
-    <string>Columns...</string>
+    <string>&amp;Columns...</string>
+   </property>
+  </action>
+  <action name="actionStorage">
+   <property name="text">
+    <string>&amp;Storage Settings...</string>
    </property>
   </action>
  </widget>

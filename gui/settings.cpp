@@ -19,7 +19,12 @@ const char sessionGroup[] = "Session";
 const char databaseGroup[] = "Database";
 const char serverGroup[] = "Server";
 
+const int defaultSoftLimit = 1500000;
+const int defaultHardLimit = defaultSoftLimit + 500000;
+
 Settings::Settings()
+    : m_softLimit(-1),
+      m_hardLimit(-1)
 {
     m_entryFilter = new EntryFilter();
     registerRestorable("Filter", m_entryFilter);
@@ -50,6 +55,8 @@ bool Settings::save() const
     // [Server]
     qs.beginGroup(serverGroup);
     qs.setValue("Port", m_serverPort);
+    qs.setValue("SoftLimit", m_softLimit);
+    qs.setValue("HardLimit", m_hardLimit);
     qs.endGroup();
 
     qs.sync();
@@ -69,6 +76,9 @@ bool Settings::load()
     // [Server]
     qs.beginGroup(serverGroup);
     m_serverPort = qs.value("Port", TRACELIB_DEFAULT_PORT).toInt();
+    m_softLimit = qs.value("SoftLimit", defaultSoftLimit).toInt();
+    m_hardLimit = qs.value("HardLimit", defaultHardLimit).toInt();
+
     qs.endGroup();
 
     return qs.status() == QSettings::NoError;
@@ -126,3 +136,15 @@ bool Settings::restoreSession() const
     return qs.status() == QSettings::NoError;
 }
 
+// ### do some sanity checks on the two limit values
+// ### E.g. minimum size possible, one bigger than the other
+void Settings::setSoftLimit(int bytes)
+{
+    m_softLimit = bytes;
+}
+
+void Settings::setHardLimit(int bytes)
+{
+    // ### shrink database?
+    m_hardLimit = bytes;
+}
