@@ -24,6 +24,10 @@ FilterForm::FilterForm(Settings *settings, QWidget *parent)
         typeCombo->addItem(typeName, t);
     }
 
+    // protect against wrong input
+    pidEdit->setValidator(new QIntValidator(this));
+    tidEdit->setValidator(new QIntValidator(this));
+
     connect(applyButton, SIGNAL(clicked()),
             this, SLOT(apply()));
 }
