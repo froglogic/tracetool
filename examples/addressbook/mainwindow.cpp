@@ -114,7 +114,14 @@ MainWindow::MainWindow(QWidget *parent)
 
 void MainWindow::timerTriggered()
 {
-    TRACELIB_TRACE_MSG( "Qt eventloop still running" );
+    static int row = 0;
+    static int column = 0;
+    TRACELIB_WATCH_MSG( "Qt eventloop still running",
+                        TRACELIB_VAR(row) << TRACELIB_VAR(column) );
+    if ( ++row == 10 ) {
+        ++column;
+        row = 0;
+    }
 }
 
 
