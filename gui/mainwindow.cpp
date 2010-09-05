@@ -95,6 +95,10 @@ bool MainWindow::setDatabase(const QString &databaseFileName, QString *errMsg)
             m_entryItemModel, SLOT(handleNewTraceEntry(const TraceEntry &)));
     connect(m_server, SIGNAL(traceEntryReceived(const TraceEntry &)),
             m_watchTree, SLOT(handleNewTraceEntry(const TraceEntry &)));
+    connect( tracePointsSearchWidget, SIGNAL( searchCriteriaChanged( const QString &,
+                                                                     const QStringList & ) ),
+             m_entryItemModel, SLOT( highlightEntries( const QString &,
+                                                       const QStringList & ) ) );
 
     m_settings->setDatabaseFile(databaseFileName);
 

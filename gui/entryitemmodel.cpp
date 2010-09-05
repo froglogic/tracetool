@@ -8,6 +8,7 @@
 #include "entryfilter.h"
 #include "../core/tracelib.h"
 
+#include <QBrush>
 #include <QDateTime>
 #include <QDebug>
 #include <QSqlDriver>
@@ -213,6 +214,12 @@ QVariant EntryItemModel::data(const QModelIndex& index, int role) const
         // ### time of an application.
         // ### supress when nothing valuable to show and not cut off
         return data(index, Qt::DisplayRole);
+    } else if (role == Qt::BackgroundRole) {
+        const_cast<EntryItemModel*>(this)->m_query.seek(index.row());
+        unsigned int entryId = m_query.value(0).toUInt();
+        if ( m_highlightedEntryIds.contains( entryId ) ) {
+            return QBrush( Qt::yellow );
+        }
     }
 
     return QVariant();
@@ -278,5 +285,82 @@ void EntryItemModel::reApplyFilter()
         qDebug() << "EntryItemModel::reApplyFilter: failed: " << errorMsg;
     }
     endResetModel();
+}
+
+void EntryItemModel::highlightEntries(const QString &term, const QStringList &fields)
+{
+    if ( term.isEmpty() || fields.isEmpty() ) {
+        if ( !m_highlightedEntryIds.isEmpty() ) {
+            m_highlightedEntryIds.clear();
+            // XXX Is there a more elegant way to have the views repaint
+            // their visible range?
+            emit dataChanged( createIndex( 0, 0, 0 ),
+                              createIndex( rowCount() - 1, columnCount() - 1, 0 ) );
+        }
+        return;
+    }
+
+    QSet<unsigned int> entriesToHighlight;
+
+    QStringList fieldConstraints;
+
+    QStringList::ConstIterator it, end = fields.end();
+    for ( it = fields.begin(); it != end; ++it ) {
+        if ( *it == tr( "Application" ) ) {
+            fieldConstraints <<
+                QString( "(traced_thread.id = trace_entry.traced_thread_id AND "
+                         " traced_thread.process_id = process.id AND"
+                         " process.name LIKE '%%1%')" )
+                    .arg( term );
+        } else if ( *it == tr( "File" ) ) {
+            fieldConstraints <<
+                QString( "(trace_point.id = trace_entry.trace_point_id AND"
+                         " path_name.id = trace_point.path_id AND "
+                         " path_name.name LIKE '%%1%')" )
+                    .arg( term );
+        } else if ( *it == tr( "Function" ) ) {
+            fieldConstraints <<
+                QString( "(trace_point.id = trace_entry.trace_point_id AND"
+                         " function_name.id = trace_point.function_id AND"
+                         " function_name.name LIKE '%%1%')" )
+                    .arg( term );
+        } else if ( *it == tr( "Message" ) ) {
+            fieldConstraints <<
+                QString( "(trace_entry.message LIKE '%%1%')" )
+                    .arg( term );
+        }
+    }
+
+    // XXX Make this query respect the configured filter for
+    // performance reasons
+    QString query = "SELECT"
+                    " DISTINCT trace_entry.id "
+                    "FROM"
+                    " trace_entry,"
+                    " trace_point,"
+                    " path_name,"
+                    " function_name,"
+                    " traced_thread,"
+                    " process "
+                    "WHERE ";
+    query += fieldConstraints.join( " OR " );
+
+    QSqlQuery filterQuery( m_db );
+    if ( !filterQuery.exec( query ) ) {
+        fprintf( stderr, "ERROR: %s\n", filterQuery.lastError().text().toLatin1().data() );
+    }
+
+    while ( filterQuery.next() ) {
+        entriesToHighlight.insert( filterQuery.value( 0 ).toUInt() );
+    }
+
+    if ( entriesToHighlight != m_highlightedEntryIds ) {
+        m_highlightedEntryIds = entriesToHighlight;
+
+        // XXX Is there a more elegant way to have the views repaint
+        // their visible range?
+        emit dataChanged( createIndex( 0, 0, 0 ),
+                          createIndex( rowCount() - 1, columnCount() - 1, 0 ) );
+    }
 }
 

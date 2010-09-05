@@ -7,6 +7,7 @@
 #define ENTRYITEMMODEL_H
 
 #include <QAbstractTableModel>
+#include <QSet>
 #include <QSqlDatabase>
 #include <QSqlQuery>
 class QTimer;
@@ -40,6 +41,7 @@ public:
 public slots:
     void handleNewTraceEntry(const TraceEntry &e);
     void reApplyFilter();
+    void highlightEntries(const QString &term, const QStringList &fields);
 
 private slots:
     void insertNewTraceEntries();
@@ -54,6 +56,7 @@ private:
     QTimer *m_databasePollingTimer;
     bool m_suspended;
     EntryFilter *m_filter;
+    QSet<unsigned int> m_highlightedEntryIds;
 };
 
 #endif
