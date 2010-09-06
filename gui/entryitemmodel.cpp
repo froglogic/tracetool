@@ -205,6 +205,8 @@ QVariant EntryItemModel::data(const QModelIndex& index, int role) const
 {
     if (role == Qt::DisplayRole) {
         // undo possible column reordering 
+        if (!m_columnsInfo->isVisible(index.column()))
+            return QVariant();
         int realColumn = m_columnsInfo->unmap(index.column());
         int dbField = realColumn + 1; // id field is used in header
         const_cast<EntryItemModel*>(this)->m_query.seek(index.row());
@@ -235,6 +237,8 @@ QVariant EntryItemModel::headerData(int section, Qt::Orientation orientation,
 {
     if (role == Qt::DisplayRole && orientation == Qt::Horizontal) {
         assert((section >= 0 && section < columnCount()) || !"Invalid section value");
+        if (!m_columnsInfo->isVisible(section))
+            return QVariant();
         int realSection = m_columnsInfo->unmap(section);
         return tr(g_fields[realSection].name);
     } else if (role == Qt::DisplayRole && orientation == Qt::Vertical) {
