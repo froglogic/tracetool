@@ -7,6 +7,8 @@
 
 #include "configuration.h"
 
+#include <QMessageBox>
+
 static QString modeToString(MatchingMode m)
 {
     if (m == WildcardMatching)
@@ -108,5 +110,9 @@ void ConfigEditor::accept()
 
 void ConfigEditor::save()
 {
+    QString errMsg;
+    if (!m_conf->save(&errMsg)) {
+        QMessageBox::critical(this, "Save Error", errMsg);
+    }
 }
 

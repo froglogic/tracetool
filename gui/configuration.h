@@ -49,6 +49,7 @@ public:
     ~Configuration();
 
     bool load(const QString &fileName, QString *errMsg);
+    bool save(QString *errMsg);
 
     int processCount() const { return m_processes.count(); }
     ProcessConfiguration* process(int num);
@@ -70,6 +71,7 @@ private:
 
     QXmlStreamReader m_xml;
     QList<ProcessConfiguration*> m_processes;
+    QString m_fileName;
 };
 
 #endif

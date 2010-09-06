@@ -7,6 +7,16 @@
 
 #include <QFile>
 
+static QString modeToString(MatchingMode m)
+{
+    if (m == WildcardMatching)
+        return "wildcard";
+    else if (m == RegExpMatching)
+        return "regexp";
+    else
+        return "strict";
+}
+
 Configuration::Configuration()
 {
 }
@@ -18,7 +28,8 @@ Configuration::~Configuration()
 
 bool Configuration::load(const QString &fileName, QString *errMsg)
 {
-    QFile f(fileName);
+    m_fileName = fileName;
+    QFile f(m_fileName);
     if (!f.open(QIODevice::ReadOnly)) {
         *errMsg = f.errorString();
         return false;
@@ -32,6 +43,8 @@ bool Configuration::load(const QString &fileName, QString *errMsg)
             m_xml.raiseError(tr("This is not a tracelib configuration file."));
         }
     }
+
+    f.close();
 
     if (m_xml.hasError()) {
         *errMsg = m_xml.errorString();
@@ -198,3 +211,91 @@ void Configuration::readFunctionFilter(TracePointSets *tps)
     QString f = m_xml.readElementText();
     tps->m_functionFilter = f;
 }
+
+bool Configuration::save(QString *errMsg)
+{
+    assert(!m_fileName.isEmpty());
+    QFile f(m_fileName);
+    if (!f.open(QIODevice::WriteOnly)) {
+        *errMsg = f.errorString();
+        return false;
+    }
+
+    QXmlStreamWriter stream(&f);
+    stream.setAutoFormatting(true);
+    stream.writeStartDocument();
+    stream.writeStartElement("tracelibConfiguration");
+    
+    QListIterator<ProcessConfiguration*> it(m_processes);
+    while (it.hasNext()) {
+        ProcessConfiguration *p = it.next();
+        stream.writeStartElement("process");
+        stream.writeTextElement("name", p->m_name);
+
+        // <output>
+        stream.writeStartElement("output");
+        stream.writeAttribute("type",  p->m_outputType);
+        QMapIterator<QString, QString> oit(p->m_outputOption);
+        while (oit.hasNext()) {
+            oit.next();
+            stream.writeStartElement("option");
+            stream.writeAttribute("name", oit.key());
+            stream.writeCharacters(oit.value());
+            stream.writeEndElement(); // option
+        }
+        stream.writeEndElement(); // output
+
+        // <serializer>
+        stream.writeStartElement("serializer");
+        stream.writeAttribute("type",  p->m_serializerType);
+        QMapIterator<QString, QString> sit(p->m_serializerOption);
+        while (sit.hasNext()) {
+            sit.next();
+            stream.writeStartElement("option");
+            stream.writeAttribute("name", sit.key());
+            stream.writeCharacters(sit.value());
+            stream.writeEndElement(); // option
+        }
+        stream.writeEndElement(); // serializer
+
+        // <tracepointsets>
+        QListIterator<TracePointSets> lit(p->m_tracePointSets);
+        while (lit.hasNext()) {
+            TracePointSets tps = lit.next();
+            stream.writeStartElement("tracepointset");
+            QString v = tps.m_variables ? "yes" : "no";
+            stream.writeAttribute("variables", v);
+            // various filters
+            if (tps.m_maxVerbosity >= 0) {
+                stream.writeStartElement("verbosityfilter");
+                stream.writeAttribute("maxVerbosity",
+                                      QString::number(tps.m_maxVerbosity));
+                stream.writeEndElement();
+            } else if (!tps.m_pathFilter.isEmpty()) {
+                stream.writeStartElement("pathfilter");
+                QString m = modeToString(tps.m_pathFilterMode);
+                stream.writeAttribute("matchingmode", m);
+                stream.writeCharacters(tps.m_pathFilter);
+                stream.writeEndElement();
+                
+            } else {
+                assert(!tps.m_functionFilter.isEmpty());
+                stream.writeStartElement("functionfilter");
+                QString m = modeToString(tps.m_functionFilterMode);
+                stream.writeAttribute("matchingmode", m);
+                stream.writeCharacters(tps.m_functionFilter);
+                stream.writeEndElement();
+            }
+
+            stream.writeEndElement(); // tracepointset
+        }
+
+        stream.writeEndElement(); // process
+    }
+
+    stream.writeEndElement(); // tracelibConfiguration
+    stream.writeEndDocument();
+    
+    return true;
+}
+
