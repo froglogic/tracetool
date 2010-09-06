@@ -1,0 +1,23 @@
+<tracelibConfiguration>
+<process>
+    <name>addressbook</name>
+    <output type="tcp">
+        <option name="host">127.0.0.1</option>
+    </output>
+    <serializer type="xml">
+        <option name="beautifiedOutput">yes</option>
+    </serializer>
+    <tracepointset variables="yes">
+        <verbosityfilter maxVerbosity="1"/>
+    </tracepointset>
+    <tracepointset variables="yes">
+        <pathfilter matchingmode="regexp">.*main.cpp.*</pathfilter>
+    </tracepointset>
+    <tracepointset variables="yes">
+        <functionfilter matchingmode="wildcard">*main*</functionfilter>
+    </tracepointset>
+
+</process>
+</tracelibConfiguration>
+
+

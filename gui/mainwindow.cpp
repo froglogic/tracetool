@@ -5,6 +5,8 @@
 
 #include "mainwindow.h"
 
+#include "configeditor.h"
+#include "configuration.h"
 #include "filterform.h"
 #include "columnsform.h"
 #include "entryitemmodel.h"
@@ -167,7 +169,17 @@ void MainWindow::fileOpenConfiguration()
 
 bool MainWindow::openConfigurationFile(const QString &fileName)
 {
-    // ###
+    QString errMsg;
+    Configuration *config = new Configuration();
+    if (!config->load(fileName, &errMsg)) {
+	showError(tr("Open Error"),
+		  tr("Error opening configuration file: %1").arg(errMsg));
+        delete config;
+        return false;
+    }
+
+    ConfigEditor editor(config, this);
+    editor.exec();
 
     m_settings->addConfigurationFile(fileName);
     actionRecent_Configurations->setEnabled(true);

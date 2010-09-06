@@ -9,7 +9,8 @@
 #include "../core/tracelib.h"
 
 FilterForm::FilterForm(Settings *settings, QWidget *parent)
-    : m_settings(settings)
+    : QWidget(parent),
+      m_settings(settings)
 {
     setupUi(this);
 
