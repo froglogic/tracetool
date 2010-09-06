@@ -42,6 +42,11 @@ IF(QT4_FOUND)
     INCLUDE(${QT_USE_FILE})
 ENDIF(QT4_FOUND)
 
+SET(TRACELIB_PUBLIC_HEADERS
+        tracelib.h
+        tracelib_config.h
+        variabledumping.h)
+
 SET(TRACELIB_SOURCES
         trace.cpp
         serializer.cpp
@@ -59,9 +64,6 @@ SET(TRACELIB_SOURCES
         ${PROJECT_SOURCE_DIR}/3rdparty/tinyxml/tinyxml.cpp
         ${PROJECT_SOURCE_DIR}/3rdparty/tinyxml/tinyxmlerror.cpp
         ${PROJECT_SOURCE_DIR}/3rdparty/tinyxml/tinyxmlparser.cpp)
-
-SET(TRACELIB_QTSUPPORT_SOURCES
-        variabledumping_qt.cpp)
 
 IF(WIN32)
     ADD_DEFINITIONS(-DSTACKWALKER_NO_GETUSERNAME)
@@ -103,11 +105,28 @@ ELSE(WIN32)
         SET(TRACELIB_LIBRARIES ${TRACELIB_LIBRARIES} ${LIB_EXECINFO})
     ENDIF(LIB_EXECINFO)
 ENDIF(WIN32)
+
+# Optional tracelib_qtsupport library
 IF(QT4_FOUND)
+    SET(TRACELIB_QTSUPPORT_SOURCES
+        variabledumping_qt.cpp)
+
     ADD_LIBRARY(tracelib_qtsupport STATIC ${TRACELIB_QTSUPPORT_SOURCES})
     TARGET_LINK_LIBRARIES(tracelib_qtsupport ${QT_LIBRARIES})
     SET(TRACELIB_LIBRARIES ${TRACELIB_LIBRARIES} tracelib_qtsupport)
+
+    INSTALL(TARGETS tracelib_qtsupport EXPORT tracelibTargets
+                                       RUNTIME DESTINATION bin
+                                       LIBRARY DESTINATION lib
+                                       ARCHIVE DESTINATION lib COMPONENT devel)
 ENDIF(QT4_FOUND)
+
+# Export whitelist-separated string with public headers which is used by
+# Doxygen
+FOREACH(ARG ${TRACELIB_PUBLIC_HEADERS})
+    SET(TRACELIB_PUBLIC_HEADERS_WS "${TRACELIB_PUBLIC_HEADERS_WS} ${ARG}")
+ENDFOREACH(ARG ${TRACELIB_PUBLIC_HEADERS})
+SET(TRACELIB_PUBLIC_HEADERS_WS "${TRACELIB_PUBLIC_HEADERS_WS}" PARENT_SCOPE)
 
 ADD_LIBRARY(tracelib STATIC ${TRACELIB_SOURCES})
 TARGET_LINK_LIBRARIES(tracelib ${TRACELIB_LIBRARIES})
@@ -118,22 +137,6 @@ INSTALL(TARGETS tracelib EXPORT tracelibTargets
                          RUNTIME DESTINATION bin
                          LIBRARY DESTINATION lib
                          ARCHIVE DESTINATION lib COMPONENT devel)
-
-IF(QT4_FOUND)
-    INSTALL(TARGETS tracelib_qtsupport EXPORT tracelibTargets
-                                       RUNTIME DESTINATION bin
-                                       LIBRARY DESTINATION lib
-                                       ARCHIVE DESTINATION lib COMPONENT devel)
-ENDIF(QT4_FOUND)
-
-SET(TRACELIB_PUBLIC_HEADERS
-        tracelib.h
-        tracelib_config.h
-        variabledumping.h)
-FOREACH(ARG ${TRACELIB_PUBLIC_HEADERS})
-    SET(TRACELIB_PUBLIC_HEADERS_WS "${TRACELIB_PUBLIC_HEADERS_WS} ${ARG}")
-ENDFOREACH(ARG ${TRACELIB_PUBLIC_HEADERS})
-SET(TRACELIB_PUBLIC_HEADERS_WS "${TRACELIB_PUBLIC_HEADERS_WS}" PARENT_SCOPE)
 
 INSTALL(FILES ${TRACELIB_PUBLIC_HEADERS}
         variabletypes.def
