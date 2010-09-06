@@ -26,6 +26,9 @@ protected:
 
 private slots:
     void currentProcessChanged(int row);
+    void newConfig();
+    void deleteConfig();
+    void processNameChanged(const QString &text);
 
 private:
     void fillInConfiguration();

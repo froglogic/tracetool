@@ -54,6 +54,8 @@ public:
     int processCount() const { return m_processes.count(); }
     ProcessConfiguration* process(int num);
 
+    void addProcessConfiguration(ProcessConfiguration *pc);
+
 private:
     void readConfigurationElement();
     void readProcessElement();

@@ -29,6 +29,15 @@ ConfigEditor::ConfigEditor(Configuration *conf,
     connect(processList, SIGNAL(currentRowChanged(int)),
             this, SLOT(currentProcessChanged(int)));
 
+    connect(pushButton, SIGNAL(clicked()),
+            this, SLOT(newConfig()));
+
+    connect(pushButton_2, SIGNAL(clicked()),
+            this, SLOT(deleteConfig()));
+
+    connect(nameEdit, SIGNAL(textChanged(const QString&)),
+            this, SLOT(processNameChanged(const QString&)));
+
     fillInConfiguration();
 }
 
@@ -99,6 +108,30 @@ void ConfigEditor::currentProcessChanged(int row)
         filterTable->setItem(filterRow, 1, item1);
         filterTable->setItem(filterRow, 2, item2);
         ++filterRow;
+    }
+}
+
+void ConfigEditor::newConfig()
+{
+    QString newProcess("application.exe");
+    ProcessConfiguration *pc = new ProcessConfiguration;
+    pc->m_name = newProcess;
+    m_conf->addProcessConfiguration(pc);
+    processList->addItem(newProcess);
+    processList->setCurrentRow(processList->count() - 1);
+}
+
+void ConfigEditor::deleteConfig()
+{
+    if (QListWidgetItem *lwi = processList->currentItem()) {
+        processList->takeItem( processList->row(lwi));
+    }
+}
+
+void ConfigEditor::processNameChanged(const QString &text)
+{
+    if (QListWidgetItem *lwi = processList->currentItem()) {
+        lwi->setText(text);
     }
 }
 

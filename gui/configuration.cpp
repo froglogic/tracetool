@@ -299,3 +299,8 @@ bool Configuration::save(QString *errMsg)
     return true;
 }
 
+void Configuration::addProcessConfiguration(ProcessConfiguration *pc)
+{
+    m_processes.append(pc);
+}
+
