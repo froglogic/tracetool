@@ -57,6 +57,25 @@ void ConfigEditor::fillInConfiguration()
         processList->setCurrentRow(0);
 }
 
+void ConfigEditor::saveCurrentProcess(int row)
+{
+    if (row < 0)
+        return;
+    assert(row < m_conf->processCount());
+    ProcessConfiguration *p = m_conf->process(row);
+
+    p->m_name = nameEdit->text();
+
+    // Output
+    p->m_outputType = outputTypeEdit->text();
+    p->m_outputOption["host"] = hostEdit->text();
+    p->m_outputOption["port"] = portEdit->text();
+
+    // Serializer
+    p->m_serializerType = serializerTypeEdit->text();
+    p->m_serializerOption["beautifiedOutput"] = serializerOptionEdit->text();
+}
+
 void ConfigEditor::currentProcessChanged(int row)
 {
     if (row < 0)
@@ -137,6 +156,7 @@ void ConfigEditor::processNameChanged(const QString &text)
 
 void ConfigEditor::accept()
 {
+    saveCurrentProcess(processList->currentRow());
     save();
     QDialog::accept();
 }

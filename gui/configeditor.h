@@ -26,6 +26,7 @@ protected:
 
 private slots:
     void currentProcessChanged(int row);
+    void saveCurrentProcess(int row);
     void newConfig();
     void deleteConfig();
     void processNameChanged(const QString &text);
