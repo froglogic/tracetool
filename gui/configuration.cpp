@@ -64,7 +64,7 @@ void Configuration::readConfigurationElement()
 {
     assert(m_xml.isStartElement() && m_xml.name() == "tracelibConfiguration");
 
-    if (m_xml.readNextStartElement()) {
+    while (m_xml.readNextStartElement()) {
         if (m_xml.name() == "process")
             readProcessElement();
         else
