@@ -111,7 +111,7 @@ void ConfigEditor::currentProcessChanged(QListWidgetItem *current, QListWidgetIt
     serializerOptionEdit->setText(p->m_serializerOption["beautifiedOutput"]);
 
     // Filters
-    filterTable->clear();
+    filterTable->clearContents();
     const QList<TracePointSets> &tpsets = p->m_tracePointSets;
     filterTable->setRowCount(tpsets.count());
     QListIterator<TracePointSets> it(tpsets);
