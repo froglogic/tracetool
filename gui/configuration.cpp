@@ -7,16 +7,6 @@
 
 #include <QFile>
 
-static QString modeToString(MatchingMode m)
-{
-    if (m == WildcardMatching)
-        return "wildcard";
-    else if (m == RegExpMatching)
-        return "regexp";
-    else
-        return "strict";
-}
-
 Configuration::Configuration()
 {
 }
@@ -178,15 +168,12 @@ void Configuration::readVerbosityFilter(TracePointSets *tps)
 
 MatchingMode Configuration::parseMatchingMode(const QString &s)
 {
-    if (s == "wildcard")
-        return WildcardMatching;
-    else if (s == "regexp")
-        return RegExpMatching;
-    else if (s == "strict")
-        return StrictMatching;
-    m_xml.raiseError(tr("Unknown matching mode %1").arg(s));
-    
-    return StrictMatching;
+    bool ok;
+    MatchingMode mode = stringToMode(s, &ok);
+    if (!ok)
+        m_xml.raiseError(tr("Unknown matching mode %1").arg(s));
+
+    return mode;
 }
 
 void Configuration::readPathFilter(TracePointSets *tps)
@@ -302,5 +289,29 @@ bool Configuration::save(QString *errMsg)
 void Configuration::addProcessConfiguration(ProcessConfiguration *pc)
 {
     m_processes.append(pc);
+}
+
+QString Configuration::modeToString(MatchingMode m)
+{
+    if (m == WildcardMatching)
+        return "wildcard";
+    else if (m == RegExpMatching)
+        return "regexp";
+    else
+        return "strict";
+}
+
+MatchingMode Configuration::stringToMode(QString s, bool *bOk)
+{
+    if (bOk) *bOk = true;
+    if (s == "wildcard")
+        return WildcardMatching;
+    if (s == "regexp")
+        return RegExpMatching;
+    else if (s == "strict")
+        return StrictMatching;
+
+    if (bOk) *bOk = false;
+    return StrictMatching;
 }
 

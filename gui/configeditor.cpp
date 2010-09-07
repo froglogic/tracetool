@@ -9,26 +9,6 @@
 
 #include <QMessageBox>
 
-static QString modeToString(MatchingMode m)
-{
-    if (m == WildcardMatching)
-        return "wildcard";
-    else if (m == RegExpMatching)
-        return "regexp";
-    else
-        return "strict";
-}
-
-static MatchingMode stringToMode(QString s)
-{
-    if (s == "wildcard")
-        return WildcardMatching;
-    if (s == "regexp")
-        return RegExpMatching;
-    else
-        return StrictMatching;
-}
-
 ConfigEditor::ConfigEditor(Configuration *conf,
                            QWidget *parent, Qt::WindowFlags flags)
     : QDialog(parent, flags),
@@ -96,10 +76,10 @@ void ConfigEditor::saveCurrentProcess(int row)
         if (item1->text() == "maxVerbosity") {
             tps.m_maxVerbosity = item3->text().toInt();
         } else if (item1->text() == "pathfilter") {
-            tps.m_pathFilterMode = stringToMode(item2->text());
+            tps.m_pathFilterMode = Configuration::stringToMode(item2->text());
             tps.m_pathFilter = item3->text();
         } else if (item1->text() == "functionfilter") {
-            tps.m_functionFilterMode = stringToMode(item2->text());
+            tps.m_functionFilterMode = Configuration::stringToMode(item2->text());
             tps.m_functionFilter = item3->text();
         }
         tpsets.append(tps);
@@ -145,11 +125,11 @@ void ConfigEditor::currentProcessChanged(QListWidgetItem *current, QListWidgetIt
             txt2 = QString::number(s.m_maxVerbosity);
         } else if (!s.m_pathFilter.isEmpty()) {
             txt0 = "pathfilter";
-            txt1 = modeToString(s.m_pathFilterMode);
+            txt1 = Configuration::modeToString(s.m_pathFilterMode);
             txt2 = s.m_pathFilter;
         } else if (!s.m_functionFilter.isEmpty()) {
             txt0 = "functionfilter";
-            txt1 = modeToString(s.m_functionFilterMode);
+            txt1 = Configuration::modeToString(s.m_functionFilterMode);
             txt2 = s.m_functionFilter;
         } else {
             txt0 = "unknown";

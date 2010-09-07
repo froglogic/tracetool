@@ -56,6 +56,9 @@ public:
 
     void addProcessConfiguration(ProcessConfiguration *pc);
 
+    static QString modeToString(MatchingMode m);
+    static MatchingMode stringToMode(QString s, bool *bOk = 0);
+
 private:
     void readConfigurationElement();
     void readProcessElement();
