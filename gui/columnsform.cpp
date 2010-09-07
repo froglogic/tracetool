@@ -12,7 +12,7 @@
 const int RealIndexDataRole = Qt::UserRole;
 
 ColumnsForm::ColumnsForm(Settings *settings,
-                       QWidget *parent, Qt::WindowFlags flags)
+                         QWidget *parent, Qt::WindowFlags flags)
     : QDialog(parent, flags),
       m_settings(settings)
 {

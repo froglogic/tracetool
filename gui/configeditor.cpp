@@ -93,7 +93,7 @@ void ConfigEditor::currentProcessChanged(QListWidgetItem *current, QListWidgetIt
 {
     if (!current)
         return;
-    int row = processList->row( current );
+    int row = processList->row(current);
     assert(row < m_conf->processCount());
     if (previous) {
         int prevRow = processList->row(previous);
@@ -165,7 +165,7 @@ void ConfigEditor::newConfig()
 void ConfigEditor::deleteConfig()
 {
     if (QListWidgetItem *lwi = processList->currentItem()) {
-        processList->takeItem( processList->row(lwi));
+        processList->takeItem(processList->row(lwi));
     }
 }
 
