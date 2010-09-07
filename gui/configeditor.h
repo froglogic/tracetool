@@ -9,6 +9,8 @@
 #include <QDialog>
 #include "ui_configeditor.h"
 
+class QListWidgetItem;
+
 class Configuration;
 
 class ConfigEditor : public QDialog, private Ui::ConfigEditor
@@ -25,7 +27,7 @@ protected:
     void accept();
 
 private slots:
-    void currentProcessChanged(int row);
+    void currentProcessChanged(QListWidgetItem *, QListWidgetItem *);
     void saveCurrentProcess(int row);
     void newConfig();
     void deleteConfig();

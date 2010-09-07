@@ -26,8 +26,8 @@ ConfigEditor::ConfigEditor(Configuration *conf,
 {
     setupUi(this);
 
-    connect(processList, SIGNAL(currentRowChanged(int)),
-            this, SLOT(currentProcessChanged(int)));
+    connect(processList, SIGNAL(currentItemChanged(QListWidgetItem*, QListWidgetItem*)),
+            this, SLOT(currentProcessChanged(QListWidgetItem*, QListWidgetItem*)));
 
     connect(pushButton, SIGNAL(clicked()),
             this, SLOT(newConfig()));
@@ -76,11 +76,16 @@ void ConfigEditor::saveCurrentProcess(int row)
     p->m_serializerOption["beautifiedOutput"] = serializerOptionEdit->text();
 }
 
-void ConfigEditor::currentProcessChanged(int row)
+void ConfigEditor::currentProcessChanged(QListWidgetItem *current, QListWidgetItem *previous)
 {
-    if (row < 0)
+    if (!current)
         return;
+    int row = processList->row( current );
     assert(row < m_conf->processCount());
+    if (previous) {
+        int prevRow = processList->row(previous);
+        saveCurrentProcess(prevRow);
+    }
     const ProcessConfiguration *p = m_conf->process(row);
 
     nameEdit->setText(p->m_name);
