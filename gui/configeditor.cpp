@@ -19,6 +19,16 @@ static QString modeToString(MatchingMode m)
         return "strict";
 }
 
+static MatchingMode stringToMode(QString s)
+{
+    if (s == "wildcard")
+        return WildcardMatching;
+    if (s == "regexp")
+        return RegExpMatching;
+    else
+        return StrictMatching;
+}
+
 ConfigEditor::ConfigEditor(Configuration *conf,
                            QWidget *parent, Qt::WindowFlags flags)
     : QDialog(parent, flags),
@@ -74,6 +84,27 @@ void ConfigEditor::saveCurrentProcess(int row)
     // Serializer
     p->m_serializerType = serializerTypeEdit->text();
     p->m_serializerOption["beautifiedOutput"] = serializerOptionEdit->text();
+
+    // Filters
+    const int rows = filterTable->rowCount();
+    QList<TracePointSets> tpsets;
+    for (int i = 0;i < rows;++i) {
+        QTableWidgetItem *item1 = filterTable->item(i, 0);
+        QTableWidgetItem *item2 = filterTable->item(i, 1);
+        QTableWidgetItem *item3 = filterTable->item(i, 2);
+        TracePointSets tps;
+        if (item1->text() == "maxVerbosity") {
+            tps.m_maxVerbosity = item3->text().toInt();
+        } else if (item1->text() == "pathfilter") {
+            tps.m_pathFilterMode = stringToMode(item2->text());
+            tps.m_pathFilter = item3->text();
+        } else if (item1->text() == "functionfilter") {
+            tps.m_functionFilterMode = stringToMode(item2->text());
+            tps.m_functionFilter = item3->text();
+        }
+        tpsets.append(tps);
+    }
+    p->m_tracePointSets = tpsets;
 }
 
 void ConfigEditor::currentProcessChanged(QListWidgetItem *current, QListWidgetItem *previous)
