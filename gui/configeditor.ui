@@ -22,14 +22,14 @@
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_2">
        <item>
-        <widget class="QPushButton" name="pushButton">
+        <widget class="QPushButton" name="newConfigButton">
          <property name="text">
           <string>New</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="pushButton_2">
+        <widget class="QPushButton" name="delConfigButton">
          <property name="text">
           <string>Delete</string>
          </property>
@@ -123,9 +123,6 @@
    </item>
    <item row="3" column="1">
     <widget class="QTableWidget" name="filterTable">
-     <attribute name="verticalHeaderVisible">
-      <bool>false</bool>
-     </attribute>
      <attribute name="verticalHeaderVisible">
       <bool>false</bool>
      </attribute>

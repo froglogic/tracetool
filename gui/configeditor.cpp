@@ -16,13 +16,15 @@ ConfigEditor::ConfigEditor(Configuration *conf,
 {
     setupUi(this);
 
+    portEdit->setValidator(new QIntValidator(this));
+
     connect(processList, SIGNAL(currentItemChanged(QListWidgetItem*, QListWidgetItem*)),
             this, SLOT(currentProcessChanged(QListWidgetItem*, QListWidgetItem*)));
 
-    connect(pushButton, SIGNAL(clicked()),
+    connect(newConfigButton, SIGNAL(clicked()),
             this, SLOT(newConfig()));
 
-    connect(pushButton_2, SIGNAL(clicked()),
+    connect(delConfigButton, SIGNAL(clicked()),
             this, SLOT(deleteConfig()));
 
     connect(nameEdit, SIGNAL(textChanged(const QString&)),
@@ -151,6 +153,10 @@ void ConfigEditor::newConfig()
     QString newProcess("application.exe");
     ProcessConfiguration *pc = new ProcessConfiguration;
     pc->m_name = newProcess;
+    pc->m_outputType = "tcp";
+    pc->m_outputOption["host"] = "127.0.0.1";
+    pc->m_serializerType = "xml";
+    pc->m_serializerOption["beautifiedOutput"] = "yes";
     m_conf->addProcessConfiguration(pc);
     processList->addItem(newProcess);
     processList->setCurrentRow(processList->count() - 1);
