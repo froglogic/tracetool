@@ -66,7 +66,7 @@
          <x>0</x>
          <y>0</y>
          <width>925</width>
-         <height>474</height>
+         <height>484</height>
         </rect>
        </property>
        <attribute name="label">
@@ -84,7 +84,7 @@
          <x>0</x>
          <y>0</y>
          <width>925</width>
-         <height>474</height>
+         <height>484</height>
         </rect>
        </property>
        <attribute name="label">
@@ -114,10 +114,10 @@
               </property>
              </spacer>
             </item>
-            <item row="0" column="1">
+            <item row="0" column="2">
              <widget class="SearchWidget" name="tracePointsSearchWidget" native="true"/>
             </item>
-            <item row="1" column="0" colspan="2">
+            <item row="1" column="0" colspan="3">
              <widget class="QTableView" name="tracePointsView">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -131,9 +131,17 @@
               <attribute name="horizontalHeaderStretchLastSection">
                <bool>true</bool>
               </attribute>
-              <attribute name="horizontalHeaderStretchLastSection">
-               <bool>true</bool>
-              </attribute>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QToolButton" name="tracePointsClear">
+              <property name="text">
+               <string>...</string>
+              </property>
+              <property name="icon">
+               <iconset resource="gui.qrc">
+                <normaloff>:/icons/go-down.png</normaloff>:/icons/go-down.png</iconset>
+              </property>
              </widget>
             </item>
            </layout>
@@ -152,7 +160,7 @@
      <x>0</x>
      <y>0</y>
      <width>943</width>
-     <height>24</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_Help">

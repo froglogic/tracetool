@@ -113,6 +113,8 @@ bool MainWindow::setDatabase(const QString &databaseFileName, QString *errMsg)
                                                                      const QStringList & ) ),
              m_entryItemModel, SLOT( highlightEntries( const QString &,
                                                        const QStringList & ) ) );
+    connect( tracePointsClear, SIGNAL(clicked()),
+             this, SLOT(clearTracePoints()));
 
     m_settings->setDatabaseFile(databaseFileName);
 
@@ -275,5 +277,11 @@ void MainWindow::updateColumns()
         // ### could fetch names here, too
         tracePointsView->setColumnHidden(i, !ci->isVisible(i));
     }
+}
+
+void MainWindow::clearTracePoints()
+{
+    // XXX: I think entryitemmodel should support removing/clearing
+    // the backend before this can work?
 }
 

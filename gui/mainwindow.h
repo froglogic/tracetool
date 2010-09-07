@@ -44,6 +44,7 @@ private slots:
     void editStorage();
     void updateColumns();
     void filterChange();
+    void clearTracePoints();
 
 private:
     bool openConfigurationFile(const QString &fileName);
