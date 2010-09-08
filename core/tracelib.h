@@ -101,6 +101,7 @@ Hello, Max!
  * This concludes the tracelib quick start.
  */
 
+#include "dlldefs.h"
 #include "tracelib_config.h"
 
 #include "variabledumping.h"
@@ -143,7 +144,7 @@ TRACELIB_NAMESPACE_BEGIN
 class Configuration;
 
 struct TracePointType {
-    enum Value {
+    enum TRACELIB_EXPORT Value {
         None = 0
 #define TRACELIB_TRACEPOINTTYPE(name) ,name
 #include "tracepointtypes.def"
@@ -176,7 +177,7 @@ struct TracePointType {
 };
 
 struct TracePoint {
-    TracePoint( TracePointType::Value type_, unsigned short verbosity_, const char *sourceFile_, unsigned int lineno_, const char *functionName_ )
+    TRACELIB_EXPORT TracePoint( TracePointType::Value type_, unsigned short verbosity_, const char *sourceFile_, unsigned int lineno_, const char *functionName_ )
         : type( type_ ),
         verbosity( verbosity_ ),
         sourceFile( sourceFile_ ),
@@ -200,7 +201,7 @@ struct TracePoint {
     bool variableSnapshotEnabled;
 };
 
-void visitTracePoint( TracePoint *tracePoint,
+TRACELIB_EXPORT void visitTracePoint( TracePoint *tracePoint,
                       const char *msg = 0,
                       VariableSnapshot *variables = 0 );
 

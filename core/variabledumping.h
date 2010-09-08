@@ -6,6 +6,7 @@
 #ifndef TRACELIB_VARIABLEDUMPING_H
 #define TRACELIB_VARIABLEDUMPING_H
 
+#include "dlldefs.h"
 #include "tracelib_config.h"
 
 #include <string>
@@ -48,10 +49,10 @@ struct VariableType {
 
 class VariableValue {
 public:
-    static VariableValue stringValue( const std::string &s );
-    static VariableValue numberValue( unsigned long v );
-    static VariableValue booleanValue( bool v );
-    static VariableValue floatValue( long double v );
+    TRACELIB_EXPORT static VariableValue stringValue( const std::string &s );
+    TRACELIB_EXPORT static VariableValue numberValue( unsigned long v );
+    TRACELIB_EXPORT static VariableValue booleanValue( bool v );
+    TRACELIB_EXPORT static VariableValue floatValue( long double v );
 
     VariableType::Value type() const;
     const std::string &asString() const;
@@ -73,6 +74,31 @@ private:
 
 template <typename T>
 VariableValue convertVariable( T o );
+
+#define TRACELIB_DECLARE_TEMPLATE_SPECIALIZATION(T) \
+template <> \
+TRACELIB_EXPORT VariableValue convertVariable( T val );
+
+TRACELIB_DECLARE_TEMPLATE_SPECIALIZATION(bool)
+TRACELIB_DECLARE_TEMPLATE_SPECIALIZATION(short)
+TRACELIB_DECLARE_TEMPLATE_SPECIALIZATION(unsigned short)
+TRACELIB_DECLARE_TEMPLATE_SPECIALIZATION(int)
+TRACELIB_DECLARE_TEMPLATE_SPECIALIZATION(unsigned int)
+TRACELIB_DECLARE_TEMPLATE_SPECIALIZATION(long)
+TRACELIB_DECLARE_TEMPLATE_SPECIALIZATION(unsigned long)
+TRACELIB_DECLARE_TEMPLATE_SPECIALIZATION(float)
+TRACELIB_DECLARE_TEMPLATE_SPECIALIZATION(double)
+TRACELIB_DECLARE_TEMPLATE_SPECIALIZATION(long double)
+TRACELIB_DECLARE_TEMPLATE_SPECIALIZATION(const void *)
+TRACELIB_DECLARE_TEMPLATE_SPECIALIZATION(char)
+TRACELIB_DECLARE_TEMPLATE_SPECIALIZATION(signed char)
+TRACELIB_DECLARE_TEMPLATE_SPECIALIZATION(unsigned char)
+TRACELIB_DECLARE_TEMPLATE_SPECIALIZATION(const char *)
+TRACELIB_DECLARE_TEMPLATE_SPECIALIZATION(const signed char *)
+TRACELIB_DECLARE_TEMPLATE_SPECIALIZATION(const unsigned char *)
+TRACELIB_DECLARE_TEMPLATE_SPECIALIZATION(std::string)
+
+#undef TRACELIB_DECLARE_TEMPLATE_SPECIALIZATION
 
 class AbstractVariable
 {
@@ -105,7 +131,7 @@ AbstractVariable *makeConverter( const char *name, const T &o ) {
 
 typedef std::vector<AbstractVariable *> VariableSnapshot;
 
-VariableSnapshot &operator<<( VariableSnapshot &snapshot, AbstractVariable *v );
+TRACELIB_EXPORT VariableSnapshot &operator<<( VariableSnapshot &snapshot, AbstractVariable *v );
 
 TRACELIB_NAMESPACE_END
 

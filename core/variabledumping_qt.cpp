@@ -3,16 +3,7 @@
 ** All rights reserved.
 **********************************************************************/
 
-#include "variabledumping.h"
-
-#include <QByteArray>
-#include <QChar>
-#include <QDate>
-#include <QDateTime>
-#include <QString>
-#include <QStringList>
-#include <QTime>
-#include <QVariant>
+#include "variabledumping_qt.h"
 
 TRACELIB_NAMESPACE_BEGIN
 
@@ -44,8 +35,8 @@ TRACELIB_SPECIALIZE_CONVERSION_USING_QVARIANT(QStringList)
 TRACELIB_SPECIALIZE_CONVERSION_USING_QVARIANT(QTime)
 TRACELIB_SPECIALIZE_CONVERSION(qulonglong, numberValue)
 
-#  undef TRACELIB_SPECIALIZE_CONVERSION
-#  undef TRACELIB_SPECIALIZE_CONVERSION_USING_QVARIANT
+#undef TRACELIB_SPECIALIZE_CONVERSION
+#undef TRACELIB_SPECIALIZE_CONVERSION_USING_QVARIANT
 
 TRACELIB_NAMESPACE_END
 
