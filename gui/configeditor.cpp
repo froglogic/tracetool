@@ -8,6 +8,7 @@
 #include "configuration.h"
 
 #include <QMessageBox>
+#include <QComboBox>
 
 ConfigEditor::ConfigEditor(Configuration *conf,
                            QWidget *parent, Qt::WindowFlags flags)
@@ -78,16 +79,17 @@ void ConfigEditor::saveCurrentProcess(int row)
     QList<TracePointSets> tpsets;
     for (int i = 0;i < rows;++i) {
         QTableWidgetItem *item1 = filterTable->item(i, 0);
-        QTableWidgetItem *item2 = filterTable->item(i, 1);
         QTableWidgetItem *item3 = filterTable->item(i, 2);
         TracePointSets tps;
         if (item1->text() == "maxVerbosity") {
             tps.m_maxVerbosity = item3->text().toInt();
         } else if (item1->text() == "pathfilter") {
-            tps.m_pathFilterMode = Configuration::stringToMode(item2->text());
+            if (QComboBox *combo = qobject_cast<QComboBox*>(filterTable->cellWidget(i, 1)))
+                tps.m_pathFilterMode = Configuration::stringToMode(combo->currentText());
             tps.m_pathFilter = item3->text();
         } else if (item1->text() == "functionfilter") {
-            tps.m_functionFilterMode = Configuration::stringToMode(item2->text());
+            if (QComboBox *combo = qobject_cast<QComboBox*>(filterTable->cellWidget(i, 1)))
+                tps.m_functionFilterMode = Configuration::stringToMode(combo->currentText());
             tps.m_functionFilter = item3->text();
         }
         tpsets.append(tps);
@@ -145,10 +147,17 @@ void ConfigEditor::currentProcessChanged(QListWidgetItem *current, QListWidgetIt
             txt2 = "unknown";
         }
         QTableWidgetItem *item0 = new QTableWidgetItem(txt0);
-        QTableWidgetItem *item1 = new QTableWidgetItem(txt1);
         QTableWidgetItem *item2 = new QTableWidgetItem(txt2);
         filterTable->setItem(filterRow, 0, item0);
-        filterTable->setItem(filterRow, 1, item1);
+        if (!txt1.isEmpty()) {
+            QComboBox *combo = new QComboBox();
+            combo->addItems(QStringList() << Configuration::modeToString(StrictMatching)
+                                          << Configuration::modeToString(WildcardMatching)
+                                          << Configuration::modeToString(RegExpMatching));
+            combo->setCurrentIndex(combo->findText(txt1));
+            filterTable->setCellWidget(filterRow, 1, combo);
+        } else
+            filterTable->setCellWidget(filterRow, 1, 0);
         filterTable->setItem(filterRow, 2, item2);
         ++filterRow;
     }
