@@ -32,6 +32,8 @@ private slots:
     void newConfig();
     void deleteConfig();
     void processNameChanged(const QString &text);
+    void addFilter();
+    void removeFilter();
 
 private:
     void fillInConfiguration();
