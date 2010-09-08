@@ -383,8 +383,11 @@ Output *Configuration::createOutputFromElement( TiXmlElement *e )
             if ( optionName == "host" ) {
                 hostname = optionElement->GetText(); // XXX Consider encoding issues
             } else if ( optionName == "port" ) {
-                istringstream str( optionElement->GetText() );
-                str >> port; // XXX Error handling for non-numeric port numbers
+                const char *portValue = optionElement->GetText();
+                if ( portValue ) {
+                    istringstream str( portValue );
+                    str >> port; // XXX Error handling for non-numeric port numbers
+               }
             } else {
                 m_errorLog->write( "Tracelib Configuration: while reading %s: Unknown <option> element with name '%s' found in tcp output; ignoring this.", m_fileName.c_str(), optionName.c_str() );
                 continue;
