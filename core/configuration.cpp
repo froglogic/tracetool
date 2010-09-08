@@ -381,7 +381,9 @@ Output *Configuration::createOutputFromElement( TiXmlElement *e )
             }
 
             if ( optionName == "host" ) {
-                hostname = optionElement->GetText(); // XXX Consider encoding issues
+                const char *hostValue = optionElement->GetText();
+                if ( hostValue )
+                    hostname = hostValue; // XXX Consider encoding issues
             } else if ( optionName == "port" ) {
                 const char *portValue = optionElement->GetText();
                 if ( portValue ) {
@@ -395,7 +397,7 @@ Output *Configuration::createOutputFromElement( TiXmlElement *e )
         }
 
         if ( hostname.empty() ) {
-            m_errorLog->write( "Tracelib Configuration: while reading %s: No 'name' option specified for <output> element of type tcp.", m_fileName.c_str() );
+            m_errorLog->write( "Tracelib Configuration: while reading %s: No 'host' option specified for <output> element of type tcp.", m_fileName.c_str() );
             return 0;
         }
 
