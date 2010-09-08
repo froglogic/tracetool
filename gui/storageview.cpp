@@ -5,6 +5,7 @@
 
 #include "storageview.h"
 
+#include <QDir>
 #include <QFileInfo>
 
 StorageView::StorageView(Settings *settings, QWidget *parent)
@@ -36,7 +37,7 @@ void StorageView::restoreSettings()
     // current file
     QFileInfo fi(m_settings->databaseFile()); // ### let Settings do that
     if (fi.exists()) {
-        currentFile->setText(fi.absoluteFilePath());
+        currentFile->setText(QDir::toNativeSeparators(fi.absoluteFilePath()));
         // ### note life
         currentSize->setText(QString("%1 Bytes").arg(fi.size()));
     } else {
