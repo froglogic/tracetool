@@ -303,7 +303,9 @@ Serializer *Configuration::createSerializerFromElement( TiXmlElement *e )
             }
 
             if ( optionName == "beautifiedOutput" ) {
-                beautifiedOutput = strcmp( optionElement->GetText(), "yes" ) == 0;
+                const char *beautifiedOutputValue = optionElement->GetText();
+                if ( beautifiedOutputValue )
+                    beautifiedOutput = strcmp( beautifiedOutputValue, "yes" ) == 0;
             } else {
                 m_errorLog->write( "Tracelib Configuration: while reading %s: Unknown <option> element with name '%s' found in xml serializer; ignoring this.", m_fileName.c_str(), optionName.c_str() );
                 continue;

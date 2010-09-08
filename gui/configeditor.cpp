@@ -76,7 +76,9 @@ void ConfigEditor::saveCurrentProcess(int row)
 
     // Serializer
     p->m_serializerType = serializerTypeEdit->text();
-    p->m_serializerOption["beautifiedOutput"] = serializerOptionEdit->text();
+    const QString serializerOptionValue = serializerOptionEdit->text();
+    if (!serializerOptionValue.isEmpty())
+        p->m_serializerOption["beautifiedOutput"] = serializerOptionValue;
 
     // Filters
     const int rows = filterTable->rowCount();
