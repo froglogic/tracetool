@@ -68,7 +68,9 @@ void ConfigEditor::saveCurrentProcess(int row)
     // Output
     p->m_outputType = outputTypeEdit->text();
     p->m_outputOption["host"] = hostEdit->text();
-    p->m_outputOption["port"] = portEdit->text();
+    const QString portValue = portEdit->text();
+    if (!portValue.isEmpty())
+        p->m_outputOption["port"] = portEdit->text();
 
     // Serializer
     p->m_serializerType = serializerTypeEdit->text();
