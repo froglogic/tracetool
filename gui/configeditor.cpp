@@ -156,8 +156,11 @@ void ConfigEditor::currentProcessChanged(QListWidgetItem *current, QListWidgetIt
                                           << Configuration::modeToString(RegExpMatching));
             combo->setCurrentIndex(combo->findText(txt1));
             filterTable->setCellWidget(filterRow, 1, combo);
-        } else
-            filterTable->setCellWidget(filterRow, 1, 0);
+        } else {
+            QTableWidgetItem *item1 = new QTableWidgetItem(QString::null);
+            item1->setFlags(Qt::NoItemFlags);
+            filterTable->setItem(filterRow, 1, item1);
+        }
         filterTable->setItem(filterRow, 2, item2);
         ++filterRow;
     }
