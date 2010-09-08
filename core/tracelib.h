@@ -117,7 +117,7 @@ Hello, Max!
 #  error "Unsupported compiler!"
 #endif
 
-#ifndef NDEBUG
+#ifndef TRACELIB_DISABLE_TRACE_CODE
 #  define TRACELIB_VARIABLE_SNAPSHOT_MSG(verbosity, vars, msg) \
 { \
     static TRACELIB_NAMESPACE_IDENT(TracePoint) tracePoint(TRACELIB_NAMESPACE_IDENT(TracePointType)::Watch, (verbosity), TRACELIB_CURRENT_FILE_NAME, TRACELIB_CURRENT_LINE_NUMBER, TRACELIB_CURRENT_FUNCTION_NAME); \
