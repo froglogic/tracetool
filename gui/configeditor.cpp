@@ -203,11 +203,14 @@ void ConfigEditor::addFilter()
 
 void ConfigEditor::removeFilter()
 {
-    if (QListWidgetItem *lwi = processList->currentItem()) {
-        const int row = processList->row(lwi);
-        ProcessConfiguration *p = m_conf->process(row);
-        p->m_tracePointSets.takeAt(filterTable->currentRow());
-        currentProcessChanged(lwi, 0);
+    const int filterRow = filterTable->currentRow();
+    if (filterRow != -1 ) {
+        if (QListWidgetItem *lwi = processList->currentItem()) {
+            const int row = processList->row(lwi);
+            ProcessConfiguration *p = m_conf->process(row);
+            p->m_tracePointSets.takeAt(filterRow);
+            currentProcessChanged(lwi, 0);
+        }
     }
 }
 
