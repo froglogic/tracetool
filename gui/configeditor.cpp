@@ -17,7 +17,7 @@ ConfigEditor::ConfigEditor(Configuration *conf,
 {
     setupUi(this);
 
-    portEdit->setValidator(new QIntValidator(this));
+    portEdit->setValidator(new QIntValidator(0, 65535, this));
 
     connect(processList, SIGNAL(currentItemChanged(QListWidgetItem*, QListWidgetItem*)),
             this, SLOT(currentProcessChanged(QListWidgetItem*, QListWidgetItem*)));
