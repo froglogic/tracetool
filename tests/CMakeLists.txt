@@ -1,13 +1,38 @@
-SET_DIRECTORY_PROPERTIES(PROPERTIES INCLUDE_DIRECTORIES ${PROJECT_SOURCE_DIR}/core)
+INCLUDE_DIRECTORIES(
+        ${PROJECT_SOURCE_DIR}
+        ${PROJECT_SOURCE_DIR}/core
+        ${PROJECT_SOURCE_DIR}/3rdparty/pcre-8.10
+)
 
-ADD_EXECUTABLE(test_filter test_filter.cpp)
-TARGET_LINK_LIBRARIES(test_filter tracelib)
+ADD_DEFINITIONS(-DTRACELIB_EXPORT= -DPCRE_STATIC -D_CRT_SECURE_NO_WARNINGS)
 
-ADD_EXECUTABLE(test_info test_info.cpp)
-TARGET_LINK_LIBRARIES(test_info tracelib)
+ADD_EXECUTABLE(test_filter
+        test_filter.cpp
+        ../core/filter.cpp
+        ../3rdparty/wildcmp/wildcmp.c)
+TARGET_LINK_LIBRARIES(test_filter pcre pcrecpp)
 
-ADD_EXECUTABLE(test_processname test_processname.cpp)
-TARGET_LINK_LIBRARIES(test_processname tracelib)
+IF(WIN32)
+    ADD_EXECUTABLE(test_info
+            test_info.cpp
+            ../core/getcurrentthreadid_win.cpp)
+ELSE(WIN32)
+    ADD_EXECUTABLE(test_info
+            test_info.cpp
+            ../core/getcurrentthreadid_unix.cpp)
+ENDIF(WIN32)
+
+IF(WIN32)
+    ADD_EXECUTABLE(test_processname
+            test_processname.cpp
+            ../core/getcurrentthreadid_win.cpp
+            ../core/configuration_win.cpp)
+ELSE(WIN32)
+    ADD_EXECUTABLE(test_processname
+            test_processname.cpp
+            ../core/getcurrentthreadid_unix.cpp
+            ../core/configuration_unix.cpp)
+ENDIF(WIN32)
 
 FIND_PACKAGE(Qt4 4.5.0 COMPONENTS QtGui QtCore QtSql QtNetwork QtXml QtSql REQUIRED)
 INCLUDE(${QT_USE_FILE})
