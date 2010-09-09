@@ -297,7 +297,9 @@ void EntryItemModel::reApplyFilter()
     endResetModel();
 }
 
-void EntryItemModel::highlightEntries(const QString &term, const QStringList &fields)
+void EntryItemModel::highlightEntries(const QString &term,
+                                      const QStringList &fields,
+                                      SearchWidget::MatchType matchType)
 {
     if ( term.isEmpty() || fields.isEmpty() ) {
         if ( !m_highlightedEntryIds.isEmpty() ) {
@@ -314,30 +316,48 @@ void EntryItemModel::highlightEntries(const QString &term, const QStringList &fi
 
     QStringList fieldConstraints;
 
+    QString valueTestCode;
+    switch ( matchType ) {
+        case SearchWidget::StrictMatch:
+            valueTestCode = QString( "= '%1'" ).arg( term );
+            break;
+        case SearchWidget::WildcardMatch:
+            valueTestCode = QString( "LIKE '%1'" ).arg( term );
+            valueTestCode = valueTestCode.replace( '*', "%" );
+            valueTestCode = valueTestCode.replace( '.', '_' );
+            break;
+        case SearchWidget::RegExpMatch:
+            // XXX Using the REGEXP statement requires registering a
+            // user-defined 'regexp' function via the SQLite API (see
+            // http://www.sqlite.org/c3ref/create_function.html).
+            valueTestCode = QString( "REGEXP '%1'" ).arg( term );
+            break;
+    }
+
     QStringList::ConstIterator it, end = fields.end();
     for ( it = fields.begin(); it != end; ++it ) {
         if ( *it == tr( "Application" ) ) {
             fieldConstraints <<
                 QString( "(traced_thread.id = trace_entry.traced_thread_id AND "
                          " traced_thread.process_id = process.id AND"
-                         " process.name LIKE '%%1%')" )
-                    .arg( term );
+                         " process.name %1)" )
+                    .arg( valueTestCode );
         } else if ( *it == tr( "File" ) ) {
             fieldConstraints <<
                 QString( "(trace_point.id = trace_entry.trace_point_id AND"
                          " path_name.id = trace_point.path_id AND "
-                         " path_name.name LIKE '%%1%')" )
-                    .arg( term );
+                         " path_name.name %1)" )
+                    .arg( valueTestCode );
         } else if ( *it == tr( "Function" ) ) {
             fieldConstraints <<
                 QString( "(trace_point.id = trace_entry.trace_point_id AND"
                          " function_name.id = trace_point.function_id AND"
-                         " function_name.name LIKE '%%1%')" )
-                    .arg( term );
+                         " function_name.name %1)" )
+                    .arg( valueTestCode );
         } else if ( *it == tr( "Message" ) ) {
             fieldConstraints <<
-                QString( "(trace_entry.message LIKE '%%1%')" )
-                    .arg( term );
+                QString( "(trace_entry.message %1)" )
+                    .arg( valueTestCode );
         }
     }
 

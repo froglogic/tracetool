@@ -10,7 +10,9 @@
 
 class QHBoxLayout;
 class QPushButton;
+class QRadioButton;
 class QStringList;
+class QVBoxLayout;
 
 class UnlabelledLineEdit : public QLineEdit
 {
@@ -31,23 +33,32 @@ class SearchWidget : public QWidget
 {
     Q_OBJECT
 public:
+    enum MatchType {
+        StrictMatch,
+        WildcardMatch,
+        RegExpMatch
+    };
+
     SearchWidget( QWidget *parent = 0 );
 
     void setFields( const QStringList &fields );
 signals:
     void searchCriteriaChanged( const QString &term,
-                                const QStringList &fields );
+                                const QStringList &fields,
+                                SearchWidget::MatchType matchType );
 
 private slots:
     void termEdited( const QString &term );
-    void fieldsChanged();
-
-private:
     void emitSearchCriteria();
 
+private:
     UnlabelledLineEdit *m_lineEdit;
     QList<QPushButton *> m_fieldButtons;
     QHBoxLayout *m_buttonLayout;
+    QVBoxLayout *m_modifierLayout;
+    QRadioButton *m_strictMatch;
+    QRadioButton *m_wildcardMatch;
+    QRadioButton *m_regexpMatch;
 };
 
 #endif // !defined(SEARCHWIDGET_H)

@@ -5,14 +5,18 @@
 
 #include "searchwidget.h"
 
+#include <QGridLayout>
 #include <QHBoxLayout>
 #include <QLineEdit>
 #include <QPainter>
 #include <QPushButton>
+#include <QRadioButton>
 #include <QStringList>
 #include <QStyle>
 #include <QStyleOptionFrameV2>
 #include <QVBoxLayout>
+
+#include <assert.h>
 
 UnlabelledLineEdit::UnlabelledLineEdit( QWidget *parent )
 {
@@ -53,13 +57,40 @@ SearchWidget::SearchWidget( QWidget *parent )
              this, SLOT( termEdited( const QString & ) ) );
     m_lineEdit->setPlaceholderText( "Search trace data..." );
 
-    m_buttonLayout = new QHBoxLayout;
-    m_buttonLayout->addStretch();
+    m_strictMatch = new QRadioButton( tr( "Strict" ), this );
+    m_strictMatch->setChecked( true );
+    connect( m_strictMatch, SIGNAL( clicked() ),
+             this, SLOT( emitSearchCriteria() ) );
+    m_strictMatch->hide();
+    m_wildcardMatch = new QRadioButton( tr( "Wildcard" ), this );
+    connect( m_wildcardMatch, SIGNAL( clicked() ),
+             this, SLOT( emitSearchCriteria() ) );
+    m_wildcardMatch->hide();
+    m_regexpMatch = new QRadioButton( tr( "RegExp" ), this );
+    connect( m_regexpMatch, SIGNAL( clicked() ),
+             this, SLOT( emitSearchCriteria() ) );
+    m_regexpMatch->hide();
 
-    QVBoxLayout *layout = new QVBoxLayout( this );
-    layout->addWidget( m_lineEdit );
-    layout->addLayout( m_buttonLayout );
-    layout->addStretch();
+    // XXX Enable the radio button once regexp matching is
+    // implemented in EntryItemModel
+    m_regexpMatch->setEnabled( false );
+
+    m_buttonLayout = new QHBoxLayout;
+    m_buttonLayout->setMargin( 0 );
+    m_buttonLayout->setSpacing( 0 );
+
+    m_modifierLayout = new QVBoxLayout;
+    m_modifierLayout->setMargin( 0 );
+    m_modifierLayout->setSpacing( 2 );
+    m_modifierLayout->addWidget( m_strictMatch );
+    m_modifierLayout->addWidget( m_wildcardMatch );
+    m_modifierLayout->addWidget( m_regexpMatch );
+
+    QGridLayout *layout = new QGridLayout( this );
+    layout->setMargin( 0 );
+    layout->addWidget( m_lineEdit, 0, 0 );
+    layout->addLayout( m_buttonLayout, 1, 0 );
+    layout->addLayout( m_modifierLayout, 0, 1, 2, 1 );
 }
 
 void SearchWidget::emitSearchCriteria()
@@ -71,7 +102,19 @@ void SearchWidget::emitSearchCriteria()
             selectedFields.append( ( *it )->text() );
         }
     }
-    emit searchCriteriaChanged( m_lineEdit->text(), selectedFields );
+
+    MatchType matchType;
+    if ( m_strictMatch->isChecked() ) {
+        matchType = StrictMatch;
+    } else if ( m_wildcardMatch->isChecked() ) {
+        matchType = WildcardMatch;
+    } else if ( m_regexpMatch->isChecked() ) {
+        matchType = RegExpMatch;
+    } else {
+        assert( !"Some match type radio button must be checked" );
+    }
+
+    emit searchCriteriaChanged( m_lineEdit->text(), selectedFields, matchType );
 }
 
 void SearchWidget::termEdited( const QString &newTerm )
@@ -80,11 +123,9 @@ void SearchWidget::termEdited( const QString &newTerm )
     for ( it = m_fieldButtons.begin(); it != end; ++it ) {
         ( *it )->setVisible( !newTerm.isEmpty() );
     }
-    emitSearchCriteria();
-}
-
-void SearchWidget::fieldsChanged()
-{
+    m_strictMatch->setVisible( !newTerm.isEmpty() );
+    m_wildcardMatch->setVisible( !newTerm.isEmpty() );
+    m_regexpMatch->setVisible( !newTerm.isEmpty() );
     emitSearchCriteria();
 }
 
@@ -99,7 +140,7 @@ void SearchWidget::setFields( const QStringList &fields )
     for ( it = fields.begin(); it != end; ++it ) {
         QPushButton *fieldButton = new QPushButton( *it );
         connect( fieldButton, SIGNAL( clicked() ),
-                 this, SLOT( fieldsChanged() ) );
+                 this, SLOT( emitSearchCriteria() ) );
 
         fieldButton->setCheckable( true );
 

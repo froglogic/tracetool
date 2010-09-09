@@ -110,9 +110,11 @@ bool MainWindow::setDatabase(const QString &databaseFileName, QString *errMsg)
     connect(m_server, SIGNAL(traceEntryReceived(const TraceEntry &)),
             m_watchTree, SLOT(handleNewTraceEntry(const TraceEntry &)));
     connect( tracePointsSearchWidget, SIGNAL( searchCriteriaChanged( const QString &,
-                                                                     const QStringList & ) ),
+                                                                     const QStringList &,
+                                                                     SearchWidget::MatchType ) ),
              m_entryItemModel, SLOT( highlightEntries( const QString &,
-                                                       const QStringList & ) ) );
+                                                       const QStringList &,
+                                                       SearchWidget::MatchType ) ) );
     connect( tracePointsClear, SIGNAL(clicked()),
              this, SLOT(clearTracePoints()));
 

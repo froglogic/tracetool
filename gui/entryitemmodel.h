@@ -6,6 +6,8 @@
 #ifndef ENTRYITEMMODEL_H
 #define ENTRYITEMMODEL_H
 
+#include "searchwidget.h"
+
 #include <QAbstractTableModel>
 #include <QSet>
 #include <QSqlDatabase>
@@ -42,7 +44,9 @@ public:
 public slots:
     void handleNewTraceEntry(const TraceEntry &e);
     void reApplyFilter();
-    void highlightEntries(const QString &term, const QStringList &fields);
+    void highlightEntries(const QString &term,
+                          const QStringList &fields,
+                          SearchWidget::MatchType matchType);
 
 private slots:
     void insertNewTraceEntries();
