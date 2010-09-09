@@ -14,7 +14,7 @@
    <string>Trace Configuration</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="0" column="0" rowspan="5">
+   <item row="0" column="0" rowspan="7">
     <layout class="QVBoxLayout" name="verticalLayout">
      <item>
       <widget class="QListWidget" name="processList"/>
@@ -56,18 +56,24 @@
      </item>
     </layout>
    </item>
-   <item row="1" column="1">
+   <item row="3" column="1">
     <widget class="QGroupBox" name="outputBox">
      <property name="title">
       <string>Output</string>
      </property>
      <layout class="QFormLayout" name="formLayout">
+      <property name="fieldGrowthPolicy">
+       <enum>QFormLayout::ExpandingFieldsGrow</enum>
+      </property>
       <item row="0" column="0">
        <widget class="QLabel" name="label">
         <property name="text">
          <string>Type:</string>
         </property>
        </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="outputTypeComboBox"/>
       </item>
       <item row="1" column="0">
        <widget class="QLabel" name="hostLabel">
@@ -89,13 +95,20 @@
       <item row="2" column="1">
        <widget class="QLineEdit" name="portEdit"/>
       </item>
-      <item row="0" column="1">
-       <widget class="QComboBox" name="outputTypeComboBox"/>
-      </item>
      </layout>
     </widget>
    </item>
-   <item row="2" column="1">
+   <item row="7" column="0" colspan="2">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Close|QDialogButtonBox::Save</set>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="1">
     <widget class="QGroupBox" name="outputBox_2">
      <property name="title">
       <string>Serializer</string>
@@ -131,35 +144,7 @@
      </layout>
     </widget>
    </item>
-   <item row="5" column="0" colspan="2">
-    <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Close|QDialogButtonBox::Save</set>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="1">
-    <layout class="QHBoxLayout" name="horizontalLayout_4">
-     <item>
-      <widget class="QPushButton" name="addFilterButton">
-       <property name="text">
-        <string>Add</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="removeFilterButton">
-       <property name="text">
-        <string>Remove</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item row="3" column="1">
+   <item row="1" column="1">
     <widget class="QTableWidget" name="filterTable">
      <property name="selectionBehavior">
       <enum>QAbstractItemView::SelectRows</enum>
@@ -204,6 +189,24 @@
       </property>
      </column>
     </widget>
+   </item>
+   <item row="2" column="1">
+    <layout class="QHBoxLayout" name="horizontalLayout_4">
+     <item>
+      <widget class="QPushButton" name="addFilterButton">
+       <property name="text">
+        <string>Add</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="removeFilterButton">
+       <property name="text">
+        <string>Remove</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
   </layout>
  </widget>
