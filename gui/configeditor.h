@@ -35,6 +35,7 @@ private slots:
     void addFilter();
     void removeFilter();
     void serializerComboChanged(const QString &text);
+    void outputTypeComboChanged(const QString &text);
 
 private:
     void fillInConfiguration();
