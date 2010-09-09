@@ -19,6 +19,11 @@ ConfigEditor::ConfigEditor(Configuration *conf,
 
     portEdit->setValidator(new QIntValidator(0, 65535, this));
 
+    serializerComboBox->addItem("xml");
+    serializerComboBox->addItem("plaintext");
+    connect(serializerComboBox, SIGNAL(currentIndexChanged(const QString&)),
+            this, SLOT(serializerComboChanged(const QString&)));
+
     connect(processList, SIGNAL(currentItemChanged(QListWidgetItem*, QListWidgetItem*)),
             this, SLOT(currentProcessChanged(QListWidgetItem*, QListWidgetItem*)));
 
@@ -75,10 +80,9 @@ void ConfigEditor::saveCurrentProcess(int row)
         p->m_outputOption["port"] = portValue;
 
     // Serializer
-    p->m_serializerType = serializerTypeEdit->text();
-    const QString serializerOptionValue = serializerOptionEdit->text();
-    if (!serializerOptionValue.isEmpty())
-        p->m_serializerOption["beautifiedOutput"] = serializerOptionValue;
+    p->m_serializerType = serializerComboBox->currentText();
+    if (p->m_serializerType == "xml")
+        p->m_serializerOption["beautifiedOutput"] = beautifiedCheckBox->isChecked() ? "yes" : "no";
 
     // Filters
     const int rows = filterTable->rowCount();
@@ -125,8 +129,8 @@ void ConfigEditor::currentProcessChanged(QListWidgetItem *current, QListWidgetIt
     portEdit->setText(p->m_outputOption["port"]);
 
     // Serializer
-    serializerTypeEdit->setText(p->m_serializerType);
-    serializerOptionEdit->setText(p->m_serializerOption["beautifiedOutput"]);
+    serializerComboBox->setCurrentIndex(serializerComboBox->findText(p->m_serializerType));
+    beautifiedCheckBox->setChecked(p->m_serializerOption["beautifiedOutput"] == "yes");
 
     // Filters
     filterTable->clearContents();
@@ -242,5 +246,12 @@ void ConfigEditor::save()
     if (!m_conf->save(&errMsg)) {
         QMessageBox::critical(this, "Save Error", errMsg);
     }
+}
+
+void ConfigEditor::serializerComboChanged(const QString &text)
+{
+    bool plaintext = text != "plaintext";
+    beautifiedLabel->setEnabled(plaintext);
+    beautifiedCheckBox->setEnabled(plaintext);
 }
 

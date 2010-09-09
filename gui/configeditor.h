@@ -34,6 +34,7 @@ private slots:
     void processNameChanged(const QString &text);
     void addFilter();
     void removeFilter();
+    void serializerComboChanged(const QString &text);
 
 private:
     void fillInConfiguration();
