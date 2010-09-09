@@ -90,13 +90,15 @@ void ConfigEditor::saveCurrentProcess(int row)
         if (item1->text() == "maxVerbosity") {
             tps.m_maxVerbosity = item3->text().toInt();
         } else if (item1->text() == "pathfilter") {
+            tps.m_pathFilter = item3->text();
+            if (tps.m_pathFilter.isEmpty()) continue;
             if (QComboBox *combo = qobject_cast<QComboBox*>(filterTable->cellWidget(i, 1)))
                 tps.m_pathFilterMode = Configuration::stringToMode(combo->currentText());
-            tps.m_pathFilter = item3->text();
         } else if (item1->text() == "functionfilter") {
+            tps.m_functionFilter = item3->text();
+            if (tps.m_functionFilter.isEmpty()) continue;
             if (QComboBox *combo = qobject_cast<QComboBox*>(filterTable->cellWidget(i, 1)))
                 tps.m_functionFilterMode = Configuration::stringToMode(combo->currentText());
-            tps.m_functionFilter = item3->text();
         }
         tpsets.append(tps);
     }
