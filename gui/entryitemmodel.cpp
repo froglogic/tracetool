@@ -7,7 +7,7 @@
 
 #include "entryfilter.h"
 #include "columnsinfo.h"
-#include "../core/tracelib.h"
+#include "../hooklib/tracelib.h"
 
 #include <QBrush>
 #include <QDateTime>

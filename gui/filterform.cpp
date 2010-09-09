@@ -6,7 +6,7 @@
 #include "filterform.h"
 
 #include "entryfilter.h"
-#include "../core/tracelib.h"
+#include "../hooklib/tracelib.h"
 
 FilterForm::FilterForm(Settings *settings, QWidget *parent)
     : QWidget(parent),

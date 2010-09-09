@@ -5,7 +5,7 @@
 
 #include "../convertdb/getopt.h"
 
-#include "../core/tracelib.h"
+#include "../hooklib/tracelib.h"
 #include "../server/database.h"
 
 #include <cstdio>

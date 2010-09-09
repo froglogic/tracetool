@@ -18,7 +18,7 @@
 #include <QtGui>
 #include <QtSql>
 
-#include "../core/tracelib.h"
+#include "../hooklib/tracelib.h"
 #include "../server/server.h"
 
 MainWindow::MainWindow(Settings *settings,

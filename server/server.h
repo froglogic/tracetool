@@ -16,7 +16,7 @@
 #include <QTcpSocket>
 #include <QThread>
 
-#include "../core/tracelib.h"
+#include "../hooklib/tracelib.h"
 
 struct StackFrame
 {
