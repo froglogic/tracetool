@@ -79,7 +79,8 @@ static size_t writeTo( int fd, const char *data, const int length, ErrorLog *log
 }
 
 NetworkOutput::NetworkOutput( ErrorLog *log, const string &host, unsigned short port )
-    : m_host( host ), m_port( port ), m_socket( -1 ), m_error_log( log )
+    : m_host( host ), m_port( port ), m_socket( -1 ), m_error_log( log ),
+    m_lastConnectionAttemptFailed( false )
 {
 #ifdef _WIN32
     WSADATA wsaData;
@@ -106,8 +107,12 @@ NetworkOutput::~NetworkOutput()
 
 bool NetworkOutput::open()
 {
-    if ( m_socket == -1 )
+    if ( m_socket == -1 && !m_lastConnectionAttemptFailed ) {
         m_socket = connectTo( m_host, m_port, m_error_log );
+        if ( m_socket == -1 ) {
+            m_lastConnectionAttemptFailed = true;
+        }
+    }
     return m_socket != -1;
 }
 
@@ -133,6 +138,7 @@ void NetworkOutput::close()
     ::close( m_socket );
 #endif
     m_socket = -1;
+    m_lastConnectionAttemptFailed = false;
 }
 
 TRACELIB_NAMESPACE_END
