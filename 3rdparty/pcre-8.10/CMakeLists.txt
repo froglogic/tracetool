@@ -399,6 +399,10 @@ SET(targets ${targets} pcrecpp)
   ENDIF(MINGW AND NOT PCRE_STATIC)
 ENDIF(PCRE_BUILD_PCRECPP)
 
+# froglogic modification: allow linking the .a files into our dll
+IF(UNIX)
+  SET_TARGET_PROPERTIES(pcre pcrecpp PROPERTIES COMPILE_FLAGS -fPIC)
+ENDIF(UNIX)
 
 # Executables
 

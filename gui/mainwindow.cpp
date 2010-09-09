@@ -18,7 +18,7 @@
 #include <QtGui>
 #include <QtSql>
 
-#include "../core/tracelib.h"
+#include "../hooklib/tracelib.h"
 #include "../server/server.h"
 
 MainWindow::MainWindow(Settings *settings,
@@ -281,7 +281,8 @@ void MainWindow::updateColumns()
 
 void MainWindow::clearTracePoints()
 {
-    // XXX: I think entryitemmodel should support removing/clearing
-    // the backend before this can work?
+    m_server->trimTo( 0 );
+    m_entryItemModel->reApplyFilter();
+    m_watchTree->reApplyFilter();
 }
 

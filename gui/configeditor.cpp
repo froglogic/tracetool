@@ -8,6 +8,7 @@
 #include "configuration.h"
 
 #include <QMessageBox>
+#include <QComboBox>
 
 ConfigEditor::ConfigEditor(Configuration *conf,
                            QWidget *parent, Qt::WindowFlags flags)
@@ -16,7 +17,12 @@ ConfigEditor::ConfigEditor(Configuration *conf,
 {
     setupUi(this);
 
-    portEdit->setValidator(new QIntValidator(this));
+    portEdit->setValidator(new QIntValidator(0, 65535, this));
+
+    serializerComboBox->addItem("xml");
+    serializerComboBox->addItem("plaintext");
+    connect(serializerComboBox, SIGNAL(currentIndexChanged(const QString&)),
+            this, SLOT(serializerComboChanged(const QString&)));
 
     connect(processList, SIGNAL(currentItemChanged(QListWidgetItem*, QListWidgetItem*)),
             this, SLOT(currentProcessChanged(QListWidgetItem*, QListWidgetItem*)));
@@ -66,29 +72,37 @@ void ConfigEditor::saveCurrentProcess(int row)
 
     // Output
     p->m_outputType = outputTypeEdit->text();
-    p->m_outputOption["host"] = hostEdit->text();
-    p->m_outputOption["port"] = portEdit->text();
+    const QString hostValue = hostEdit->text();
+    if (!hostValue.isEmpty())
+    p->m_outputOption["host"] = hostValue;
+    const QString portValue = portEdit->text();
+    if (!portValue.isEmpty())
+        p->m_outputOption["port"] = portValue;
 
     // Serializer
-    p->m_serializerType = serializerTypeEdit->text();
-    p->m_serializerOption["beautifiedOutput"] = serializerOptionEdit->text();
+    p->m_serializerType = serializerComboBox->currentText();
+    if (p->m_serializerType == "xml")
+        p->m_serializerOption["beautifiedOutput"] = beautifiedCheckBox->isChecked() ? "yes" : "no";
 
     // Filters
     const int rows = filterTable->rowCount();
     QList<TracePointSets> tpsets;
     for (int i = 0;i < rows;++i) {
         QTableWidgetItem *item1 = filterTable->item(i, 0);
-        QTableWidgetItem *item2 = filterTable->item(i, 1);
         QTableWidgetItem *item3 = filterTable->item(i, 2);
         TracePointSets tps;
         if (item1->text() == "maxVerbosity") {
             tps.m_maxVerbosity = item3->text().toInt();
         } else if (item1->text() == "pathfilter") {
-            tps.m_pathFilterMode = Configuration::stringToMode(item2->text());
             tps.m_pathFilter = item3->text();
+            if (tps.m_pathFilter.isEmpty()) continue;
+            if (QComboBox *combo = qobject_cast<QComboBox*>(filterTable->cellWidget(i, 1)))
+                tps.m_pathFilterMode = Configuration::stringToMode(combo->currentText());
         } else if (item1->text() == "functionfilter") {
-            tps.m_functionFilterMode = Configuration::stringToMode(item2->text());
             tps.m_functionFilter = item3->text();
+            if (tps.m_functionFilter.isEmpty()) continue;
+            if (QComboBox *combo = qobject_cast<QComboBox*>(filterTable->cellWidget(i, 1)))
+                tps.m_functionFilterMode = Configuration::stringToMode(combo->currentText());
         }
         tpsets.append(tps);
     }
@@ -115,8 +129,8 @@ void ConfigEditor::currentProcessChanged(QListWidgetItem *current, QListWidgetIt
     portEdit->setText(p->m_outputOption["port"]);
 
     // Serializer
-    serializerTypeEdit->setText(p->m_serializerType);
-    serializerOptionEdit->setText(p->m_serializerOption["beautifiedOutput"]);
+    serializerComboBox->setCurrentIndex(serializerComboBox->findText(p->m_serializerType));
+    beautifiedCheckBox->setChecked(p->m_serializerOption["beautifiedOutput"] == "yes");
 
     // Filters
     filterTable->clearContents();
@@ -145,10 +159,20 @@ void ConfigEditor::currentProcessChanged(QListWidgetItem *current, QListWidgetIt
             txt2 = "unknown";
         }
         QTableWidgetItem *item0 = new QTableWidgetItem(txt0);
-        QTableWidgetItem *item1 = new QTableWidgetItem(txt1);
         QTableWidgetItem *item2 = new QTableWidgetItem(txt2);
         filterTable->setItem(filterRow, 0, item0);
-        filterTable->setItem(filterRow, 1, item1);
+        if (!txt1.isEmpty()) {
+            QComboBox *combo = new QComboBox();
+            combo->addItems(QStringList() << Configuration::modeToString(StrictMatching)
+                                          << Configuration::modeToString(WildcardMatching)
+                                          << Configuration::modeToString(RegExpMatching));
+            combo->setCurrentIndex(combo->findText(txt1));
+            filterTable->setCellWidget(filterRow, 1, combo);
+        } else {
+            QTableWidgetItem *item1 = new QTableWidgetItem(QString::null);
+            item1->setFlags(Qt::NoItemFlags);
+            filterTable->setItem(filterRow, 1, item1);
+        }
         filterTable->setItem(filterRow, 2, item2);
         ++filterRow;
     }
@@ -191,11 +215,14 @@ void ConfigEditor::addFilter()
 
 void ConfigEditor::removeFilter()
 {
-    if (QListWidgetItem *lwi = processList->currentItem()) {
-        const int row = processList->row(lwi);
-        ProcessConfiguration *p = m_conf->process(row);
-        p->m_tracePointSets.takeAt(filterTable->currentRow());
-        currentProcessChanged(lwi, 0);
+    const int filterRow = filterTable->currentRow();
+    if (filterRow != -1 ) {
+        if (QListWidgetItem *lwi = processList->currentItem()) {
+            const int row = processList->row(lwi);
+            ProcessConfiguration *p = m_conf->process(row);
+            p->m_tracePointSets.takeAt(filterRow);
+            currentProcessChanged(lwi, 0);
+        }
     }
 }
 
@@ -219,5 +246,12 @@ void ConfigEditor::save()
     if (!m_conf->save(&errMsg)) {
         QMessageBox::critical(this, "Save Error", errMsg);
     }
+}
+
+void ConfigEditor::serializerComboChanged(const QString &text)
+{
+    bool plaintext = text != "plaintext";
+    beautifiedLabel->setEnabled(plaintext);
+    beautifiedCheckBox->setEnabled(plaintext);
 }
 

@@ -400,3 +400,26 @@ void Server::storeShutdownEvent( const ProcessShutdownEvent &ev )
     transaction.exec( QString( "UPDATE process SET end_time=%1 WHERE pid=%2 AND start_time=%3;" ).arg( formatValue( ev.stopTime ) ).arg( ev.pid ).arg( formatValue( ev.startTime ) ) );
 }
 
+void Server::trimTo( size_t nMostRecent )
+{
+    /* Special handling in case we want to remove all entries from
+     * the database; these simple DELETE FROM statements are
+     * recognized by sqlite and they run much faster than those
+     * with a WHERE clause.
+     */
+    if ( nMostRecent == 0 ) {
+        Transaction transaction( m_db );
+        transaction.exec( "DELETE FROM trace_entry;" );
+        transaction.exec( "DELETE FROM trace_point;" );
+        transaction.exec( "DELETE FROM function_name;" );
+        transaction.exec( "DELETE FROM path_name;" );
+        transaction.exec( "DELETE FROM process;" );
+        transaction.exec( "DELETE FROM traced_thread;" );
+        transaction.exec( "DELETE FROM variable;" );
+        transaction.exec( "DELETE FROM stackframe;" );
+        return;
+    }
+    qWarning() << "Server::trimTo: deleting all but the n most recent trace "
+                  "entries not implemented yet!";
+}
+

@@ -16,6 +16,16 @@ bool EntryFilter::matches(const TraceEntry &e) const
     // Check is analog to LIKE %..% clause in model using a SQL query
     if (!m_application.isEmpty() && !e.processName.contains(m_application))
         return false;
+    if (m_processId != -1 && m_processId != e.pid)
+        return false;
+    if (m_threadId != -1 && m_threadId != e.tid)
+        return false;
+    if (m_function.isEmpty() && !e.function.contains(m_function))
+        return false;
+    if (m_message.isEmpty() && !e.message.contains(m_message))
+        return false;
+    if (m_type != -1 && m_type != e.type)
+        return false;
     return true;
 }
 

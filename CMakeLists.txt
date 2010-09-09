@@ -11,7 +11,7 @@ IF(CMAKE_COMPILER_IS_GNUCC)
                     -Wchar-subscripts -Wno-long-long)
 ENDIF(CMAKE_COMPILER_IS_GNUCC)
 
-ADD_SUBDIRECTORY(core)
+ADD_SUBDIRECTORY(hooklib)
 ADD_SUBDIRECTORY(server)
 ADD_SUBDIRECTORY(gui)
 ADD_SUBDIRECTORY(convertdb)

@@ -57,6 +57,7 @@ class NetworkOutput : public Output
     unsigned short m_port;
     int m_socket;
     ErrorLog *m_error_log;
+    bool m_lastConnectionAttemptFailed;
 
     void close();
 

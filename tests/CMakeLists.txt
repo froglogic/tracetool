@@ -1,13 +1,38 @@
-SET_DIRECTORY_PROPERTIES(PROPERTIES INCLUDE_DIRECTORIES ${PROJECT_SOURCE_DIR}/core)
+INCLUDE_DIRECTORIES(
+        ${PROJECT_SOURCE_DIR}
+        ${PROJECT_SOURCE_DIR}/hooklib
+        ${PROJECT_SOURCE_DIR}/3rdparty/pcre-8.10
+)
 
-ADD_EXECUTABLE(test_filter test_filter.cpp)
-TARGET_LINK_LIBRARIES(test_filter tracelib)
+ADD_DEFINITIONS(-DTRACELIB_EXPORT= -DPCRE_STATIC -D_CRT_SECURE_NO_WARNINGS)
 
-ADD_EXECUTABLE(test_info test_info.cpp)
-TARGET_LINK_LIBRARIES(test_info tracelib)
+ADD_EXECUTABLE(test_filter
+        test_filter.cpp
+        ../hooklib/filter.cpp
+        ../3rdparty/wildcmp/wildcmp.c)
+TARGET_LINK_LIBRARIES(test_filter pcre pcrecpp)
 
-ADD_EXECUTABLE(test_processname test_processname.cpp)
-TARGET_LINK_LIBRARIES(test_processname tracelib)
+IF(WIN32)
+    ADD_EXECUTABLE(test_info
+            test_info.cpp
+            ../hooklib/getcurrentthreadid_win.cpp)
+ELSE(WIN32)
+    ADD_EXECUTABLE(test_info
+            test_info.cpp
+            ../hooklib/getcurrentthreadid_unix.cpp)
+ENDIF(WIN32)
+
+IF(WIN32)
+    ADD_EXECUTABLE(test_processname
+            test_processname.cpp
+            ../hooklib/getcurrentthreadid_win.cpp
+            ../hooklib/configuration_win.cpp)
+ELSE(WIN32)
+    ADD_EXECUTABLE(test_processname
+            test_processname.cpp
+            ../hooklib/getcurrentthreadid_unix.cpp
+            ../hooklib/configuration_unix.cpp)
+ENDIF(WIN32)
 
 IF(NOT WIN32)
     ADD_EXECUTABLE(test_eventthreadunix test_eventthreadunix.cpp)

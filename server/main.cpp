@@ -5,7 +5,7 @@
 
 #include "server.h"
 
-#include "../core/tracelib_config.h"
+#include "../hooklib/tracelib_config.h"
 #include "../convertdb/getopt.h"
 
 #include <QCoreApplication>

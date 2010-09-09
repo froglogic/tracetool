@@ -16,7 +16,7 @@
 #include <QTcpSocket>
 #include <QThread>
 
-#include "../core/tracelib.h"
+#include "../hooklib/tracelib.h"
 
 struct StackFrame
 {
@@ -113,6 +113,8 @@ public:
     Server( const QString &databaseFileName, unsigned short port,
             QObject *parent = 0 );
     virtual ~Server();
+
+    void trimTo( size_t nMostRecent );
 
 public slots:
     void handleIncomingData(const QByteArray &data);

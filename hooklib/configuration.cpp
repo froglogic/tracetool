@@ -226,8 +226,10 @@ Filter *Configuration::createFilterFromElement( TiXmlElement *e )
                 return 0;
             }
         }
+        const char *pathFilterValue = e->GetText();
+        if ( !pathFilterValue ) return 0;
         PathFilter *f = new PathFilter;
-        f->setPath( matchingMode, e->GetText() ); // XXX Consider encoding issues
+        f->setPath( matchingMode, pathFilterValue ); // XXX Consider encoding issues
         return f;
     }
 
@@ -246,8 +248,10 @@ Filter *Configuration::createFilterFromElement( TiXmlElement *e )
                 return 0;
             }
         }
+        const char *functionFilterValue = e->GetText();
+        if ( !functionFilterValue ) return 0;
         FunctionFilter *f = new FunctionFilter;
-        f->setFunction( matchingMode, e->GetText() ); // XXX Consider encoding issues
+        f->setFunction( matchingMode, functionFilterValue ); // XXX Consider encoding issues
         return f;
     }
 
@@ -303,7 +307,9 @@ Serializer *Configuration::createSerializerFromElement( TiXmlElement *e )
             }
 
             if ( optionName == "beautifiedOutput" ) {
-                beautifiedOutput = strcmp( optionElement->GetText(), "yes" ) == 0;
+                const char *beautifiedOutputValue = optionElement->GetText();
+                if ( beautifiedOutputValue )
+                    beautifiedOutput = strcmp( beautifiedOutputValue, "yes" ) == 0;
             } else {
                 m_errorLog->write( "Tracelib Configuration: while reading %s: Unknown <option> element with name '%s' found in xml serializer; ignoring this.", m_fileName.c_str(), optionName.c_str() );
                 continue;
@@ -381,10 +387,15 @@ Output *Configuration::createOutputFromElement( TiXmlElement *e )
             }
 
             if ( optionName == "host" ) {
-                hostname = optionElement->GetText(); // XXX Consider encoding issues
+                const char *hostValue = optionElement->GetText();
+                if ( hostValue )
+                    hostname = hostValue; // XXX Consider encoding issues
             } else if ( optionName == "port" ) {
-                istringstream str( optionElement->GetText() );
-                str >> port; // XXX Error handling for non-numeric port numbers
+                const char *portValue = optionElement->GetText();
+                if ( portValue ) {
+                    istringstream str( portValue );
+                    str >> port; // XXX Error handling for non-numeric port numbers
+               }
             } else {
                 m_errorLog->write( "Tracelib Configuration: while reading %s: Unknown <option> element with name '%s' found in tcp output; ignoring this.", m_fileName.c_str(), optionName.c_str() );
                 continue;
@@ -392,7 +403,7 @@ Output *Configuration::createOutputFromElement( TiXmlElement *e )
         }
 
         if ( hostname.empty() ) {
-            m_errorLog->write( "Tracelib Configuration: while reading %s: No 'name' option specified for <output> element of type tcp.", m_fileName.c_str() );
+            m_errorLog->write( "Tracelib Configuration: while reading %s: No 'host' option specified for <output> element of type tcp.", m_fileName.c_str() );
             return 0;
         }
 

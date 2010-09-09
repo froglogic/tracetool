@@ -37,10 +37,10 @@ public slots:
     void suspend();
     void resume();
     void handleNewTraceEntry( const TraceEntry &e );
+    void reApplyFilter();
 
 private slots:
     void showNewTraceEntriesFireAndForget();
-    void reApplyFilter();
 
 private:
     bool showNewTraceEntries( QString *errMsg );

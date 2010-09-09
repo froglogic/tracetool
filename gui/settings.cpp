@@ -7,7 +7,7 @@
 
 #include "entryfilter.h"
 #include "columnsinfo.h"
-#include "../core/tracelib_config.h"
+#include "../hooklib/tracelib_config.h"
 
 #include <cassert>
 #include <QDebug>
