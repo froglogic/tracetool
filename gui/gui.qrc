@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="icons">
+    <file>nuke.png</file>
     <file>freeze.png</file>
     <file>arrow-left.png</file>
     <file>arrow-right.png</file>
