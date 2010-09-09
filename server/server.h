@@ -114,6 +114,8 @@ public:
             QObject *parent = 0 );
     virtual ~Server();
 
+    void trimTo( size_t nMostRecent );
+
 public slots:
     void handleIncomingData(const QByteArray &data);
 
