@@ -226,8 +226,10 @@ Filter *Configuration::createFilterFromElement( TiXmlElement *e )
                 return 0;
             }
         }
+        const char *pathFilterValue = e->GetText();
+        if ( !pathFilterValue ) return 0;
         PathFilter *f = new PathFilter;
-        f->setPath( matchingMode, e->GetText() ); // XXX Consider encoding issues
+        f->setPath( matchingMode, pathFilterValue ); // XXX Consider encoding issues
         return f;
     }
 
@@ -246,8 +248,10 @@ Filter *Configuration::createFilterFromElement( TiXmlElement *e )
                 return 0;
             }
         }
+        const char *functionFilterValue = e->GetText();
+        if ( !functionFilterValue ) return 0;
         FunctionFilter *f = new FunctionFilter;
-        f->setFunction( matchingMode, e->GetText() ); // XXX Consider encoding issues
+        f->setFunction( matchingMode, functionFilterValue ); // XXX Consider encoding issues
         return f;
     }
 
