@@ -9,6 +9,11 @@ TARGET_LINK_LIBRARIES(test_info tracelib)
 ADD_EXECUTABLE(test_processname test_processname.cpp)
 TARGET_LINK_LIBRARIES(test_processname tracelib)
 
+IF(NOT WIN32)
+    ADD_EXECUTABLE(test_eventthreadunix test_eventthreadunix.cpp)
+    TARGET_LINK_LIBRARIES(test_eventthreadunix tracelib)
+ENDIF(WIN32)
+
 FIND_PACKAGE(Qt4 4.5.0 COMPONENTS QtGui QtCore QtSql QtNetwork QtXml QtSql REQUIRED)
 INCLUDE(${QT_USE_FILE})
 QT4_WRAP_CPP(TESTSESSION_MOC_SOURCES ../gui/columnsinfo.h)
