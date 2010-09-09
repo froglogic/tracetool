@@ -143,6 +143,7 @@ void SearchWidget::setFields( const QStringList &fields )
                  this, SLOT( emitSearchCriteria() ) );
 
         fieldButton->setCheckable( true );
+        fieldButton->setChecked( true );
 
         QFont f = fieldButton->font();
         f.setPointSize( ( f.pointSize() * 90 ) / 100 );
