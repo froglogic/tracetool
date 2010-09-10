@@ -10,22 +10,6 @@
 #include <QMessageBox>
 #include <QComboBox>
 
-static QString outputTypeComboDesc(const QString &outputType)
-{
-    if (outputType == "tcp")
-        return "tcp/ip";
-    else
-        return "console";
-}
-
-static QString descToOutputType(const QString &outputTypeComboDesc)
-{
-    if (outputTypeComboDesc == "tcp/ip")
-        return "tcp";
-    else
-        return "stdout";
-}
-
 ConfigEditor::ConfigEditor(Configuration *conf,
                            QWidget *parent, Qt::WindowFlags flags)
     : QDialog(parent, flags),
@@ -38,11 +22,12 @@ ConfigEditor::ConfigEditor(Configuration *conf,
     serializerComboBox->addItem("xml");
     serializerComboBox->addItem("plaintext");
     connect(serializerComboBox, SIGNAL(currentIndexChanged(const QString&)),
-            this, SLOT(serializerComboChanged(const QString&)));
-    outputTypeComboBox->addItem(outputTypeComboDesc("tcp"));
-    outputTypeComboBox->addItem(outputTypeComboDesc("stdout"));
-    connect(outputTypeComboBox, SIGNAL(currentIndexChanged(const QString&)),
-            this, SLOT(outputTypeComboChanged(const QString&)));
+            this, SLOT(serializerComboChanged(const QString &)));
+
+    outputTypeComboBox->addItem("TCP/IP Connection", "tcp");
+    outputTypeComboBox->addItem("Console", "stdout");
+    connect(outputTypeComboBox, SIGNAL(currentIndexChanged(int)),
+            this, SLOT(outputTypeComboChanged(int)));
 
     connect(processList, SIGNAL(currentItemChanged(QListWidgetItem*, QListWidgetItem*)),
             this, SLOT(currentProcessChanged(QListWidgetItem*, QListWidgetItem*)));
@@ -91,7 +76,8 @@ void ConfigEditor::saveCurrentProcess(int row)
     p->m_name = nameEdit->text();
 
     // Output
-    p->m_outputType = descToOutputType(outputTypeComboBox->currentText());
+    p->m_outputType = outputTypeComboBox->itemData(outputTypeComboBox->currentIndex(),
+                                                   Qt::UserRole).toString();
     if (p->m_outputType == "tcp") {
         const QString hostValue = hostEdit->text();
         if (!hostValue.isEmpty())
@@ -147,7 +133,7 @@ void ConfigEditor::currentProcessChanged(QListWidgetItem *current, QListWidgetIt
 
     // Output
     const QString outputType = p->m_outputType;
-    outputTypeComboBox->setCurrentIndex(outputTypeComboBox->findText(outputTypeComboDesc(outputType)));
+    outputTypeComboBox->setCurrentIndex(outputTypeComboBox->findData(outputType, Qt::UserRole));
     if (outputType == "tcp") {
         hostEdit->setText(p->m_outputOption["host"]);
         portEdit->setText(p->m_outputOption["port"]);
@@ -287,9 +273,9 @@ void ConfigEditor::serializerComboChanged(const QString &text)
     beautifiedCheckBox->setEnabled(xmlSerializer);
 }
 
-void ConfigEditor::outputTypeComboChanged(const QString &text)
+void ConfigEditor::outputTypeComboChanged(int index)
 {
-    const bool tcp = descToOutputType(text) == "tcp";
+    const bool tcp = outputTypeComboBox->itemData(index, Qt::UserRole).toString() == "tcp";
     hostEdit->setEnabled(tcp);
     portEdit->setEnabled(tcp);
     hostLabel->setEnabled(tcp);
