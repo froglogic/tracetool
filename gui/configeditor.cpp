@@ -78,6 +78,7 @@ void ConfigEditor::saveCurrentProcess(int row)
     // Output
     p->m_outputType = outputTypeComboBox->itemData(outputTypeComboBox->currentIndex(),
                                                    Qt::UserRole).toString();
+    p->m_outputOption.clear();
     if (p->m_outputType == "tcp") {
         const QString hostValue = hostEdit->text();
         if (!hostValue.isEmpty())
@@ -90,6 +91,7 @@ void ConfigEditor::saveCurrentProcess(int row)
     // Serializer
     p->m_serializerType = serializerComboBox->itemData(serializerComboBox->currentIndex(),
                                                        Qt::UserRole).toString();
+    p->m_serializerOption.clear();
     if (p->m_serializerType == "xml")
         p->m_serializerOption["beautifiedOutput"] = beautifiedCheckBox->isChecked() ? "yes" : "no";
 
