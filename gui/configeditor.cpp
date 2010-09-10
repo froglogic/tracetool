@@ -19,10 +19,10 @@ ConfigEditor::ConfigEditor(Configuration *conf,
 
     portEdit->setValidator(new QIntValidator(0, 65535, this));
 
-    serializerComboBox->addItem("xml");
-    serializerComboBox->addItem("plaintext");
-    connect(serializerComboBox, SIGNAL(currentIndexChanged(const QString&)),
-            this, SLOT(serializerComboChanged(const QString &)));
+    serializerComboBox->addItem("XML", "xml");
+    serializerComboBox->addItem("Human Readable Text", "plaintext");
+    connect(serializerComboBox, SIGNAL(currentIndexChanged(int)),
+            this, SLOT(serializerComboChanged(int)));
 
     outputTypeComboBox->addItem("TCP/IP Connection", "tcp");
     outputTypeComboBox->addItem("Console", "stdout");
@@ -88,7 +88,8 @@ void ConfigEditor::saveCurrentProcess(int row)
     }
 
     // Serializer
-    p->m_serializerType = serializerComboBox->currentText();
+    p->m_serializerType = serializerComboBox->itemData(serializerComboBox->currentIndex(),
+                                                       Qt::UserRole).toString();
     if (p->m_serializerType == "xml")
         p->m_serializerOption["beautifiedOutput"] = beautifiedCheckBox->isChecked() ? "yes" : "no";
 
@@ -144,7 +145,7 @@ void ConfigEditor::currentProcessChanged(QListWidgetItem *current, QListWidgetIt
 
     // Serializer
     const QString serializerType = p->m_serializerType;
-    serializerComboBox->setCurrentIndex(serializerComboBox->findText(serializerType));
+    serializerComboBox->setCurrentIndex(serializerComboBox->findData(serializerType, Qt::UserRole));
     if (serializerType == "xml")
         beautifiedCheckBox->setChecked(p->m_serializerOption["beautifiedOutput"] == "yes");
     else
@@ -266,9 +267,9 @@ void ConfigEditor::save()
     }
 }
 
-void ConfigEditor::serializerComboChanged(const QString &text)
+void ConfigEditor::serializerComboChanged(int index)
 {
-    const bool xmlSerializer = text == "xml";
+    const bool xmlSerializer = serializerComboBox->itemData(index, Qt::UserRole).toString() == "xml";
     beautifiedLabel->setEnabled(xmlSerializer);
     beautifiedCheckBox->setEnabled(xmlSerializer);
 }
