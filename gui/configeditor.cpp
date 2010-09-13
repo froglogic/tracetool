@@ -70,7 +70,7 @@ VerbosityFilterHelper::VerbosityFilterHelper(const TracePointSets &tp)
 {
     QHBoxLayout *layout = new QHBoxLayout;
     QComboBox *combo = new QComboBox();
-    combo->addItems(QStringList() << "maxVerbosity");
+    combo->addItems(QStringList() << tr("Max"));
     layout->addWidget(combo);
     m_le = new QLineEdit(QString::number(tp.m_maxVerbosity));
     m_le->setValidator(new QIntValidator(this));
@@ -153,9 +153,9 @@ FilterTableItem::FilterTableItem(FilterTable *fTable, const TracePointSets &tp)
     setObjectName("filter_table_item");
     QHBoxLayout *hb = new QHBoxLayout;
     QComboBox *combo = new QComboBox();
-    combo->addItems(QStringList() << "verbosity"
-                                  << "path"
-                                  << "function");
+    combo->addItems(QStringList() << tr("Verbosity")
+                                  << tr("Path")
+                                  << tr("Function"));
     connect(combo, SIGNAL(currentIndexChanged(int)),
             this, SLOT(filterComboChanged(int)));
     hb->addWidget(combo);
@@ -177,7 +177,7 @@ FilterTableItem::FilterTableItem(FilterTable *fTable, const TracePointSets &tp)
 
     hb->addWidget(m_sw);
 
-    QPushButton *pb = new QPushButton("x");
+    QPushButton *pb = new QPushButton("X");
     connect(pb, SIGNAL(clicked()),
             this, SLOT(removeFilter()));
     hb->addWidget(pb);
@@ -386,14 +386,14 @@ void ConfigEditor::deleteConfig()
 
 void ConfigEditor::addFilter()
 {
-    if (QListWidgetItem *lwi = processList->currentItem()) {
+    if (processList->currentItem()) {
         filterTable->addFilter();
     }
 }
 
 void ConfigEditor::clearFilters()
 {
-    if (QListWidgetItem *lwi = processList->currentItem()) {
+    if (processList->currentItem()) {
         filterTable->clearContents();
     }
 }
