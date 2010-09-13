@@ -18,6 +18,8 @@ public:
 
     void loadFilters(const QList<TracePointSets> &tpsets);
     void saveFilters(QList<TracePointSets> &tpsets);
+    void addFilter();
+    void removeFilter(FilterTableItem* fti);
 
 private:
     void clearContents();
@@ -43,6 +45,19 @@ void FilterTable::clearContents()
     }
 }
 
+void FilterTable::removeFilter(FilterTableItem* fti)
+{
+    delete fti;
+}
+
+void FilterTable::addFilter()
+{
+    TracePointSets s;
+    s.m_functionFilterMode = StrictMatching;
+    s.m_functionFilter = "functionName";
+    static_cast<QBoxLayout*>(layout())->addWidget(new FilterTableItem(this, s), 0, Qt::AlignTop);
+}
+
 class VerbosityFilterHelper : public QWidget
 {
 public:
@@ -55,6 +70,9 @@ private:
 VerbosityFilterHelper::VerbosityFilterHelper(const TracePointSets &tp)
 {
     QHBoxLayout *layout = new QHBoxLayout;
+    QComboBox *combo = new QComboBox();
+    combo->addItems(QStringList() << "maxVerbosity");
+    layout->addWidget(combo);
     m_le = new QLineEdit(QString::number(tp.m_maxVerbosity));
     m_le->setValidator(new QIntValidator(this));
     layout->addWidget(m_le);
@@ -129,14 +147,16 @@ bool FunctionFilterHelper::saveFilter(TracePointSets &tp)
     return !tp.m_functionFilter.isEmpty();
 }
 
-FilterTableItem::FilterTableItem(const TracePointSets &tp)
+FilterTableItem::FilterTableItem(FilterTable *fTable, const TracePointSets &tp)
+: m_fTable(fTable)
 {
+    setFrameStyle(QFrame::Panel | QFrame::Raised);
     setObjectName("filter_table_item");
     QHBoxLayout *hb = new QHBoxLayout;
     QComboBox *combo = new QComboBox();
-    combo->addItems(QStringList() << "maxVerbosity"
-                                  << "pathfilter"
-                                  << "functionfilter");
+    combo->addItems(QStringList() << "verbosity"
+                                  << "path"
+                                  << "function");
     connect(combo, SIGNAL(currentIndexChanged(int)),
             this, SLOT(filterComboChanged(int)));
     hb->addWidget(combo);
@@ -157,13 +177,23 @@ FilterTableItem::FilterTableItem(const TracePointSets &tp)
     }
 
     hb->addWidget(m_sw);
-   // setMaximumHeight(le->sizeHint().height());
+
+    QPushButton *pb = new QPushButton("x");
+    connect(pb, SIGNAL(clicked()),
+            this, SLOT(removeFilter()));
+    hb->addWidget(pb);
+
     setLayout(hb);
 }
 
 void FilterTableItem::filterComboChanged(int idx)
 {
     m_sw->setCurrentIndex(idx);
+}
+
+void FilterTableItem::removeFilter()
+{
+    m_fTable->removeFilter(this);
 }
 
 bool FilterTableItem::saveFilter(TracePointSets &tpsets)
@@ -184,7 +214,7 @@ void FilterTable::loadFilters(const QList<TracePointSets> &tpsets)
     QListIterator<TracePointSets> it(tpsets);
     while (it.hasNext()) {
         TracePointSets s = it.next();
-        FilterTableItem *w = new FilterTableItem(s);
+        FilterTableItem *w = new FilterTableItem(this, s);
         static_cast<QBoxLayout*>(layout())->addWidget(w, 0, Qt::AlignTop);
     }
 }
@@ -358,14 +388,12 @@ void ConfigEditor::deleteConfig()
 void ConfigEditor::addFilter()
 {
     if (QListWidgetItem *lwi = processList->currentItem()) {
-        const int row = processList->row(lwi);
+       /* const int row = processList->row(lwi);
         ProcessConfiguration *p = m_conf->process(row);
-        TracePointSets s;
-        s.m_functionFilterMode = StrictMatching;
-        s.m_functionFilter = "functionName";
         QList<TracePointSets> &tpsets = p->m_tracePointSets;
-        tpsets.append(s);
-        currentProcessChanged(lwi, 0);
+        tpsets.append(s);*/
+        filterTable->addFilter();
+ //       currentProcessChanged(lwi, 0);
     }
 }
 

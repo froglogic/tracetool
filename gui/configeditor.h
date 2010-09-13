@@ -18,19 +18,21 @@ class FilterTable;
 
 class TracePointSets;
 
-class FilterTableItem : public QWidget
+class FilterTableItem : public QFrame
 {
     Q_OBJECT
 public:
-    FilterTableItem(const TracePointSets &tpsets);
+    FilterTableItem(FilterTable *fTable, const TracePointSets &tpsets);
 
     bool saveFilter(TracePointSets &tpsets);
 
 private slots:
     void filterComboChanged(int index);
+    void removeFilter();
 
 private:
     QStackedWidget *m_sw;
+    FilterTable *m_fTable;
 };
 
 class ConfigEditor : public QDialog, private Ui::ConfigEditor
