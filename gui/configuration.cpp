@@ -142,7 +142,8 @@ void Configuration::readTracePointSetElement(ProcessConfiguration *proc)
     tps.m_variables = m_xml.attributes().value("variables") == "yes";
 
     while (m_xml.readNextStartElement()) {
-        if (m_xml.name() == "verbosityfilter")
+        if (m_xml.name() == "matchallfilter") { // ignore for now
+        } else if (m_xml.name() == "verbosityfilter")
             readVerbosityFilter(&tps);
         else if (m_xml.name() == "pathfilter")
             readPathFilter(&tps);
@@ -252,6 +253,7 @@ bool Configuration::save(QString *errMsg)
             stream.writeStartElement("tracepointset");
             QString v = tps.m_variables ? "yes" : "no";
             stream.writeAttribute("variables", v);
+            stream.writeStartElement("matchallfilter");
             // various filters
             if (tps.m_maxVerbosity >= 0) {
                 stream.writeStartElement("verbosityfilter");
@@ -273,6 +275,7 @@ bool Configuration::save(QString *errMsg)
                 stream.writeCharacters(tps.m_functionFilter);
                 stream.writeEndElement();
             }
+            stream.writeEndElement(); // matchallfilter
 
             stream.writeEndElement(); // tracepointset
         }
