@@ -14,9 +14,9 @@
 
 enum MatchingMode { StrictMatching, WildcardMatching, RegExpMatching };
 
-struct TracePointSets
+struct TracePointSet
 {
-    TracePointSets() : m_variables(true), m_maxVerbosity(-1) { }
+    TracePointSet() : m_variables(true), m_maxVerbosity(-1) { }
 
     bool m_variables;
     int m_maxVerbosity;
@@ -38,7 +38,7 @@ struct ProcessConfiguration
     QString m_serializerType;
     QMap<QString, QString> m_serializerOption;
 
-    QList<TracePointSets> m_tracePointSets;
+    QList<TracePointSet> m_tracePointSets;
 };
 
 class Configuration : public QObject
@@ -68,9 +68,9 @@ private:
     void readSerializerElement(ProcessConfiguration *proc);
     void readSerializerOption(ProcessConfiguration *proc);
     void readTracePointSetElement(ProcessConfiguration *proc);
-    void readVerbosityFilter(TracePointSets *tps);
-    void readPathFilter(TracePointSets *tps);
-    void readFunctionFilter(TracePointSets *tps);
+    void readVerbosityFilter(TracePointSet *tps);
+    void readPathFilter(TracePointSet *tps);
+    void readFunctionFilter(TracePointSet *tps);
 
     MatchingMode parseMatchingMode(const QString &s);
 

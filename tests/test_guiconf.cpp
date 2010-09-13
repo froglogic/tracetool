@@ -60,7 +60,7 @@ int main(int argc, char **argv)
                p0->m_serializerOption["beautifiedOutput"] == "yes");
 
     assertEquals("Number of tracepointsets", p0->m_tracePointSets.count(), 1);
-    TracePointSets tps0 = p0->m_tracePointSets[0];
+    TracePointSet tps0 = p0->m_tracePointSets[0];
     assertEquals("Max verbosity", tps0.m_maxVerbosity, 1);
     
     fprintf(stdout, "OK.\n");

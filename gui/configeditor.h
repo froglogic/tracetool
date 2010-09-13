@@ -16,15 +16,15 @@ class Configuration;
 
 class FilterTable;
 
-class TracePointSets;
+class TracePointSet;
 
 class FilterTableItem : public QFrame
 {
     Q_OBJECT
 public:
-    FilterTableItem(FilterTable *fTable, const TracePointSets &tpsets);
+    FilterTableItem(FilterTable *fTable, const TracePointSet &tpsets);
 
-    bool saveFilter(TracePointSets *tpsets);
+    bool saveFilter(TracePointSet *tpsets);
 
 private slots:
     void filterComboChanged(int index);
@@ -39,7 +39,7 @@ class FilterHelper : public QWidget
 {
     Q_OBJECT
 public:
-    virtual bool saveFilter(TracePointSets *tp) = 0;
+    virtual bool saveFilter(TracePointSet *tp) = 0;
 };
 
 class ConfigEditor : public QDialog, private Ui::ConfigEditor

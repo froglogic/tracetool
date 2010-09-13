@@ -138,7 +138,7 @@ void Configuration::readTracePointSetElement(ProcessConfiguration *proc)
 {
     assert(m_xml.isStartElement() && m_xml.name() == "tracepointset");
 
-    TracePointSets tps;
+    TracePointSet tps;
     tps.m_variables = m_xml.attributes().value("variables") == "yes";
 
     while (m_xml.readNextStartElement()) {
@@ -157,7 +157,7 @@ void Configuration::readTracePointSetElement(ProcessConfiguration *proc)
         proc->m_tracePointSets.append(tps);
 }
 
-void Configuration::readVerbosityFilter(TracePointSets *tps)
+void Configuration::readVerbosityFilter(TracePointSet *tps)
 {
     assert(m_xml.isStartElement() && m_xml.name() == "verbosityfilter");
 
@@ -176,7 +176,7 @@ MatchingMode Configuration::parseMatchingMode(const QString &s)
     return mode;
 }
 
-void Configuration::readPathFilter(TracePointSets *tps)
+void Configuration::readPathFilter(TracePointSet *tps)
 {
     assert(m_xml.isStartElement() && m_xml.name() == "pathfilter");
 
@@ -188,7 +188,7 @@ void Configuration::readPathFilter(TracePointSets *tps)
 
 }
 
-void Configuration::readFunctionFilter(TracePointSets *tps)
+void Configuration::readFunctionFilter(TracePointSet *tps)
 {
     assert(m_xml.isStartElement() && m_xml.name() == "functionfilter");
 
@@ -246,9 +246,9 @@ bool Configuration::save(QString *errMsg)
         stream.writeEndElement(); // serializer
 
         // <tracepointsets>
-        QListIterator<TracePointSets> lit(p->m_tracePointSets);
+        QListIterator<TracePointSet> lit(p->m_tracePointSets);
         while (lit.hasNext()) {
-            TracePointSets tps = lit.next();
+            TracePointSet tps = lit.next();
             stream.writeStartElement("tracepointset");
             QString v = tps.m_variables ? "yes" : "no";
             stream.writeAttribute("variables", v);
