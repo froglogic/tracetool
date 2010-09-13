@@ -80,7 +80,7 @@ VerbosityFilterHelper::VerbosityFilterHelper(const TracePointSets &tp)
 
 bool VerbosityFilterHelper::saveFilter(TracePointSets *tp)
 {
-    tp->m_maxVerbosity = static_cast<QLineEdit*>(m_le)->text().toInt();
+    tp->m_maxVerbosity = m_le->text().toInt();
     return true;
 }
 
