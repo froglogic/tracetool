@@ -8,7 +8,199 @@
 #include "configuration.h"
 
 #include <QMessageBox>
+#include <QStackedWidget>
 #include <QComboBox>
+
+class FilterTable : public QWidget
+{
+public:
+    FilterTable(QWidget *parent);
+
+    void loadFilters(const QList<TracePointSets> &tpsets);
+    void saveFilters(QList<TracePointSets> &tpsets);
+
+private:
+    void clearContents();
+};
+
+FilterTable::FilterTable(QWidget *parent)
+ : QWidget(parent)
+{
+    QVBoxLayout *vb = new QVBoxLayout;
+    vb->setSpacing(0);
+    vb->setAlignment(Qt::AlignTop);
+    setLayout(vb);
+}
+
+void FilterTable::clearContents()
+{
+    QObjectList::const_iterator it = children().begin();
+    while (it != children().end()) {
+        if ((*it)->objectName() == "filter_table_item")
+            delete *it;
+        else
+            ++it;
+    }
+}
+
+class VerbosityFilterHelper : public QWidget
+{
+public:
+    VerbosityFilterHelper(const TracePointSets &tp);
+    bool saveFilter(TracePointSets &tp);
+private:
+    QLineEdit *m_le;
+};
+
+VerbosityFilterHelper::VerbosityFilterHelper(const TracePointSets &tp)
+{
+    QHBoxLayout *layout = new QHBoxLayout;
+    m_le = new QLineEdit(QString::number(tp.m_maxVerbosity));
+    m_le->setValidator(new QIntValidator(this));
+    layout->addWidget(m_le);
+    setLayout(layout);
+}
+
+bool VerbosityFilterHelper::saveFilter(TracePointSets &tp)
+{
+    tp.m_maxVerbosity = static_cast<QLineEdit*>(m_le)->text().toInt();
+    return true;
+}
+
+class PathFilterHelper : public QWidget
+{
+public:
+    PathFilterHelper(const TracePointSets &tp);
+    bool saveFilter(TracePointSets &tp);
+private:
+    QLineEdit *m_le;
+    QComboBox *m_combo;
+};
+
+PathFilterHelper::PathFilterHelper(const TracePointSets &tp)
+{
+    QHBoxLayout *layout = new QHBoxLayout;
+    m_combo = new QComboBox();
+    m_combo->addItems(QStringList() << Configuration::modeToString(StrictMatching)
+                                    << Configuration::modeToString(WildcardMatching)
+                                    << Configuration::modeToString(RegExpMatching));
+    m_combo->setCurrentIndex(m_combo->findText(Configuration::modeToString(tp.m_pathFilterMode)));
+    layout->addWidget(m_combo);
+    m_le = new QLineEdit(tp.m_pathFilter);
+    layout->addWidget(m_le);
+    setLayout(layout);
+}
+
+bool PathFilterHelper::saveFilter(TracePointSets &tp)
+{
+    tp.m_pathFilter = m_le->text();
+    tp.m_pathFilterMode = Configuration::stringToMode(m_combo->currentText());
+    return !tp.m_pathFilter.isEmpty();
+}
+
+class FunctionFilterHelper : public QWidget
+{
+public:
+    FunctionFilterHelper(const TracePointSets &tp);
+    bool saveFilter(TracePointSets &tp);
+private:
+    QLineEdit *m_le;
+    QComboBox *m_combo;
+};
+
+FunctionFilterHelper::FunctionFilterHelper(const TracePointSets &tp)
+{
+    QHBoxLayout *layout = new QHBoxLayout;
+    m_combo = new QComboBox();
+    m_combo->addItems(QStringList() << Configuration::modeToString(StrictMatching)
+                                    << Configuration::modeToString(WildcardMatching)
+                                    << Configuration::modeToString(RegExpMatching));
+    m_combo->setCurrentIndex(m_combo->findText(Configuration::modeToString(tp.m_functionFilterMode)));
+    layout->addWidget(m_combo);
+    m_le = new QLineEdit(tp.m_functionFilter);
+    layout->addWidget(m_le);
+    setLayout(layout);
+}
+
+bool FunctionFilterHelper::saveFilter(TracePointSets &tp)
+{
+    tp.m_functionFilter = m_le->text();
+    tp.m_functionFilterMode = Configuration::stringToMode(m_combo->currentText());
+    return !tp.m_functionFilter.isEmpty();
+}
+
+FilterTableItem::FilterTableItem(const TracePointSets &tp)
+{
+    setObjectName("filter_table_item");
+    QHBoxLayout *hb = new QHBoxLayout;
+    QComboBox *combo = new QComboBox();
+    combo->addItems(QStringList() << "maxVerbosity"
+                                  << "pathfilter"
+                                  << "functionfilter");
+    connect(combo, SIGNAL(currentIndexChanged(int)),
+            this, SLOT(filterComboChanged(int)));
+    hb->addWidget(combo);
+    m_sw = new QStackedWidget;
+    m_sw->addWidget(new VerbosityFilterHelper(tp));
+    m_sw->addWidget(new PathFilterHelper(tp));
+    m_sw->addWidget(new FunctionFilterHelper(tp));
+
+    if (tp.m_maxVerbosity >= 0) {
+        m_sw->setCurrentIndex(0);
+        combo->setCurrentIndex(0);
+    } else if (!tp.m_pathFilter.isEmpty()) {
+        m_sw->setCurrentIndex(1);
+        combo->setCurrentIndex(1);
+    } else if (!tp.m_functionFilter.isEmpty()) {
+        m_sw->setCurrentIndex(2);
+        combo->setCurrentIndex(2);
+    }
+
+    hb->addWidget(m_sw);
+   // setMaximumHeight(le->sizeHint().height());
+    setLayout(hb);
+}
+
+void FilterTableItem::filterComboChanged(int idx)
+{
+    m_sw->setCurrentIndex(idx);
+}
+
+bool FilterTableItem::saveFilter(TracePointSets &tpsets)
+{
+    if (m_sw->currentIndex() == 0) {
+        return static_cast<VerbosityFilterHelper*>(m_sw->currentWidget())->saveFilter(tpsets);
+    } else if (m_sw->currentIndex() == 1) {
+        return static_cast<PathFilterHelper*>(m_sw->currentWidget())->saveFilter(tpsets);
+    } else if (m_sw->currentIndex() == 2) {
+        return static_cast<FunctionFilterHelper*>(m_sw->currentWidget())->saveFilter(tpsets);
+    }
+    return false;
+}
+
+void FilterTable::loadFilters(const QList<TracePointSets> &tpsets)
+{
+    clearContents();
+    QListIterator<TracePointSets> it(tpsets);
+    while (it.hasNext()) {
+        TracePointSets s = it.next();
+        FilterTableItem *w = new FilterTableItem(s);
+        static_cast<QBoxLayout*>(layout())->addWidget(w, 0, Qt::AlignTop);
+    }
+}
+
+void FilterTable::saveFilters(QList<TracePointSets> &tpsets)
+{
+    QObjectList::const_iterator it = children().begin();
+    while (it != children().end()) {
+        if ((*it)->objectName() == "filter_table_item") {
+            TracePointSets tpset;
+            if (static_cast<FilterTableItem*>((*it))->saveFilter(tpset))
+                tpsets.append(tpset);
+        }
+        ++it;
+    }
+}
 
 ConfigEditor::ConfigEditor(Configuration *conf,
                            QWidget *parent, Qt::WindowFlags flags)
@@ -18,6 +210,9 @@ ConfigEditor::ConfigEditor(Configuration *conf,
     setupUi(this);
 
     portEdit->setValidator(new QIntValidator(0, 65535, this));
+
+    filterTable = new FilterTable(scrollArea);
+    scrollArea->setWidget(filterTable);
 
     serializerComboBox->addItem("XML", "xml");
     serializerComboBox->addItem("Human Readable Text", "plaintext");
@@ -96,27 +291,8 @@ void ConfigEditor::saveCurrentProcess(int row)
         p->m_serializerOption["beautifiedOutput"] = beautifiedCheckBox->isChecked() ? "yes" : "no";
 
     // Filters
-    const int rows = filterTable->rowCount();
     QList<TracePointSets> tpsets;
-    for (int i = 0;i < rows;++i) {
-        QTableWidgetItem *item1 = filterTable->item(i, 0);
-        QTableWidgetItem *item3 = filterTable->item(i, 2);
-        TracePointSets tps;
-        if (item1->text() == "maxVerbosity") {
-            tps.m_maxVerbosity = item3->text().toInt();
-        } else if (item1->text() == "pathfilter") {
-            tps.m_pathFilter = item3->text();
-            if (tps.m_pathFilter.isEmpty()) continue;
-            if (QComboBox *combo = qobject_cast<QComboBox*>(filterTable->cellWidget(i, 1)))
-                tps.m_pathFilterMode = Configuration::stringToMode(combo->currentText());
-        } else if (item1->text() == "functionfilter") {
-            tps.m_functionFilter = item3->text();
-            if (tps.m_functionFilter.isEmpty()) continue;
-            if (QComboBox *combo = qobject_cast<QComboBox*>(filterTable->cellWidget(i, 1)))
-                tps.m_functionFilterMode = Configuration::stringToMode(combo->currentText());
-        }
-        tpsets.append(tps);
-    }
+    filterTable->saveFilters(tpsets);
     p->m_tracePointSets = tpsets;
 }
 
@@ -154,49 +330,8 @@ void ConfigEditor::currentProcessChanged(QListWidgetItem *current, QListWidgetIt
         beautifiedCheckBox->setChecked(false);
 
     // Filters
-    filterTable->clearContents();
     const QList<TracePointSets> &tpsets = p->m_tracePointSets;
-    filterTable->setRowCount(tpsets.count());
-    QListIterator<TracePointSets> it(tpsets);
-    int filterRow = 0;
-    while (it.hasNext()) {
-        TracePointSets s = it.next();
-        QString txt0, txt1, txt2;
-        if (s.m_maxVerbosity >= 0) {
-            txt0 = "maxVerbosity";
-            txt1 = "";
-            txt2 = QString::number(s.m_maxVerbosity);
-        } else if (!s.m_pathFilter.isEmpty()) {
-            txt0 = "pathfilter";
-            txt1 = Configuration::modeToString(s.m_pathFilterMode);
-            txt2 = s.m_pathFilter;
-        } else if (!s.m_functionFilter.isEmpty()) {
-            txt0 = "functionfilter";
-            txt1 = Configuration::modeToString(s.m_functionFilterMode);
-            txt2 = s.m_functionFilter;
-        } else {
-            txt0 = "unknown";
-            txt1 = "unknown";
-            txt2 = "unknown";
-        }
-        QTableWidgetItem *item0 = new QTableWidgetItem(txt0);
-        QTableWidgetItem *item2 = new QTableWidgetItem(txt2);
-        filterTable->setItem(filterRow, 0, item0);
-        if (!txt1.isEmpty()) {
-            QComboBox *combo = new QComboBox();
-            combo->addItems(QStringList() << Configuration::modeToString(StrictMatching)
-                                          << Configuration::modeToString(WildcardMatching)
-                                          << Configuration::modeToString(RegExpMatching));
-            combo->setCurrentIndex(combo->findText(txt1));
-            filterTable->setCellWidget(filterRow, 1, combo);
-        } else {
-            QTableWidgetItem *item1 = new QTableWidgetItem(QString::null);
-            item1->setFlags(Qt::NoItemFlags);
-            filterTable->setItem(filterRow, 1, item1);
-        }
-        filterTable->setItem(filterRow, 2, item2);
-        ++filterRow;
-    }
+    filterTable->loadFilters(tpsets);
 }
 
 void ConfigEditor::newConfig()
@@ -236,6 +371,7 @@ void ConfigEditor::addFilter()
 
 void ConfigEditor::removeFilter()
 {
+    #if 0
     const int filterRow = filterTable->currentRow();
     if (filterRow != -1 ) {
         if (QListWidgetItem *lwi = processList->currentItem()) {
@@ -245,6 +381,7 @@ void ConfigEditor::removeFilter()
             currentProcessChanged(lwi, 0);
         }
     }
+    #endif
 }
 
 void ConfigEditor::processNameChanged(const QString &text)

@@ -10,8 +10,28 @@
 #include "ui_configeditor.h"
 
 class QListWidgetItem;
+class QStackedWidget;
 
 class Configuration;
+
+class FilterTable;
+
+class TracePointSets;
+
+class FilterTableItem : public QWidget
+{
+    Q_OBJECT
+public:
+    FilterTableItem(const TracePointSets &tpsets);
+
+    bool saveFilter(TracePointSets &tpsets);
+
+private slots:
+    void filterComboChanged(int index);
+
+private:
+    QStackedWidget *m_sw;
+};
 
 class ConfigEditor : public QDialog, private Ui::ConfigEditor
 {
@@ -42,6 +62,7 @@ private:
     void save();
 
     Configuration *m_conf;
+    FilterTable *filterTable;
 };
 
 #endif
