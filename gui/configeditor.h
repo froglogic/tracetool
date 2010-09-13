@@ -35,6 +35,13 @@ private:
     FilterTable *m_fTable;
 };
 
+class FilterHelper : public QWidget
+{
+    Q_OBJECT
+public:
+    virtual bool saveFilter(TracePointSets *tp) = 0;
+};
+
 class ConfigEditor : public QDialog, private Ui::ConfigEditor
 {
     Q_OBJECT

@@ -25,7 +25,7 @@ public:
 };
 
 FilterTable::FilterTable(QWidget *parent)
- : QWidget(parent)
+    : QWidget(parent)
 {
     QVBoxLayout *vb = new QVBoxLayout;
     vb->setSpacing(0);
@@ -57,7 +57,7 @@ void FilterTable::addFilter()
     static_cast<QBoxLayout*>(layout())->addWidget(new FilterTableItem(this, s), 0, Qt::AlignTop);
 }
 
-class VerbosityFilterHelper : public QWidget
+class VerbosityFilterHelper : public FilterHelper
 {
 public:
     VerbosityFilterHelper(const TracePointSets &tp);
@@ -84,7 +84,7 @@ bool VerbosityFilterHelper::saveFilter(TracePointSets *tp)
     return true;
 }
 
-class PathFilterHelper : public QWidget
+class PathFilterHelper : public FilterHelper
 {
 public:
     PathFilterHelper(const TracePointSets &tp);
@@ -115,7 +115,7 @@ bool PathFilterHelper::saveFilter(TracePointSets *tp)
     return !tp->m_pathFilter.isEmpty();
 }
 
-class FunctionFilterHelper : public QWidget
+class FunctionFilterHelper : public FilterHelper
 {
 public:
     FunctionFilterHelper(const TracePointSets &tp);
@@ -196,14 +196,10 @@ void FilterTableItem::removeFilter()
 
 bool FilterTableItem::saveFilter(TracePointSets *tpsets)
 {
-    if (m_sw->currentIndex() == 0) {
-        return static_cast<VerbosityFilterHelper*>(m_sw->currentWidget())->saveFilter(tpsets);
-    } else if (m_sw->currentIndex() == 1) {
-        return static_cast<PathFilterHelper*>(m_sw->currentWidget())->saveFilter(tpsets);
-    } else if (m_sw->currentIndex() == 2) {
-        return static_cast<FunctionFilterHelper*>(m_sw->currentWidget())->saveFilter(tpsets);
-    }
-    return false;
+    QWidget *current = m_sw->currentWidget();
+    FilterHelper *helper = qobject_cast<FilterHelper*>(current);
+    assert(helper);
+    return helper->saveFilter(tpsets);
 }
 
 void FilterTable::loadFilters(const QList<TracePointSets> &tpsets)
