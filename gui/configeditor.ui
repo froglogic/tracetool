@@ -167,9 +167,9 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="removeFilterButton">
+      <widget class="QPushButton" name="clearFiltersButton">
        <property name="text">
-        <string>Remove</string>
+        <string>Clear</string>
        </property>
       </widget>
      </item>

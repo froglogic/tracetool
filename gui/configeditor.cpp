@@ -21,7 +21,6 @@ public:
     void addFilter();
     void removeFilter(FilterTableItem* fti);
 
-private:
     void clearContents();
 };
 
@@ -269,8 +268,8 @@ ConfigEditor::ConfigEditor(Configuration *conf,
     connect(addFilterButton, SIGNAL(clicked()),
             this, SLOT(addFilter()));
 
-    connect(removeFilterButton, SIGNAL(clicked()),
-            this, SLOT(removeFilter()));
+    connect(clearFiltersButton, SIGNAL(clicked()),
+            this, SLOT(clearFilters()));
 
     fillInConfiguration();
 }
@@ -388,28 +387,15 @@ void ConfigEditor::deleteConfig()
 void ConfigEditor::addFilter()
 {
     if (QListWidgetItem *lwi = processList->currentItem()) {
-       /* const int row = processList->row(lwi);
-        ProcessConfiguration *p = m_conf->process(row);
-        QList<TracePointSets> &tpsets = p->m_tracePointSets;
-        tpsets.append(s);*/
         filterTable->addFilter();
- //       currentProcessChanged(lwi, 0);
     }
 }
 
-void ConfigEditor::removeFilter()
+void ConfigEditor::clearFilters()
 {
-    #if 0
-    const int filterRow = filterTable->currentRow();
-    if (filterRow != -1 ) {
-        if (QListWidgetItem *lwi = processList->currentItem()) {
-            const int row = processList->row(lwi);
-            ProcessConfiguration *p = m_conf->process(row);
-            p->m_tracePointSets.takeAt(filterRow);
-            currentProcessChanged(lwi, 0);
-        }
+    if (QListWidgetItem *lwi = processList->currentItem()) {
+        filterTable->clearContents();
     }
-    #endif
 }
 
 void ConfigEditor::processNameChanged(const QString &text)
