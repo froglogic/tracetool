@@ -24,7 +24,7 @@ class FilterTableItem : public QFrame
 public:
     FilterTableItem(FilterTable *fTable, const TracePointSets &tpsets);
 
-    bool saveFilter(TracePointSets &tpsets);
+    bool saveFilter(TracePointSets *tpsets);
 
 private slots:
     void filterComboChanged(int index);
