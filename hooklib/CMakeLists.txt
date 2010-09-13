@@ -90,6 +90,7 @@ ELSE(WIN32)
             ${TRACELIB_SOURCES}
             backtrace_unix.cpp
             configuration_unix.cpp
+            eventthread_unix.cpp
             crashhandler_unix.cpp
             getcurrentthreadid_unix.cpp
             filemodificationmonitor_unix.cpp
@@ -113,6 +114,7 @@ ELSE(WIN32)
     IF(LIB_EXECINFO)
         SET(TRACELIB_LIBRARIES ${TRACELIB_LIBRARIES} ${LIB_EXECINFO})
     ENDIF(LIB_EXECINFO)
+    SET(TRACELIB_LIBRARIES ${TRACELIB_LIBRARIES} pthread )
 ENDIF(WIN32)
 
 # Optional tracelib_qtsupport library

@@ -4,9 +4,21 @@
 **********************************************************************/
 
 #include "tracelib.h"
+#include "tracelib_config.h"
 #include "eventthread_unix.h"
+#include "filemodificationmonitor.h"
 
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <errno.h>
+#include <pthread.h>
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <netinet/in.h>
 #include <iostream>
+#include <string>
 
 using namespace std;
 
@@ -23,19 +35,118 @@ static void verify( const char *what, T expected, T actual )
     ++g_verificationCount;
 }
 
+static void *fakeServerProc( void *user_data )
+{
+    std::string *output = (std::string *)user_data;
+
+    struct sockaddr_in server;
+    int opt = 1;
+    int server_sock = socket( AF_INET, SOCK_STREAM, 0 );
+    server.sin_family = AF_INET;
+    server.sin_addr.s_addr = INADDR_ANY;
+    server.sin_port = htons( TRACELIB_DEFAULT_PORT );
+    setsockopt( server_sock, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof ( opt ) );
+    if ( bind( server_sock, (const sockaddr*)&server, sizeof ( server ) ) ) {
+        perror( "bind" );
+        close( server_sock );
+        return NULL;
+    }
+    if ( listen( server_sock, 5 ) ) {
+        perror( "listen" );
+        close( server_sock );
+        return NULL;
+    }
+    struct sockaddr_in from;
+    socklen_t fromlen = sizeof ( from );
+    int fd = accept( server_sock, (sockaddr*)&from, &fromlen );
+    close( server_sock );
+
+    do {
+        char buf[32];
+        int nr = read( fd, buf, sizeof ( buf ) - 1 );
+        if ( nr < 0 && errno != EINTR )
+            break;
+        buf[nr] = 0;
+        *output += buf;
+
+    } while ( true );
+
+    return NULL;
+}
+
 TRACELIB_NAMESPACE_BEGIN
+
+class FileObserver : public FileModificationMonitorObserver
+{
+public:
+    std::string file_name;
+    int state;
+    FileObserver() : state( 0 ) {}
+    void handleFileModification( const std::string &fileName, NotificationReason reason )
+    {
+        switch( state ) {
+        case 0:
+            verify( "FileObserver::handleFileModification() creation",
+                    FileModificationMonitorObserver::FileAppeared,
+                    reason );
+            break;
+        case 1:
+            verify( "FileObserver::handleFileModification() modification",
+                    FileModificationMonitorObserver::FileModified,
+                    reason );
+            break;
+        case 2:
+            verify( "FileObserver::handleFileModification() unlink",
+                    FileModificationMonitorObserver::FileDisappeared,
+                    reason );
+            break;
+        default:
+            fprintf( stderr, "handleFileModification %d\n", reason );
+            verify( "FileObserver::handleFileModification()",
+                    false,
+                    true );
+        }
+        state++;
+    }
+};
+
+static void testFileNotification()
+{
+    FileObserver *observer = new FileObserver;
+    FileModificationMonitor *monitor = FileModificationMonitor::create(
+            "/tmp/test_event.xml", observer );
+    monitor->start();
+    FILE *file = fopen( "/tmp/test_event.xml", "w+" );
+    fprintf( file, "<config/>\n" );
+    fclose( file );
+    sleep( 1 );
+    unlink( "/tmp/test_event.xml" );
+    sleep( 1 );
+    delete monitor;
+    delete observer;
+}
 
 static void testCommunication()
 {
-    EventThreadUnix *event_thread = EventThreadUnix::self();
-    verify( "EventThreadUnix::running()",
+    verify( "Initial EventThreadUnix::running()",
+            false,
+            EventThreadUnix::running() );
+    (void)EventThreadUnix::self();
+    verify( "Initial EventThreadUnix::running()",
             true,
-            event_thread && event_thread->running() );
-    if ( event_thread )
-        event_thread->stop();
+            EventThreadUnix::running() );
+
+    //std::string output;
+    //pthread_t server_thread;
+    //pthread_create( &server_thread, NULL, fakeServerProc, &output );
+
+    testFileNotification();
+
     verify( "EventThreadUnix::stop()",
             true,
-            event_thread && !event_thread->running() );
+            !EventThreadUnix::running() );
+
+
 }
 
 TRACELIB_NAMESPACE_END
