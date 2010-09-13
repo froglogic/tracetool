@@ -106,12 +106,14 @@ UnixFileModificationMonitor::UnixFileModificationMonitor( const string &fileName
 
 UnixFileModificationMonitor::~UnixFileModificationMonitor()
 {
-    if ( watch_descriptor > -1 )
-        inotify_instance->removeWatch( watch_descriptor );
+    if ( inotify_instance ) {
+        if ( watch_descriptor > -1 )
+            inotify_instance->removeWatch( watch_descriptor );
 
-    if ( inotify_instance->monitor_map.size() == 0 ) {
-        delete inotify_instance;
-        inotify_instance = NULL;
+        if ( inotify_instance->monitor_map.size() == 0 ) {
+            delete inotify_instance;
+            inotify_instance = NULL;
+        }
     }
 }
 
