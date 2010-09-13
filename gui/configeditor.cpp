@@ -37,7 +37,7 @@ void FilterTable::clearContents()
 {
     QObjectList::const_iterator it = children().begin();
     while (it != children().end()) {
-        if ((*it)->objectName() == "filter_table_item")
+        if (qobject_cast<FilterTableItem*>(*it))
             delete *it;
         else
             ++it;
@@ -150,7 +150,6 @@ FilterTableItem::FilterTableItem(FilterTable *fTable, const TracePointSets &tp)
 : m_fTable(fTable)
 {
     setFrameStyle(QFrame::Panel | QFrame::Raised);
-    setObjectName("filter_table_item");
     QHBoxLayout *hb = new QHBoxLayout;
     QComboBox *combo = new QComboBox();
     combo->addItems(QStringList() << tr("Verbosity")
@@ -222,9 +221,10 @@ void FilterTable::saveFilters(QList<TracePointSets> &tpsets)
 {
     QObjectList::const_iterator it = children().begin();
     while (it != children().end()) {
-        if ((*it)->objectName() == "filter_table_item") {
+        FilterTableItem *item = qobject_cast<FilterTableItem*>(*it);
+        if (item) {
             TracePointSets tpset;
-            if (static_cast<FilterTableItem*>((*it))->saveFilter(tpset))
+            if (item->saveFilter(tpset))
                 tpsets.append(tpset);
         }
         ++it;
