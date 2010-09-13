@@ -118,12 +118,16 @@ string PlaintextSerializer::convertVariableValue( const VariableValue &v ) const
     switch ( v.type() ) {
         case VariableType::String:
             str << v.asString();
+            break;
         case VariableType::Number:
             str << v.asNumber();
+            break;
         case VariableType::Float:
             str << v.asFloat();
+            break;
         case VariableType::Boolean:
             str << v.asBoolean();
+            break;
         default:
             assert( !"Unreachable" );
     }

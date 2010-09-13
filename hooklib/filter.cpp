@@ -4,7 +4,7 @@
 **********************************************************************/
 
 #include "filter.h"
-#include "tracelib.h"
+#include "tracepoint.h"
 
 #include "3rdparty/wildcmp/wildcmp.h"
 #include "3rdparty/pcre-8.10/pcrecpp.h"

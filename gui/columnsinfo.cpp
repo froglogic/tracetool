@@ -13,19 +13,19 @@
 typedef QMap<QString, QVariant> StorageMap;
 
 const char* const columnNames[] = {
-    QT_TR_NOOP("Time"),
-    QT_TR_NOOP("Application"),
-    QT_TR_NOOP("PID"),
-    QT_TR_NOOP("Thread"),
-    QT_TR_NOOP("File"),
-    QT_TR_NOOP("Line"),
-    QT_TR_NOOP("Function"),
-    QT_TR_NOOP("Type"),
+    QT_TRANSLATE_NOOP("ColumnsInfo", "Time"),
+    QT_TRANSLATE_NOOP("ColumnsInfo", "Application"),
+    QT_TRANSLATE_NOOP("ColumnsInfo", "PID"),
+    QT_TRANSLATE_NOOP("ColumnsInfo", "Thread"),
+    QT_TRANSLATE_NOOP("ColumnsInfo", "File"),
+    QT_TRANSLATE_NOOP("ColumnsInfo", "Line"),
+    QT_TRANSLATE_NOOP("ColumnsInfo", "Function"),
+    QT_TRANSLATE_NOOP("ColumnsInfo", "Type"),
 #ifdef SHOW_VERBOSITY
-    QT_TR_NOOP("Verbosity"),
+    QT_TRANSLATE_NOOP("ColumnsInfo", "Verbosity"),
 #endif
-    QT_TR_NOOP("Message"),
-    QT_TR_NOOP("Stack Position")
+    QT_TRANSLATE_NOOP("ColumnsInfo", "Message"),
+    QT_TRANSLATE_NOOP("ColumnsInfo", "Stack Position")
 };
 
 const int numColumns = sizeof(columnNames) / sizeof(char*);
@@ -49,6 +49,7 @@ void ColumnsInfo::setDefaultState()
     }
 }
 
+// never translated
 QString ColumnsInfo::columnName(int realIndex) const
 {
     assert(realIndex >= 0 && realIndex < columnCount());

@@ -46,6 +46,7 @@ ENDIF(QT4_FOUND)
 SET(TRACELIB_PUBLIC_HEADERS
         dlldefs.h
         tracelib.h
+        tracepoint.h
         tracelib_config.h
         variabledumping.h)
 

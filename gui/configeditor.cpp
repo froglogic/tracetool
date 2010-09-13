@@ -19,10 +19,15 @@ ConfigEditor::ConfigEditor(Configuration *conf,
 
     portEdit->setValidator(new QIntValidator(0, 65535, this));
 
-    serializerComboBox->addItem("xml");
-    serializerComboBox->addItem("plaintext");
-    connect(serializerComboBox, SIGNAL(currentIndexChanged(const QString&)),
-            this, SLOT(serializerComboChanged(const QString&)));
+    serializerComboBox->addItem("XML", "xml");
+    serializerComboBox->addItem("Human Readable Text", "plaintext");
+    connect(serializerComboBox, SIGNAL(currentIndexChanged(int)),
+            this, SLOT(serializerComboChanged(int)));
+
+    outputTypeComboBox->addItem("TCP/IP Connection", "tcp");
+    outputTypeComboBox->addItem("Console", "stdout");
+    connect(outputTypeComboBox, SIGNAL(currentIndexChanged(int)),
+            this, SLOT(outputTypeComboChanged(int)));
 
     connect(processList, SIGNAL(currentItemChanged(QListWidgetItem*, QListWidgetItem*)),
             this, SLOT(currentProcessChanged(QListWidgetItem*, QListWidgetItem*)));
@@ -71,16 +76,22 @@ void ConfigEditor::saveCurrentProcess(int row)
     p->m_name = nameEdit->text();
 
     // Output
-    p->m_outputType = outputTypeEdit->text();
-    const QString hostValue = hostEdit->text();
-    if (!hostValue.isEmpty())
-    p->m_outputOption["host"] = hostValue;
-    const QString portValue = portEdit->text();
-    if (!portValue.isEmpty())
-        p->m_outputOption["port"] = portValue;
+    p->m_outputType = outputTypeComboBox->itemData(outputTypeComboBox->currentIndex(),
+                                                   Qt::UserRole).toString();
+    p->m_outputOption.clear();
+    if (p->m_outputType == "tcp") {
+        const QString hostValue = hostEdit->text();
+        if (!hostValue.isEmpty())
+            p->m_outputOption["host"] = hostValue;
+        const QString portValue = portEdit->text();
+        if (!portValue.isEmpty())
+            p->m_outputOption["port"] = portValue;
+    }
 
     // Serializer
-    p->m_serializerType = serializerComboBox->currentText();
+    p->m_serializerType = serializerComboBox->itemData(serializerComboBox->currentIndex(),
+                                                       Qt::UserRole).toString();
+    p->m_serializerOption.clear();
     if (p->m_serializerType == "xml")
         p->m_serializerOption["beautifiedOutput"] = beautifiedCheckBox->isChecked() ? "yes" : "no";
 
@@ -124,13 +135,23 @@ void ConfigEditor::currentProcessChanged(QListWidgetItem *current, QListWidgetIt
     nameEdit->setText(p->m_name);
 
     // Output
-    outputTypeEdit->setText(p->m_outputType);
-    hostEdit->setText(p->m_outputOption["host"]);
-    portEdit->setText(p->m_outputOption["port"]);
+    const QString outputType = p->m_outputType;
+    outputTypeComboBox->setCurrentIndex(outputTypeComboBox->findData(outputType, Qt::UserRole));
+    if (outputType == "tcp") {
+        hostEdit->setText(p->m_outputOption["host"]);
+        portEdit->setText(p->m_outputOption["port"]);
+    } else {
+        hostEdit->setText(QString::null);
+        portEdit->setText(QString::null);
+    }
 
     // Serializer
-    serializerComboBox->setCurrentIndex(serializerComboBox->findText(p->m_serializerType));
-    beautifiedCheckBox->setChecked(p->m_serializerOption["beautifiedOutput"] == "yes");
+    const QString serializerType = p->m_serializerType;
+    serializerComboBox->setCurrentIndex(serializerComboBox->findData(serializerType, Qt::UserRole));
+    if (serializerType == "xml")
+        beautifiedCheckBox->setChecked(p->m_serializerOption["beautifiedOutput"] == "yes");
+    else
+        beautifiedCheckBox->setChecked(false);
 
     // Filters
     filterTable->clearContents();
@@ -248,10 +269,19 @@ void ConfigEditor::save()
     }
 }
 
-void ConfigEditor::serializerComboChanged(const QString &text)
+void ConfigEditor::serializerComboChanged(int index)
 {
-    bool plaintext = text != "plaintext";
-    beautifiedLabel->setEnabled(plaintext);
-    beautifiedCheckBox->setEnabled(plaintext);
+    const bool xmlSerializer = serializerComboBox->itemData(index, Qt::UserRole).toString() == "xml";
+    beautifiedLabel->setEnabled(xmlSerializer);
+    beautifiedCheckBox->setEnabled(xmlSerializer);
+}
+
+void ConfigEditor::outputTypeComboChanged(int index)
+{
+    const bool tcp = outputTypeComboBox->itemData(index, Qt::UserRole).toString() == "tcp";
+    hostEdit->setEnabled(tcp);
+    portEdit->setEnabled(tcp);
+    hostLabel->setEnabled(tcp);
+    portLabel->setEnabled(tcp);
 }
 
