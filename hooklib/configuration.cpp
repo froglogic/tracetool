@@ -346,7 +346,16 @@ TracePointSet *Configuration::createTracePointSetFromElement( TiXmlElement *e )
         return 0;
     }
 
-    Filter *filter = createFilterFromElement( filterElement );
+    ConjunctionFilter *filter = new ConjunctionFilter;
+    while ( filterElement ) {
+        Filter *subFilter = createFilterFromElement( filterElement );
+        if ( !subFilter ) {
+            delete filter;
+            return 0;
+        }
+        filter->addFilter( subFilter );
+        filterElement = filterElement->NextSiblingElement();
+    }
 
     int actions = TracePointSet::LogTracePoint;
     if ( backtracesAttr == "yes" ) {
