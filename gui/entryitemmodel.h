@@ -41,6 +41,8 @@ public:
     void suspend();
     void resume();
 
+    unsigned int idForIndex(const QModelIndex &index);
+
 public slots:
     void handleNewTraceEntry(const TraceEntry &e);
     void reApplyFilter();

@@ -41,6 +41,9 @@ MainWindow::MainWindow(Settings *settings,
     m_watchTree = new WatchTree(settings->entryFilter());
     tabWidget->addTab( m_watchTree, tr( "Watch Points" ) );
 
+    connect(tracePointsView, SIGNAL(doubleClicked(const QModelIndex &)),
+            this, SLOT(traceEntryDoubleClicked(const QModelIndex &)));
+
     // buttons
     connect(freezeButton, SIGNAL(clicked()),
             this, SLOT(toggleFreezeState()));
@@ -294,4 +297,37 @@ void MainWindow::clearTracePoints()
     m_entryItemModel->reApplyFilter();
     m_watchTree->reApplyFilter();
 }
+
+void MainWindow::traceEntryDoubleClicked(const QModelIndex &index)
+{
+    const unsigned int id = m_entryItemModel->idForIndex(index);
+    const QList<StackFrame> backtrace = m_server->backtraceForEntry( id );
+    if ( backtrace.isEmpty() ) {
+        QMessageBox::information( this,
+                                  tr( "Backtrace" ),
+                                  tr( "This entry has no associated backtrace." ) );
+        return;
+    }
+
+    QStringList lines;
+    QList<StackFrame>::ConstIterator it, end = backtrace.end();
+    size_t depth = 0;
+    for ( it = backtrace.begin(); it != end; ++it ) {
+        QString line = QString( "#%1 in %2: %3+0x%4" )
+                            .arg( depth++ )
+                            .arg( it->module )
+                            .arg( it->function )
+                            .arg( it->functionOffset, 0, 16 );
+        if ( !it->sourceFile.isEmpty() ) {
+            line += ": " + it->sourceFile + ":" + QString::number( it->lineNumber );
+        }
+
+        lines.append( line );
+    }
+
+    QMessageBox::information( this,
+                              tr( "Backtrace" ),
+                              QString( "<pre>%1</pre>" ).arg( lines.join( "\n" ) ) );
+}
+
 

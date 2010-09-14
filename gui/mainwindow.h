@@ -14,6 +14,7 @@ class EntryItemModel;
 class Server;
 class WatchTree;
 class FilterForm;
+class QModelIndex;
 
 class MainWindow : public QMainWindow, private Ui::MainWindow,
                    public RestorableObject
@@ -45,6 +46,7 @@ private slots:
     void updateColumns();
     void filterChange();
     void clearTracePoints();
+    void traceEntryDoubleClicked(const QModelIndex &index);
 
 private:
     bool openConfigurationFile(const QString &fileName);

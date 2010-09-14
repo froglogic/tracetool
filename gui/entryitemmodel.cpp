@@ -279,8 +279,7 @@ QVariant EntryItemModel::data(const QModelIndex& index, int role) const
         // ### supress when nothing valuable to show and not cut off
         return data(index, Qt::DisplayRole);
     } else if (role == Qt::BackgroundRole) {
-        const_cast<EntryItemModel*>(this)->m_query.seek(index.row());
-        unsigned int entryId = m_query.value(0).toUInt();
+        unsigned int entryId = const_cast<EntryItemModel * const>(this)->idForIndex(index);
         if ( m_highlightedEntryIds.contains( entryId ) ) {
             return QBrush( Qt::yellow );
         }
@@ -327,6 +326,15 @@ void EntryItemModel::resume()
 {
     m_suspended = false;
     insertNewTraceEntries();
+}
+
+unsigned int EntryItemModel::idForIndex(const QModelIndex &index)
+{
+    const_cast<EntryItemModel*>(this)->m_query.seek(index.row());
+    bool ok;
+    const unsigned int id = m_query.value(0).toUInt(&ok);
+    assert(ok);
+    return id;
 }
 
 void EntryItemModel::insertNewTraceEntries()
