@@ -16,7 +16,7 @@ class Configuration;
 
 class FilterTable;
 
-class TracePointSet;
+struct TracePointSet;
 
 class FilterTableItem : public QFrame
 {
