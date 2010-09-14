@@ -7,6 +7,8 @@
 #include "tracelib_config.h"
 #include "eventthread_unix.h"
 #include "filemodificationmonitor.h"
+#include "output.h"
+#include "errorlog.h"
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -64,7 +66,7 @@ static void *fakeServerProc( void *user_data )
     do {
         char buf[32];
         int nr = read( fd, buf, sizeof ( buf ) - 1 );
-        if ( nr < 0 && errno != EINTR )
+        if ( nr <= 0 && errno != EINTR )
             break;
         buf[nr] = 0;
         *output += buf;
@@ -136,11 +138,53 @@ static void testCommunication()
             true,
             EventThreadUnix::running() );
 
-    //std::string output;
-    //pthread_t server_thread;
-    //pthread_create( &server_thread, NULL, fakeServerProc, &output );
-
+    // as single fd in event thread
     testFileNotification();
+
+    DebugViewErrorLog error_log;
+    std::string quick_fox = "The quick brown fox jumps over the lazy dog";
+    NetworkOutput *net = new NetworkOutput( &error_log, "127.0.0.1", TRACELIB_DEFAULT_PORT );
+    verify( "Initial NetworkOutput::canWrite()",
+            false,
+            net->canWrite() );
+
+    net->open();
+    verify( "Connecting NetworkOutput::canWrite()",
+            true,
+            net->canWrite() );
+
+    sleep( 2 );
+    verify( "Connect Error NetworkOutput::canWrite()",
+            false,
+            net->canWrite() );
+
+    delete net;
+
+    std::string output, expected;
+    pthread_t server_thread;
+    pthread_create( &server_thread, NULL, fakeServerProc, &output );
+
+    net = new NetworkOutput( &error_log, "127.0.0.1", TRACELIB_DEFAULT_PORT );
+    net->open();
+    sleep( 1 );
+    verify( "Connected NetworkOutput::canWrite()",
+            true,
+            net->canWrite() );
+
+    for ( int i = 0; i < 5; ++i ) {
+        expected += quick_fox;
+        usleep( 1 );
+        net->write( std::vector<char>( quick_fox.begin(), quick_fox.end() ) );
+    }
+    // as one of the fds in event thread
+    testFileNotification();
+
+    delete net;
+    sleep( 1 );
+
+    verify( "testCommunication server received",
+            expected,
+            output );
 
     verify( "EventThreadUnix::stop()",
             true,
