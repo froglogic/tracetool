@@ -14,18 +14,24 @@
 
 enum MatchingMode { StrictMatching, WildcardMatching, RegExpMatching };
 
+struct Filter
+{
+    enum Type {
+        VerbosityFilter,
+        PathFilter,
+        FunctionFilter
+    } type;
+    QString term;
+    MatchingMode matchingMode;
+};
+
 struct TracePointSet
 {
-    TracePointSet() : m_variables(true), m_maxVerbosity(-1) { }
+    TracePointSet() : m_variables(true) { }
 
     bool m_variables;
-    int m_maxVerbosity;
 
-    QString m_pathFilter;
-    MatchingMode m_pathFilterMode;
-
-    QString m_functionFilter;
-    MatchingMode m_functionFilterMode;
+    QList<Filter> m_filters;
 };
 
 struct ProcessConfiguration

@@ -161,8 +161,10 @@ void Configuration::readVerbosityFilter(TracePointSet *tps)
 {
     assert(m_xml.isStartElement() && m_xml.name() == "verbosityfilter");
 
-    tps->m_maxVerbosity =
-        m_xml.attributes().value("maxVerbosity").toString().toInt();
+    Filter f;
+    f.type = Filter::VerbosityFilter;
+    f.term = m_xml.attributes().value("maxVerbosity").toString();
+    tps->m_filters.append(f);
     m_xml.skipCurrentElement();
 }
 
@@ -180,23 +182,24 @@ void Configuration::readPathFilter(TracePointSet *tps)
 {
     assert(m_xml.isStartElement() && m_xml.name() == "pathfilter");
 
+    Filter f;
+    f.type = Filter::PathFilter;
     QString modeStr = m_xml.attributes().value("matchingmode").toString();
-    tps->m_pathFilterMode = parseMatchingMode(modeStr);
-
-    QString p = m_xml.readElementText();
-    tps->m_pathFilter = p;
-
+    f.matchingMode = parseMatchingMode(modeStr);
+    f.term = m_xml.readElementText();
+    tps->m_filters.append(f);
 }
 
 void Configuration::readFunctionFilter(TracePointSet *tps)
 {
     assert(m_xml.isStartElement() && m_xml.name() == "functionfilter");
 
+    Filter f;
+    f.type = Filter::PathFilter;
     QString modeStr = m_xml.attributes().value("matchingmode").toString();
-    tps->m_functionFilterMode = parseMatchingMode(modeStr);
-
-    QString f = m_xml.readElementText();
-    tps->m_functionFilter = f;
+    f.matchingMode = parseMatchingMode(modeStr);
+    f.term = m_xml.readElementText();
+    tps->m_filters.append(f);
 }
 
 bool Configuration::save(QString *errMsg)
@@ -253,29 +256,29 @@ bool Configuration::save(QString *errMsg)
             QString v = tps.m_variables ? "yes" : "no";
             stream.writeAttribute("variables", v);
 //            stream.writeStartElement("matchallfilter");
-            // various filters
-            if (tps.m_maxVerbosity >= 0) {
-                stream.writeStartElement("verbosityfilter");
-                stream.writeAttribute("maxVerbosity",
-                                      QString::number(tps.m_maxVerbosity));
-                stream.writeEndElement();
-            } else if (!tps.m_pathFilter.isEmpty()) {
-                stream.writeStartElement("pathfilter");
-                QString m = modeToString(tps.m_pathFilterMode);
-                stream.writeAttribute("matchingmode", m);
-                stream.writeCharacters(tps.m_pathFilter);
-                stream.writeEndElement();
-                
-            } else {
-                assert(!tps.m_functionFilter.isEmpty());
-                stream.writeStartElement("functionfilter");
-                QString m = modeToString(tps.m_functionFilterMode);
-                stream.writeAttribute("matchingmode", m);
-                stream.writeCharacters(tps.m_functionFilter);
-                stream.writeEndElement();
+            QList<Filter>::ConstIterator fit, fend = tps.m_filters.end();
+            for ( fit = tps.m_filters.begin(); fit != fend; ++fit ) {
+                switch ( fit->type ) {
+                    case Filter::VerbosityFilter:
+                        stream.writeStartElement("verbosityfilter");
+                        stream.writeAttribute("maxVerbosity", fit->term);
+                        stream.writeEndElement();
+                        break;
+                    case Filter::FunctionFilter:
+                        stream.writeStartElement("functionfilter");
+                        stream.writeAttribute("matchingmode", modeToString(fit->matchingMode));
+                        stream.writeCharacters(fit->term);
+                        stream.writeEndElement();
+                        break;
+                    case Filter::PathFilter:
+                        stream.writeStartElement("pathfilter");
+                        stream.writeAttribute("matchingmode", modeToString(fit->matchingMode));
+                        stream.writeCharacters(fit->term);
+                        stream.writeEndElement();
+                        break;
+                }
             }
- //           stream.writeEndElement(); // matchallfilter
-
+ //         stream.writeEndElement(); // matchallfilter
             stream.writeEndElement(); // tracepointset
         }
 

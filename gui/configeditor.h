@@ -9,6 +9,7 @@
 #include <QDialog>
 #include "ui_configeditor.h"
 
+struct Filter;
 class QListWidgetItem;
 class QStackedWidget;
 
@@ -22,7 +23,7 @@ class FilterTableItem : public QFrame
 {
     Q_OBJECT
 public:
-    FilterTableItem(FilterTable *fTable, const TracePointSet &tpsets);
+    FilterTableItem(FilterTable *fTable, const Filter &f);
 
     bool saveFilter(TracePointSet *tpsets);
 
