@@ -423,3 +423,42 @@ void Server::trimTo( size_t nMostRecent )
                   "entries not implemented yet!";
 }
 
+QList<StackFrame> Server::backtraceForEntry( unsigned int id )
+{
+    const QString statement = QString(
+                      "SELECT"
+                      " module_name,"
+                      " function_name,"
+                      " offset,"
+                      " file_name,"
+                      " line "
+                      "FROM"
+                      " stackframe "
+                      "WHERE"
+                      " trace_entry_id=%1 "
+                      "ORDER BY"
+                      " depth" ).arg( id );
+
+    QSqlQuery q( m_db );
+    q.setForwardOnly( true );
+    if ( !q.exec( statement ) ) {
+        const QString msg = QString( "Failed to retrieve backtrace for trace entry: executing SQL command '%1' failed: %2" )
+                        .arg( statement )
+                        .arg( q.lastError().text() );
+        throw runtime_error( msg.toUtf8().constData() );
+    }
+
+    QList<StackFrame> frames;
+    while ( q.next() ) {
+        StackFrame f;
+        f.module = q.value( 0 ).toString();
+        f.function = q.value( 1 ).toString();
+        f.functionOffset = q.value( 2 ).toUInt();
+        f.sourceFile = q.value( 3 ).toString();
+        f.lineNumber = q.value( 4 ).toUInt();
+        frames.append( f );
+    }
+
+    return frames;
+}
+
