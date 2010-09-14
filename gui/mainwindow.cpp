@@ -130,17 +130,24 @@ QVariant MainWindow::sessionState() const
     QList<QVariant> dataSet;
     dataSet.append(saveGeometry()); // widget itself
     dataSet.append(saveState()); // dock window geometry and state
+    dataSet.append(tracePointsView->horizontalHeader()->saveState());
+    dataSet.append(m_watchTree->header()->saveState());
     return dataSet;
 }
 
 bool MainWindow::restoreSessionState(const QVariant &state)
 {
     QList<QVariant> dataSet = state.value< QList<QVariant> >();
-    if (dataSet.size() != 2)
+    if (dataSet.size() != 4)
         return false;
     QByteArray geo = dataSet[0].value<QByteArray>();
     QByteArray docks = dataSet[1].value<QByteArray>();
-    return restoreGeometry(geo) && restoreState(docks);
+    QByteArray horizTableHeader = dataSet[2].value<QByteArray>();
+    QByteArray watchTreeHeader = dataSet[3].value<QByteArray>();
+    return restoreGeometry(geo)
+        && restoreState(docks)
+        && tracePointsView->horizontalHeader()->restoreState(horizTableHeader)
+        && m_watchTree->header()->restoreState(watchTreeHeader);
 }
 
 void MainWindow::fileOpenTrace()
