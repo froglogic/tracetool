@@ -25,7 +25,8 @@ const char* const columnNames[] = {
     QT_TRANSLATE_NOOP("ColumnsInfo", "Verbosity"),
 #endif
     QT_TRANSLATE_NOOP("ColumnsInfo", "Message"),
-    QT_TRANSLATE_NOOP("ColumnsInfo", "Stack Position")
+    QT_TRANSLATE_NOOP("ColumnsInfo", "Stack Position"),
+    QT_TRANSLATE_NOOP("ColumnsInfo", "Variables")
 };
 
 const int numColumns = sizeof(columnNames) / sizeof(char*);

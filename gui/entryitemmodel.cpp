@@ -19,10 +19,17 @@
 
 // #define SHOW_VERBOSITY
 
-typedef QVariant (*DataFormatter)( const QVariant &v );
+typedef QVariant (*DataFormatter)(QSqlDatabase db, QSqlQuery *query, int row, int column);
 
-static QVariant timeFormatter( const QVariant &v )
+static QVariant valueForIndex(QSqlQuery *query, int row, int column)
 {
+    query->seek(row);
+    return query->value(column);
+}
+
+static QVariant timeFormatter(QSqlDatabase, QSqlQuery *query, int row, int column)
+{
+    const QVariant v = valueForIndex(query, row, column);
     return QDateTime::fromString(v.toString(), Qt::ISODate);
 }
 
@@ -36,20 +43,68 @@ static QString tracePointTypeAsString(int i)
     return s;
 }
 
-static QVariant typeFormatter( const QVariant &v )
+static QVariant typeFormatter(QSqlDatabase, QSqlQuery *query, int row, int column)
 {
+    const QVariant v = valueForIndex(query, row, column);
+
     bool ok;
     int i = v.toInt(&ok);
     assert(ok);
     return tracePointTypeAsString(i);
 }
 
-static QVariant stackPositionFormatter( const QVariant &v )
+static QVariant stackPositionFormatter(QSqlDatabase, QSqlQuery *query, int row, int column)
 {
+    const QVariant v = valueForIndex(query, row, column);
+
     bool ok;
     qulonglong i = v.toULongLong(&ok);
     assert(ok);
     return QString( "0x%1" ).arg( QString::number( i, 16 ) );
+}
+
+static QString variablesForEntryId(QSqlDatabase db, unsigned int id)
+{
+    QSqlQuery q = db.exec(QString(
+                "SELECT"
+                " name,"
+                " value,"
+                " type "
+                "FROM"
+                " variable "
+                "WHERE"
+                " trace_entry_id=%1;").arg(id));
+    if (db.lastError().isValid()) {
+        qWarning() << "Failed to get variables for trace entry id " << id
+            << ": " << db.lastError().text();
+        return QString();
+    }
+
+    QStringList items;
+    while (q.next()) {
+        const QString varName = q.value(0).toString();
+
+        QString varValue = q.value(1).toString();
+        using TRACELIB_NAMESPACE_IDENT(VariableType);
+        const VariableType::Value varType = static_cast<VariableType::Value>(q.value(2).toInt());
+        if (varType == VariableType::String) {
+            varValue = QString("'%1'").arg(varValue);
+        }
+
+        items << QString("%1 (%2) = %3")
+                    .arg(q.value(0).toString())
+                    .arg(VariableType::valueAsString(varType))
+                    .arg(varValue);
+    }
+    return items.join(", ");
+}
+
+static QVariant variablesFormatter(QSqlDatabase db, QSqlQuery *query, int row, int column)
+{
+    bool ok;
+    unsigned int traceEntryId = valueForIndex(query, row, 0).toUInt(&ok);
+    assert(ok);
+    return variablesForEntryId(db, traceEntryId);
 }
 
 static const struct {
@@ -68,7 +123,8 @@ static const struct {
     { "Verbosity", 0 },
 #endif
     { "Message", 0 },
-    { "Stack Position", stackPositionFormatter }
+    { "Stack Position", stackPositionFormatter },
+    { "Variables", variablesFormatter }
 };
 
 EntryItemModel::EntryItemModel(EntryFilter *filter, ColumnsInfo *ci,
@@ -208,12 +264,13 @@ QVariant EntryItemModel::data(const QModelIndex& index, int role) const
         if (!m_columnsInfo->isVisible(index.column()))
             return QVariant();
         int realColumn = m_columnsInfo->unmap(index.column());
+
+        EntryItemModel * const that = const_cast<EntryItemModel * const>(this);
+
         int dbField = realColumn + 1; // id field is used in header
-        const_cast<EntryItemModel*>(this)->m_query.seek(index.row());
-        QVariant v = m_query.value(dbField);
-        if ( g_fields[realColumn].formatterFn )
-            return g_fields[realColumn].formatterFn( v );
-        return v;
+        if (g_fields[realColumn].formatterFn)
+            return g_fields[realColumn].formatterFn(m_db, &that->m_query, index.row(), dbField);
+        return valueForIndex(&that->m_query, index.row(), dbField);
     } else if (role == Qt::ToolTipRole) {
         // Just forward the tool tip request for now to make viewing
         // of cut-off content possible.
