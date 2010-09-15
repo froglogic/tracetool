@@ -106,6 +106,9 @@ Hello, Max!
 #include "tracepoint.h"
 #include "variabledumping.h"
 
+#include <sstream>
+#include <string>
+
 #ifdef _MSC_VER
 #  define TRACELIB_CURRENT_FILE_NAME __FILE__
 #  define TRACELIB_CURRENT_LINE_NUMBER __LINE__
@@ -139,7 +142,40 @@ Hello, Max!
 #  define TRACELIB_VAR(v) (void)0;
 #endif
 
+#define TRACELIB_VALUE_IMPL(v) #v << "=" << v
+#define TRACELIB_MSG_IMPL TRACELIB_NAMESPACE_IDENT(StringBuilder)()
+
 TRACELIB_NAMESPACE_BEGIN
+
+class StringBuilder
+{
+public:
+    StringBuilder() { }
+
+    inline operator const char * const() {
+        m_s = m_stream.str();
+        return m_s.c_str();
+    }
+
+    template <class T>
+    StringBuilder &operator<<( const T &v ) {
+        m_stream << v;
+        return *this;
+    }
+
+    template <>
+    StringBuilder &operator<<( const VariableValue &v ) {
+        m_stream << VariableValue::convertToString( v );
+        return *this;
+    }
+
+private:
+    StringBuilder( const StringBuilder &other );
+    void operator=( const StringBuilder &rhs );
+
+    std::string m_s;
+    std::ostringstream m_stream;
+};
 
 TRACELIB_EXPORT void visitTracePoint( TracePoint *tracePoint,
                       const char *msg = 0,

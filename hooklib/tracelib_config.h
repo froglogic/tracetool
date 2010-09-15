@@ -270,5 +270,48 @@
  */
 #define TRACELIB_WATCH_MSG(msg, vars) TRACELIB_VARIABLE_SNAPSHOT_MSG(1, vars, msg)
 
+/**
+ * @brief Helps with constructing custom messages for any of the _MSG macros
+ *
+ * This macro is a utility for constructing messages which can be passed to
+ * any of the _MSG macros described above, (e.g. #TRACELIB_TRACE_MSG). It
+ * allows assembling messages in a stream-like fashion. For instance, here
+ * is an example which prints a 'Trace' message including a variable:
+ *
+ * \code
+ * void f( int i, bool j ) {
+ *     TRACELIB_TRACE_MSG(TRACELIB_MSG << "f() called with i=" << i << " and j=" << j)
+ * }
+ * \endcode
+ *
+ * This code can be simplified further by using the accompanying #TRACELIB_VALUE
+ * macro:
+ *
+ * \code
+ * void f( int i, bool j ) {
+ *     TRACELIB_TRACE_MSG(TRACELIB_MSG << "f() called with " << TRACELIB_VALUE(i) << " and " << TRACELIB_VALUE(j))
+ * }
+ * \endcode
+ *
+ * \sa TRACELIB_WATCH_MSG
+ * \sa TRACELIB_TRACE_MSG
+ * \sa TRACELIB_ERROR_MSG
+ * \sa TRACELIB_DEBUG_MSG
+ * \sa TRACELIB_VALUE
+ */
+#define TRACELIB_MSG TRACELIB_MSG_IMPL
+
+/**
+ * @brief Helper macro to be used together with #TRACELIB_MSG
+ *
+ * This macro avoids that a variable name has to be typed twice when assembling
+ * messages using the #TRACELIB_MSG macro. It can only be used as an argument
+ * to the #TRACELIB_MSG macro. See the documentation for #TRACELIB_MSG for an
+ * example.
+ *
+ * \sa TRACELIB_MSG
+ */
+#define TRACELIB_VALUE TRACELIB_VALUE_IMPL
+
 #endif // !defined(TRACELIB_CONFIG_H)
 
