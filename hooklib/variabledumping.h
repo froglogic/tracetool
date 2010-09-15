@@ -53,6 +53,7 @@ public:
     TRACELIB_EXPORT static VariableValue numberValue( unsigned long v );
     TRACELIB_EXPORT static VariableValue booleanValue( bool v );
     TRACELIB_EXPORT static VariableValue floatValue( long double v );
+    TRACELIB_EXPORT static std::string convertToString( const VariableValue &v );
 
     VariableType::Value type() const;
     const std::string &asString() const;

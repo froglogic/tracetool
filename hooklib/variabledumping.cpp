@@ -5,6 +5,7 @@
 
 #include "variabledumping.h"
 
+#include <cassert>
 #include <sstream>
 
 using namespace std;
@@ -41,6 +42,26 @@ VariableValue VariableValue::floatValue( long double v )
     var.m_type = VariableType::Float;
     var.m_primitiveValue.float_ = v;
     return var;
+}
+
+string VariableValue::convertToString( const VariableValue &v )
+{
+    // XXX The list of variable types is duplicated in variabletypes.def
+    ostringstream stream;
+    switch ( v.type() ) {
+        case VariableType::String:
+            return v.asString();
+        case VariableType::Number:
+            stream << v.asNumber();
+            return stream.str();
+        case VariableType::Float:
+            stream << v.asFloat();
+            return stream.str();
+        case VariableType::Boolean:
+            return v.asBoolean() ? "true" : "false";
+    }
+    assert( !"Unreachable" );
+    return string();
 }
 
 VariableType::Value VariableValue::type() const
