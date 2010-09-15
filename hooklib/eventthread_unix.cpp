@@ -22,22 +22,18 @@ TRACELIB_NAMESPACE_BEGIN
 
 typedef std::map<int, FileEventObserver *> FileObserverList;
 
-static const char EndMessageLoop = 'e';
-static const char AddReadWatch = 'r';
-static const char AddWriteWatch = 'w';
-static const char RemoveReadWatch = 's';
-static const char RemoveWriteWatch = 'x'; // flush and remove
-static const char KillWriteWatch = 'y'; // remove, drop buffer
+static const char PostTask = 'p';
+static const char SendTask = 's';
 static const char NoError = '0';
 
 
-class CommunicationPipeObserver : public FileEventObserver
+class EventContext : public FileEventObserver
 {
 public:
-    CommunicationPipeObserver();
-    ~CommunicationPipeObserver();
+    EventContext();
+    ~EventContext();
 
-    void handleFileEvent( int fd, EventWatch watch );
+    void handleFileEvent( EventContext*, int fd, EventWatch watch );
     void error( int fd, int err, EventWatch watch );
 
     int countMonitors();
@@ -53,6 +49,16 @@ public:
     FileObserverList m_write_list;
 };
 
+
+class EndEventLoopTask : public Task
+{
+public:
+    void *exec( EventContext *data )
+    {
+        data->event_list_thread = 0;
+        return NULL;
+    }
+};
 
 static void closePipe( int *fd )
 {
@@ -76,16 +82,19 @@ static int getFDSet( FileObserverList &list, fd_set *fds )
 }
 
 static int
-handleFDSet( FileObserverList &list, fd_set *fds, FileEventObserver::EventWatch watch )
+handleFDSet( EventContext *ctx, FileObserverList &list, fd_set *fds, FileEventObserver::EventWatch watch )
 {
     int handled = 0;
 
     const FileObserverList::iterator e = list.end();
-    for ( FileObserverList::iterator it = list.begin(); it != e; ++it ) {
+    for ( FileObserverList::iterator it = list.begin(); it != e; ) {
+        FileObserverList::iterator next = it;
+        ++next;
         if ( FD_ISSET( it->first, fds ) ) {
-            it->second->handleFileEvent( it->first, watch );
+            it->second->handleFileEvent( ctx, it->first, watch );
             ++handled;
         }
+        it = next;
     }
 
     return handled;
@@ -123,7 +132,7 @@ handleError( FileObserverList &list, FileEventObserver::EventWatch watch )
 
 static void *unixEventProc( void *user_data )
 {
-    CommunicationPipeObserver *data = (CommunicationPipeObserver*)user_data;
+    EventContext *data = (EventContext*)user_data;
 
     write( data->confirm_pipe[1], &NoError, 1 );
 
@@ -146,10 +155,10 @@ static void *unixEventProc( void *user_data )
             }
         } else if ( retval > 0 ) {
             if ( FD_ISSET( data->command_pipe[0], &rfds ) ) {
-                data->handleFileEvent( data->command_pipe[0], FileEventObserver::FileRead );
+                data->handleFileEvent( data, data->command_pipe[0], FileEventObserver::FileRead );
             } else {
-                handleFDSet( data->m_read_list, &rfds, FileEventObserver::FileRead );
-                handleFDSet( data->m_write_list, &wfds, FileEventObserver::FileWrite );
+                handleFDSet( data, data->m_read_list, &rfds, FileEventObserver::FileRead );
+                handleFDSet( data, data->m_write_list, &wfds, FileEventObserver::FileWrite );
             }
         }
 
@@ -161,7 +170,7 @@ static void *unixEventProc( void *user_data )
     return NULL;
 }
 
-CommunicationPipeObserver::CommunicationPipeObserver()
+EventContext::EventContext()
 {
     if ( pipe( command_pipe ) != 0 ) {
         command_pipe[0] = command_pipe[1] = -1;
@@ -192,18 +201,18 @@ pipe1_out:
     closePipe( command_pipe );
 }
 
-CommunicationPipeObserver::~CommunicationPipeObserver()
+EventContext::~EventContext()
 {
     closePipe( command_pipe );
     closePipe( confirm_pipe );
 }
 
-int CommunicationPipeObserver::countMonitors()
+int EventContext::countMonitors()
 {
     return m_read_list.size() + m_write_list.size() - 1;
 }
 
-int CommunicationPipeObserver::getFDSets( fd_set *rfds, fd_set *wfds )
+int EventContext::getFDSets( fd_set *rfds, fd_set *wfds )
 {
     int rmax = getFDSet( m_read_list, rfds );
     int wmax = getFDSet( m_write_list, wfds );
@@ -211,116 +220,98 @@ int CommunicationPipeObserver::getFDSets( fd_set *rfds, fd_set *wfds )
     return 1 + ( rmax > wmax ? rmax : wmax );
 }
 
-static void readFdObserver( int in, int *fd, FileEventObserver **obs )
+void EventContext::handleFileEvent( EventContext*, int in, EventWatch/*watch*/ )
 {
-    read( in, fd, sizeof ( int ) );
-    read( in, obs, sizeof ( FileEventObserver* ) );
-}
-
-void CommunicationPipeObserver::handleFileEvent( int in, EventWatch /*watch*/ )
-{
-    FileEventObserver *obs;
-    int fd;
-    int nr;
-
     char cmd;
-    if ( read( in, &cmd, 1 ) == 1 ) {
+    if ( read( in, &cmd, sizeof ( cmd ) ) == sizeof ( cmd ) ) {
+        Task *task;
         switch ( cmd ) {
-        case AddReadWatch:
-            readFdObserver( in, &fd, &obs );
-            m_read_list[fd] = obs;
+        case 'p':
+            if ( read( in, &task, sizeof ( task ) ) == sizeof ( task ) ) {
+                task->exec( this );
+                delete task;
+            }
             break;
-        case AddWriteWatch:
-            readFdObserver( in, &fd, &obs );
-            m_write_list[fd] = obs;
+        case 's':
+            if ( read( in, &task, sizeof ( task ) ) == sizeof ( task ) ) {
+                void *result = task->exec( this );
+                write( confirm_pipe[1], &result, sizeof ( result ) );
+            }
             break;
-        case RemoveReadWatch:
-            readFdObserver( in, &fd, &obs );
-            m_read_list.erase( fd );
-            nr = countMonitors();
-            write( confirm_pipe[1], &nr, sizeof ( int ) );
-            break;
-        case RemoveWriteWatch:
-            // TODO: select on fd until all its buffers written
-        case KillWriteWatch:
-            readFdObserver( in, &fd, &obs );
-            m_read_list.erase( fd );
-            nr = countMonitors();
-            write( confirm_pipe[1], &nr, sizeof ( int ) );
-            break;
-        case EndMessageLoop:
-            event_list_thread = 0;
         }
     }
 }
 
-void CommunicationPipeObserver::error( int /*fd*/, int err, EventWatch /*watch*/ )
+void EventContext::error( int /*fd*/, int err, EventWatch /*watch*/ )
 {
     /* TODO: handle unlikely error with pipe communication */
     fprintf( stderr, "%s: %s\n", __FUNCTION__, strerror( err ) );
 }
 
-EventThreadUnix::EventThreadUnix() : d( new CommunicationPipeObserver )
+void *AddIOObserverTask::exec( EventContext *data )
+{
+    fcntl( fd, F_SETFL, fcntl( fd , F_GETFL ) | O_NONBLOCK );
+
+    if ( watch_flags & FileEventObserver::FileRead ) {
+        data->m_read_list[fd] = observer;
+    }
+    if ( watch_flags & FileEventObserver::FileWrite ) {
+        data->m_write_list[fd] = observer;
+    }
+    return NULL;
+}
+
+void *RemoveIOObserverTask::exec( EventContext *data )
+{
+    if ( watch_flags & FileEventObserver::FileRead ) {
+        data->m_read_list.erase( fd );
+    }
+    if ( watch_flags & FileEventObserver::FileWrite ) {
+        data->m_write_list.erase( fd );
+    }
+    return (void *)(long) data->countMonitors();
+}
+
+void RemoveIOObserverTask::checkForLast()
+{
+    EventThreadUnix *thread = EventThreadUnix::self();
+    if ( 0 == (long)thread->sendTask( this ) )
+        delete thread;
+}
+
+EventThreadUnix::EventThreadUnix() : d( new EventContext )
 {
 }
 
 EventThreadUnix::~EventThreadUnix()
 {
+    m_self = NULL;
     delete d;
 }
 
-void EventThreadUnix::addFileEventObserver( int fd, FileEventObserver *observer,
-        FileEventObserver::EventWatch watch )
+void EventThreadUnix::postTask( Task *task )
 {
     if ( running() ) {
         MutexLocker locker( d->pipe_mutex );
-
-        fcntl( fd, F_SETFL, fcntl( fd , F_GETFL ) | O_NONBLOCK );
-
-        if ( FileEventObserver::FileRead == watch )
-            write( d->command_pipe[1], &AddReadWatch, 1 );
-        else if ( FileEventObserver::FileWrite == watch )
-            write( d->command_pipe[1], &AddWriteWatch, 1 );
-        write( d->command_pipe[1], &fd, sizeof ( fd ) );
-        write( d->command_pipe[1], &observer, sizeof ( observer ) );
+        write( d->command_pipe[1], &PostTask, sizeof ( PostTask ) );
+        write( d->command_pipe[1], &task, sizeof ( task ) );
     }
 }
 
-void EventThreadUnix::removeFileEventObserver( int fd,
-        FileEventObserver *observer,
-        FileEventObserver::EventWatch watch,
-        bool flush )
+void *EventThreadUnix::sendTask( Task *task )
 {
-    bool quit = false;
-
     if ( running() ) {
         MutexLocker locker( d->pipe_mutex );
 
-        if ( FileEventObserver::FileRead == watch ) {
-            write( d->command_pipe[1], &RemoveReadWatch, 1 );
-        } else if ( FileEventObserver::FileWrite == watch ) {
-            if ( flush )
-                write( d->command_pipe[1], &RemoveWriteWatch, 1 );
-            else
-                write( d->command_pipe[1], &KillWriteWatch, 1 );
-        }
-        write( d->command_pipe[1], &fd, sizeof ( fd ) );
-        write( d->command_pipe[1], &observer, sizeof ( observer ) );
+        write( d->command_pipe[1], &SendTask, sizeof ( SendTask ) );
+        write( d->command_pipe[1], &task, sizeof ( task ) );
 
-        int response;
-        read( d->confirm_pipe[0], &response, sizeof ( int ) );
+        void *response;
+        read( d->confirm_pipe[0], &response, sizeof ( response ) );
 
-        if ( response == 0 ) {
-            stop();
-            quit = true;
-        }
+        return response;
     }
-
-    if ( quit ) {
-        // outside the mutex lock
-        delete this;
-        m_self = NULL;
-    }
+    return NULL;
 }
 
 bool EventThreadUnix::running()
@@ -330,11 +321,8 @@ bool EventThreadUnix::running()
 
 void EventThreadUnix::stop()
 {
-    // assert( running() && pipe_mutex locked );
-    int nr = write( d->command_pipe[1], &EndMessageLoop, 1 );
-
-    char response;
-    read( d->confirm_pipe[0], &response, 1 );
+    EndEventLoopTask task;
+    sendTask( &task );
 }
 
 EventThreadUnix *EventThreadUnix::m_self;

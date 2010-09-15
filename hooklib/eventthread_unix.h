@@ -10,21 +10,59 @@
 
 TRACELIB_NAMESPACE_BEGIN
 
-class CommunicationPipeObserver;
+class EventContext;
 
 class FileEventObserver
 {
 public:
     enum EventWatch {
-        FileRead,
-        FileWrite
+        NoWatch = 0,
+        FileRead = 0x01,
+        FileWrite = 0x02,
+        FileReadWrite = 0x03
     };
 
     virtual ~FileEventObserver() {}
 
-    virtual void handleFileEvent( int fd, EventWatch watch ) = 0;
+    virtual void handleFileEvent( EventContext*, int fd, EventWatch watch ) = 0;
     virtual void error( int fd, int err, EventWatch watch ) = 0;
 
+};
+
+class Task
+{
+public:
+    virtual ~Task() {}
+
+    virtual void *exec( EventContext* ) = 0;
+};
+
+class AddIOObserverTask : public Task
+{
+    int fd;
+    int watch_flags;
+    FileEventObserver *observer;
+public:
+    AddIOObserverTask( int f, FileEventObserver *obs, int flags )
+        : fd( f ), watch_flags( flags ), observer( obs )
+    {}
+
+    virtual void *exec( EventContext* );
+};
+
+class RemoveIOObserverTask : public Task
+{
+    int fd;
+    int watch_flags;
+    FileEventObserver *observer;
+public:
+    RemoveIOObserverTask( int f, FileEventObserver *obs, int flags )
+        : fd( f ), watch_flags( flags ), observer( obs )
+    {}
+
+    void checkForLast();
+
+    virtual void *exec( EventContext* );
 };
 
 class EventThreadUnix
@@ -45,20 +83,15 @@ public:
 
     static bool running();
 
-    void addFileEventObserver( int fd,
-                               FileEventObserver *observer,
-                               FileEventObserver::EventWatch watch );
-    void removeFileEventObserver( int fd,
-                                  FileEventObserver *observer,
-                                  FileEventObserver::EventWatch watch,
-                                  bool flush_buffers = true );
+    void postTask( Task *task );
+    void *sendTask( Task *task );
 
 private:
     EventThreadUnix();
 
     void stop();
 
-    CommunicationPipeObserver *d;
+    EventContext *d;
 
     static EventThreadUnix *m_self;
 };

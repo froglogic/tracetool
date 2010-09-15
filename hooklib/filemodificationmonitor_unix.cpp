@@ -29,7 +29,7 @@ public:
     int addWatch( const std::string &file_name, UnixFileModificationMonitor *obs );
     void removeWatch( int watch_descriptor );
 
-    virtual void handleFileEvent( int fd, EventWatch watch );
+    virtual void handleFileEvent( EventContext*, int fd, EventWatch watch );
     virtual void error( int fd, int err, EventWatch watch );
 
     typedef std::map<int, UnixFileModificationMonitor*> MonitorMap;
@@ -41,13 +41,14 @@ InotifyEventObserver::InotifyEventObserver() : fd( -1 )
 {
     fd = inotify_init();
     if ( fd > -1 )
-        EventThreadUnix::self()->addFileEventObserver( fd, this, FileRead );
+        EventThreadUnix::self()->postTask( new AddIOObserverTask( fd, this, FileRead ) );
 }
 
 InotifyEventObserver::~InotifyEventObserver()
 {
     if ( fd > -1 ) {
-        EventThreadUnix::self()->removeFileEventObserver( fd, this, FileRead );
+        RemoveIOObserverTask task( fd, this, FileRead );
+        task.checkForLast();
         ::close( fd );
     }
 }
@@ -72,7 +73,7 @@ void InotifyEventObserver::removeWatch( int wd )
     }
 }
 
-void InotifyEventObserver::handleFileEvent( int fd, EventWatch watch )
+void InotifyEventObserver::handleFileEvent( EventContext*, int fd, EventWatch watch )
 {
     char buf[PATH_MAX + 1];
     if ( ::read( fd, buf, sizeof( buf ) ) > 0 ) {
