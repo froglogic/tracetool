@@ -143,7 +143,6 @@ Hello, Max!
 #endif
 
 #define TRACELIB_VALUE_IMPL(v) #v << "=" << v
-#define TRACELIB_MSG_IMPL TRACELIB_NAMESPACE_IDENT(StringBuilder)()
 
 TRACELIB_NAMESPACE_BEGIN
 

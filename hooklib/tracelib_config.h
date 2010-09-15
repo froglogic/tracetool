@@ -145,58 +145,55 @@
  * @brief Add a debug entry to the current thread's trace.
  *
  * This macro adds a 'debug' entry to the current thread's trace without
- * specifying any custom message. It's equivalent to TRACELIB_DEBUG_MSG(0).
+ * specifying any custom message.
  *
  * \sa TRACELIB_DEBUG_MSG
  */
-#define TRACELIB_DEBUG TRACELIB_DEBUG_MSG(0)
+#define TRACELIB_DEBUG TRACELIB_VISIT_TRACEPOINT_MSG(TRACELIB_NAMESPACE_IDENT(TracePointType)::Debug, 1, 0)
 
 /**
  * @brief Add an error entry to the current thread's trace.
  *
  * This macro adds a 'error' entry to the current thread's trace without
- * specifying any custom message. It's equivalent to TRACELIB_ERROR_MSG(0).
+ * specifying any custom message.
  *
  * \sa TRACELIB_ERROR_MSG
  */
-#define TRACELIB_ERROR TRACELIB_ERROR_MSG(0)
+#define TRACELIB_ERROR TRACELIB_VISIT_TRACEPOINT_MSG(TRACELIB_NAMESPACE_IDENT(TracePointType)::Error, 1, 0)
 
 /**
  * @brief Add a generic trace entry to the current thread's trace.
  *
  * This macro adds a 'trace' entry to the current thread's trace without
- * specifying any custom message. It's equivalent to TRACELIB_TRACE_MSG(0).
+ * specifying any custom message.
  *
  * \sa TRACELIB_TRACE_MSG
  */
-#define TRACELIB_TRACE TRACELIB_TRACE_MSG(0)
+#define TRACELIB_TRACE TRACELIB_VISIT_TRACEPOINT_MSG(TRACELIB_NAMESPACE_IDENT(TracePointType)::Log, 1, 0)
 
 /**
  * @brief Add a watch point entry to the current thread's trace.
  *
- * This macro is equivalent to TRACELIB_WATCH_MSG(0, vars).
- *
  * @param[in] vars A list of TRACELIB_VAR invocations which specify the
- * variables to be logged.
+ * variables to be logged, separated by '<<' operator calls.
  *
  * \sa TRACELIB_WATCH_MSG
  */
-#define TRACELIB_WATCH(vars) TRACELIB_WATCH_MSG(0, vars)
+#define TRACELIB_WATCH(vars) TRACELIB_VARIABLE_SNAPSHOT_MSG(1, vars, 0)
 
 /**
  * @brief Add a debug entry together with an optional message.
  *
  * This function adds a new entry to the current thread's trace.
  *
- * @param[in] msg A C string containing the UTF-8 encoded message to add to
- * the trace. A null pointer is acceptable and will result in no message being
- * logged. The caller retains ownership of the string.
+ * @param[in] msg A series of UTF-8 encoded C strings and other
+ * values, separated by calls to the '<<' operator.
  *
  * \code
  * void read_file( const char *fn ) {
  *     FILE *f = fopen( fn, "r" );
  *     if ( !f ) {
- *         TRACELIB_ERROR_MSG("Failed to open file for reading");
+ *         TRACELIB_ERROR_MSG("Failed to open file " << fn << " for reading");
  *     }
  *     TRACELIB_DEBUG_MSG("Opened file for reading");
  *     ...
@@ -204,31 +201,31 @@
  * \endcode
  *
  * \sa TRACELIB_DEBUG
+ * \sa TRACELIB_VALUE
  */
-#define TRACELIB_DEBUG_MSG(msg) TRACELIB_VISIT_TRACEPOINT_MSG(TRACELIB_NAMESPACE_IDENT(TracePointType)::Debug, 1, msg)
+#define TRACELIB_DEBUG_MSG(msg) TRACELIB_VISIT_TRACEPOINT_MSG(TRACELIB_NAMESPACE_IDENT(TracePointType)::Debug, 1, TRACELIB_NAMESPACE_IDENT(StringBuilder)() << msg)
 
 /**
  * @brief Add an error entry together with an optional message.
  *
  * This function adds a new entry to the current thread's trace.
  *
- * @param[in] msg A C string containing the UTF-8 encoded message to add to
- * the trace. A null pointer is acceptable and will result in no message being
- * logged. The caller retains ownership of the string. (See
+ * @param[in] msg A series of UTF-8 encoded C strings and other
+ * values, separated by calls to the '<<' operator (see
  * #TRACELIB_DEBUG_MSG for an example.)
  *
  * \sa TRACELIB_ERROR
+ * \sa TRACELIB_VALUE
  */
-#define TRACELIB_ERROR_MSG(msg) TRACELIB_VISIT_TRACEPOINT_MSG(TRACELIB_NAMESPACE_IDENT(TracePointType)::Error, 1, msg)
+#define TRACELIB_ERROR_MSG(msg) TRACELIB_VISIT_TRACEPOINT_MSG(TRACELIB_NAMESPACE_IDENT(TracePointType)::Error, 1, TRACELIB_NAMESPACE_IDENT(StringBuilder)() << msg)
 
 /**
  * @brief Add a trace entry together with an optional message.
  *
  * This function adds a new entry to the current thread's trace.
  *
- * @param[in] msg A C string containing the UTF-8 encoded message to add to
- * the trace. A null pointer is acceptable and will result in no message being
- * logged. The caller retains ownership of the string.
+ * @param[in] msg A series of UTF-8 encoded C strings and other
+ * values, separated by calls to the '<<' operator.
  *
  * \code
  * int get_largest_value( int a, int b, int c ) {
@@ -243,17 +240,17 @@
  * \endcode
  *
  * \sa TRACELIB_TRACE
+ * \sa TRACELIB_VALUE
  */
-#define TRACELIB_TRACE_MSG(msg) TRACELIB_VISIT_TRACEPOINT_MSG(TRACELIB_NAMESPACE_IDENT(TracePointType)::Log, 1, msg)
+#define TRACELIB_TRACE_MSG(msg) TRACELIB_VISIT_TRACEPOINT_MSG(TRACELIB_NAMESPACE_IDENT(TracePointType)::Log, 1, TRACELIB_NAMESPACE_IDENT(StringBuilder)() << msg)
 
 /**
  * @brief Add a watch point entry together with an optional message.
  *
  * This function adds a new entry to the current thread's trace.
  *
- * @param[in] msg A C string containing the UTF-8 encoded message to add to
- * the trace. A null pointer is acceptable and will result in no message being
- * logged. The caller retains ownership of the string.
+ * @param[in] msg A series of UTF-8 encoded C strings and other
+ * values, separated by calls to the '<<' operator.
  * @param[in] vars A list of TRACELIB_VARs which specify the variables
  * to be logged.
  *
@@ -267,49 +264,25 @@
  * \endcode
  *
  * \sa TRACELIB_WATCH
- */
-#define TRACELIB_WATCH_MSG(msg, vars) TRACELIB_VARIABLE_SNAPSHOT_MSG(1, vars, msg)
-
-/**
- * @brief Helps with constructing custom messages for any of the _MSG macros
- *
- * This macro is a utility for constructing messages which can be passed to
- * any of the _MSG macros described above, (e.g. #TRACELIB_TRACE_MSG). It
- * allows assembling messages in a stream-like fashion. For instance, here
- * is an example which prints a 'Trace' message including a variable:
- *
- * \code
- * void f( int i, bool j ) {
- *     TRACELIB_TRACE_MSG(TRACELIB_MSG << "f() called with i=" << i << " and j=" << j)
- * }
- * \endcode
- *
- * This code can be simplified further by using the accompanying #TRACELIB_VALUE
- * macro:
- *
- * \code
- * void f( int i, bool j ) {
- *     TRACELIB_TRACE_MSG(TRACELIB_MSG << "f() called with " << TRACELIB_VALUE(i) << " and " << TRACELIB_VALUE(j))
- * }
- * \endcode
- *
- * \sa TRACELIB_WATCH_MSG
- * \sa TRACELIB_TRACE_MSG
- * \sa TRACELIB_ERROR_MSG
- * \sa TRACELIB_DEBUG_MSG
  * \sa TRACELIB_VALUE
  */
-#define TRACELIB_MSG TRACELIB_MSG_IMPL
+#define TRACELIB_WATCH_MSG(msg, vars) TRACELIB_VARIABLE_SNAPSHOT_MSG(1, vars, TRACELIB_NAMESPACE_IDENT(StringBuilder)() << msg)
 
 /**
- * @brief Helper macro to be used together with #TRACELIB_MSG
+ * @brief Helper macro to be used together with _MSG macros
  *
  * This macro avoids that a variable name has to be typed twice when assembling
- * messages using the #TRACELIB_MSG macro. It can only be used as an argument
- * to the #TRACELIB_MSG macro. See the documentation for #TRACELIB_MSG for an
- * example.
+ * messages using the any of the _MSG macros. It can only be used in the first
+ * argument to the _MSG macros.
  *
- * \sa TRACELIB_MSG
+ * Here's an example which makes use of the macro to simplify the
+ * message which is being passed to a #TRACELIB_TRACE_MSG invocation:
+ *
+ * \code
+ * void f( int i, bool j ) {
+ *     TRACELIB_TRACE_MSG("f() called with " << TRACELIB_VALUE(i) << " and " << TRACELIB_VALUE(j))
+ * }
+ * \endcode
  */
 #define TRACELIB_VALUE TRACELIB_VALUE_IMPL
 
