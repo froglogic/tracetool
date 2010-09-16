@@ -1,5 +1,6 @@
 /* config.h for CMake builds */
 
+#cmakedefine HAVE_INOTIFY_H 1
 #cmakedefine HAVE_BFD_H 1
 #cmakedefine HAVE_QT 1
 

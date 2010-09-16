@@ -6,6 +6,7 @@
 #ifndef TRACELIB_FILEMODIFICATIONMONITOR_UNIX_H
 #define TRACELIB_FILEMODIFICATIONMONITOR_UNIX_H
 
+#include "config.h"
 #include "tracelib_config.h"
 #include "filemodificationmonitor.h"
 #include "eventthread_unix.h"
@@ -14,7 +15,11 @@
 
 TRACELIB_NAMESPACE_BEGIN
 
-class InotifyEventObserver;
+#ifdef HAVE_INOTIFY_H
+class INotifyEventObserver;
+#else
+class TimerEventObserver;
+#endif
 
 class UnixFileModificationMonitor : public FileModificationMonitor
 {
@@ -29,9 +34,13 @@ public:
                   FileModificationMonitorObserver::NotificationReason reason );
 
 private:
-    static InotifyEventObserver *inotify_instance;
+#ifdef HAVE_INOTIFY_H
+    static INotifyEventObserver *notify_instance;
     std::string base_name;
     int watch_descriptor;
+#else
+    TimerEventObserver *notify_instance;
+#endif
 };
 
 TRACELIB_NAMESPACE_END

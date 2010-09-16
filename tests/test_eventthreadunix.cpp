@@ -3,6 +3,7 @@
 ** All rights reserved.
 **********************************************************************/
 
+#include "config.h"
 #include "tracelib.h"
 #include "tracelib_config.h"
 #include "eventthread_unix.h"
@@ -114,18 +115,56 @@ public:
 
 static void testFileNotification()
 {
+#if HAVE_INOTIFY_H
+    const int sleeping = 1;
+#else
+    const int sleeping = 6;
+#endif
+
     FileObserver *observer = new FileObserver;
     FileModificationMonitor *monitor = FileModificationMonitor::create(
             "/tmp/test_event.xml", observer );
     monitor->start();
     FILE *file = fopen( "/tmp/test_event.xml", "w+" );
+    sleep( sleeping );
     fprintf( file, "<config/>\n" );
     fclose( file );
-    sleep( 1 );
+    sleep( sleeping );
     unlink( "/tmp/test_event.xml" );
-    sleep( 1 );
+    sleep( sleeping );
+
     delete monitor;
+
+    verify( "FileObserver::state reached 3",
+            3,
+            observer->state );
     delete observer;
+}
+
+struct TimerObserver : public EventObserver
+{
+    int count;
+
+    TimerObserver() : count( 0 ) {}
+
+    void handleEvent( EventContext *ctx, Event *event )
+    {
+        verify( "TimerObserver::handleEvent event type TimerEventType",
+                Event::TimerEventType,
+                event->eventType() );
+        if ( ++count == 5 )
+            TimerTask( this ).exec( ctx );
+    }
+};
+
+static void testTimers()
+{
+    TimerObserver *obs = new TimerObserver();
+    EventThreadUnix::self()->postTask( new TimerTask( 250, obs ) );
+    sleep( 2 );
+    verify( "TimerObserver.count < 6",
+            true,
+            obs->count < 6 );
 }
 
 static void testCommunication()
@@ -163,6 +202,7 @@ static void testCommunication()
     std::string output, expected;
     pthread_t server_thread;
     pthread_create( &server_thread, NULL, fakeServerProc, &output );
+    usleep( 100000 );
 
     net = new NetworkOutput( &error_log, "127.0.0.1", TRACELIB_DEFAULT_PORT );
     net->open();
@@ -198,6 +238,7 @@ TRACELIB_NAMESPACE_END
 int main()
 {
     TRACELIB_NAMESPACE_IDENT(testCommunication)();
+    TRACELIB_NAMESPACE_IDENT(testTimers)();
     cout << g_verificationCount << " verifications; " << g_failureCount << " failures found." << endl;
     return g_failureCount;
 }

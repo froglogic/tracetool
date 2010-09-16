@@ -12,21 +12,60 @@ TRACELIB_NAMESPACE_BEGIN
 
 class EventContext;
 
-class FileEventObserver
+class Event
+{
+public:
+    enum EventType {
+        FileEventType,
+        TimerEventType
+    };
+    EventType eventType() const { return type; }
+protected:
+    Event( EventType t ) : type( t ) {}
+
+private:
+    EventType type;
+};
+
+class FileEvent : public Event
 {
 public:
     enum EventWatch {
-        NoWatch = 0,
+        Error = 0,
         FileRead = 0x01,
         FileWrite = 0x02,
         FileReadWrite = 0x03
     };
 
-    virtual ~FileEventObserver() {}
+    int fd;
+    int err;
+    EventWatch watch;
 
-    virtual void handleFileEvent( EventContext*, int fd, EventWatch watch ) = 0;
-    virtual void error( int fd, int err, EventWatch watch ) = 0;
+    FileEvent( int f, int e, EventWatch w )
+        : Event( Event::FileEventType ),
+          fd( f ), err( e ), watch( w )
+    {}
+};
 
+class TimerEvent : public Event
+{
+public:
+    TimerEvent() : Event( TimerEventType ) {}
+};
+
+class EventObserver
+{
+public:
+    virtual ~EventObserver() {}
+
+    virtual void handleEvent( EventContext *context, Event *event ) = 0;
+};
+
+
+class FileEventObserver : public EventObserver
+{
+public:
+    virtual void handleEvent( EventContext*, Event *event ) = 0;
 };
 
 class Task
@@ -61,6 +100,22 @@ public:
     {}
 
     void checkForLast();
+
+    virtual void *exec( EventContext* );
+};
+
+class TimerTask : public Task
+{
+    int timeout;
+    EventObserver *observer;
+    bool add;
+public:
+    TimerTask( int to, EventObserver *obs )
+        : timeout( to ), observer( obs ), add( true )
+    {}
+    TimerTask( EventObserver *obs )
+        : timeout( 0 ), observer( obs ), add( false )
+    {}
 
     virtual void *exec( EventContext* );
 };

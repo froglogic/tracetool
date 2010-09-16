@@ -16,11 +16,21 @@
 #include <sys/types.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <list>
 #include <map>
+
+static bool operator < ( const timeval &tv1, const timeval &tv2 )
+{
+    return tv1.tv_sec < tv2.tv_sec ||
+        ( tv1.tv_sec == tv2.tv_sec && tv1.tv_usec < tv2.tv_usec );
+}
 
 TRACELIB_NAMESPACE_BEGIN
 
 typedef std::map<int, FileEventObserver *> FileObserverList;
+typedef struct _TimeOut { EventObserver *observer; int timeout; } TimeOut;
+typedef std::list<TimeOut> TimeOutList;
+typedef std::map<timeval, TimeOutList> TimeOutMap;
 
 static const char PostTask = 'p';
 static const char SendTask = 's';
@@ -33,8 +43,7 @@ public:
     EventContext();
     ~EventContext();
 
-    void handleFileEvent( EventContext*, int fd, EventWatch watch );
-    void error( int fd, int err, EventWatch watch );
+    void handleEvent( EventContext*, Event *event );
 
     int countMonitors();
     int getFDSets( fd_set *rfds, fd_set *wfds );
@@ -47,6 +56,8 @@ public:
 
     FileObserverList m_read_list;
     FileObserverList m_write_list;
+
+    TimeOutMap m_timeout_map;
 };
 
 
@@ -82,52 +93,136 @@ static int getFDSet( FileObserverList &list, fd_set *fds )
 }
 
 static int
-handleFDSet( EventContext *ctx, FileObserverList &list, fd_set *fds, FileEventObserver::EventWatch watch )
+handleFDSet( EventContext *ctx, FileObserverList &list, fd_set *fds, FileEvent::EventWatch watch )
 {
     int handled = 0;
 
     const FileObserverList::iterator e = list.end();
     for ( FileObserverList::iterator it = list.begin(); it != e; ) {
-        FileObserverList::iterator next = it;
-        ++next;
-        if ( FD_ISSET( it->first, fds ) ) {
-            it->second->handleFileEvent( ctx, it->first, watch );
+        int fd = it->first;
+        EventObserver *obs = it->second;
+        ++it;
+        if ( FD_ISSET( fd, fds ) ) {
+            FileEvent event( fd, 0, watch );
+            obs->handleEvent( ctx, &event );
             ++handled;
         }
-        it = next;
     }
 
     return handled;
 }
 
 static bool
-handleError( FileObserverList &list, FileEventObserver::EventWatch watch )
+handleError( EventContext *ctx, FileObserverList &list, FileEvent::EventWatch watch )
 {
     const FileObserverList::iterator e = list.end();
     for ( FileObserverList::iterator it = list.begin(); it != e; ++it ) {
+        int fd = it->first;
         struct timeval tv;
         tv.tv_sec = 0;
         tv.tv_usec = 0;
 
         fd_set fds;
         FD_ZERO( &fds );
-        FD_SET( it->first, &fds );
+        FD_SET( fd, &fds );
 
         int retval;
         do {
-            if ( FileEventObserver::FileRead == watch )
-                retval = select( it->first + 1, &fds, NULL, 0L, &tv );
+            if ( FileEvent::FileRead == watch )
+                retval = select( fd + 1, &fds, NULL, 0L, &tv );
             else
-                retval = select( it->first + 1, NULL, &fds, 0L, &tv );
+                retval = select( fd + 1, NULL, &fds, 0L, &tv );
         } while ( retval < 0 && errno == EINTR );
 
         if ( retval < 0 && errno != EINTR ) {
-            it->second->error( it->first, errno, watch );
+            EventObserver *observer = it->second;
             list.erase( it );
+            FileEvent event( fd, errno, FileEvent::Error );
+            observer->handleEvent( ctx, &event );
             return true;
         }
     }
     return false;
+}
+
+static void
+addToTimeOut( TimeOutMap &map, const timeval &now, EventObserver *obs, int ms )
+{
+    TimeOutMap::iterator it = map.find( now );
+    TimeOut timeout = { obs, ms };
+    if ( it == map.end() ) {
+        TimeOutList tl;
+        tl.push_back( timeout );
+        map[now] = tl;
+    } else {
+        it->second.push_back( timeout );
+    }
+}
+
+static void removeFromTimeOut( TimeOutMap &map, const EventObserver *observer )
+{
+    const TimeOutMap::iterator e = map.end();
+    for ( TimeOutMap::iterator it = map.begin(); it != e; )
+    {
+        TimeOutMap::iterator next = it;
+        ++next;
+
+        const TimeOutList::iterator te = it->second.end();
+        for ( TimeOutList::iterator ti = it->second.begin(); ti != te; )
+        {
+            if ( ti->observer == observer ) {
+                ti = it->second.erase( ti );
+                if ( it->second.size() == 0 )
+                    map.erase( it );
+                //return; not yet guaranteed that an observer is add only once
+            } else {
+                ++ti;
+            }
+        }
+
+        it = next;
+    }
+}
+
+static void handleTimeout( EventContext *ctx, const timeval &now )
+{
+    const TimeOutMap::iterator e = ctx->m_timeout_map.end();
+    for ( TimeOutMap::iterator i = ctx->m_timeout_map.begin(); i != e; ) {
+        TimeOutMap::iterator succ = i;
+        ++succ;
+
+        if ( now < i->first )
+            break;
+
+        const TimeOutList::iterator te = i->second.end();
+        for ( TimeOutList::iterator ti = i->second.begin(); ti != te; )
+        {
+            TimeOut timeout = *ti;
+            ti = i->second.erase( ti );
+
+            if ( timeout.timeout > 0 ) {
+                timeval next;
+                int ms = timeout.timeout;
+                timeval add;
+                if ( ms >= 1000 ) {
+                    add.tv_sec = ms / 1000;
+                    ms %= 1000;
+                } else {
+                    add.tv_sec = 0;
+                }
+                add.tv_usec = ms * 1000;
+                timeradd( &now, &add, &next );
+                addToTimeOut( ctx->m_timeout_map, next,
+                        timeout.observer, timeout.timeout );
+            }
+
+            TimerEvent event;
+            timeout.observer->handleEvent( ctx, &event );
+        }
+
+        ctx->m_timeout_map.erase( i );
+        i = succ;
+    }
 }
 
 static void *unixEventProc( void *user_data )
@@ -141,12 +236,26 @@ static void *unixEventProc( void *user_data )
 
     int nds = data->getFDSets( &rfds, &wfds );
     while ( data->event_list_thread && nds > 0 ) {
+        timeval tv;
+        timeval *cur = NULL;
+        TimeOutMap::iterator it = data->m_timeout_map.begin();
+        if ( it != data->m_timeout_map.end() ) {
+            timeval now;
+            gettimeofday( &now, NULL );
+            handleTimeout( data, now );
 
-        int retval = select( nds, &rfds, &wfds, NULL, NULL );
+            it = data->m_timeout_map.begin();
+            if ( it != data->m_timeout_map.end() ) {
+                timersub( &it->first, &now, &tv );
+                cur = &tv;
+            }
+        }
+
+        int retval = select( nds, &rfds, &wfds, NULL, cur );
         if ( retval == -1 ) {
             if ( errno != EINTR ) {
-                if ( !handleError( data->m_read_list, FileEventObserver::FileRead ) &&
-                        !handleError( data->m_write_list, FileEventObserver::FileWrite ) ) {
+                if ( !handleError( data, data->m_read_list, FileEvent::FileRead ) &&
+                        !handleError( data, data->m_write_list, FileEvent::FileWrite ) ) {
                     fprintf( stderr, "Unknown error in %s: %s\n",
                             __FUNCTION__,
                             strerror( errno ) );
@@ -155,10 +264,11 @@ static void *unixEventProc( void *user_data )
             }
         } else if ( retval > 0 ) {
             if ( FD_ISSET( data->command_pipe[0], &rfds ) ) {
-                data->handleFileEvent( data, data->command_pipe[0], FileEventObserver::FileRead );
+                FileEvent event( data->command_pipe[0], 0, FileEvent::FileRead );
+                data->handleEvent( data, &event );
             } else {
-                handleFDSet( data, data->m_read_list, &rfds, FileEventObserver::FileRead );
-                handleFDSet( data, data->m_write_list, &wfds, FileEventObserver::FileWrite );
+                handleFDSet( data, data->m_read_list, &rfds, FileEvent::FileRead );
+                handleFDSet( data, data->m_write_list, &wfds, FileEvent::FileWrite );
             }
         }
 
@@ -209,7 +319,8 @@ EventContext::~EventContext()
 
 int EventContext::countMonitors()
 {
-    return m_read_list.size() + m_write_list.size() - 1;
+    // ### not really counting all timers
+    return m_read_list.size() + m_write_list.size() - 1 + m_timeout_map.size();
 }
 
 int EventContext::getFDSets( fd_set *rfds, fd_set *wfds )
@@ -220,42 +331,42 @@ int EventContext::getFDSets( fd_set *rfds, fd_set *wfds )
     return 1 + ( rmax > wmax ? rmax : wmax );
 }
 
-void EventContext::handleFileEvent( EventContext*, int in, EventWatch/*watch*/ )
+void EventContext::handleEvent( EventContext*, Event *event )
 {
-    char cmd;
-    if ( read( in, &cmd, sizeof ( cmd ) ) == sizeof ( cmd ) ) {
-        Task *task;
-        switch ( cmd ) {
-        case 'p':
-            if ( read( in, &task, sizeof ( task ) ) == sizeof ( task ) ) {
-                task->exec( this );
-                delete task;
+    FileEvent *fe = (FileEvent *)event;
+    if ( FileEvent::Error == fe->watch ) {
+        /* TODO: handle unlikely error with pipe communication */
+        fprintf( stderr, "%s: %s\n", __FUNCTION__, strerror( fe->err ) );
+    } else {
+        char cmd;
+        if ( read( fe->fd, &cmd, sizeof ( cmd ) ) == sizeof ( cmd ) ) {
+            Task *task;
+            switch ( cmd ) {
+            case 'p':
+                if ( read( fe->fd, &task, sizeof( task ) ) == sizeof( task ) ) {
+                    task->exec( this );
+                    delete task;
+                }
+                break;
+            case 's':
+                if ( read( fe->fd, &task, sizeof( task ) ) == sizeof( task ) ) {
+                    void *result = task->exec( this );
+                    write( confirm_pipe[1], &result, sizeof ( result ) );
+                }
+                break;
             }
-            break;
-        case 's':
-            if ( read( in, &task, sizeof ( task ) ) == sizeof ( task ) ) {
-                void *result = task->exec( this );
-                write( confirm_pipe[1], &result, sizeof ( result ) );
-            }
-            break;
         }
     }
-}
-
-void EventContext::error( int /*fd*/, int err, EventWatch /*watch*/ )
-{
-    /* TODO: handle unlikely error with pipe communication */
-    fprintf( stderr, "%s: %s\n", __FUNCTION__, strerror( err ) );
 }
 
 void *AddIOObserverTask::exec( EventContext *data )
 {
     fcntl( fd, F_SETFL, fcntl( fd , F_GETFL ) | O_NONBLOCK );
 
-    if ( watch_flags & FileEventObserver::FileRead ) {
+    if ( watch_flags & FileEvent::FileRead ) {
         data->m_read_list[fd] = observer;
     }
-    if ( watch_flags & FileEventObserver::FileWrite ) {
+    if ( watch_flags & FileEvent::FileWrite ) {
         data->m_write_list[fd] = observer;
     }
     return NULL;
@@ -263,10 +374,10 @@ void *AddIOObserverTask::exec( EventContext *data )
 
 void *RemoveIOObserverTask::exec( EventContext *data )
 {
-    if ( watch_flags & FileEventObserver::FileRead ) {
+    if ( watch_flags & FileEvent::FileRead ) {
         data->m_read_list.erase( fd );
     }
-    if ( watch_flags & FileEventObserver::FileWrite ) {
+    if ( watch_flags & FileEvent::FileWrite ) {
         data->m_write_list.erase( fd );
     }
     return (void *)(long) data->countMonitors();
@@ -279,12 +390,25 @@ void RemoveIOObserverTask::checkForLast()
         delete thread;
 }
 
+void *TimerTask::exec( EventContext *data )
+{
+    if ( add ) {
+        timeval now;
+        gettimeofday( &now, NULL );
+        addToTimeOut( data->m_timeout_map, now, observer, timeout );
+    } else {
+        removeFromTimeOut( data->m_timeout_map, observer );
+    }
+    return (void *)(long)data->countMonitors();
+}
+
 EventThreadUnix::EventThreadUnix() : d( new EventContext )
 {
 }
 
 EventThreadUnix::~EventThreadUnix()
 {
+    stop();
     m_self = NULL;
     delete d;
 }
