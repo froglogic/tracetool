@@ -358,11 +358,24 @@ void Server::storeEntry( const TraceEntry &e )
         }
     }
 
+    unsigned int groupId = 0;
+    if ( !e.groupName.isNull() ) {
+        QVariant v = transaction.exec( QString( "SELECT id FROM trace_point_group WHERE name=%1;" ).arg( formatValue( e.groupName ) ) );
+        if ( !v.isValid() ) {
+            transaction.exec( QString( "INSERT INTO trace_point_group VALUES(NULL, %1);" ).arg( formatValue( e.groupName ) ) );
+            v = transaction.exec( "SELECT last_insert_rowid() FROM trace_point_group LIMIT 1;" );
+        }
+        groupId = v.toUInt( &ok );
+        if ( !ok ) {
+            throw runtime_error( "Failed to store entry in database: read non-numeric trace point group id from database - corrupt database?" );
+        }
+    }
+
     unsigned int tracepointId;
     {
-        QVariant v = transaction.exec( QString( "SELECT id FROM trace_point WHERE verbosity=%1 AND type=%2 AND path_id=%3 AND line=%4 AND function_id=%5;" ).arg( e.verbosity ).arg( e.type ).arg( pathId ).arg( e.lineno ).arg( functionId ) );
+        QVariant v = transaction.exec( QString( "SELECT id FROM trace_point WHERE verbosity=%1 AND type=%2 AND path_id=%3 AND line=%4 AND function_id=%5 AND group_id=%6;" ).arg( e.verbosity ).arg( e.type ).arg( pathId ).arg( e.lineno ).arg( functionId ).arg( groupId ) );
         if ( !v.isValid() ) {
-            transaction.exec( QString( "INSERT INTO trace_point VALUES(NULL, %1, %2, %3, %4, %5);" ).arg( e.verbosity ).arg( e.type ).arg( pathId ).arg( e.lineno ).arg( functionId ) );
+            transaction.exec( QString( "INSERT INTO trace_point VALUES(NULL, %1, %2, %3, %4, %5, %6);" ).arg( e.verbosity ).arg( e.type ).arg( pathId ).arg( e.lineno ).arg( functionId ).arg( groupId ) );
             v = transaction.exec( "SELECT last_insert_rowid() FROM trace_point LIMIT 1;" );
         }
         tracepointId = v.toUInt( &ok );
@@ -418,6 +431,7 @@ void Server::trimTo( size_t nMostRecent )
         transaction.exec( "DELETE FROM traced_thread;" );
         transaction.exec( "DELETE FROM variable;" );
         transaction.exec( "DELETE FROM stackframe;" );
+        transaction.exec( "DELETE FROM trace_point_group;" );
         return;
     }
     qWarning() << "Server::trimTo: deleting all but the n most recent trace "

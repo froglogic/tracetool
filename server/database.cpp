@@ -21,7 +21,7 @@ public:
         : runtime_error(what.toUtf8().constData()) { }
 };
 
-const int Database::expectedVersion = 2;
+const int Database::expectedVersion = 3;
 
 static const char * const schemaStatements[] = {
     "CREATE TABLE schema_downgrade (from_version INTEGER,"
@@ -38,7 +38,8 @@ static const char * const schemaStatements[] = {
     " path_id INTEGER,"
     " line INTEGER,"
     " function_id INTEGER,"
-    " UNIQUE(verbosity, type, path_id, line, function_id));",
+    " group_id INTEGER,"
+    " UNIQUE(verbosity, type, path_id, line, function_id, group_id));",
     "CREATE TABLE function_name (id INTEGER PRIMARY KEY AUTOINCREMENT,"
     " name TEXT,"
     " UNIQUE(name));",
@@ -65,13 +66,17 @@ static const char * const schemaStatements[] = {
     " function_name TEXT,"
     " offset INTEGER,"
     " file_name TEXT,"
-    " line INTEGER);"
+    " line INTEGER);",
+    "CREATE TABLE trace_point_group(id INTEGER PRIMARY KEY AUTOINCREMENT,"
+    " name TEXT,"
+    " UNIQUE(name));"
 };
 
 static const char * const downgradeStatementsInsert[] = {
     0, // can't downgrade further than version 0
     "INSERT INTO schema_downgrade VALUES(1, 'NOT IMPLEMENTED');",
-    "INSERT INTO schema_downgrade VALUES(2, 'NOT IMPLEMENTED');"
+    "INSERT INTO schema_downgrade VALUES(2, 'NOT IMPLEMENTED');",
+    "INSERT INTO schema_downgrade VALUES(3, 'NOT IMPLEMENTED');"
 };
 
 int Database::currentVersion( QSqlDatabase db, QString *errMsg )
