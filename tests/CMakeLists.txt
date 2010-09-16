@@ -39,7 +39,7 @@ IF(NOT WIN32)
     TARGET_LINK_LIBRARIES(test_eventthreadunix tracelib)
 ENDIF(NOT WIN32)
 
-FIND_PACKAGE(Qt4 4.5.0 COMPONENTS QtGui QtCore QtSql QtNetwork QtXml QtSql REQUIRED)
+FIND_PACKAGE(Qt4 4.6 COMPONENTS QtGui QtCore QtSql QtNetwork QtXml QtSql REQUIRED)
 INCLUDE(${QT_USE_FILE})
 QT4_WRAP_CPP(TESTSESSION_MOC_SOURCES ../gui/columnsinfo.h)
 ADD_EXECUTABLE(test_session test_session.cpp
