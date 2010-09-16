@@ -162,12 +162,6 @@ public:
         return *this;
     }
 
-    template <>
-    StringBuilder &operator<<( const VariableValue &v ) {
-        m_stream << VariableValue::convertToString( v );
-        return *this;
-    }
-
 private:
     StringBuilder( const StringBuilder &other );
     void operator=( const StringBuilder &rhs );
@@ -175,6 +169,12 @@ private:
     std::string m_s;
     std::ostringstream m_stream;
 };
+
+template <>
+inline StringBuilder &StringBuilder::operator<<( const VariableValue &v ) {
+    m_stream << VariableValue::convertToString( v );
+    return *this;
+}
 
 TRACELIB_EXPORT void visitTracePoint( TracePoint *tracePoint,
                       const char *msg = 0,
