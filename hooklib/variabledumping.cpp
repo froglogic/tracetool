@@ -59,6 +59,8 @@ string VariableValue::convertToString( const VariableValue &v )
             return stream.str();
         case VariableType::Boolean:
             return v.asBoolean() ? "true" : "false";
+        case VariableType::Unknown:
+            assert( !"convertToString on Unknown VariableType" );
     }
     assert( !"Unreachable" );
     return string();
