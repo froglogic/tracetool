@@ -52,7 +52,6 @@ INotifyEventObserver::INotifyEventObserver() : fd( -1 )
 INotifyEventObserver::~INotifyEventObserver()
 {
     if ( fd > -1 ) {
-        fprintf (stderr, "~INotifyEventObserver fd %d\n", fd );
         RemoveIOObserverTask task( fd, this, FileEvent::FileRead );
         task.checkForLast();
         ::close( fd );
