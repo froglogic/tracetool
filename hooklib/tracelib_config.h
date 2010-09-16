@@ -149,7 +149,7 @@
  *
  * \sa TRACELIB_DEBUG_MSG
  */
-#define TRACELIB_DEBUG TRACELIB_VISIT_TRACEPOINT_MSG(TRACELIB_NAMESPACE_IDENT(TracePointType)::Debug, 1, 0)
+#define TRACELIB_DEBUG TRACELIB_DEBUG_IMPL
 
 /**
  * @brief Add an error entry to the current thread's trace.
@@ -159,7 +159,7 @@
  *
  * \sa TRACELIB_ERROR_MSG
  */
-#define TRACELIB_ERROR TRACELIB_VISIT_TRACEPOINT_MSG(TRACELIB_NAMESPACE_IDENT(TracePointType)::Error, 1, 0)
+#define TRACELIB_ERROR TRACELIB_ERROR_IMPL
 
 /**
  * @brief Add a generic trace entry to the current thread's trace.
@@ -169,7 +169,7 @@
  *
  * \sa TRACELIB_TRACE_MSG
  */
-#define TRACELIB_TRACE TRACELIB_VISIT_TRACEPOINT_MSG(TRACELIB_NAMESPACE_IDENT(TracePointType)::Log, 1, 0)
+#define TRACELIB_TRACE TRACELIB_TRACE_IMPL
 
 /**
  * @brief Add a watch point entry to the current thread's trace.
@@ -179,7 +179,7 @@
  *
  * \sa TRACELIB_WATCH_MSG
  */
-#define TRACELIB_WATCH(vars) TRACELIB_VARIABLE_SNAPSHOT_MSG(1, vars, 0)
+#define TRACELIB_WATCH(vars) TRACELIB_WATCH_IMPL(vars)
 
 /**
  * @brief Add a debug entry together with an optional message.
@@ -203,7 +203,7 @@
  * \sa TRACELIB_DEBUG
  * \sa TRACELIB_VALUE
  */
-#define TRACELIB_DEBUG_MSG(msg) TRACELIB_VISIT_TRACEPOINT_MSG(TRACELIB_NAMESPACE_IDENT(TracePointType)::Debug, 1, TRACELIB_NAMESPACE_IDENT(StringBuilder)() << msg)
+#define TRACELIB_DEBUG_MSG(msg) TRACELIB_DEBUG_MSG_IMPL(msg)
 
 /**
  * @brief Add an error entry together with an optional message.
@@ -217,7 +217,7 @@
  * \sa TRACELIB_ERROR
  * \sa TRACELIB_VALUE
  */
-#define TRACELIB_ERROR_MSG(msg) TRACELIB_VISIT_TRACEPOINT_MSG(TRACELIB_NAMESPACE_IDENT(TracePointType)::Error, 1, TRACELIB_NAMESPACE_IDENT(StringBuilder)() << msg)
+#define TRACELIB_ERROR_MSG(msg) TRACELIB_ERROR_MSG_IMPL(msg)
 
 /**
  * @brief Add a trace entry together with an optional message.
@@ -242,7 +242,7 @@
  * \sa TRACELIB_TRACE
  * \sa TRACELIB_VALUE
  */
-#define TRACELIB_TRACE_MSG(msg) TRACELIB_VISIT_TRACEPOINT_MSG(TRACELIB_NAMESPACE_IDENT(TracePointType)::Log, 1, TRACELIB_NAMESPACE_IDENT(StringBuilder)() << msg)
+#define TRACELIB_TRACE_MSG(msg) TRACELIB_TRACE_MSG_IMPL(msg)
 
 /**
  * @brief Add a watch point entry together with an optional message.
@@ -266,7 +266,7 @@
  * \sa TRACELIB_WATCH
  * \sa TRACELIB_VALUE
  */
-#define TRACELIB_WATCH_MSG(msg, vars) TRACELIB_VARIABLE_SNAPSHOT_MSG(1, vars, TRACELIB_NAMESPACE_IDENT(StringBuilder)() << msg)
+#define TRACELIB_WATCH_MSG(msg, vars) TRACELIB_WATCH_MSG_IMPL(msg, vars)
 
 /**
  * @brief Helper macro to be used together with _MSG macros
