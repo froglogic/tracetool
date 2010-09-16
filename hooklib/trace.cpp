@@ -34,7 +34,7 @@ static void recordCrashInTrace()
     }
 
     static TracePoint tp( TracePointType::Error, 0,
-                          sourceFile.c_str(), lineNumber, functionName.c_str() );
+                          sourceFile.c_str(), lineNumber, functionName.c_str(), 0 );
     TraceEntry te( &tp, "The application crashed at this point!" );
     te.backtrace = bt;
     getActiveTrace()->addEntry( te );
