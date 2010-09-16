@@ -34,6 +34,7 @@ static TraceEntry deserializeTraceEntry( const QDomElement &e )
     entry.type = e.namedItem( "type" ).toElement().text().toUInt();
     entry.path = e.namedItem( "location" ).toElement().text();
     entry.lineno = e.namedItem( "location" ).toElement().attribute( "lineno" ).toULong();
+    entry.groupName = e.namedItem( "group" ).toElement().text();
     entry.function = e.namedItem( "function" ).toElement().text();
     entry.message = e.namedItem( "message" ).toElement().text();
 

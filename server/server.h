@@ -45,6 +45,7 @@ struct TraceEntry
     unsigned int type;
     QString path;
     unsigned long lineno;
+    QString groupName;
     QString function;
     QString message;
     QList<Variable> variables;
