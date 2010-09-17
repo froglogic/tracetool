@@ -41,7 +41,7 @@ SET(GUI_RCCS
   gui.qrc)
 
 SET(GUI_TS
-    gui.ts)
+    ${CMAKE_CURRENT_BINARY_DIR}/gui.ts)
 
 FIND_PACKAGE(Qt4 4.6 COMPONENTS QtGui QtCore QtSql QtNetwork QtXml QtSql REQUIRED)
 INCLUDE(${QT_USE_FILE})

@@ -7,7 +7,7 @@ SET(SERVER_SOURCES
 SET(SERVER_MOCABLES
         server.h)
 SET(SERVER_TS
-        server.ts)
+        ${CMAKE_CURRENT_BINARY_DIR}/server.ts)
 
 FIND_PACKAGE(Qt4 4.6 COMPONENTS QtCore QtNetwork QtXml QtSql REQUIRED)
 INCLUDE(${QT_USE_FILE})
