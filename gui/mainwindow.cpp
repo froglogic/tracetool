@@ -48,6 +48,9 @@ MainWindow::MainWindow(Settings *settings,
     connect(freezeButton, SIGNAL(clicked()),
             this, SLOT(toggleFreezeState()));
 
+    connect(toolBox, SIGNAL(currentChanged(int)),
+           this, SLOT(toolBoxPageChanged(int)));
+
     // File menu
     connect(action_Open_Trace, SIGNAL(triggered()),
 	    this, SLOT(fileOpenTrace()));
@@ -93,6 +96,7 @@ bool MainWindow::setDatabase(const QString &databaseFileName, QString *errMsg)
     delete m_server; m_server = NULL;
     // will create new db file if necessary
     m_server = new Server(databaseFileName, m_settings->serverPort(), this);
+    m_filterForm->setTraceKeys( m_server->seenGroupIds() );
 
     m_entryItemModel = new EntryItemModel(m_settings->entryFilter(),
                                           m_settings->columnsInfo(), this);
@@ -296,6 +300,7 @@ void MainWindow::clearTracePoints()
     m_server->trimTo( 0 );
     m_entryItemModel->reApplyFilter();
     m_watchTree->reApplyFilter();
+    m_filterForm->setTraceKeys( QStringList() );
 }
 
 void MainWindow::traceEntryDoubleClicked(const QModelIndex &index)
@@ -330,4 +335,11 @@ void MainWindow::traceEntryDoubleClicked(const QModelIndex &index)
                               QString( "<pre>%1</pre>" ).arg( lines.join( "\n" ) ) );
 }
 
+
+void MainWindow::toolBoxPageChanged( int index )
+{
+    if ( index == 0 && m_server ) {
+        m_filterForm->setTraceKeys( m_server->seenGroupIds() );
+    }
+}
 

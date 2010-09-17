@@ -47,6 +47,7 @@ private slots:
     void filterChange();
     void clearTracePoints();
     void traceEntryDoubleClicked(const QModelIndex &index);
+    void toolBoxPageChanged(int index);
 
 private:
     bool openConfigurationFile(const QString &fileName);

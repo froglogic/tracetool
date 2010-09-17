@@ -9,7 +9,7 @@
 #include "restorableobject.h"
 
 #include <QObject>
-#include <QString>
+#include <QStringList>
 
 struct TraceEntry;
 
@@ -35,6 +35,9 @@ public:
 
     QString message() const { return m_message; }
     void setMessage(const QString &msg) { m_message = msg; }
+
+    void setAcceptableKeys( const QStringList &acceptableKeys ) { m_acceptableKeys = acceptableKeys; }
+    QStringList acceptableKeys() const { return m_acceptableKeys; }
 
     int type() const { return m_type; }
     void setType(int t) { m_type = t; }
@@ -68,6 +71,7 @@ private:
     QString m_function;
     QString m_message;
     int m_type;
+    QStringList m_acceptableKeys;
 };
 
 #endif

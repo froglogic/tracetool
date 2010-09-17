@@ -8,6 +8,8 @@
 #include "entryfilter.h"
 #include "../hooklib/tracelib.h"
 
+#include <QSet>
+
 FilterForm::FilterForm(Settings *settings, QWidget *parent)
     : QWidget(parent),
       m_settings(settings)
@@ -33,6 +35,50 @@ FilterForm::FilterForm(Settings *settings, QWidget *parent)
             this, SLOT(apply()));
 }
 
+void FilterForm::setTraceKeys(const QStringList &keys)
+{
+    QSet<QString> keysToBeAdded = QSet<QString>::fromList(keys);
+
+    QMap<QString, QListWidgetItem *> currentItems;
+    QStringList keysToBeRemoved;
+    {
+        const int cnt = traceKeyList->count();
+        for (int i = 0; i < cnt; ++i) {
+            QListWidgetItem *item = traceKeyList->item(i);
+            currentItems[item->text()] = item;
+            keysToBeRemoved.append(item->text());
+        }
+    }
+
+    {
+        QStringList::Iterator it, end = keysToBeRemoved.end();
+        for (it = keysToBeRemoved.begin(); it != end; ++it) {
+            QSet<QString>::Iterator keyIt = keysToBeAdded.find(*it);
+            if (keyIt != keysToBeAdded.end()) {
+                keysToBeRemoved.erase(it);
+                keysToBeAdded.erase(keyIt);
+            }
+        }
+    }
+
+    traceKeyList->setUpdatesEnabled(false);
+    {
+        QStringList::ConstIterator it, end = keysToBeRemoved.end();
+        for (it = keysToBeRemoved.begin(); it != end; ++it) {
+            delete currentItems[*it];
+        }
+    }
+    {
+        QSet<QString>::ConstIterator it, end = keysToBeAdded.end();
+        for (it = keysToBeAdded.begin(); it != end; ++it) {
+            QListWidgetItem *item = new QListWidgetItem(*it, traceKeyList);
+            item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsUserCheckable);
+            item->setCheckState(Qt::Checked);
+        }
+    }
+    traceKeyList->setUpdatesEnabled(true);
+}
+
 void FilterForm::apply()
 {
     saveSettings();
@@ -51,6 +97,16 @@ void FilterForm::saveSettings()
     f->setFunction(funcEdit->text());
     f->setMessage(messageEdit->text());
     f->setType(typeCombo->itemData(typeCombo->currentIndex()).toInt());
+
+    QStringList keys;
+    const int cnt = traceKeyList->count();
+    for (int i = 0; i < cnt; ++i) {
+        QListWidgetItem *item = traceKeyList->item(i);
+        if (item->checkState() == Qt::Checked) {
+            keys.append(item->text());
+        }
+    }
+    f->setAcceptableKeys(keys);
 
     f->emitChanged();
 }

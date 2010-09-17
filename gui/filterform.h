@@ -16,6 +16,8 @@ class FilterForm : public QWidget, private Ui::FilterForm
 public:
     explicit FilterForm(Settings *settings, QWidget *parent = 0);
 
+    void setTraceKeys(const QStringList &traceKeys);
+
 signals:
     void filterApplied();
 
