@@ -12,7 +12,7 @@
  *
  * tracelib is a library for tracing the execution of a C or C++ program and
  * inspecting its state. This is achieved by instrumenting the source code of
- * the target program and linking the recompiled sources against a static
+ * the target program and linking the recompiled sources against a shared
  * tracelib library.
  *
  * \section components_sec Components
@@ -20,11 +20,11 @@
  * The tracelib distribution consists of multiple components (the file names are
  * given for a Windows build, they are named similarly on Unix):
  *
- * \li \c tracelib.lib is a static library (plus accompanying header files)
+ * \li \c tracelib.dll is a dynamic library (plus accompanying header files)
  * which has to be linked into any application which wishes to use the tracing
  * functionality.
  *
- * \li \c tracelib_qtsupport.lib is a static library which provides additional
+ * \li \c tracelib_qtsupport.dll is a dynamic library which provides additional
  * support for Qt objects. Applications using the
  * <a href="http://qt.nokia.com">Qt GUI framework</a> may which to link against
  * this library in addition to \c tracelib.lib.
@@ -62,18 +62,15 @@
  *
  * Save the resulting file to e.g. \c hello_instrumented.cpp.
  *
- * Then, recompile the program and link against all static libraries in
- * \c \<TRACELIB_PREFIX\>\\lib (where \c \<TRACELIB_PREFIX\> is the path to
- * the directory in which the tracelib package was installed) as well
- * as \c ws2_32.lib.
+ * Then, recompile the program and link against \c tracelib.dll as well as
+ * \c ws2_32.lib. You might also want to link against \c tracelib_qtsupport.dll
+ * in case Qt objects are being printed using the #TRACELIB_VAR macro.
  *
  * Here's a sample compile line for use with \c cl.exe (the compiler
  * which comes with Microsoft Visual Studio):
  *
  * \verbatim
-cl /EHsc /MD hello_instrumented.cpp /I <TRACELIB_PREFIX>\include\tracelib
-    <TRACELIB_PREFIX>\lib\pcrecppd.lib
-    <TRACELIB_PREFIX>\lib\pcred.lib
+cl /EHsc hello_instrumented.cpp /I <TRACELIB_PREFIX>\include\tracelib
     <TRACELIB_PREFIX>\lib\tracelib.lib
     ws2_32.lib
 \endverbatim
