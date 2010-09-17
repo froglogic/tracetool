@@ -15,10 +15,40 @@
  * of the tracelib library.
  *
  * The following macros are available for logging trace entries:
- * \li #TRACELIB_TRACE, #TRACELIB_TRACE_MSG: Log generic trace entries
- * \li #TRACELIB_DEBUG, #TRACELIB_DEBUG_MSG: Log debug trace entries
- * \li #TRACELIB_ERROR, #TRACELIB_ERROR_MSG: Log error trace entries
- * \li #TRACELIB_WATCH, #TRACELIB_WATCH_MSG: Log trace entries with variables's values
+ * <ol>
+ * <li>Logging generic trace entries, possibly with a custom message and/or a key:
+ *   <ul>
+ *     <li>#TRACELIB_TRACE</li>
+ *     <li>#TRACELIB_TRACE_MSG</li>
+ *     <li>#TRACELIB_TRACE_KEY</li>
+ *     <li>#TRACELIB_TRACE_KEY_MSG</li>
+ *   </ul>
+ * </li>
+ * <li>Logging debug trace entries, possibly with a custom message and/or a key:
+ *   <ul>
+ *     <li>#TRACELIB_DEBUG</li>
+ *     <li>#TRACELIB_DEBUG_MSG</li>
+ *     <li>#TRACELIB_DEBUG_KEY</li>
+ *     <li>#TRACELIB_DEBUG_KEY_MSG</li>
+ *   </ul>
+ * </li>
+ * <li>Logging error entries, possibly with a custom message and/or a key:
+ *   <ul>
+ *     <li>#TRACELIB_ERROR</li>
+ *     <li>#TRACELIB_ERROR_MSG</li>
+ *     <li>#TRACELIB_ERROR_KEY</li>
+ *     <li>#TRACELIB_ERROR_KEY_MSG</li>
+ *   </ul>
+ * </li>
+ * <li>Logging watch point entries (including variable values), possibly with a custom message and/or a key:
+ *   <ul>
+ *     <li>#TRACELIB_WATCH</li>
+ *     <li>#TRACELIB_WATCH_MSG</li>
+ *     <li>#TRACELIB_WATCH_KEY</li>
+ *     <li>#TRACELIB_WATCH_KEY_MSG</li>
+ *   </ul>
+ * </li>
+ * </ol>
  *
  * In addition, three macros are available for configuring the namespace within
  * which all the tracelib library's symbols are to be defined. This is useful
@@ -152,6 +182,20 @@
 #define TRACELIB_DEBUG TRACELIB_DEBUG_IMPL
 
 /**
+ * @brief Variant of #TRACELIB_DEBUG which takes an trace key identifer
+ *
+ * This macro is a variant of #TRACELIB_DEBUG, making it possible to specify
+ * a 'trace key'. This key can be used by clients to group trace entries.
+ *
+ * @param[in] key A UTF-8 encoded C string
+ *
+ * All other arguments are the same as with #TRACELIB_DEBUG.
+ *
+ * \sa TRACELIB_DEBUG
+ */
+#define TRACELIB_DEBUG_KEY(key) TRACELIB_DEBUG_KEY_IMPL(key)
+
+/**
  * @brief Add an error entry to the current thread's trace.
  *
  * This macro adds a 'error' entry to the current thread's trace without
@@ -160,6 +204,20 @@
  * \sa TRACELIB_ERROR_MSG
  */
 #define TRACELIB_ERROR TRACELIB_ERROR_IMPL
+
+/**
+ * @brief Variant of #TRACELIB_ERROR which takes an trace key identifer
+ *
+ * This macro is a variant of #TRACELIB_ERROR, making it possible to specify
+ * a 'trace key'. This key can be used by clients to group trace entries.
+ *
+ * @param[in] key A UTF-8 encoded C string
+ *
+ * All other arguments are the same as with #TRACELIB_ERROR.
+ *
+ * \sa TRACELIB_ERROR
+ */
+#define TRACELIB_ERROR_KEY(key) TRACELIB_ERROR_KEY_IMPL(key)
 
 /**
  * @brief Add a generic trace entry to the current thread's trace.
@@ -172,6 +230,20 @@
 #define TRACELIB_TRACE TRACELIB_TRACE_IMPL
 
 /**
+ * @brief Variant of #TRACELIB_TRACE which takes an trace key identifer
+ *
+ * This macro is a variant of #TRACELIB_TRACE, making it possible to specify
+ * a 'trace key'. This key can be used by clients to group trace entries.
+ *
+ * @param[in] key A UTF-8 encoded C string
+ *
+ * All other arguments are the same as with #TRACELIB_TRACE.
+ *
+ * \sa TRACELIB_TRACE
+ */
+#define TRACELIB_TRACE_KEY(key) TRACELIB_TRACE_KEY_IMPL(key)
+
+/**
  * @brief Add a watch point entry to the current thread's trace.
  *
  * @param[in] vars A list of TRACELIB_VAR invocations which specify the
@@ -180,6 +252,20 @@
  * \sa TRACELIB_WATCH_MSG
  */
 #define TRACELIB_WATCH(vars) TRACELIB_WATCH_IMPL(vars)
+
+/**
+ * @brief Variant of #TRACELIB_WATCH which takes an trace key identifer
+ *
+ * This macro is a variant of #TRACELIB_WATCH, making it possible to specify
+ * a 'trace key'. This key can be used by clients to group trace entries.
+ *
+ * @param[in] key A UTF-8 encoded C string
+ *
+ * All other arguments are the same as with #TRACELIB_WATCH.
+ *
+ * \sa TRACELIB_WATCH
+ */
+#define TRACELIB_WATCH_KEY(key, vars) TRACELIB_WATCH_KEY_IMPL(key, vars)
 
 /**
  * @brief Add a debug entry together with an optional message.
@@ -206,6 +292,20 @@
 #define TRACELIB_DEBUG_MSG(msg) TRACELIB_DEBUG_MSG_IMPL(msg)
 
 /**
+ * @brief Variant of #TRACELIB_DEBUG_MSG which takes an trace key identifer
+ *
+ * This macro is a variant of #TRACELIB_DEBUG_MSG, making it possible to specify
+ * a 'trace key'. This key can be used by clients to group trace entries.
+ *
+ * @param[in] key A UTF-8 encoded C string
+ *
+ * All other arguments are the same as with #TRACELIB_DEBUG_MSG.
+ *
+ * \sa TRACELIB_DEBUG_MSG
+ */
+#define TRACELIB_DEBUG_KEY_MSG(key, msg) TRACELIB_DEBUG_KEY_MSG_IMPL(key, msg)
+
+/**
  * @brief Add an error entry together with an optional message.
  *
  * This function adds a new entry to the current thread's trace.
@@ -218,6 +318,20 @@
  * \sa TRACELIB_VALUE
  */
 #define TRACELIB_ERROR_MSG(msg) TRACELIB_ERROR_MSG_IMPL(msg)
+
+/**
+ * @brief Variant of #TRACELIB_ERROR_MSG which takes an trace key identifer
+ *
+ * This macro is a variant of #TRACELIB_ERROR_MSG, making it possible to specify
+ * a 'trace key'. This key can be used by clients to group trace entries.
+ *
+ * @param[in] key A UTF-8 encoded C string
+ *
+ * All other arguments are the same as with #TRACELIB_ERROR_MSG.
+ *
+ * \sa TRACELIB_ERROR_MSG
+ */
+#define TRACELIB_ERROR_KEY_MSG(key, msg) TRACELIB_ERROR_KEY_MSG_IMPL(key, msg)
 
 /**
  * @brief Add a trace entry together with an optional message.
@@ -245,6 +359,20 @@
 #define TRACELIB_TRACE_MSG(msg) TRACELIB_TRACE_MSG_IMPL(msg)
 
 /**
+ * @brief Variant of #TRACELIB_TRACE_MSG which takes an trace key identifer
+ *
+ * This macro is a variant of #TRACELIB_TRACE_MSG, making it possible to specify
+ * a 'trace key'. This key can be used by clients to group trace entries.
+ *
+ * @param[in] key A UTF-8 encoded C string
+ *
+ * All other arguments are the same as with #TRACELIB_TRACE_MSG.
+ *
+ * \sa TRACELIB_TRACE_MSG
+ */
+#define TRACELIB_TRACE_KEY_MSG(key, msg) TRACELIB_TRACE_KEY_MSG_IMPL(key, msg)
+
+/**
  * @brief Add a watch point entry together with an optional message.
  *
  * This function adds a new entry to the current thread's trace.
@@ -267,6 +395,20 @@
  * \sa TRACELIB_VALUE
  */
 #define TRACELIB_WATCH_MSG(msg, vars) TRACELIB_WATCH_MSG_IMPL(msg, vars)
+
+/**
+ * @brief Variant of #TRACELIB_WATCH_MSG which takes an trace key identifer
+ *
+ * This macro is a variant of #TRACELIB_WATCH_MSG, making it possible to specify
+ * a 'trace key'. This key can be used by clients to group trace entries.
+ *
+ * @param[in] key A UTF-8 encoded C string
+ *
+ * All other arguments are the same as with #TRACELIB_WATCH_MSG.
+ *
+ * \sa TRACELIB_WATCH_MSG
+ */
+#define TRACELIB_WATCH_KEY_MSG(key, msg, vars) TRACELIB_WATCH_KEY_MSG_IMPL(key, msg, vars)
 
 /**
  * @brief Helper macro to be used together with _MSG macros
