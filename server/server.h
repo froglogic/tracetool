@@ -118,6 +118,7 @@ public:
     void trimTo( size_t nMostRecent );
 
     QList<StackFrame> backtraceForEntry( unsigned int id );
+    QStringList seenGroupIds() const;
 
 public slots:
     void handleIncomingData(const QByteArray &data);

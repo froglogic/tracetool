@@ -477,3 +477,27 @@ QList<StackFrame> Server::backtraceForEntry( unsigned int id )
     return frames;
 }
 
+QStringList Server::seenGroupIds() const
+{
+    const QString statement = QString(
+                      "SELECT"
+                      " name "
+                      "FROM"
+                      " trace_point_group;" );
+
+    QSqlQuery q( m_db );
+    q.setForwardOnly( true );
+    if ( !q.exec( statement ) ) {
+        const QString msg = QString( "Failed to retrieve list of available trace groups: executing SQL command '%1' failed: %2" )
+                        .arg( statement )
+                        .arg( q.lastError().text() );
+        throw runtime_error( msg.toUtf8().constData() );
+    }
+
+    QStringList l;
+    while ( q.next() ) {
+        l.append( q.value( 0 ).toString() );
+    }
+    return l;
+}
+
