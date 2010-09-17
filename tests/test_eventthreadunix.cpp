@@ -230,6 +230,41 @@ static void testCommunication()
             true,
             !EventThreadUnix::running() );
 
+    // stress server, test terminating flushing buffers
+    output = "";
+    expected = "";
+    quick_fox = quick_fox + quick_fox;
+    quick_fox = quick_fox + quick_fox;
+    quick_fox = quick_fox + quick_fox;
+    quick_fox = quick_fox + quick_fox;
+    pthread_create( &server_thread, NULL, fakeServerProc, &output );
+    usleep( 100000 );
+
+    net = new NetworkOutput( &error_log, "127.0.0.1", TRACELIB_DEFAULT_PORT );
+    net->open();
+    sleep( 1 );
+    verify( "Connected NetworkOutput::canWrite()",
+            true,
+            net->canWrite() );
+
+    for ( int i = 0; i < 5000; ++i ) {
+        expected += quick_fox;
+        net->write( std::vector<char>( quick_fox.begin(), quick_fox.end() ) );
+    }
+    delete net;
+    sleep( 1 );
+    verify( "testCommunication server received all data",
+            true,
+            output.size() == expected.size() );
+    if ( output.size() == expected.size() )
+        verify( "testCommunication server received correct data",
+                true,
+                expected == output );
+    else
+        verify( "testCommunication server received correct data start",
+                true,
+                output.size() > 0 &&
+                expected.substr( 0, output.size() ) == output );
 
 }
 

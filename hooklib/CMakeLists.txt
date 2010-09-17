@@ -66,7 +66,6 @@ SET(TRACELIB_SOURCES
         errorlog.cpp
         variabledumping.cpp
         filemodificationmonitor.cpp
-        networkoutput.cpp
         shutdownnotifier.cpp
         tracelib.cpp
         ${PROJECT_SOURCE_DIR}/3rdparty/wildcmp/wildcmp.c
@@ -83,6 +82,7 @@ IF(WIN32)
             crashhandler_win.cpp
             getcurrentthreadid_win.cpp
             filemodificationmonitor_win.cpp
+            networkoutput.cpp
             mutex_win.cpp
             ${PROJECT_SOURCE_DIR}/3rdparty/stackwalker/StackWalker.cpp)
 ELSE(WIN32)
@@ -94,6 +94,7 @@ ELSE(WIN32)
             crashhandler_unix.cpp
             getcurrentthreadid_unix.cpp
             filemodificationmonitor_unix.cpp
+            networkoutput_unix.cpp
             mutex_unix.cpp)
 ENDIF(WIN32)
 

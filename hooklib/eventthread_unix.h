@@ -140,6 +140,7 @@ public:
 
     void postTask( Task *task );
     void *sendTask( Task *task );
+    void commandChannels( int *in, int *out );
 
 private:
     EventThreadUnix();

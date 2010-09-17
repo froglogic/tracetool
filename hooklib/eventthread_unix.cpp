@@ -148,12 +148,23 @@ handleError( EventContext *ctx, FileObserverList &list, FileEvent::EventWatch wa
 static void
 addToTimeOut( TimeOutMap &map, const timeval &now, EventObserver *obs, int ms )
 {
-    TimeOutMap::iterator it = map.find( now );
+    timeval next;
+    timeval add;
+    if ( ms >= 1000 ) {
+        add.tv_sec = ms / 1000;
+        ms %= 1000;
+    } else {
+        add.tv_sec = 0;
+    }
+    add.tv_usec = ms * 1000;
+    timeradd( &now, &add, &next );
+
+    TimeOutMap::iterator it = map.find( next );
     TimeOut timeout = { obs, ms };
     if ( it == map.end() ) {
         TimeOutList tl;
         tl.push_back( timeout );
-        map[now] = tl;
+        map[next] = tl;
     } else {
         it->second.push_back( timeout );
     }
@@ -201,18 +212,7 @@ static void handleTimeout( EventContext *ctx, const timeval &now )
             ti = i->second.erase( ti );
 
             if ( timeout.timeout > 0 ) {
-                timeval next;
-                int ms = timeout.timeout;
-                timeval add;
-                if ( ms >= 1000 ) {
-                    add.tv_sec = ms / 1000;
-                    ms %= 1000;
-                } else {
-                    add.tv_sec = 0;
-                }
-                add.tv_usec = ms * 1000;
-                timeradd( &now, &add, &next );
-                addToTimeOut( ctx->m_timeout_map, next,
+                addToTimeOut( ctx->m_timeout_map, now,
                         timeout.observer, timeout.timeout );
             }
 
@@ -436,6 +436,17 @@ void *EventThreadUnix::sendTask( Task *task )
         return response;
     }
     return NULL;
+}
+
+void EventThreadUnix::commandChannels( int *in, int *out )
+{
+    if ( running() ) {
+        *in = d->confirm_pipe[0];
+        *out = d->confirm_pipe[1];
+    } else {
+        *in = -1;
+        *out = -1;
+    }
 }
 
 bool EventThreadUnix::running()
