@@ -116,7 +116,8 @@ void MainWindow::timerTriggered()
 {
     static int row = 0;
     static int column = 0;
-    TRACELIB_WATCH_MSG( "Qt eventloop still running",
+    TRACELIB_WATCH_KEY_MSG( "Timer Messages",
+                        "Qt eventloop still running",
                         TRACELIB_VAR(row) << TRACELIB_VAR(column) );
     if ( ++row == 10 ) {
         ++column;
@@ -175,7 +176,7 @@ void MainWindow::fileNew()
     clear();
     setWindowTitle(tr("Address Book - Unnamed"));
     updateUi();
-    TRACELIB_WATCH( TRACELIB_VAR(dirty) << TRACELIB_VAR(windowTitle()) << TRACELIB_VAR(filename) );
+    TRACELIB_WATCH_KEY("FileNew", TRACELIB_VAR(dirty) << TRACELIB_VAR(windowTitle()) << TRACELIB_VAR(filename) );
 }
 
 
