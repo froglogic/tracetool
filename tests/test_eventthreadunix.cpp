@@ -222,6 +222,7 @@ static void testCommunication()
 
     delete net;
     sleep( 1 );
+    pthread_detach( server_thread );
 
     verify( "testCommunication server received",
             expected,
@@ -252,8 +253,11 @@ static void testCommunication()
         expected += quick_fox;
         net->write( std::vector<char>( quick_fox.begin(), quick_fox.end() ) );
     }
+
     delete net;
     sleep( 1 );
+    pthread_detach( server_thread );
+
     verify( "testCommunication server received all data",
             true,
             output.size() == expected.size() );

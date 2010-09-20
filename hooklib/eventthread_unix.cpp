@@ -49,6 +49,7 @@ public:
     int getFDSets( fd_set *rfds, fd_set *wfds );
 
     pthread_t event_list_thread;
+    bool keep_running;
 
     int command_pipe[2];
     int confirm_pipe[2];
@@ -66,7 +67,10 @@ class EndEventLoopTask : public Task
 public:
     void *exec( EventContext *data )
     {
-        data->event_list_thread = 0;
+        if ( data->event_list_thread ) {
+            data->keep_running = false;
+            return (void*)1L;
+        }
         return NULL;
     }
 };
@@ -235,7 +239,7 @@ static void *unixEventProc( void *user_data )
     fd_set wfds;
 
     int nds = data->getFDSets( &rfds, &wfds );
-    while ( data->event_list_thread && nds > 0 ) {
+    while ( data->keep_running && nds > 0 ) {
         timeval tv;
         timeval *cur = NULL;
         TimeOutMap::iterator it = data->m_timeout_map.begin();
@@ -280,7 +284,7 @@ static void *unixEventProc( void *user_data )
     return NULL;
 }
 
-EventContext::EventContext()
+EventContext::EventContext() : keep_running( true )
 {
     if ( pipe( command_pipe ) != 0 ) {
         command_pipe[0] = command_pipe[1] = -1;
@@ -297,6 +301,7 @@ EventContext::EventContext()
 
     if ( pthread_create( &event_list_thread, NULL, unixEventProc, this ) ) {
         fprintf( stderr, "Couldn't create the event thread" );
+        event_list_thread = 0;
         goto pipe2_out;
     }
 
@@ -457,7 +462,10 @@ bool EventThreadUnix::running()
 void EventThreadUnix::stop()
 {
     EndEventLoopTask task;
-    sendTask( &task );
+    if ( sendTask( &task ) ) {
+        pthread_detach( d->event_list_thread );
+        d->event_list_thread = 0;
+    }
 }
 
 EventThreadUnix *EventThreadUnix::m_self;
