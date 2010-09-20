@@ -19,7 +19,8 @@ class EntryFilter : public QObject,
     Q_OBJECT
 public:
     EntryFilter(QObject *parent = 0) :
-        QObject(parent), m_processId(-1), m_threadId(-1), m_type(-1) { }
+        QObject(parent), m_processId(-1), m_threadId(-1), m_type(-1),
+        m_acceptsEntriesWithoutKey(true) { }
 
     QString application() const { return m_application; }
     void setApplication(const QString &app) { m_application = app; }
@@ -38,6 +39,9 @@ public:
 
     void setAcceptableKeys( const QStringList &acceptableKeys ) { m_acceptableKeys = acceptableKeys; }
     QStringList acceptableKeys() const { return m_acceptableKeys; }
+
+    void setAcceptEntriesWithoutKey( bool b ) { m_acceptsEntriesWithoutKey = b; }
+    bool acceptsEntriesWithoutKey() const { return m_acceptsEntriesWithoutKey; }
 
     int type() const { return m_type; }
     void setType(int t) { m_type = t; }
@@ -72,6 +76,7 @@ private:
     QString m_message;
     int m_type;
     QStringList m_acceptableKeys;
+    bool m_acceptsEntriesWithoutKey;
 };
 
 #endif

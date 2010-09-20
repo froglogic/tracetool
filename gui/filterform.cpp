@@ -107,6 +107,7 @@ void FilterForm::saveSettings()
         }
     }
     f->setAcceptableKeys(keys);
+    f->setAcceptEntriesWithoutKey(showTraceEntriesWithoutKey->checkState() == Qt::Checked);
 
     f->emitChanged();
 }
