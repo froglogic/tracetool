@@ -117,8 +117,9 @@ bool WatchTree::showNewTraceEntries( QString *errMsg )
         return true;
     }
 
-    QSqlQuery query( m_db );
-    bool result = query.exec( "SELECT"
+    QString statement;
+    statement +=
+                "SELECT"
                 "  process.name,"
                 "  process.pid,"
                 "  path_name.name,"
@@ -131,7 +132,11 @@ bool WatchTree::showNewTraceEntries( QString *errMsg )
                 "  traced_thread,"
                 "  process,"
                 "  path_name,"
-                "  trace_point,"
+                "  trace_point,";
+    if (!m_filter->acceptableKeys().isEmpty())
+        statement +=
+                "  trace_point_group,";
+    statement +=
                 "  function_name,"
                 "  variable,"
                 "  trace_entry"
@@ -164,8 +169,10 @@ bool WatchTree::showNewTraceEntries( QString *errMsg )
                 "  function_name.id = trace_point.function_id" +
                 filterClause(m_filter) +
                 " ORDER BY"
-                "  process.name" );
+                "  process.name";
 
+    QSqlQuery query( m_db );
+    bool result = query.exec( statement );
     if (!result) {
         *errMsg = query.lastError().text();
         return false;

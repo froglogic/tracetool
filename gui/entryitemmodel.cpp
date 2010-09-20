@@ -184,8 +184,14 @@ static QString filterClause(EntryFilter *f)
 
 bool EntryItemModel::queryForEntries(QString *errMsg)
 {
+    if (!m_filter->matchesAnything()) {
+        m_querySize = 0;
+        return true;
+    }
+
     // ### respect hidden columns might speed things up
-    m_query = m_db.exec("SELECT"
+    QString statement;
+    statement +=        "SELECT"
                         " trace_entry.id,"
                         " timestamp,"
                         " process.name,"
@@ -202,8 +208,10 @@ bool EntryItemModel::queryForEntries(QString *errMsg)
                         " trace_entry.stack_position "
                         "FROM"
                         " trace_entry,"
-                        " trace_point,"
-                        " path_name, "
+                        " trace_point,";
+    if (!m_filter->acceptableKeys().isEmpty())
+        statement +=    " trace_point_group,";
+    statement +=        " path_name, "
                         " function_name, "
                         " process, "
                         " traced_thread "
@@ -219,8 +227,9 @@ bool EntryItemModel::queryForEntries(QString *errMsg)
                         " traced_thread.process_id = process.id " +
                         filterClause(m_filter) +
                         "ORDER BY"
-                        " trace_entry.id");
+                        " trace_entry.id";
 
+    m_query = m_db.exec(statement);
     if (m_db.lastError().isValid()) {
         *errMsg = m_db.lastError().text();
         return false;

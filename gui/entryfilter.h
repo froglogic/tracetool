@@ -46,6 +46,7 @@ public:
     int type() const { return m_type; }
     void setType(int t) { m_type = t; }
 
+    bool matchesAnything() const;
     bool matches(const TraceEntry &e) const;
 
     // for WHERE clauses in SQL queries
