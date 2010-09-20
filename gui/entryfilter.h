@@ -37,8 +37,8 @@ public:
     QString message() const { return m_message; }
     void setMessage(const QString &msg) { m_message = msg; }
 
-    void setAcceptableKeys( const QStringList &acceptableKeys ) { m_acceptableKeys = acceptableKeys; }
-    QStringList acceptableKeys() const { return m_acceptableKeys; }
+    void setInactiveKeys( const QStringList &inactiveKeys ) { m_inactiveKeys = inactiveKeys; }
+    QStringList inactiveKeys() const { return m_inactiveKeys; }
 
     void setAcceptEntriesWithoutKey( bool b ) { m_acceptsEntriesWithoutKey = b; }
     bool acceptsEntriesWithoutKey() const { return m_acceptsEntriesWithoutKey; }
@@ -46,7 +46,6 @@ public:
     int type() const { return m_type; }
     void setType(int t) { m_type = t; }
 
-    bool matchesAnything() const;
     bool matches(const TraceEntry &e) const;
 
     // for WHERE clauses in SQL queries
@@ -76,7 +75,7 @@ private:
     QString m_function;
     QString m_message;
     int m_type;
-    QStringList m_acceptableKeys;
+    QStringList m_inactiveKeys;
     bool m_acceptsEntriesWithoutKey;
 };
 

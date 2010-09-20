@@ -102,11 +102,11 @@ void FilterForm::saveSettings()
     const int cnt = traceKeyList->count();
     for (int i = 0; i < cnt; ++i) {
         QListWidgetItem *item = traceKeyList->item(i);
-        if (item->checkState() == Qt::Checked) {
+        if (item->checkState() == Qt::Unchecked) {
             keys.append(item->text());
         }
     }
-    f->setAcceptableKeys(keys);
+    f->setInactiveKeys(keys);
     f->setAcceptEntriesWithoutKey(showTraceEntriesWithoutKey->checkState() == Qt::Checked);
 
     f->emitChanged();

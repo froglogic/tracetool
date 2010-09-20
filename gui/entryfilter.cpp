@@ -13,8 +13,6 @@ typedef QMap<QString, QVariant> StorageMap;
 
 bool EntryFilter::matches(const TraceEntry &e) const
 {
-    if (!matchesAnything())
-        return false;
     // Check is analog to LIKE %..% clause in model using a SQL query
     if (!m_application.isEmpty() && !e.processName.contains(m_application))
         return false;
@@ -30,18 +28,7 @@ bool EntryFilter::matches(const TraceEntry &e) const
         return false;
     if (e.groupName.isNull() && !m_acceptsEntriesWithoutKey)
         return false;
-    if (!m_acceptableKeys.contains(e.groupName))
-        return false;
-    return true;
-}
-
-bool EntryFilter::matchesAnything() const
-{
-    /* If we don't accept entries without keys, but we also don't
-     * list any keys which we would accept, then we will never
-     * match anything.
-     */
-    if (!m_acceptsEntriesWithoutKey && m_acceptableKeys.isEmpty())
+    if (m_inactiveKeys.contains(e.groupName))
         return false;
     return true;
 }
@@ -76,22 +63,20 @@ QString EntryFilter::whereClause(const QString &appField,
                            .arg(typeField).arg(m_type));
     {
         QStringList groupIdTests;
-        if (m_acceptsEntriesWithoutKey)
+        if (m_acceptsEntriesWithoutKey && !m_inactiveKeys.isEmpty())
             groupIdTests.append("trace_point.group_id = 0");
-        if (!m_acceptableKeys.isEmpty())
-            groupIdTests.append("trace_point.group_id = trace_point_group.id");
+        if (!m_inactiveKeys.isEmpty()) {
+            QStringList groupNameTests;
+            groupNameTests.append("trace_point.group_id = trace_point_group.id");
+            QStringList::ConstIterator it, end = m_inactiveKeys.end();
+            for (it = m_inactiveKeys.begin(); it != end; ++it)
+                groupNameTests.append(QString("trace_point_group.name != '%1'").arg(*it));
+            groupIdTests.append(QString("(%1)").arg(groupNameTests.join(" AND ")));
+        }
         if (!groupIdTests.isEmpty())
             expressions.append(QString("(%1)").arg(groupIdTests.join(" OR ")));
     }
 
-    {
-        QStringList keyTests;
-        QStringList::ConstIterator it, end = m_acceptableKeys.end();
-        for (it = m_acceptableKeys.begin(); it != end; ++it)
-            keyTests.append(QString("trace_point_group.name = '%1'").arg(*it));
-        if (!keyTests.isEmpty())
-            expressions.append(QString("(%1)").arg(keyTests.join(" OR ")));
-    }
     if (expressions.isEmpty())
         return QString();
     return expressions.join(" AND ");

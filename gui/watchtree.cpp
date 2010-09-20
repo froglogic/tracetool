@@ -133,7 +133,7 @@ bool WatchTree::showNewTraceEntries( QString *errMsg )
                 "  process,"
                 "  path_name,"
                 "  trace_point,";
-    if (!m_filter->acceptableKeys().isEmpty())
+    if (!m_filter->inactiveKeys().isEmpty())
         statement +=
                 "  trace_point_group,";
     statement +=

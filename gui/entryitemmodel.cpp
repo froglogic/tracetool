@@ -184,14 +184,9 @@ static QString filterClause(EntryFilter *f)
 
 bool EntryItemModel::queryForEntries(QString *errMsg)
 {
-    if (!m_filter->matchesAnything()) {
-        m_querySize = 0;
-        return true;
-    }
-
     // ### respect hidden columns might speed things up
     QString statement;
-    statement +=        "SELECT"
+    statement +=        "SELECT DISTINCT"
                         " trace_entry.id,"
                         " timestamp,"
                         " process.name,"
@@ -209,7 +204,7 @@ bool EntryItemModel::queryForEntries(QString *errMsg)
                         "FROM"
                         " trace_entry,"
                         " trace_point,";
-    if (!m_filter->acceptableKeys().isEmpty())
+    if (!m_filter->inactiveKeys().isEmpty())
         statement +=    " trace_point_group,";
     statement +=        " path_name, "
                         " function_name, "
