@@ -327,9 +327,10 @@ void NetworkOutput::write( const vector<char> &data )
     if ( NetworkOutputPrivate::Opened == d->network_state ) {
         vector<char> *buf = new vector<char>( data );
         //buf->swap( data );
+        WriteDataTask task( d, buf );
         d->network_state =
             (NetworkOutputPrivate::NetworkOutputState)(long)
-            EventThreadUnix::self()->sendTask( new WriteDataTask( d, buf ) );
+            EventThreadUnix::self()->sendTask( &task );
     }
 }
 
