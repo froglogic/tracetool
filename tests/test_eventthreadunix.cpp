@@ -165,6 +165,7 @@ static void testTimers()
     verify( "TimerObserver.count < 6",
             true,
             obs->count < 6 );
+    delete obs;
 }
 
 static void testCommunication()
