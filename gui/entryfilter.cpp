@@ -20,9 +20,9 @@ bool EntryFilter::matches(const TraceEntry &e) const
         return false;
     if (m_threadId != -1 && m_threadId != e.tid)
         return false;
-    if (m_function.isEmpty() && !e.function.contains(m_function))
+    if (!m_function.isEmpty() && !e.function.contains(m_function))
         return false;
-    if (m_message.isEmpty() && !e.message.contains(m_message))
+    if (!m_message.isEmpty() && !e.message.contains(m_message))
         return false;
     if (m_type != -1 && m_type != e.type)
         return false;
