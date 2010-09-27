@@ -61,6 +61,14 @@ struct ProcessShutdownEvent
     QString name;
 };
 
+struct TracedApplicationInfo
+{
+    unsigned int pid;
+    QDateTime startTime;
+    QDateTime stopTime;
+    QString name;
+};
+
 class ClientSocket : public QTcpSocket
 {
     Q_OBJECT
@@ -119,6 +127,7 @@ public:
 
     QList<StackFrame> backtraceForEntry( unsigned int id );
     QStringList seenGroupIds() const;
+    QList<TracedApplicationInfo> tracedApplications() const;
 
 public slots:
     void handleIncomingData(const QByteArray &data);

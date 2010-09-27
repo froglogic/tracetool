@@ -501,3 +501,38 @@ QStringList Server::seenGroupIds() const
     return l;
 }
 
+QList<TracedApplicationInfo> Server::tracedApplications() const
+{
+    const QString statement = QString(
+                      "SELECT"
+                      " name,"
+                      " pid,"
+                      " start_time,"
+                      " end_time "
+                      "FROM"
+                      " process;" );
+
+    QSqlQuery q( m_db );
+    q.setForwardOnly( true );
+    if ( !q.exec( statement ) ) {
+        const QString msg = QString( "Failed to retrieve list of traced applications: executing SQL command '%1' failed: %2" )
+                        .arg( statement )
+                        .arg( q.lastError().text() );
+        throw runtime_error( msg.toUtf8().constData() );
+    }
+
+    QList<TracedApplicationInfo> l;
+    while ( q.next() ) {
+        TracedApplicationInfo info;
+        bool ok;
+        info.pid = q.value( 1 ).toUInt( &ok );
+        assert( ok );
+        info.startTime = QDateTime::fromString( q.value( 2 ).toString(), Qt::ISODate );
+        info.stopTime = QDateTime::fromString( q.value( 3 ).toString(), Qt::ISODate );
+        info.name = q.value( 0 ).toString();
+
+        l.append( info );
+    }
+    return l;
+}
+
