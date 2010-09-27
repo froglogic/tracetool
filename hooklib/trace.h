@@ -8,20 +8,21 @@
 
 #include "tracelib_config.h"
 #include "backtrace.h"
-#include "crashhandler.h"
 #include "filemodificationmonitor.h"
-#include "filter.h"
 #include "getcurrentthreadid.h"
 #include "mutex.h"
-#include "output.h"
-#include "serializer.h"
 #include "shutdownnotifier.h"
-#include "tracelib.h"
 #include "variabledumping.h"
 
 #include <vector>
 
 TRACELIB_NAMESPACE_BEGIN
+
+class Configuration;
+class Filter;
+class Output;
+class Serializer;
+struct TracePoint;
 
 class TracePointSet
 {

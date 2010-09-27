@@ -5,6 +5,9 @@
 
 #include "configuration.h"
 #include "errorlog.h"
+#include "filter.h"
+#include "output.h"
+#include "serializer.h"
 #include "trace.h"
 
 #include "3rdparty/tinyxml/tinyxml.h"

@@ -5,6 +5,7 @@
 
 #include "serializer.h"
 #include "trace.h"
+#include "tracepoint.h"
 #include "configuration.h"
 
 #include <ctime>

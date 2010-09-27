@@ -5,6 +5,11 @@
 
 #include "trace.h"
 #include "configuration.h"
+#include "crashhandler.h"
+#include "filter.h"
+#include "output.h"
+#include "serializer.h"
+#include "tracepoint.h"
 
 #include <ctime>
 
