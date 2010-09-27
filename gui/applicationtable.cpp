@@ -15,10 +15,10 @@ ApplicationTable::ApplicationTable()
     setAlternatingRowColors( true );
     setSelectionMode( QAbstractItemView::NoSelection );
     setHorizontalHeaderLabels( QStringList()
-            << tr( "PID" )
-            << tr( "Application" )
             << tr( "Start Time" )
             << tr( "End Time" )
+            << tr( "Application" )
+            << tr( "PID" )
             );
     verticalHeader()->setVisible( false );
 }
@@ -83,10 +83,10 @@ void ApplicationTable::handleProcessShutdown( const ProcessShutdownEvent &ev )
 
 QTableWidgetItem *ApplicationTable::insertEntry( int row, unsigned int pid, const QString &name, const QDateTime &startTime, const QDateTime &endTime )
 {
-    setItem( row, 0, new QTableWidgetItem( QString::number( pid ) ) );
+    setItem( row, 3, new QTableWidgetItem( QString::number( pid ) ) );
 
     QTableWidgetItem *nameItem = new QTableWidgetItem( name );
-    setItem( row, 1, nameItem );
+    setItem( row, 2, nameItem );
 
     setTimesForApplication( nameItem, startTime, endTime );
 
@@ -99,10 +99,10 @@ void ApplicationTable::setTimesForApplication( QTableWidgetItem *nameItem,
 {
     const int row = nameItem->row();
     if ( !startTime.isNull() ) {
-        setItem( row, 2, new QTableWidgetItem( startTime.toString() ) );
+        setItem( row, 0, new QTableWidgetItem( startTime.toString() ) );
     }
     if ( !endTime.isNull() ) {
-        setItem( row, 3, new QTableWidgetItem( endTime.toString() ) );
+        setItem( row, 1, new QTableWidgetItem( endTime.toString() ) );
     }
 }
 
