@@ -13,6 +13,7 @@
 #include "watchtree.h"
 #include "columnsinfo.h"
 #include "storageview.h"
+#include "applicationtable.h"
 
 #include <cassert>
 #include <QtGui>
@@ -27,7 +28,8 @@ MainWindow::MainWindow(Settings *settings,
       m_settings(settings),
       m_entryItemModel(NULL),
       m_watchTree(NULL),
-      m_server(NULL)
+      m_server(NULL),
+      m_applicationTable(NULL)
 {
     setupUi(this);
     m_settings->registerRestorable("MainWindow", this);
@@ -40,6 +42,9 @@ MainWindow::MainWindow(Settings *settings,
 
     m_watchTree = new WatchTree(settings->entryFilter());
     tabWidget->addTab( m_watchTree, tr( "Watch Points" ) );
+
+    m_applicationTable = new ApplicationTable;
+    tabWidget->addTab(m_applicationTable, tr("Traced Applications"));
 
     connect(tracePointsView, SIGNAL(doubleClicked(const QModelIndex &)),
             this, SLOT(traceEntryDoubleClicked(const QModelIndex &)));
@@ -112,10 +117,16 @@ bool MainWindow::setDatabase(const QString &databaseFileName, QString *errMsg)
         return false;
     }
 
+    m_applicationTable->setApplications(m_server->tracedApplications());
+
     connect(m_server, SIGNAL(traceEntryReceived(const TraceEntry &)),
             m_entryItemModel, SLOT(handleNewTraceEntry(const TraceEntry &)));
     connect(m_server, SIGNAL(traceEntryReceived(const TraceEntry &)),
             m_watchTree, SLOT(handleNewTraceEntry(const TraceEntry &)));
+    connect(m_server, SIGNAL(traceEntryReceived(const TraceEntry &)),
+            m_applicationTable, SLOT(handleNewTraceEntry(const TraceEntry &)));
+    connect(m_server, SIGNAL(processShutdown(const ProcessShutdownEvent &)),
+            m_applicationTable, SLOT(handleProcessShutdown(const ProcessShutdownEvent &)));
     connect( tracePointsSearchWidget, SIGNAL( searchCriteriaChanged( const QString &,
                                                                      const QStringList &,
                                                                      SearchWidget::MatchType ) ),
@@ -301,6 +312,7 @@ void MainWindow::clearTracePoints()
     m_entryItemModel->reApplyFilter();
     m_watchTree->reApplyFilter();
     m_filterForm->setTraceKeys( QStringList() );
+    m_applicationTable->setApplications( QList<TracedApplicationInfo>() );
 }
 
 void MainWindow::traceEntryDoubleClicked(const QModelIndex &index)

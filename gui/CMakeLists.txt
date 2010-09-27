@@ -11,6 +11,7 @@ SET(GUI_SOURCES
   configeditor.cpp
   entryitemmodel.cpp
   watchtree.cpp
+  applicationtable.cpp
   searchwidget.cpp
   ../convertdb/getopt.cpp
   ../server/database.cpp
@@ -27,6 +28,7 @@ SET(GUI_MOCABLES
   configeditor.h
   entryitemmodel.h
   watchtree.h
+  applicationtable.h
   searchwidget.h
   ../server/server.h)
 

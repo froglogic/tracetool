@@ -10,6 +10,7 @@
 #include "ui_mainwindow.h"
 #include "settings.h"
 
+class ApplicationTable;
 class EntryItemModel;
 class Server;
 class WatchTree;
@@ -59,6 +60,7 @@ private:
     FilterForm *m_filterForm;
     Server *m_server;
     QMenu *m_configFilesMenu;
+    ApplicationTable *m_applicationTable;
 };
 
 #endif
