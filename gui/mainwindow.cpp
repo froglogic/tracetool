@@ -84,6 +84,8 @@ MainWindow::MainWindow(Settings *settings,
     gridLayout->addWidget(m_filterForm);
     connect(m_filterForm, SIGNAL(filterApplied()),
             this, SLOT(filterChange()));
+    connect(m_filterForm, SIGNAL(addNewTraceKey(const QString &)),
+            this, SLOT(addNewTraceKey(const QString &)));
 }
 
 MainWindow::~MainWindow()
@@ -354,6 +356,14 @@ void MainWindow::traceEntryDoubleClicked(const QModelIndex &index)
 void MainWindow::toolBoxPageChanged( int index )
 {
     if ( index == 0 && m_server ) {
+        m_filterForm->setTraceKeys( m_server->seenGroupIds() );
+    }
+}
+
+void MainWindow::addNewTraceKey( const QString &id )
+{
+    if ( m_server ) {
+        m_server->addGroupId(id);
         m_filterForm->setTraceKeys( m_server->seenGroupIds() );
     }
 }

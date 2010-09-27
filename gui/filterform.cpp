@@ -31,8 +31,17 @@ FilterForm::FilterForm(Settings *settings, QWidget *parent)
     pidEdit->setValidator(new QIntValidator(this));
     tidEdit->setValidator(new QIntValidator(this));
 
+    addTraceKeyEdit->setPlaceholderText(tr("Enter name of trace key to add..."));
+    connect(addTraceKeyEdit, SIGNAL(returnPressed()),
+            this, SLOT(addTraceKey()));
     connect(applyButton, SIGNAL(clicked()),
             this, SLOT(apply()));
+}
+
+void FilterForm::addTraceKey()
+{
+    emit addNewTraceKey(addTraceKeyEdit->text());
+    addTraceKeyEdit->clear();
 }
 
 void FilterForm::setTraceKeys(const QStringList &keys)

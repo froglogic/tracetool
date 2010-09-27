@@ -49,6 +49,7 @@ private slots:
     void clearTracePoints();
     void traceEntryDoubleClicked(const QModelIndex &index);
     void toolBoxPageChanged(int index);
+    void addNewTraceKey(const QString &id);
 
 private:
     bool openConfigurationFile(const QString &fileName);

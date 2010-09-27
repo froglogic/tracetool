@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>354</width>
-    <height>418</height>
+    <width>494</width>
+    <height>426</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -21,7 +21,7 @@
      </property>
     </widget>
    </item>
-   <item row="0" column="1" colspan="2">
+   <item row="0" column="1">
     <widget class="QLineEdit" name="appEdit"/>
    </item>
    <item row="1" column="0">
@@ -31,7 +31,7 @@
      </property>
     </widget>
    </item>
-   <item row="1" column="1" colspan="2">
+   <item row="1" column="1">
     <widget class="QLineEdit" name="pidEdit"/>
    </item>
    <item row="2" column="0">
@@ -41,7 +41,7 @@
      </property>
     </widget>
    </item>
-   <item row="2" column="1" colspan="2">
+   <item row="2" column="1">
     <widget class="QLineEdit" name="tidEdit"/>
    </item>
    <item row="3" column="0">
@@ -51,7 +51,7 @@
      </property>
     </widget>
    </item>
-   <item row="3" column="1" colspan="2">
+   <item row="3" column="1">
     <widget class="QLineEdit" name="funcEdit"/>
    </item>
    <item row="4" column="0">
@@ -61,7 +61,7 @@
      </property>
     </widget>
    </item>
-   <item row="4" column="1" colspan="2">
+   <item row="4" column="1">
     <widget class="QLineEdit" name="messageEdit"/>
    </item>
    <item row="5" column="0">
@@ -71,7 +71,7 @@
      </property>
     </widget>
    </item>
-   <item row="5" column="1" colspan="2">
+   <item row="5" column="1">
     <widget class="QComboBox" name="typeCombo"/>
    </item>
    <item row="6" column="0">
@@ -84,7 +84,7 @@
      </property>
     </widget>
    </item>
-   <item row="6" column="1" colspan="2">
+   <item row="6" column="1">
     <widget class="QCheckBox" name="showTraceEntriesWithoutKey">
      <property name="text">
       <string>Show trace entries without key</string>
@@ -101,7 +101,10 @@
      </property>
     </widget>
    </item>
-   <item row="8" column="1">
+   <item row="8" column="1" colspan="2">
+    <widget class="UnlabelledLineEdit" name="addTraceKeyEdit"/>
+   </item>
+   <item row="9" column="1">
     <spacer name="horizontalSpacer">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -114,7 +117,7 @@
      </property>
     </spacer>
    </item>
-   <item row="8" column="2">
+   <item row="9" column="2">
     <widget class="QPushButton" name="applyButton">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
@@ -129,6 +132,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>UnlabelledLineEdit</class>
+   <extends>QLineEdit</extends>
+   <header>searchwidget.h</header>
+  </customwidget>
+ </customwidgets>
  <tabstops>
   <tabstop>appEdit</tabstop>
   <tabstop>pidEdit</tabstop>

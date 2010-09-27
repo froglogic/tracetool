@@ -19,12 +19,16 @@ public:
     void setTraceKeys(const QStringList &traceKeys);
 
 signals:
+    void addNewTraceKey(const QString &key);
     void filterApplied();
 
 public slots:
     void apply();
 
     void restoreSettings();
+
+private slots:
+    void addTraceKey();
 
 private:
     void saveSettings();
