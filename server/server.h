@@ -126,6 +126,7 @@ public:
     void trimTo( size_t nMostRecent );
 
     QList<StackFrame> backtraceForEntry( unsigned int id );
+    void addGroupId( const QString &id );
     QStringList seenGroupIds() const;
     QList<TracedApplicationInfo> tracedApplications() const;
 

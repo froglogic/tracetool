@@ -477,6 +477,15 @@ QList<StackFrame> Server::backtraceForEntry( unsigned int id )
     return frames;
 }
 
+void Server::addGroupId( const QString &id )
+{
+    Transaction transaction( m_db );
+    if ( !transaction.exec( QString( "SELECT id FROM trace_point_group WHERE name=%1;" ).arg( formatValue( id ) ) ).isValid() ) {
+        transaction.exec( QString( "INSERT INTO trace_point_group VALUES(NULL, %1);" ).arg( formatValue( id ) ) );
+        return;
+    }
+}
+
 QStringList Server::seenGroupIds() const
 {
     const QString statement = QString(
