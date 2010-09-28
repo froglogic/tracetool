@@ -25,7 +25,7 @@ time_t getCurrentProcessStartTime()
 {
     // ### BUG: starts counting as of first call only
     static time_t t0 = secondsSinceEpoch();
-    return secondsSinceEpoch() - t0;
+    return t0;
 }
 
 ProcessId getCurrentProcessId()
