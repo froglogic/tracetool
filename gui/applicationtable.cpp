@@ -37,6 +37,7 @@ void ApplicationTable::setApplications( const QList<TracedApplicationInfo> &apps
     QList<TracedApplicationInfo>::ConstIterator it, end = apps.end();
     for ( it = apps.begin(); it != end; ++it, ++currentRow ) {
         TracedApplicationId id;
+        id.pid = it->pid;
         id.name = it->name;
         id.startTime = it->startTime;
         assert( !m_items.contains( id ) );

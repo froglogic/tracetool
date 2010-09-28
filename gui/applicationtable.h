@@ -28,13 +28,17 @@ public slots:
 
 private:
     struct TracedApplicationId {
+        unsigned int pid;
         QString name;
         QDateTime startTime;
         bool operator<( const TracedApplicationId &other ) const {
             if ( name < other.name )
                 return true;
-            return name == other.name
-                   && startTime < other.startTime;
+            if ( name > other.name )
+                return false;
+            if ( startTime < other.startTime )
+                return true;
+            return startTime == other.startTime && pid < other.pid;
         }
     };
 
