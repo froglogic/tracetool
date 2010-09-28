@@ -109,11 +109,6 @@ Trace::Trace()
     m_configFileMonitor( 0 ),
     m_errorLog( 0 )
 {
-    const string cfgFileName = Configuration::defaultFileName();
-    reloadConfiguration( cfgFileName );
-    m_configFileMonitor = FileModificationMonitor::create( cfgFileName, this );
-    m_configFileMonitor->start();
-    ShutdownNotifier::self().addObserver( this );
     if ( getenv( "TRACELIB_DEBUG_LOG" ) ) {
         ofstream *stream = new ofstream( getenv( "TRACELIB_DEBUG_LOG" ), ios_base::out | ios_base::trunc );
         if ( stream->is_open() ) {
@@ -126,6 +121,12 @@ Trace::Trace()
     if ( !m_errorLog ) {
         m_errorLog = new DebugViewErrorLog;
     }
+
+    const string cfgFileName = Configuration::defaultFileName();
+    reloadConfiguration( cfgFileName );
+    m_configFileMonitor = FileModificationMonitor::create( cfgFileName, this );
+    m_configFileMonitor->start();
+    ShutdownNotifier::self().addObserver( this );
 }
 
 Trace::~Trace()
