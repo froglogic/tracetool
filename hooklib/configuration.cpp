@@ -25,9 +25,9 @@ static bool fileExists( const string &filename )
 
 TRACELIB_NAMESPACE_BEGIN
 
-Configuration *Configuration::fromFile( const string &fileName )
+Configuration *Configuration::fromFile( const string &fileName, ErrorLog *errorLog )
 {
-    Configuration *cfg = new Configuration;
+    Configuration *cfg = new Configuration( errorLog );
     if ( !cfg->loadFromFile( fileName ) ) {
         delete cfg;
         return 0;
@@ -35,9 +35,9 @@ Configuration *Configuration::fromFile( const string &fileName )
     return cfg;
 }
 
-Configuration *Configuration::fromMarkup( const string &markup )
+Configuration *Configuration::fromMarkup( const string &markup, ErrorLog *errorLog )
 {
-    Configuration *cfg = new Configuration;
+    Configuration *cfg = new Configuration( errorLog );
     if ( !cfg->loadFromMarkup( markup ) ) {
         delete cfg;
         return 0;
@@ -45,11 +45,11 @@ Configuration *Configuration::fromMarkup( const string &markup )
     return cfg;
 }
 
-Configuration::Configuration()
+Configuration::Configuration( ErrorLog *errorLog )
     : m_fileName( "<null>"),
     m_configuredSerializer( 0 ),
     m_configuredOutput( 0 ),
-    m_errorLog( new DebugViewErrorLog )
+    m_errorLog( errorLog )
 {
 }
 

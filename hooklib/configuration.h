@@ -28,15 +28,15 @@ public:
     static std::string defaultFileName();
     static std::string currentProcessName();
 
-    static Configuration *fromFile( const std::string &fileName );
-    static Configuration *fromMarkup( const std::string &markup );
+    static Configuration *fromFile( const std::string &fileName, ErrorLog *errorLog );
+    static Configuration *fromMarkup( const std::string &markup, ErrorLog *errorLog );
 
     const std::vector<TracePointSet *> &configuredTracePointSets() const;
     Serializer *configuredSerializer();
     Output *configuredOutput();
 
 private:
-    Configuration();
+    explicit Configuration( ErrorLog *errorLog );
     bool loadFromFile( const std::string &fileName );
     bool loadFromMarkup( const std::string &markup );
     bool loadFrom( TiXmlDocument *xmlDoc );

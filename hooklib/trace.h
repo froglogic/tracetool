@@ -23,6 +23,7 @@ class Filter;
 class Output;
 class Serializer;
 struct TracePoint;
+class ErrorLog;
 
 class TracePointSet
 {
@@ -110,6 +111,7 @@ private:
     mutable Mutex m_configurationMutex;
     BacktraceGenerator m_backtraceGenerator;
     FileModificationMonitor *m_configFileMonitor;
+    ErrorLog *m_errorLog;
 };
 
 Trace *getActiveTrace();

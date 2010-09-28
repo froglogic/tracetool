@@ -10,6 +10,7 @@
 #include "output.h"
 #include "serializer.h"
 #include "tracepoint.h"
+#include "errorlog.h"
 
 #include <ctime>
 
@@ -104,13 +105,15 @@ Trace::Trace()
     : m_serializer( 0 ),
     m_output( 0 ),
     m_configuration( 0 ),
-    m_configFileMonitor( 0 )
+    m_configFileMonitor( 0 ),
+    m_errorLog( 0 )
 {
     const string cfgFileName = Configuration::defaultFileName();
     reloadConfiguration( cfgFileName );
     m_configFileMonitor = FileModificationMonitor::create( cfgFileName, this );
     m_configFileMonitor->start();
     ShutdownNotifier::self().addObserver( this );
+    m_errorLog = new DebugViewErrorLog;
 }
 
 Trace::~Trace()
@@ -134,11 +137,12 @@ Trace::~Trace()
     }
 
     delete m_configFileMonitor;
+    delete m_errorLog;
 }
 
 void Trace::reloadConfiguration( const string &fileName )
 {
-    Configuration *cfg = Configuration::fromFile( fileName );
+    Configuration *cfg = Configuration::fromFile( fileName, m_errorLog );
     if ( cfg ) {
         {
             MutexLocker serializerLocker( m_serializerMutex );
