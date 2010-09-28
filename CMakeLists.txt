@@ -1,6 +1,11 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 PROJECT(tracelib)
 
+# call in tests/CMakeFiles.txt should suffice but the tests target is
+# non-functional more often than working unless this is turned on
+# earlier.
+ENABLE_TESTING()
+
 SET(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" ${PROJECT_SOURCE_DIR}/cmake/modules)
 
 INCLUDE_DIRECTORIES(${PROJECT_BINARY_DIR})
