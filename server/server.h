@@ -15,6 +15,8 @@
 #include <QTcpServer>
 #include <QTcpSocket>
 #include <QThread>
+#include <QXmlInputSource>
+#include <QXmlSimpleReader>
 
 #include "../hooklib/tracelib.h"
 
@@ -115,8 +117,12 @@ private:
     QList<NetworkingThread *> m_networkingThreads;
 };
 
+class XmlContentHandler;
+
 class Server : public QObject
 {
+    friend class XmlContentHandler;
+
     Q_OBJECT
 public:
     Server( QSqlDatabase database, unsigned short port,
@@ -141,14 +147,18 @@ private:
     void storeEntry( const TraceEntry &e );
     void storeShutdownEvent( const ProcessShutdownEvent &ev );
     void handleDatagram( const QByteArray &datagram );
-    void handleTraceEntryXMLData( const QDomDocument &doc );
-    void handleShutdownXMLData( const QDomDocument &doc );
+    void handleTraceEntry( const TraceEntry &e );
+    void handleShutdownEvent( const ProcessShutdownEvent &ev );
 
     template <typename T>
     QString formatValue( const T &v ) const;
 
     ServerSocket *m_tcpServer;
     QSqlDatabase m_db;
+    XmlContentHandler *m_xmlHandler;
+    QXmlSimpleReader m_xmlReader;
+    QXmlInputSource m_xmlInput;
+    bool m_receivedData;
 };
 
 #endif // !defined(TRACE_SERVER_H)

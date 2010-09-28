@@ -21,86 +21,121 @@
 
 using namespace std;
 
-static TraceEntry deserializeTraceEntry( const QDomElement &e )
+class XmlContentHandler : public QXmlDefaultHandler
 {
-    TraceEntry entry;
-    entry.pid = e.attribute( "pid" ).toUInt();
-    entry.processStartTime = QDateTime::fromTime_t( e.attribute( "process_starttime" ).toUInt() );
-    entry.tid = e.attribute( "tid" ).toUInt();
-    entry.timestamp = QDateTime::fromTime_t( e.attribute( "time" ).toUInt() );
-    entry.processName = e.namedItem( "processname" ).toElement().text();
-    entry.stackPosition = e.namedItem( "stackposition" ).toElement().text().toULong();
-    entry.verbosity = e.namedItem( "verbosity" ).toElement().text().toUInt();
-    entry.type = e.namedItem( "type" ).toElement().text().toUInt();
-    entry.path = e.namedItem( "location" ).toElement().text();
-    entry.lineno = e.namedItem( "location" ).toElement().attribute( "lineno" ).toULong();
-    entry.groupName = e.namedItem( "group" ).toElement().text();
-    entry.function = e.namedItem( "function" ).toElement().text();
-    entry.message = e.namedItem( "message" ).toElement().text();
+public:
+    XmlContentHandler( Server *server ) : m_server( server ), m_inFrameElement( false ) { }
 
-    QDomElement variablesElement = e.namedItem( "variables" ).toElement();
-    if ( !variablesElement.isNull() ) {
-        QDomNode n = variablesElement.firstChild();
-        while ( !n.isNull() ) {
-            QDomElement varElement = n.toElement();
-
-            Variable var;
-            var.name = varElement.attribute( "name" );
-
-            using TRACELIB_NAMESPACE_IDENT(VariableType);
-            const QString typeStr = varElement.attribute( "type" );
+    virtual bool startElement( const QString &ns, const QString &lName, const QString &qName, const QXmlAttributes &atts )
+    {
+        if ( lName == "traceentry" ) {
+            m_currentEntry = TraceEntry();
+            m_currentEntry.pid = atts.value( "pid" ).toUInt();
+            m_currentEntry.processStartTime = QDateTime::fromTime_t( atts.value( "process_starttime" ).toUInt() );
+            m_currentEntry.tid = atts.value( "tid" ).toUInt();
+            m_currentEntry.timestamp = QDateTime::fromTime_t( atts.value( "time" ).toUInt() );
+        } else if ( lName == "variable" ) {
+            m_currentVariable = Variable();
+            m_currentVariable.name = atts.value( "name" );
+            const QString typeStr = atts.value( "type" );
             if ( typeStr == "string" ) {
-                var.type = VariableType::String;
+                m_currentVariable.type = TRACELIB_NAMESPACE_IDENT(VariableType)::String;
             } else if ( typeStr == "number" ) {
-                var.type = VariableType::Number;
+                m_currentVariable.type = TRACELIB_NAMESPACE_IDENT(VariableType)::Number;
             } else if ( typeStr == "float" ) {
-                var.type = VariableType::Float;
+                m_currentVariable.type = TRACELIB_NAMESPACE_IDENT(VariableType)::Float;
             } else if ( typeStr == "boolean" ) {
-                var.type = VariableType::Boolean;
+                m_currentVariable.type = TRACELIB_NAMESPACE_IDENT(VariableType)::Boolean;
             }
-            var.value = varElement.text();
-
-            entry.variables.append( var );
-
-            n = n.nextSibling();
+        } else if ( lName == "location" ) {
+            m_currentLineNo = atts.value( "lineno" ).toULong();
+        } else if ( lName == "frame" ) {
+            m_inFrameElement = true;
+            m_currentFrame = StackFrame();
+        } else if ( lName == "function" ) {
+            m_currentFrame.functionOffset = atts.value( "offset" ).toUInt();
+        } else if ( lName == "shutdownevent" ) {
+            m_currentShutdownEvent = ProcessShutdownEvent();
+            m_currentShutdownEvent.pid = atts.value( "pid" ).toUInt();
+            m_currentShutdownEvent.startTime = QDateTime::fromTime_t( atts.value( "starttime" ).toUInt() );
+            m_currentShutdownEvent.stopTime = QDateTime::fromTime_t( atts.value( "endtime" ).toUInt() );
         }
+        return true;
     }
 
-    QDomElement backtraceElement = e.namedItem( "backtrace" ).toElement();
-    if ( !backtraceElement.isNull() ) {
-        QDomNode n = backtraceElement.firstChild();
-        while ( !n.isNull() ) {
-            QDomElement frameElement = n.toElement();
-
-            StackFrame frame;
-            frame.module = frameElement.namedItem( "module" ).toElement().text();
-
-            QDomElement functionElement = frameElement.namedItem( "function" ).toElement();
-            frame.function = functionElement.text();
-            frame.functionOffset = functionElement.attribute( "offset" ).toUInt();
-
-            QDomElement locationElement = frameElement.namedItem( "location" ).toElement();
-            frame.sourceFile = locationElement.text();
-            frame.lineNumber = locationElement.attribute( "lineno" ).toUInt();
-
-            entry.backtrace.append( frame );
-
-            n = n.nextSibling();
-        }
+    virtual bool characters( const QString &ch ) {
+        m_s += ch;
+        return true;
     }
 
-    return entry;
-}
+    virtual bool endElement( const QString &ns, const QString &lName, const QString &qName )
+    {
+        if ( lName == "traceentry" ) {
+            m_server->handleTraceEntry( m_currentEntry );
+        } else if ( lName == "variable" ) {
+            m_currentVariable.value = m_s.trimmed();
+            m_currentEntry.variables.append( m_currentVariable );
+            m_s.clear();
+        } else if ( lName == "processname" ) {
+            m_currentEntry.processName = m_s.trimmed();
+            m_s.clear();
+        } else if ( lName == "stackposition" ) {
+            m_currentEntry.stackPosition = m_s.trimmed().toULong();
+            m_s.clear();
+        } else if ( lName == "verbosity" ) {
+            m_currentEntry.verbosity = m_s.trimmed().toUInt();
+            m_s.clear();
+        } else if ( lName == "type" ) {
+            m_currentEntry.type = m_s.trimmed().toUInt();
+            m_s.clear();
+        } else if ( lName == "location" ) {
+            if ( m_inFrameElement ) {
+                m_currentFrame.sourceFile = m_s.trimmed();
+                m_currentFrame.lineNumber = m_currentLineNo;
+            } else {
+                m_currentEntry.path = m_s.trimmed();
+                m_currentEntry.lineno = m_currentLineNo;
+            }
+            m_s.clear();
+        } else if ( lName == "group" ) {
+            m_currentEntry.groupName = m_s.trimmed();
+            m_s.clear();
+        } else if ( lName == "function" ) {
+            m_currentEntry.function = m_s.trimmed();
+            m_s.clear();
+        } else if ( lName == "message" ) {
+            m_currentEntry.message = m_s.trimmed();
+            m_s.clear();
+        } else if ( lName == "module" ) {
+            m_currentFrame.module = m_s.trimmed();
+            m_s.clear();
+        } else if ( lName == "function" ) {
+            m_currentFrame.function = m_s.trimmed();
+            m_s.clear();
+        } else if ( lName == "frame" ) {
+            m_inFrameElement = false;
+            m_currentEntry.backtrace.append( m_currentFrame );
+        } else if ( lName == "shutdownevent" ) {
+            m_currentShutdownEvent.name = m_s.trimmed();
+            m_s.clear();
+            m_server->handleShutdownEvent( m_currentShutdownEvent );
+        }
+        return true;
+    }
 
-static ProcessShutdownEvent deserializeShutdownEvent( const QDomElement &e )
-{
-    ProcessShutdownEvent ev;
-    ev.pid = e.attribute( "pid" ).toUInt();
-    ev.startTime = QDateTime::fromTime_t( e.attribute( "starttime" ).toUInt() );
-    ev.stopTime = QDateTime::fromTime_t( e.attribute( "endtime" ).toUInt() );
-    ev.name = e.text();
-    return ev;
-}
+private:
+    XmlContentHandler( const XmlContentHandler &other ); // disabled
+    void operator=( const XmlContentHandler &rhs );
+
+    Server *m_server;
+    TraceEntry m_currentEntry;
+    Variable m_currentVariable;
+    QString m_s;
+    unsigned long m_currentLineNo;
+    StackFrame m_currentFrame;
+    bool m_inFrameElement;
+    ProcessShutdownEvent m_currentShutdownEvent;
+};
 
 ClientSocket::ClientSocket( QObject *parent )
     : QTcpSocket( parent )
@@ -168,81 +203,45 @@ Server::Server( QSqlDatabase database, unsigned short port,
                 QObject *parent )
     : QObject( parent ),
       m_tcpServer( 0 ),
-      m_db( database )
+      m_db( database ),
+      m_xmlHandler( 0 )
 {
     assert( m_db.isValid() );
     m_db.exec( "PRAGMA synchronous=OFF;");
 
     m_tcpServer = new ServerSocket( this );
     m_tcpServer->listen( QHostAddress::Any, port );
+
+    m_xmlHandler = new XmlContentHandler( this );
+    m_xmlReader.setContentHandler( m_xmlHandler );
+    m_xmlReader.setErrorHandler( m_xmlHandler );
+
+    m_xmlInput.setData( QString::fromUtf8( "<toplevel_trace_element>" ) );
+    m_xmlReader.parse( &m_xmlInput, true );
 }
 
 Server::~Server()
 {
+    delete m_xmlHandler;
 }
 
-void Server::handleTraceEntryXMLData( const QDomDocument &doc )
+void Server::handleTraceEntry( const TraceEntry &entry )
 {
-    const TraceEntry entry = deserializeTraceEntry( doc.documentElement() );
     storeEntry( entry );
     emit traceEntryReceived( entry );
 }
 
-void Server::handleShutdownXMLData( const QDomDocument &doc )
+void Server::handleShutdownEvent( const ProcessShutdownEvent &ev )
 {
-    const ProcessShutdownEvent ev = deserializeShutdownEvent( doc.documentElement() );
     storeShutdownEvent( ev );
     emit processShutdown( ev );
 }
 
-static int nextDatagramStart( const QByteArray &data, int pos )
-{
-    int p = data.indexOf( '<', pos );
-    while ( p != -1 ) {
-        if ( data.size() - p >= int(sizeof( "<traceentry " ) - 1) &&
-             strncmp( data.data() + p, "<traceentry ", sizeof( "<traceentry " ) - 1 ) == 0 ) {
-            return p;
-        }
-        if ( data.size() - p >= int(sizeof( "<shutdownevent " ) - 1) &&
-             strncmp( data.data() + p, "<shutdownevent ", sizeof( "<shutdownevent " ) - 1 ) == 0 ) {
-            return p;
-        }
-        p = data.indexOf( '<', p + 1 );
-    }
-    return p;
-}
-
 void Server::handleIncomingData( const QByteArray &xmlData )
 {
-    int p = 0;
-    int q = nextDatagramStart( xmlData, p + 1 );
-    while ( q != -1 ) {
-        handleDatagram( QByteArray::fromRawData( xmlData.data() + p, q - p ) );
-        p = q;
-        q = nextDatagramStart( xmlData, p + 1 );
-    }
-    handleDatagram( QByteArray::fromRawData( xmlData.data() + p, xmlData.size() - p ) );
-}
-
-void Server::handleDatagram( const QByteArray &datagram )
-{
-    QString errorMsg;
-    int errorLine, errorColumn;
-    QDomDocument doc;
-    if ( !doc.setContent( datagram, false, &errorMsg, &errorLine, &errorColumn ) ) {
-        qWarning() << "Error in incoming XML data: in row" << errorLine << "column" << errorColumn << ":" << errorMsg;
-        qWarning() << "Received datagram:" << datagram;
-        return;
-    }
-
     try {
-        if ( datagram.startsWith( "<traceentry " ) ) {
-            handleTraceEntryXMLData( doc );
-        } else if ( datagram.startsWith( "<shutdownevent " ) ) {
-            handleShutdownXMLData( doc );
-        } else {
-            qWarning() << "Server::handleIncomingData: got unknown datagram:" << datagram;
-        }
+        m_xmlInput.setData( xmlData );
+        m_xmlReader.parseContinue();
     } catch ( const runtime_error &e ) {
         qWarning() << e.what();
     }
