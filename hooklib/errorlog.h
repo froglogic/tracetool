@@ -10,6 +10,7 @@
 
 #include <cstdarg>
 #include <cstdio>
+#include <iosfwd>
 #include <string>
 #include <vector>
 
@@ -48,6 +49,18 @@ class DebugViewErrorLog : public ErrorLog
 {
 public:
     virtual void write( const std::string &msg );
+};
+
+class StreamErrorLog : public ErrorLog
+{
+public:
+    explicit StreamErrorLog( std::ostream *stream );
+    virtual ~StreamErrorLog();
+
+    virtual void write( const std::string &msg );
+
+private:
+    std::ostream *m_stream;
 };
 
 TRACELIB_NAMESPACE_END

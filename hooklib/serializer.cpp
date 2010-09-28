@@ -25,6 +25,7 @@ Serializer::~Serializer()
 {
 }
 
+// XXX duplicated in errorlog.cpp
 static string timeToString( time_t t )
 {
     char timestamp[64] = { '\0' };
