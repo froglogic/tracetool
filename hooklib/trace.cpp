@@ -13,6 +13,7 @@
 #include "errorlog.h"
 
 #include <ctime>
+#include <fstream>
 
 using namespace std;
 
@@ -113,7 +114,18 @@ Trace::Trace()
     m_configFileMonitor = FileModificationMonitor::create( cfgFileName, this );
     m_configFileMonitor->start();
     ShutdownNotifier::self().addObserver( this );
-    m_errorLog = new DebugViewErrorLog;
+    if ( getenv( "TRACELIB_DEBUG_LOG" ) ) {
+        ofstream *stream = new ofstream( getenv( "TRACELIB_DEBUG_LOG" ), ios_base::out | ios_base::trunc );
+        if ( stream->is_open() ) {
+            m_errorLog = new StreamErrorLog( stream );
+        } else {
+            delete stream;
+        }
+    }
+
+    if ( !m_errorLog ) {
+        m_errorLog = new DebugViewErrorLog;
+    }
 }
 
 Trace::~Trace()
