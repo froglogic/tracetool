@@ -58,15 +58,6 @@ void FilterTable::addFilter()
     static_cast<QBoxLayout*>(layout())->addWidget(new FilterTableItem(this, f), 0, Qt::AlignTop);
 }
 
-class VerbosityFilterHelper : public FilterHelper
-{
-public:
-    VerbosityFilterHelper(const Filter &f);
-    bool saveFilter(TracePointSet *tp);
-private:
-    QLineEdit *m_le;
-};
-
 VerbosityFilterHelper::VerbosityFilterHelper(const Filter &f)
 {
     QHBoxLayout *layout = new QHBoxLayout;
@@ -445,4 +436,3 @@ void ConfigEditor::outputTypeComboChanged(int index)
     hostLabel->setEnabled(tcp);
     portLabel->setEnabled(tcp);
 }
-
