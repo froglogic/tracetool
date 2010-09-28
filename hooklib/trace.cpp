@@ -12,6 +12,7 @@
 #include "tracepoint.h"
 #include "errorlog.h"
 
+#include <cstdlib>
 #include <ctime>
 #include <fstream>
 
