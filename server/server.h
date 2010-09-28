@@ -119,7 +119,7 @@ class Server : public QObject
 {
     Q_OBJECT
 public:
-    Server( const QString &databaseFileName, unsigned short port,
+    Server( QSqlDatabase database, unsigned short port,
             QObject *parent = 0 );
     virtual ~Server();
 

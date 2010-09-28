@@ -7,6 +7,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QSqlDatabase>
 #include "ui_mainwindow.h"
 #include "settings.h"
 
@@ -56,6 +57,7 @@ private:
     void showError(const QString &title, const QString &message);
 
     Settings* const m_settings;
+    QSqlDatabase m_db;
     EntryItemModel* m_entryItemModel;
     WatchTree* m_watchTree;
     FilterForm *m_filterForm;

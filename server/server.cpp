@@ -164,21 +164,13 @@ void ServerSocket::incomingConnection( int socketDescriptor )
     thread->start();
 }
 
-Server::Server( const QString &databaseFileName, unsigned short port,
+Server::Server( QSqlDatabase database, unsigned short port,
                 QObject *parent )
     : QObject( parent ),
-    m_tcpServer( 0 )
+      m_tcpServer( 0 ),
+      m_db( database )
 {
-    QString errMsg;
-    if (QFile::exists(databaseFileName)) {
-        m_db = Database::open(databaseFileName, &errMsg);
-    } else {
-        m_db = Database::create(databaseFileName, &errMsg);
-    }
-    if (!m_db.isValid()) {
-        qWarning() << "Failed to open SQL database: " + errMsg;
-        return;
-    }
+    assert( m_db.isValid() );
     m_db.exec( "PRAGMA synchronous=OFF;");
 
     m_tcpServer = new ServerSocket( this );

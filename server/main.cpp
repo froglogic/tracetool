@@ -5,6 +5,7 @@
 
 #include "server.h"
 
+#include "database.h"
 #include "../hooklib/tracelib_config.h"
 #include "../convertdb/getopt.h"
 
@@ -18,6 +19,7 @@ namespace Error
 {
     const int None = 0;
     const int CommandLineArgs = 1;
+    const int Database = 2;
 }
 
 using namespace std;
@@ -72,7 +74,21 @@ int main( int argc, char **argv )
 	}
     }
 
-    Server server(traceFile, port);
+    QSqlDatabase database;
+    QString errMsg;
+    if (QFile::exists(traceFile)) {
+        database = Database::open(traceFile, &errMsg);
+    } else {
+        database = Database::create(traceFile, &errMsg);
+    }
+    if (!database.isValid()) {
+        cout << "Failed to open log database: "
+             << errMsg.toLocal8Bit().constData()
+             << endl;
+        return Error::Database;
+    }
+
+    Server server(database, port);
 
     return app.exec();
 }

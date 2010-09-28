@@ -21,6 +21,7 @@
 
 #include "../hooklib/tracelib.h"
 #include "../server/server.h"
+#include "../server/database.h"
 
 MainWindow::MainWindow(Settings *settings,
                        QWidget *parent, Qt::WindowFlags flags)
@@ -102,7 +103,16 @@ bool MainWindow::setDatabase(const QString &databaseFileName, QString *errMsg)
 
     delete m_server; m_server = NULL;
     // will create new db file if necessary
-    m_server = new Server(databaseFileName, m_settings->serverPort(), this);
+
+    if (QFile::exists(databaseFileName)) {
+        m_db = Database::open(databaseFileName, errMsg);
+    } else {
+        m_db = Database::create(databaseFileName, errMsg);
+    }
+    if (!m_db.isValid())
+        return false;
+
+    m_server = new Server(m_db, m_settings->serverPort(), this);
     m_filterForm->setTraceKeys( m_server->seenGroupIds() );
 
     m_entryItemModel = new EntryItemModel(m_settings->entryFilter(),
