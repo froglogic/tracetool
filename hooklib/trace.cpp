@@ -127,10 +127,14 @@ Trace::Trace()
     m_configFileMonitor = FileModificationMonitor::create( cfgFileName, this );
     m_configFileMonitor->start();
     ShutdownNotifier::self().addObserver( this );
+
+    m_errorLog->write( "Trace object constructed" );
 }
 
 Trace::~Trace()
 {
+    m_errorLog->write( "Trace object destructing" );
+
     ShutdownNotifier::self().removeObserver( this );
 
     {
@@ -155,6 +159,7 @@ Trace::~Trace()
 
 void Trace::reloadConfiguration( const string &fileName )
 {
+    m_errorLog->write( "Trace::reloadConfiguration: reading configuration file from '%s'", fileName.c_str() );
     Configuration *cfg = Configuration::fromFile( fileName, m_errorLog );
     if ( cfg ) {
         {
@@ -191,6 +196,7 @@ void Trace::reloadConfiguration( const string &fileName )
             m_configuration = 0;
         }
     }
+    m_errorLog->write( "Trace::reloadConfiguration: cfg = %p, m_serializer = %p, m_output = %p, m_configuration = %p", cfg, m_serializer, m_output, m_configuration );
 }
 
 void Trace::configureTracePoint( TracePoint *tracePoint ) const
@@ -215,8 +221,13 @@ void Trace::configureTracePoint( TracePoint *tracePoint ) const
         tracePoint->active = true;
         tracePoint->backtracesEnabled = ( action & TracePointSet::YieldBacktrace ) == TracePointSet::YieldBacktrace;
         tracePoint->variableSnapshotEnabled = ( action & TracePointSet::YieldVariables ) == TracePointSet::YieldVariables;
+
+        m_errorLog->write( "Trace::configureTracePoint: activating trace point at %s:%d (backtraces=%d, variables=%d)", tracePoint->sourceFile, tracePoint->lineno, tracePoint->backtracesEnabled, tracePoint->variableSnapshotEnabled );
+
         return;
     }
+
+    m_errorLog->write( "Trace::configureTracePoint: trace point at %s:%d is not active", tracePoint->sourceFile, tracePoint->lineno );
 }
 
 void Trace::visitTracePoint( TracePoint *tracePoint,
@@ -291,6 +302,8 @@ void Trace::handleFileModification( const std::string &fileName, NotificationRea
 
 void Trace::handleProcessShutdown()
 {
+    m_errorLog->write( "Trace::handleProcessShutdown: detected process shutdown" );
+
     ProcessShutdownEvent ev;
 
     vector<char> data;

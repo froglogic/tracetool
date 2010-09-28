@@ -85,6 +85,8 @@ bool Configuration::loadFrom( TiXmlDocument *xmlDoc )
         return false;
     }
 
+    static string myProcessName = currentProcessName();
+
     TiXmlElement *processElement = rootElement->FirstChildElement();
     while ( processElement ) {
         if ( processElement->ValueStr() != "process" ) {
@@ -99,8 +101,6 @@ bool Configuration::loadFrom( TiXmlDocument *xmlDoc )
         }
 
 
-        static string myProcessName = currentProcessName();
-
         // XXX Consider encoding issues (e.g. if myProcessName contains umlauts)
 #ifdef _WIN32
         const bool isMyProcessElement = _stricmp( myProcessName.c_str(), nameElement->GetText() ) == 0;
@@ -108,6 +108,7 @@ bool Configuration::loadFrom( TiXmlDocument *xmlDoc )
         const bool isMyProcessElement = strcmp( myProcessName.c_str(), nameElement->GetText() ) == 0;
 #endif
         if ( isMyProcessElement ) {
+            m_errorLog->write( "Tracelib Configuration: found configuration for process %s", myProcessName.c_str() );
             for ( TiXmlElement *e = processElement->FirstChildElement(); e; e = e->NextSiblingElement() ) {
                 if ( e->ValueStr() == "name" ) {
                     continue;
@@ -149,11 +150,12 @@ bool Configuration::loadFrom( TiXmlDocument *xmlDoc )
                     m_configuredOutput = output;
                 }
             }
-            break;
+            return true;
         }
 
         processElement = processElement->NextSiblingElement();
     }
+    m_errorLog->write( "Tracelib Configuration: no configuration found for process %s", myProcessName.c_str() );
     return true;
 }
 
@@ -292,6 +294,7 @@ Serializer *Configuration::createSerializerFromElement( TiXmlElement *e )
                 continue;
             }
         }
+        m_errorLog->write( "Tracelib Configuration: using plaintext serializer" );
         return serializer;
     }
 
@@ -320,6 +323,7 @@ Serializer *Configuration::createSerializerFromElement( TiXmlElement *e )
         }
         XMLSerializer *serializer = new XMLSerializer;
         serializer->setBeautifiedOutput( beautifiedOutput );
+        m_errorLog->write( "Tracelib Configuration: using XML serializer (beautified output=%d)", beautifiedOutput );
         return serializer;
     }
 
@@ -380,6 +384,7 @@ Output *Configuration::createOutputFromElement( TiXmlElement *e )
     }
 
     if ( outputType == "stdout" ) {
+        m_errorLog->write( "Tracelib Configuration: using stdout output" );
         return new StdoutOutput;
     }
 
@@ -424,6 +429,7 @@ Output *Configuration::createOutputFromElement( TiXmlElement *e )
             return 0;
         }
 
+        m_errorLog->write( "Tracelib Configuration: using TCP/IP output, remote = %s:%d", hostname.c_str(), port );
         return new NetworkOutput( m_errorLog, hostname.c_str(), port );
     }
 
