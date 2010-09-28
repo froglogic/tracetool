@@ -117,13 +117,13 @@ bool MainWindow::setDatabase(const QString &databaseFileName, QString *errMsg)
 
     m_entryItemModel = new EntryItemModel(m_settings->entryFilter(),
                                           m_settings->columnsInfo(), this);
-    if (!m_entryItemModel->setDatabase(databaseFileName, errMsg)) {
+    if (!m_entryItemModel->setDatabase(m_db, errMsg)) {
 	delete m_entryItemModel; m_entryItemModel = NULL;
 	delete m_server; m_server = NULL;
         return false;
     }
 
-    if (!m_watchTree->setDatabase(databaseFileName, errMsg)) {
+    if (!m_watchTree->setDatabase(m_db, errMsg)) {
 	delete m_entryItemModel; m_entryItemModel = NULL;
 	delete m_server; m_server = NULL;
         return false;

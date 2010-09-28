@@ -25,7 +25,7 @@ public:
     EntryItemModel(EntryFilter *filter, ColumnsInfo *ci, QObject *parent = 0);
     ~EntryItemModel();
 
-    bool setDatabase(const QString &databaseFileName,
+    bool setDatabase(QSqlDatabase database,
                      QString *errMsg);
 
     int columnCount(const QModelIndex & parent = QModelIndex()) const;

@@ -48,22 +48,10 @@ WatchTree::~WatchTree()
     deleteItemMap( m_applicationItems );
 }
 
-bool WatchTree::setDatabase( const QString &databaseFileName,
+bool WatchTree::setDatabase( QSqlDatabase database,
                              QString *errMsg )
 {
-    const QString driverName = "QSQLITE";
-    if (!QSqlDatabase::isDriverAvailable(driverName)) {
-        *errMsg = tr("Missing required %1 driver.").arg(driverName);
-        return false;
-    }
-
-    m_db = QSqlDatabase::addDatabase(driverName, "watchtreemodel");
-    m_db.setDatabaseName(databaseFileName);
-    if (!m_db.open()) {
-        *errMsg = m_db.lastError().text();
-        return false;
-    }
-
+    m_db = database;
     m_dirty = true;
 
     return showNewTraceEntries( errMsg );

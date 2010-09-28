@@ -30,7 +30,7 @@ public:
     WatchTree(EntryFilter *filter, QWidget *parent = 0);
     virtual ~WatchTree();
 
-    bool setDatabase( const QString &databaseFileName,
+    bool setDatabase( QSqlDatabase database,
                       QString *errMsg );
 
 public slots:
