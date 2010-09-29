@@ -122,6 +122,8 @@ void ColumnsInfo::setSorting(const QList<int> &visible,
         assert(idx >= 0 && idx < columnCount());
         m_visualToReal[pos++] = -idx - 1;
     }
+
+    emit changed();
 }
 
 int ColumnsInfo::unmap(int visualIndex) const
