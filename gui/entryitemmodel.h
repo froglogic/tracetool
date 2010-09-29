@@ -44,7 +44,6 @@ public:
     unsigned int idForIndex(const QModelIndex &index);
 
 public slots:
-    void triggerUpdate();
     void handleNewTraceEntry(const TraceEntry &e);
     void reApplyFilter();
     void highlightEntries(const QString &term,

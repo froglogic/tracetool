@@ -139,8 +139,8 @@ EntryItemModel::EntryItemModel(EntryFilter *filter, ColumnsInfo *ci,
     m_databasePollingTimer = new QTimer(this);
     m_databasePollingTimer->setSingleShot(true);
     connect(m_databasePollingTimer, SIGNAL(timeout()), SLOT(insertNewTraceEntries()));
-    connect(m_filter, SIGNAL(changed()), SLOT(triggerUpdate()));
-    connect(m_columnsInfo, SIGNAL(changed()), SLOT(triggerUpdate()));
+    connect(m_filter, SIGNAL(changed()), SLOT(reApplyFilter()));
+    connect(m_columnsInfo, SIGNAL(changed()), SLOT(reApplyFilter()));
 }
 
 EntryItemModel::~EntryItemModel()
@@ -318,13 +318,6 @@ QVariant EntryItemModel::headerData(int section, Qt::Orientation orientation,
     return QAbstractTableModel::headerData(section, orientation, role);
 }
 
-void EntryItemModel::triggerUpdate()
-{
-    if (!m_suspended && !m_databasePollingTimer->isActive()) {
-        m_databasePollingTimer->start(200);
-    }
-}
-
 void EntryItemModel::handleNewTraceEntry(const TraceEntry &e)
 {
     // Ignore entries that don't match the current filter
@@ -332,7 +325,9 @@ void EntryItemModel::handleNewTraceEntry(const TraceEntry &e)
         return;
 
     ++m_numNewEntries;
-    triggerUpdate();
+    if (!m_suspended && !m_databasePollingTimer->isActive()) {
+        m_databasePollingTimer->start(200);
+    }
 }
 
 void EntryItemModel::suspend()
