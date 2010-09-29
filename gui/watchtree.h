@@ -39,6 +39,9 @@ public slots:
     void handleNewTraceEntry( const TraceEntry &e );
     void reApplyFilter();
 
+protected:
+    virtual void showEvent(QShowEvent *e);
+
 private slots:
     void showNewTraceEntriesFireAndForget();
 

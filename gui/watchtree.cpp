@@ -10,7 +10,7 @@
 WatchTree::WatchTree(EntryFilter *filter, QWidget *parent)
     : QTreeWidget( parent ),
     m_databasePollingTimer( 0 ),
-    m_dirty( false ),
+    m_dirty( true ),
     m_suspended(false),
     m_filter(filter)
 {
@@ -99,9 +99,21 @@ static QString filterClause(EntryFilter *f)
     return " AND " + sql + " ";
 }
 
+void WatchTree::showEvent(QShowEvent *e)
+{
+    if (m_dirty) {
+        reApplyFilter();
+    }
+    return QTreeWidget::showEvent(e);
+}
+
 bool WatchTree::showNewTraceEntries( QString *errMsg )
 {
-    if ( !m_dirty ) {
+    if ( !m_dirty || !isVisible() ) {
+        return true;
+    }
+
+    if ( !isVisible() ) {
         return true;
     }
 
