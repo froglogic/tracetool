@@ -173,8 +173,7 @@ static QString filterClause(EntryFilter *f)
 bool EntryItemModel::queryForEntries(QString *errMsg)
 {
     // ### respect hidden columns might speed things up
-    QString statement;
-    statement +=        "SELECT DISTINCT"
+    QString statement = "SELECT DISTINCT"
                         " trace_entry.id,"
                         " timestamp,"
                         " process.name,"
@@ -189,12 +188,19 @@ bool EntryItemModel::queryForEntries(QString *errMsg)
 #endif
                         " message,"
                         " trace_entry.stack_position "
+                        "%1 "
+                        "ORDER BY"
+                        " trace_entry.id";
+
+    QString fromAndWhereClause =
                         "FROM"
                         " trace_entry,"
                         " trace_point,";
     if (!m_filter->inactiveKeys().isEmpty())
-        statement +=    " trace_point_group,";
-    statement +=        " path_name, "
+        fromAndWhereClause +=
+                        " trace_point_group,";
+    fromAndWhereClause +=
+                        " path_name, "
                         " function_name, "
                         " process, "
                         " traced_thread "
@@ -208,11 +214,9 @@ bool EntryItemModel::queryForEntries(QString *errMsg)
                         " trace_entry.traced_thread_id = traced_thread.id "
                         "AND"
                         " traced_thread.process_id = process.id " +
-                        filterClause(m_filter) +
-                        "ORDER BY"
-                        " trace_entry.id";
+                        filterClause(m_filter);
 
-    m_query = m_db.exec(statement);
+    m_query = m_db.exec(statement.arg(fromAndWhereClause));
     if (m_db.lastError().isValid()) {
         *errMsg = m_db.lastError().text();
         return false;
@@ -221,10 +225,9 @@ bool EntryItemModel::queryForEntries(QString *errMsg)
     if (m_query.driver()->hasFeature(QSqlDriver::QuerySize)) {
         m_querySize = m_query.size();
     } else {
-        m_querySize = 0;
-        while (m_query.next()) {
-            ++m_querySize;
-        }
+        QSqlQuery q = m_db.exec(QString( "SELECT COUNT(*) %1;" ).arg(fromAndWhereClause));
+        q.next();
+        m_querySize = q.value(0).toInt();
     }
 
     return true;
