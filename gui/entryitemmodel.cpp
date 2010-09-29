@@ -140,6 +140,7 @@ EntryItemModel::EntryItemModel(EntryFilter *filter, ColumnsInfo *ci,
     m_databasePollingTimer->setSingleShot(true);
     connect(m_databasePollingTimer, SIGNAL(timeout()), SLOT(insertNewTraceEntries()));
     connect(m_filter, SIGNAL(changed()), SLOT(reApplyFilter()));
+    connect(m_columnsInfo, SIGNAL(changed()), SLOT(reApplyFilter()));
 }
 
 EntryItemModel::~EntryItemModel()
@@ -172,25 +173,42 @@ static QString filterClause(EntryFilter *f)
 
 bool EntryItemModel::queryForEntries(QString *errMsg)
 {
-    // ### respect hidden columns might speed things up
-    QString statement = "SELECT DISTINCT"
-                        " trace_entry.id,"
-                        " timestamp,"
-                        " process.name,"
-                        " process.pid,"
-                        " traced_thread.tid,"
-                        " path_name.name,"
-                        " trace_point.line,"
-                        " function_name.name,"
-                        " trace_point.type,"
-#ifdef SHOW_VERBOSITY
-                        " trace_point.verbosity,"
-#endif
-                        " message,"
-                        " trace_entry.stack_position "
-                        "%1 "
-                        "ORDER BY"
-                        " trace_entry.id";
+    QStringList fieldsToSelect;
+    {
+        QList<int> visibleColumns = m_columnsInfo->visibleColumns();
+        QList<int>::ConstIterator it, end = visibleColumns.end();
+        fieldsToSelect.append("trace_entry.id");
+        for (it = visibleColumns.begin(); it != end; ++it) {
+            const QString cn = m_columnsInfo->columnName(*it);
+            if (cn == "Time") {
+                fieldsToSelect.append("trace_entry.timestamp");
+            } else if (cn == "Application") {
+                fieldsToSelect.append("process.name");
+            } else if (cn == "PID") {
+                fieldsToSelect.append("process.pid");
+            } else if (cn == "Thread") {
+                fieldsToSelect.append("traced_thread.tid");
+            } else if (cn == "File") {
+                fieldsToSelect.append("path_name.name");
+            } else if (cn == "Line") {
+                fieldsToSelect.append("trace_point.line");
+            } else if (cn == "Function") {
+                fieldsToSelect.append("function_name.name");
+            } else if (cn == "Type") {
+                fieldsToSelect.append("trace_point.type");
+            } else if (cn == "Verbosity") {
+                fieldsToSelect.append("trace_point.verbosity");
+            } else if (cn == "Message") {
+                fieldsToSelect.append("trace_entry.message");
+            } else if (cn == "Stack Position") {
+                fieldsToSelect.append("trace_entry.stack_position");
+            }
+        }
+    }
+
+    QString statement = "SELECT ";
+    statement += fieldsToSelect.join( ", ");
+    statement += " %1 ORDER BY trace_entry.id;";
 
     QString fromAndWhereClause =
                         "FROM"
@@ -262,7 +280,7 @@ QVariant EntryItemModel::data(const QModelIndex& index, int role) const
 
         EntryItemModel * const that = const_cast<EntryItemModel * const>(this);
 
-        int dbField = realColumn + 1; // id field is used in header
+        int dbField = index.column() + 1; // id field is used in header
         if (g_fields[realColumn].formatterFn)
             return g_fields[realColumn].formatterFn(m_db, &that->m_query, index.row(), dbField);
         return valueForIndex(&that->m_query, index.row(), dbField);
