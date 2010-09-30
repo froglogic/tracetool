@@ -1,0 +1,68 @@
+/*!
+
+\page examples_page Examples
+
+The software package comes with two example applications that can be
+used to experiment with trace and watch macros, the configuration file
+and the analysis GUI. The source code of the applications is available
+to allow modifications of the sample macros that have been added
+beforehand.
+
+\section addressbook_sec Addressbook
+
+The \c addressbook example is to be found in the \c
+share/doc/tracelib/examples/addressbook directory. It has been
+instrumented with a couple of trace and watch points with one of them
+being hit in a 1 second interval.
+
+\subsection addressbook_build_sec Building the example
+
+The following instructions assume an tool installation directory of \c
+/usr/local/tracelib on Unix and \c C:\\tracelib on Windows. Qt is
+considered to be installed in \c /usr/local/qt/4.6.3 or \c
+C:\\qt\\4.6.3, respectively. Also, the \c CMake is considered a
+prerequisite.
+
+To build the example on Unix issue the following commands:
+
+\code
+1. cd /usr/local/tracelib/share/doc/tracelib/examples/addressbook
+2. mkdir build
+3. cd build
+4. cmake -DCMAKE_PREFIX_PATH=/usr/local/qt/4.6.3:/usr/local/tracelib ..
+5. make
+\endcode
+
+On Windows, the following commands need to be performed when using \c
+nmake:
+
+\code
+1. cd c:\tracelib\share\doc\tracelib\examples\addressbook
+2. mkdir build
+3. cd build
+4. cmake -G "NMake Makefiles" -DCMAKE_PREFIX_PATH=c:\qt\4.6.3:c:\tracelib ..
+5. nmake
+\endcode
+
+The creation of a Visual Studio project is also possible but this is
+still experimental. A known weakness is that the location of the \c
+tracelib.xml file won't match the application's as Visual Studio is
+going to place the executable in either a \c Debug or \c Release
+sub-directory.
+
+\code
+1. cd c:\tracelib\share\doc\tracelib\examples\addressbook
+2. mkdir build
+3. cd build
+4. cmake -G "Visual Studio 9 2008" -DCMAKE_PREFIX_PATH=c:\qt\4.6.3:c:\tracelib ..
+5. Launch Visual Studio and open the Solution file found in the build directory.
+\endcode
+
+\section sampleapp_sec SampleApp
+
+The \c sampleapp application demonstrates logging of information from
+different classes in namespaces and also template functions. Overall
+it is much simpler, does not have a GUI and emits a single burst of
+logging information only.
+
+*/

@@ -93,5 +93,10 @@ Hello, Max!
 03.09.2010 16:00:57: Process 2524 [started at 03.09.2010 16:00:56] finished
 \endverbatim
  * This concludes the tracelib quick start.
+ *
+ * \section examples_sec Examples
+ *
+ * The software package ships with two example applications. See
+ * the \subpage examples_page page for more details.
  */
 
