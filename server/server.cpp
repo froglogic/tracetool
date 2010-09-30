@@ -422,7 +422,9 @@ void Server::trimTo( size_t nMostRecent )
         transaction.exec( "DELETE FROM traced_thread;" );
         transaction.exec( "DELETE FROM variable;" );
         transaction.exec( "DELETE FROM stackframe;" );
+#if 0 // cache for the user's convenenience
         transaction.exec( "DELETE FROM trace_point_group;" );
+#endif
         return;
     }
     qWarning() << "Server::trimTo: deleting all but the n most recent trace "
