@@ -1,0 +1,70 @@
+/*!
+
+\page architecture_page Architecture
+
+\section components_sec Components
+
+This high-level architecture overview is based on the following
+components:
+
+\li <b>AUT</b>: the Application Under Trace that has been instrumented
+in order to produce log output.
+
+\li <b>Hook Library</b>: the instrumentation library linked against
+the AUT.
+
+\li <b>Daemon</b>: the process (\c traced) that collects trace
+information from one or several AUTs.
+
+\li <b>Log File</b>: the file on disk that contains the accumulated
+log information for live or later analysis.
+
+\li <b>GUI</b>: the tool (\c tracegui) that allows the user to watch
+and analyse log files live or after they have been created.
+
+\li <b>Configuration</b>: the configuration file (\c tracelib.xml) to
+be installed by the user to influence log output by the AUT.
+
+\section variants_sec Setup Variants
+
+The framework can be set up and used in different ways. The deciding
+factor for chosing one variant over the other mostly depends on the
+predominant use case: live monitoring versus post-execution
+analysis.
+
+Note: the live monitoring setup still allows for later analysis of
+logged information.
+
+\subsection post_execution_sec Post-Execution Analysis
+
+To perform a post-execution analysis the GUI-less \c traced daemon is
+expected to be running on the target system. When launched it needs to
+be told about the location of the log file via a command line
+argument.
+
+Phase 1: All log information emitted by the AUT (or several of them)
+are transmitted to the daemon which takes care of pre-processing the
+data and storage in the log file.
+
+Phase 2: Once the log file is created it can analyzed locally or on
+another system using the GUI
+
+\image html post-analysis.png Two-phase usage
+
+\subsection live_analysis_sec Live Monitoring
+
+The live-monitoring setup makes use of the fact that the GUI includes
+an instance of the \c traced daemon. All that's need to commence
+logging is to start the GUI. The name of the log file can either be
+supplied via a command line argument or selected from within the
+GUI. Upon later launches of the GUI the most recently used log file
+will be re-opened automatically.
+
+Log information emitted by the AUT will be collected by the daemon and
+both display in the GUI and stored in the log file. Similarly to the
+two-phase usage the log file can later be re-opened for post-execution
+analysis.
+
+\image html live-monitoring.png All-in-one usage
+
+*/

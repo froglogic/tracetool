@@ -38,6 +38,11 @@
  * \li \c convertdb.exe is a helper utility for converting earlier versions of
  * databases with tracelib traces.
  *
+ * \section architecture_sec Architecture
+ * 
+ * See the \subpage architecture_page page for an overview of the
+ * framework components and different setup possibilities.
+ *
  * \section quickstart_sec Quick Start
  *
  * Here's a quick step by step guide on how to instrument a basic program
