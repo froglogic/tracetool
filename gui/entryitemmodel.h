@@ -58,7 +58,7 @@ private:
     const QVariant &getValue(int row, int column) const;
 
     QSqlDatabase m_db;
-    int m_querySize;
+    int m_numMatchingEntries;
     int m_topRow;
     QVector<QVector<QVariant> > m_data;
     unsigned int m_numNewEntries;

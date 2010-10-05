@@ -123,6 +123,7 @@ static const struct {
 EntryItemModel::EntryItemModel(EntryFilter *filter, ColumnsInfo *ci,
                                QObject *parent )
     : QAbstractTableModel(parent),
+      m_numMatchingEntries(-1),
       m_numNewEntries(0),
       m_databasePollingTimer(NULL),
       m_suspended(false),
@@ -236,12 +237,15 @@ bool EntryItemModel::queryForEntries(QString *errMsg, int startRow)
         return false;
     }
 
-    if (query.driver()->hasFeature(QSqlDriver::QuerySize)) {
-        m_querySize = query.size();
-    } else {
-        QSqlQuery q = m_db.exec(QString( "SELECT COUNT(*) %1;" ).arg(fromAndWhereClause));
-        q.next();
-        m_querySize = q.value(0).toInt();
+    if ( m_numMatchingEntries == -1 ) {
+        qDebug() << "Recomputing number of matching entries...";
+        if (query.driver()->hasFeature(QSqlDriver::QuerySize)) {
+            m_numMatchingEntries = query.size();
+        } else {
+            QSqlQuery q = m_db.exec(QString( "SELECT COUNT(*) %1;" ).arg(fromAndWhereClause));
+            q.next();
+            m_numMatchingEntries = q.value(0).toInt();
+        }
     }
 
     {
@@ -271,7 +275,7 @@ int EntryItemModel::columnCount(const QModelIndex & parent) const
 
 int EntryItemModel::rowCount(const QModelIndex & parent) const
 {
-    return m_querySize;
+    return m_numMatchingEntries;
 }
 
 QModelIndex EntryItemModel::index(int row, int column,
@@ -286,7 +290,7 @@ QModelIndex EntryItemModel::index(int row, int column,
 const QVariant &EntryItemModel::getValue(int row, int column) const
 {
     assert(row >= 0);
-    assert(row < m_querySize);
+    assert(row < m_numMatchingEntries);
     assert(column >= 0);
     if (row < m_topRow || row >= m_topRow + m_data.size()) {
         QString errMsg;
@@ -354,6 +358,7 @@ void EntryItemModel::handleNewTraceEntry(const TraceEntry &e)
     if (!m_filter->matches(e))
         return;
 
+    m_numMatchingEntries = -1;
     ++m_numNewEntries;
     if (!m_suspended && !m_databasePollingTimer->isActive()) {
         m_databasePollingTimer->start(200);
@@ -384,7 +389,7 @@ void EntryItemModel::insertNewTraceEntries()
     if (m_numNewEntries == 0)
         return;
 
-    beginInsertRows(QModelIndex(), m_querySize, m_querySize + m_numNewEntries - 1);
+    beginInsertRows(QModelIndex(), m_numMatchingEntries, m_numMatchingEntries + m_numNewEntries - 1);
     QString errorMsg;
     if (!queryForEntries(&errorMsg, 0)) {
         qDebug() << "EntryItemModel::insertNewTraceEntries: failed: " << errorMsg;
@@ -396,6 +401,7 @@ void EntryItemModel::insertNewTraceEntries()
 
 void EntryItemModel::reApplyFilter()
 {
+    m_numMatchingEntries = -1;
     beginResetModel();
     QString errorMsg;
     if (!queryForEntries(&errorMsg, 0)) {
