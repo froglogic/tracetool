@@ -9,27 +9,24 @@
 #include "columnsinfo.h"
 #include "../hooklib/tracelib.h"
 
+#include <assert.h>
+
 #include <QBrush>
 #include <QDateTime>
 #include <QDebug>
 #include <QSqlDriver>
 #include <QSqlError>
+#include <QSqlQuery>
+#include <QSqlRecord>
 #include <QTimer>
 #include <cassert>
 
 // #define SHOW_VERBOSITY
 
-typedef QVariant (*DataFormatter)(QSqlDatabase db, QSqlQuery *query, int row, int column);
+typedef QVariant (*DataFormatter)(QSqlDatabase db, const QVariant &v);
 
-static QVariant valueForIndex(QSqlQuery *query, int row, int column)
+static QVariant timeFormatter(QSqlDatabase, const QVariant &v)
 {
-    query->seek(row);
-    return query->value(column);
-}
-
-static QVariant timeFormatter(QSqlDatabase, QSqlQuery *query, int row, int column)
-{
-    const QVariant v = valueForIndex(query, row, column);
     return QDateTime::fromString(v.toString(), Qt::ISODate);
 }
 
@@ -43,20 +40,16 @@ static QString tracePointTypeAsString(int i)
     return s;
 }
 
-static QVariant typeFormatter(QSqlDatabase, QSqlQuery *query, int row, int column)
+static QVariant typeFormatter(QSqlDatabase, const QVariant &v)
 {
-    const QVariant v = valueForIndex(query, row, column);
-
     bool ok;
     int i = v.toInt(&ok);
     assert(ok);
     return tracePointTypeAsString(i);
 }
 
-static QVariant stackPositionFormatter(QSqlDatabase, QSqlQuery *query, int row, int column)
+static QVariant stackPositionFormatter(QSqlDatabase, const QVariant &v)
 {
-    const QVariant v = valueForIndex(query, row, column);
-
     bool ok;
     qulonglong i = v.toULongLong(&ok);
     assert(ok);
@@ -99,10 +92,10 @@ static QString variablesForEntryId(QSqlDatabase db, unsigned int id)
     return items.join(", ");
 }
 
-static QVariant variablesFormatter(QSqlDatabase db, QSqlQuery *query, int row, int column)
+static QVariant variablesFormatter(QSqlDatabase db, const QVariant &v)
 {
     bool ok;
-    unsigned int traceEntryId = valueForIndex(query, row, 0).toUInt(&ok);
+    unsigned int traceEntryId = v.toUInt(&ok);
     assert(ok);
     return variablesForEntryId(db, traceEntryId);
 }
@@ -149,7 +142,7 @@ bool EntryItemModel::setDatabase(QSqlDatabase database,
                                  QString *errMsg)
 {
     m_db = database;
-    if (!queryForEntries(errMsg))
+    if (!queryForEntries(errMsg, 0))
         return false;
 
     return true;
@@ -169,8 +162,10 @@ static QString filterClause(EntryFilter *f)
     return "AND " + sql + " ";
 }
 
-bool EntryItemModel::queryForEntries(QString *errMsg)
+bool EntryItemModel::queryForEntries(QString *errMsg, int startRow)
 {
+    qDebug() << "EntryItemModel::queryForEntries: startRow = " << startRow;
+
     QStringList fieldsToSelect;
     {
         QList<int> visibleColumns = m_columnsInfo->visibleColumns();
@@ -204,10 +199,6 @@ bool EntryItemModel::queryForEntries(QString *errMsg)
         }
     }
 
-    QString statement = "SELECT ";
-    statement += fieldsToSelect.join( ", ");
-    statement += " %1 ORDER BY trace_entry.id;";
-
     QString fromAndWhereClause =
                         "FROM"
                         " trace_entry,"
@@ -232,18 +223,42 @@ bool EntryItemModel::queryForEntries(QString *errMsg)
                         " traced_thread.process_id = process.id " +
                         filterClause(m_filter);
 
-    m_query = m_db.exec(statement.arg(fromAndWhereClause));
-    if (m_db.lastError().isValid()) {
+
+    QString statement = "SELECT ";
+    statement += fieldsToSelect.join( ", ");
+    statement += " %1 ORDER BY trace_entry.id";
+    statement += " LIMIT 100 OFFSET %2";
+
+    QSqlQuery query(m_db);
+    query.setForwardOnly(true);
+    if (!query.exec(statement.arg(fromAndWhereClause).arg(startRow))) {
         *errMsg = m_db.lastError().text();
         return false;
     }
 
-    if (m_query.driver()->hasFeature(QSqlDriver::QuerySize)) {
-        m_querySize = m_query.size();
+    if (query.driver()->hasFeature(QSqlDriver::QuerySize)) {
+        m_querySize = query.size();
     } else {
         QSqlQuery q = m_db.exec(QString( "SELECT COUNT(*) %1;" ).arg(fromAndWhereClause));
         q.next();
         m_querySize = q.value(0).toInt();
+    }
+
+    {
+        m_topRow = startRow;
+
+        m_data.clear();
+        m_data.reserve(100);
+
+        const int numFields = query.record().count();
+
+        while (query.next() ) {
+            QVector<QVariant> row(numFields);
+            for (int i = 0; i < numFields; ++i) {
+                row[i] = query.value(i);
+            }
+            m_data.append(row);
+        }
     }
 
     return true;
@@ -268,6 +283,22 @@ QModelIndex EntryItemModel::index(int row, int column,
     return createIndex(row, column, 0);
 }
 
+const QVariant &EntryItemModel::getValue(int row, int column) const
+{
+    assert(row >= 0);
+    assert(row < m_querySize);
+    assert(column >= 0);
+    if (row < m_topRow || row >= m_topRow + m_data.size()) {
+        QString errMsg;
+        const_cast<EntryItemModel *>(this)->queryForEntries(&errMsg, row);
+    }
+    assert(row >= m_topRow);
+    assert(row < m_topRow + m_data.size());
+    const QVector<QVariant> &rowData = m_data[row - m_topRow];
+    assert(column < rowData.size());
+    return m_data[row - m_topRow][column];
+}
+
 QVariant EntryItemModel::data(const QModelIndex& index, int role) const
 {
     if (role == Qt::DisplayRole) {
@@ -276,12 +307,14 @@ QVariant EntryItemModel::data(const QModelIndex& index, int role) const
             return QVariant();
         int realColumn = m_columnsInfo->unmap(index.column());
 
-        EntryItemModel * const that = const_cast<EntryItemModel * const>(this);
-
+        QString errMsg;
         int dbField = index.column() + 1; // id field is used in header
+
+        const QVariant v = getValue(index.row(), dbField);
+
         if (g_fields[realColumn].formatterFn)
-            return g_fields[realColumn].formatterFn(m_db, &that->m_query, index.row(), dbField);
-        return valueForIndex(&that->m_query, index.row(), dbField);
+            return g_fields[realColumn].formatterFn(m_db, v);
+        return v;
     } else if (role == Qt::ToolTipRole) {
         // Just forward the tool tip request for now to make viewing
         // of cut-off content possible.
@@ -309,8 +342,7 @@ QVariant EntryItemModel::headerData(int section, Qt::Orientation orientation,
         int realSection = m_columnsInfo->unmap(section);
         return tr(g_fields[realSection].name);
     } else if (role == Qt::DisplayRole && orientation == Qt::Vertical) {
-        const_cast<EntryItemModel*>(this)->m_query.seek(section);
-        return m_query.value(0);
+        return getValue(section, 0);
     }
 
     return QAbstractTableModel::headerData(section, orientation, role);
@@ -341,9 +373,8 @@ void EntryItemModel::resume()
 
 unsigned int EntryItemModel::idForIndex(const QModelIndex &index)
 {
-    const_cast<EntryItemModel*>(this)->m_query.seek(index.row());
     bool ok;
-    const unsigned int id = m_query.value(0).toUInt(&ok);
+    const unsigned int id = getValue(index.row(), 0).toUInt(&ok);
     assert(ok);
     return id;
 }
@@ -355,7 +386,7 @@ void EntryItemModel::insertNewTraceEntries()
 
     beginInsertRows(QModelIndex(), m_querySize, m_querySize + m_numNewEntries - 1);
     QString errorMsg;
-    if (!queryForEntries(&errorMsg)) {
+    if (!queryForEntries(&errorMsg, 0)) {
         qDebug() << "EntryItemModel::insertNewTraceEntries: failed: " << errorMsg;
     }
     endInsertRows();
@@ -367,7 +398,7 @@ void EntryItemModel::reApplyFilter()
 {
     beginResetModel();
     QString errorMsg;
-    if (!queryForEntries(&errorMsg)) {
+    if (!queryForEntries(&errorMsg, 0)) {
         qDebug() << "EntryItemModel::reApplyFilter: failed: " << errorMsg;
     }
     endResetModel();

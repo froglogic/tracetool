@@ -11,7 +11,7 @@
 #include <QAbstractTableModel>
 #include <QSet>
 #include <QSqlDatabase>
-#include <QSqlQuery>
+
 class QTimer;
 
 struct TraceEntry;
@@ -54,11 +54,13 @@ private slots:
     void insertNewTraceEntries();
 
 private:
-    bool queryForEntries(QString *errMsg);
+    bool queryForEntries(QString *errMsg, int startRow);
+    const QVariant &getValue(int row, int column) const;
 
     QSqlDatabase m_db;
-    QSqlQuery m_query;
     int m_querySize;
+    int m_topRow;
+    QVector<QVector<QVariant> > m_data;
     unsigned int m_numNewEntries;
     QTimer *m_databasePollingTimer;
     bool m_suspended;
