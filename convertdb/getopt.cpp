@@ -232,7 +232,9 @@ bool GetOpt::parseCommandFile( const QString &n, QStringList *l )
 
     QFile f( n );
     if ( !f.open( QFile::ReadOnly ) ) {
-        qWarning( "Error opening command file '%s'", qPrintable( n ) );
+        qWarning( "Error opening command file '%s': %s",
+                  qPrintable( n ),
+                  qPrintable( f.errorString() ) );
         return false;
     }
 
