@@ -139,8 +139,6 @@ EntryItemModel::EntryItemModel(EntryFilter *filter, ColumnsInfo *ci,
     m_databasePollingTimer = new QTimer(this);
     m_databasePollingTimer->setSingleShot(true);
     connect(m_databasePollingTimer, SIGNAL(timeout()), SLOT(insertNewTraceEntries()));
-    connect(m_filter, SIGNAL(changed()), SLOT(reApplyFilter()));
-    connect(m_columnsInfo, SIGNAL(changed()), SLOT(reApplyFilter()));
 }
 
 EntryItemModel::~EntryItemModel()

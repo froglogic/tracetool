@@ -15,6 +15,7 @@
 #include "storageview.h"
 #include "applicationtable.h"
 #include "fixedheaderview.h"
+#include "entryfilter.h"
 
 #include <cassert>
 #include <QtGui>
@@ -294,6 +295,8 @@ void MainWindow::postRestore()
 {
     m_filterForm->restoreSettings();
     updateColumns();
+    connect(m_settings->entryFilter(), SIGNAL(changed()), m_entryItemModel, SLOT(reApplyFilter()));
+    connect(m_settings->columnsInfo(), SIGNAL(changed()), m_entryItemModel, SLOT(reApplyFilter()));
 }
 
 void MainWindow::filterChange()
