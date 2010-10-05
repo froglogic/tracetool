@@ -10,6 +10,7 @@
 #include "mainwindow.h"
 #include "settings.h"
 #include "../convertdb/getopt.h"
+#include "../server/database.h"
 
 #include <iostream>
 #include <string>
@@ -48,14 +49,9 @@ int main(int argc, char **argv)
         printUsage(argv[0]);
         return Error::None;
     }
-    if (!traceFile.isEmpty() &&
-        !traceFile.endsWith(".trace", Qt::CaseInsensitive)) {
-        // ### Too picky? No real technical reason so far. But
-        // ### helps the IDE and who knows what else in the
-        // ### future. Click a file type association that allows
-        // ### opening traces by double-click.
-        cout << "Trace file is expected to have a "
-             << ".trace suffix. " << endl;
+    QString errMsg;
+    if (!Database::isValidFileName(traceFile, &errMsg)) {
+        cout << errMsg.toLocal8Bit().constData() << endl;
         return Error::CommandLineArgs;
     }
     int portOverride = -1;
@@ -81,7 +77,6 @@ int main(int argc, char **argv)
     MainWindow mw(&settings);
 
     if (!settings.databaseFile().isEmpty()) {
-        QString errMsg;
         if (!mw.setDatabase(settings.databaseFile(), &errMsg)) {
             QMessageBox::critical(0, "Database error",
                                   errMsg);

@@ -26,6 +26,9 @@ public:
     static bool downgrade(QSqlDatabase db, QString *errMsg);
     static bool upgrade(QSqlDatabase db, QString *errMsg);
 
+    static bool isValidFileName(const QString &fileName,
+                                QString *errMsg);
+
 private:
     static QSqlDatabase openOrCreate(const QString &fileName,
                                      QString *errMsg);

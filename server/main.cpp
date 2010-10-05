@@ -53,14 +53,10 @@ int main( int argc, char **argv )
 	cout << "Missing trace file argument. Try --help." << endl;
 	return Error::CommandLineArgs;
     }
-    if (!traceFile.endsWith(".trace", Qt::CaseInsensitive)) {
-	// ### Too picky? No real technical reason so far. But
-	// ### helps the IDE and who knows what else in the
-	// ### future. Click a file type association that allows
-	// ### opening traces by double-click.
-	cout << "Trace file is expected to have a "
-	     << ".trace suffix. " << endl;
-	return Error::CommandLineArgs;
+    QString errMsg;
+    if (!Database::isValidFileName(traceFile, &errMsg)) {
+        cout << errMsg.toLocal8Bit().constData() << endl;
+        return Error::CommandLineArgs;
     }
     int port = TRACELIB_DEFAULT_PORT;
     if (!portStr.isEmpty()) {
@@ -75,7 +71,6 @@ int main( int argc, char **argv )
     }
 
     QSqlDatabase database;
-    QString errMsg;
     if (QFile::exists(traceFile)) {
         database = Database::open(traceFile, &errMsg);
     } else {

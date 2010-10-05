@@ -327,3 +327,19 @@ bool Database::upgrade(QSqlDatabase db, QString *errMsg)
     return true;
 }
 
+bool Database::isValidFileName(const QString &fileName,
+                               QString *errMsg)
+{
+#ifdef Q_OS_WIN
+    const Qt::CaseSensitivity sensitivity = Qt::CaseInsensitive;
+#else
+    const Qt::CaseSensitivity sensitivity = Qt::CaseSensitive;
+#endif
+    if (!fileName.endsWith(".trace", sensitivity)) {
+        *errMsg = QObject::tr("Trace file is expected to have a "
+                              ".trace suffix.");
+        return false;
+    }
+
+    return true;
+}
