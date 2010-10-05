@@ -193,8 +193,11 @@ bool ColumnsInfo::restoreSessionState(const QVariant &state)
     // add them to the list of visible columns
     if (visibleColumns.count() + invisibleColumns.count() != columnCount()) {
         QVector<bool>::const_iterator it, end = restored.end();
-        for (it = restored.begin(); it != end; ++it)
-            visibleColumns.append(*it);
+        for (it = restored.begin(); it != end; ++it) {
+            if (!*it) {
+                visibleColumns.append(it - restored.begin());
+            }
+        }
     }
 
     setSorting(visibleColumns, invisibleColumns);
