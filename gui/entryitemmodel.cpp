@@ -22,6 +22,7 @@
 #include <cassert>
 
 // #define SHOW_VERBOSITY
+// #define DEBUG_MODEL
 
 typedef QVariant (*DataFormatter)(QSqlDatabase db, const QVariant &v);
 
@@ -165,7 +166,9 @@ static QString filterClause(EntryFilter *f)
 
 bool EntryItemModel::queryForEntries(QString *errMsg, int startRow)
 {
+#ifdef DEBUG_MODEL
     qDebug() << "EntryItemModel::queryForEntries: startRow = " << startRow;
+#endif
 
     QStringList fieldsToSelect;
     {
@@ -238,7 +241,9 @@ bool EntryItemModel::queryForEntries(QString *errMsg, int startRow)
     }
 
     if ( m_numMatchingEntries == -1 ) {
+#ifdef DEBUG_MODEL
         qDebug() << "Recomputing number of matching entries...";
+#endif
         if (query.driver()->hasFeature(QSqlDriver::QuerySize)) {
             m_numMatchingEntries = query.size();
         } else {
@@ -311,7 +316,6 @@ QVariant EntryItemModel::data(const QModelIndex& index, int role) const
             return QVariant();
         int realColumn = m_columnsInfo->unmap(index.column());
 
-        QString errMsg;
         int dbField = index.column() + 1; // id field is used in header
 
         const QVariant v = getValue(index.row(), dbField);
