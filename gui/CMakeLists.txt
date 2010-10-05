@@ -2,6 +2,7 @@ SET(GUI_SOURCES
   main.cpp
   settings.cpp
   mainwindow.cpp
+  fixedheaderview.cpp
   entryfilter.cpp
   columnsinfo.cpp
   filterform.cpp
@@ -19,6 +20,7 @@ SET(GUI_SOURCES
 
 SET(GUI_MOCABLES
   mainwindow.h
+  fixedheaderview.h
   entryfilter.h
   columnsinfo.h
   filterform.h

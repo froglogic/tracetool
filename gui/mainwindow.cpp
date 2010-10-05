@@ -14,6 +14,7 @@
 #include "columnsinfo.h"
 #include "storageview.h"
 #include "applicationtable.h"
+#include "fixedheaderview.h"
 
 #include <cassert>
 #include <QtGui>
@@ -49,6 +50,11 @@ MainWindow::MainWindow(Settings *settings,
 
     connect(tracePointsView, SIGNAL(doubleClicked(const QModelIndex &)),
             this, SLOT(traceEntryDoubleClicked(const QModelIndex &)));
+    // replacing standard header for performance reasons
+    FixedHeaderView *hv = new FixedHeaderView(9, // ### dynamic
+                                              Qt::Vertical,
+                                              tracePointsView);
+    tracePointsView->setVerticalHeader(hv);
 
     // buttons
     connect(freezeButton, SIGNAL(clicked()),
