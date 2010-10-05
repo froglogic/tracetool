@@ -199,8 +199,6 @@ bool ColumnsInfo::restoreSessionState(const QVariant &state)
 
     setSorting(visibleColumns, invisibleColumns);
 
-    emit changed();
-
     return true;
 }
 
