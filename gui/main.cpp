@@ -50,7 +50,8 @@ int main(int argc, char **argv)
         return Error::None;
     }
     QString errMsg;
-    if (!Database::isValidFileName(traceFile, &errMsg)) {
+    if (!traceFile.isEmpty() &&
+        !Database::isValidFileName(traceFile, &errMsg)) {
         cout << errMsg.toLocal8Bit().constData() << endl;
         return Error::CommandLineArgs;
     }
