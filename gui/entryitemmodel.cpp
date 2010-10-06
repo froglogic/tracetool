@@ -24,11 +24,11 @@
 // #define SHOW_VERBOSITY
 // #define DEBUG_MODEL
 
-typedef QVariant (*DataFormatter)(QSqlDatabase db, const QVariant &v);
+typedef QVariant (*DataFormatter)(QSqlDatabase db, const EntryItemModel *model, int row, int column);
 
-static QVariant timeFormatter(QSqlDatabase, const QVariant &v)
+static QVariant timeFormatter(QSqlDatabase, const EntryItemModel *model, int row, int column)
 {
-    return QDateTime::fromString(v.toString(), Qt::ISODate);
+    return QDateTime::fromString(model->getValue(row, column).toString(), Qt::ISODate);
 }
 
 static QString tracePointTypeAsString(int i)
@@ -41,18 +41,18 @@ static QString tracePointTypeAsString(int i)
     return s;
 }
 
-static QVariant typeFormatter(QSqlDatabase, const QVariant &v)
+static QVariant typeFormatter(QSqlDatabase, const EntryItemModel *model, int row, int column)
 {
     bool ok;
-    int i = v.toInt(&ok);
+    int i = model->getValue(row, column).toInt(&ok);
     assert(ok);
     return tracePointTypeAsString(i);
 }
 
-static QVariant stackPositionFormatter(QSqlDatabase, const QVariant &v)
+static QVariant stackPositionFormatter(QSqlDatabase, const EntryItemModel *model, int row, int column)
 {
     bool ok;
-    qulonglong i = v.toULongLong(&ok);
+    qulonglong i = model->getValue(row, column).toULongLong(&ok);
     assert(ok);
     return QString( "0x%1" ).arg( QString::number( i, 16 ) );
 }
@@ -93,10 +93,10 @@ static QString variablesForEntryId(QSqlDatabase db, unsigned int id)
     return items.join(", ");
 }
 
-static QVariant variablesFormatter(QSqlDatabase db, const QVariant &v)
+static QVariant variablesFormatter(QSqlDatabase db, const EntryItemModel *model, int row, int column)
 {
     bool ok;
-    unsigned int traceEntryId = v.toUInt(&ok);
+    unsigned int traceEntryId = model->getValue(row, 0).toUInt(&ok);
     assert(ok);
     return variablesForEntryId(db, traceEntryId);
 }
@@ -318,11 +318,9 @@ QVariant EntryItemModel::data(const QModelIndex& index, int role) const
 
         int dbField = index.column() + 1; // id field is used in header
 
-        const QVariant v = getValue(index.row(), dbField);
-
         if (g_fields[realColumn].formatterFn)
-            return g_fields[realColumn].formatterFn(m_db, v);
-        return v;
+            return g_fields[realColumn].formatterFn(m_db, this, index.row(), dbField);
+        return getValue(index.row(), dbField);
     } else if (role == Qt::ToolTipRole) {
         // Just forward the tool tip request for now to make viewing
         // of cut-off content possible.

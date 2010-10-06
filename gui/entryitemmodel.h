@@ -42,6 +42,7 @@ public:
     void resume();
 
     unsigned int idForIndex(const QModelIndex &index);
+    const QVariant &getValue(int row, int column) const;
 
 public slots:
     void handleNewTraceEntry(const TraceEntry &e);
@@ -55,7 +56,6 @@ private slots:
 
 private:
     bool queryForEntries(QString *errMsg, int startRow);
-    const QVariant &getValue(int row, int column) const;
 
     QSqlDatabase m_db;
     int m_numMatchingEntries;
