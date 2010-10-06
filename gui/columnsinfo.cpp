@@ -26,7 +26,6 @@ const char* const columnNames[] = {
 #endif
     QT_TRANSLATE_NOOP("ColumnsInfo", "Message"),
     QT_TRANSLATE_NOOP("ColumnsInfo", "Stack Position"),
-    QT_TRANSLATE_NOOP("ColumnsInfo", "Variables")
 };
 
 const int numColumns = sizeof(columnNames) / sizeof(char*);
@@ -172,7 +171,9 @@ bool ColumnsInfo::restoreSessionState(const QVariant &state)
             visibleColumns.append(index);
             restored[index] = true;
         } else {
+#ifndef NDEBUG
             fprintf(stderr, "Unknown column name '%s'\n", qPrintable(name));
+#endif
         }
     }
 
