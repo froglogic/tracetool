@@ -53,9 +53,11 @@ public slots:
 
 private slots:
     void insertNewTraceEntries();
+    void updateScannedFieldsList();
 
 private:
     bool queryForEntries(QString *errMsg, int startRow);
+    void updateHighlightedEntries();
 
     QSqlDatabase m_db;
     int m_numMatchingEntries;
@@ -68,6 +70,9 @@ private:
     EntryFilter *m_filter;
     ColumnsInfo *m_columnsInfo;
     QSet<unsigned int> m_highlightedEntryIds;
+    QRegExp m_lastSearchTerm;
+    QStringList m_scannedFieldNames;
+    QList<int> m_scannedFields;
 };
 
 #endif

@@ -134,6 +134,7 @@ EntryItemModel::EntryItemModel(EntryFilter *filter, ColumnsInfo *ci,
     m_databasePollingTimer = new QTimer(this);
     m_databasePollingTimer->setSingleShot(true);
     connect(m_databasePollingTimer, SIGNAL(timeout()), SLOT(insertNewTraceEntries()));
+    connect(m_columnsInfo, SIGNAL(changed()), SLOT(updateScannedFieldsList()));
 }
 
 EntryItemModel::~EntryItemModel()
@@ -277,6 +278,8 @@ bool EntryItemModel::queryForEntries(QString *errMsg, int startRow)
             m_data.append(row);
         }
     }
+
+    updateHighlightedEntries();
 
     return true;
 }
@@ -435,76 +438,44 @@ void EntryItemModel::highlightEntries(const QString &term,
         return;
     }
 
-    QSet<unsigned int> entriesToHighlight;
-
-    QStringList fieldConstraints;
-
-    QString valueTestCode;
     switch ( matchType ) {
         case SearchWidget::StrictMatch:
-            valueTestCode = QString( "= '%1'" ).arg( term );
+            m_lastSearchTerm.setPatternSyntax( QRegExp::FixedString );
             break;
         case SearchWidget::WildcardMatch:
-            valueTestCode = QString( "LIKE '%1'" ).arg( term );
-            valueTestCode = valueTestCode.replace( '*', "%" );
-            valueTestCode = valueTestCode.replace( '.', '_' );
+            m_lastSearchTerm.setPatternSyntax( QRegExp::Wildcard );
             break;
         case SearchWidget::RegExpMatch:
-            // XXX Using the REGEXP statement requires registering a
-            // user-defined 'regexp' function via the SQLite API (see
-            // http://www.sqlite.org/c3ref/create_function.html).
-            valueTestCode = QString( "REGEXP '%1'" ).arg( term );
+            m_lastSearchTerm.setPatternSyntax( QRegExp::RegExp );
             break;
     }
+    m_lastSearchTerm.setPattern( term );
 
-    QStringList::ConstIterator it, end = fields.end();
-    for ( it = fields.begin(); it != end; ++it ) {
-        if ( *it == tr( "Application" ) ) {
-            fieldConstraints <<
-                QString( "(traced_thread.id = trace_entry.traced_thread_id AND "
-                         " traced_thread.process_id = process.id AND"
-                         " process.name %1)" )
-                    .arg( valueTestCode );
-        } else if ( *it == tr( "File" ) ) {
-            fieldConstraints <<
-                QString( "(trace_point.id = trace_entry.trace_point_id AND"
-                         " path_name.id = trace_point.path_id AND "
-                         " path_name.name %1)" )
-                    .arg( valueTestCode );
-        } else if ( *it == tr( "Function" ) ) {
-            fieldConstraints <<
-                QString( "(trace_point.id = trace_entry.trace_point_id AND"
-                         " function_name.id = trace_point.function_id AND"
-                         " function_name.name %1)" )
-                    .arg( valueTestCode );
-        } else if ( *it == tr( "Message" ) ) {
-            fieldConstraints <<
-                QString( "(trace_entry.message %1)" )
-                    .arg( valueTestCode );
+    m_scannedFieldNames = fields;
+
+    updateScannedFieldsList();
+
+    updateHighlightedEntries();
+}
+
+void EntryItemModel::updateHighlightedEntries()
+{
+    QSet<unsigned int> entriesToHighlight;
+
+    QVector<QVector<QVariant> >::ConstIterator it, end = m_data.end();
+    for ( it = m_data.begin(); it != end; ++it ) {
+        const QVector<QVariant> &row = *it;
+
+        QList<int>::ConstIterator fieldIdxIt, fieldIdxEnd = m_scannedFields.end();
+        for ( fieldIdxIt = m_scannedFields.begin(); fieldIdxIt != fieldIdxEnd; ++fieldIdxIt ) {
+            const QVariant &v = row[*fieldIdxIt + 1];
+            if ( m_lastSearchTerm.exactMatch( v.toString() ) ) {
+                bool ok;
+                const unsigned int entryId = row[0].toUInt(&ok);
+                assert(ok);
+                entriesToHighlight.insert(entryId);
+            }
         }
-    }
-
-    // XXX Make this query respect the configured filter for
-    // performance reasons
-    QString query = "SELECT"
-                    " DISTINCT trace_entry.id "
-                    "FROM"
-                    " trace_entry,"
-                    " trace_point,"
-                    " path_name,"
-                    " function_name,"
-                    " traced_thread,"
-                    " process "
-                    "WHERE ";
-    query += fieldConstraints.join( " OR " );
-
-    QSqlQuery filterQuery( m_db );
-    if ( !filterQuery.exec( query ) ) {
-        fprintf( stderr, "ERROR: %s\n", filterQuery.lastError().text().toLatin1().data() );
-    }
-
-    while ( filterQuery.next() ) {
-        entriesToHighlight.insert( filterQuery.value( 0 ).toUInt() );
     }
 
     if ( entriesToHighlight != m_highlightedEntryIds ) {
@@ -514,6 +485,20 @@ void EntryItemModel::highlightEntries(const QString &term,
         // their visible range?
         emit dataChanged( createIndex( 0, 0, 0 ),
                           createIndex( rowCount() - 1, columnCount() - 1, 0 ) );
+    }
+}
+
+void EntryItemModel::updateScannedFieldsList()
+{
+    m_scannedFields.clear();
+
+    const QList<int> visibleColumns = m_columnsInfo->visibleColumns();
+    QList<int>::ConstIterator it, end = visibleColumns.end();
+    unsigned int pos = 0;
+    for ( it = visibleColumns.begin(); it != end; ++it, ++pos ) {
+        if ( m_scannedFieldNames.contains( m_columnsInfo->columnCaption( *it ) ) ) {
+            m_scannedFields.append(pos);
+        }
     }
 }
 
