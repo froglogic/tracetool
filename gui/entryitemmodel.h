@@ -61,6 +61,7 @@ private:
     int m_numMatchingEntries;
     int m_topRow;
     QVector<QVector<QVariant> > m_data;
+    QVector<unsigned int> m_idForRow;
     unsigned int m_numNewEntries;
     QTimer *m_databasePollingTimer;
     bool m_suspended;

@@ -170,6 +170,53 @@ bool EntryItemModel::queryForEntries(QString *errMsg, int startRow)
     qDebug() << "EntryItemModel::queryForEntries: startRow = " << startRow;
 #endif
 
+    QString fromAndWhereClause =
+                        "FROM"
+                        " trace_entry,"
+                        " trace_point,";
+    if (!m_filter->inactiveKeys().isEmpty())
+        fromAndWhereClause +=
+                        " trace_point_group,";
+    fromAndWhereClause +=
+                        " path_name, "
+                        " function_name, "
+                        " process, "
+                        " traced_thread "
+                        "WHERE"
+                        " trace_entry.trace_point_id = trace_point.id "
+                        "AND"
+                        " trace_point.function_id = function_name.id "
+                        "AND"
+                        " trace_point.path_id = path_name.id "
+                        "AND"
+                        " trace_entry.traced_thread_id = traced_thread.id "
+                        "AND"
+                        " traced_thread.process_id = process.id " +
+                        filterClause(m_filter);
+
+    if ( m_numMatchingEntries == -1 ) {
+#ifdef DEBUG_MODEL
+        qDebug() << "Recomputing number of matching entries...";
+#endif
+        QSqlQuery q(m_db);
+        q.setForwardOnly(true);
+        if (!q.exec(QString( "SELECT trace_entry.id %1 ORDER BY trace_entry.id;" ).arg(fromAndWhereClause))) {
+            *errMsg = m_db.lastError().text();
+            return false;
+        }
+
+        m_idForRow.clear();
+        while (q.next()) {
+            bool ok;
+            m_idForRow.append(q.value(0).toUInt(&ok));
+            assert(ok);
+        }
+        m_numMatchingEntries = m_idForRow.size();
+    }
+
+    assert(startRow >= 0);
+    assert(startRow < m_idForRow.size());
+
     QStringList fieldsToSelect;
     {
         QList<int> visibleColumns = m_columnsInfo->visibleColumns();
@@ -203,54 +250,15 @@ bool EntryItemModel::queryForEntries(QString *errMsg, int startRow)
         }
     }
 
-    QString fromAndWhereClause =
-                        "FROM"
-                        " trace_entry,"
-                        " trace_point,";
-    if (!m_filter->inactiveKeys().isEmpty())
-        fromAndWhereClause +=
-                        " trace_point_group,";
-    fromAndWhereClause +=
-                        " path_name, "
-                        " function_name, "
-                        " process, "
-                        " traced_thread "
-                        "WHERE"
-                        " trace_entry.trace_point_id = trace_point.id "
-                        "AND"
-                        " trace_point.function_id = function_name.id "
-                        "AND"
-                        " trace_point.path_id = path_name.id "
-                        "AND"
-                        " trace_entry.traced_thread_id = traced_thread.id "
-                        "AND"
-                        " traced_thread.process_id = process.id " +
-                        filterClause(m_filter);
-
-
     QString statement = "SELECT ";
     statement += fieldsToSelect.join( ", ");
-    statement += " %1 ORDER BY trace_entry.id";
-    statement += " LIMIT 100 OFFSET %2";
+    statement += " %1 AND trace_entry.id >= %2 ORDER BY trace_entry.id LIMIT 100";
 
     QSqlQuery query(m_db);
     query.setForwardOnly(true);
-    if (!query.exec(statement.arg(fromAndWhereClause).arg(startRow))) {
+    if (!query.exec(statement.arg(fromAndWhereClause).arg(m_idForRow[startRow]))) {
         *errMsg = m_db.lastError().text();
         return false;
-    }
-
-    if ( m_numMatchingEntries == -1 ) {
-#ifdef DEBUG_MODEL
-        qDebug() << "Recomputing number of matching entries...";
-#endif
-        if (query.driver()->hasFeature(QSqlDriver::QuerySize)) {
-            m_numMatchingEntries = query.size();
-        } else {
-            QSqlQuery q = m_db.exec(QString( "SELECT COUNT(*) %1;" ).arg(fromAndWhereClause));
-            q.next();
-            m_numMatchingEntries = q.value(0).toInt();
-        }
     }
 
     {
@@ -261,7 +269,7 @@ bool EntryItemModel::queryForEntries(QString *errMsg, int startRow)
 
         const int numFields = query.record().count();
 
-        while (query.next() ) {
+        while (query.next()) {
             QVector<QVariant> row(numFields);
             for (int i = 0; i < numFields; ++i) {
                 row[i] = query.value(i);
