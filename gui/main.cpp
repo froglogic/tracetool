@@ -77,6 +77,11 @@ int main(int argc, char **argv)
 
     MainWindow mw(&settings);
 
+    settings.restoreSession();
+
+    // ### ugly
+    mw.postRestore();
+
     if (!settings.databaseFile().isEmpty()) {
         if (!mw.setDatabase(settings.databaseFile(), &errMsg)) {
             QMessageBox::critical(0, "Database error",
@@ -84,11 +89,6 @@ int main(int argc, char **argv)
             return Error::Open;
         }
     }
-
-    settings.restoreSession();
-
-    // ### ugly
-    mw.postRestore();
 
     mw.show();
 

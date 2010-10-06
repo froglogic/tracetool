@@ -154,6 +154,10 @@ bool MainWindow::setDatabase(const QString &databaseFileName, QString *errMsg)
                                                        SearchWidget::MatchType ) ) );
     connect( tracePointsClear, SIGNAL(clicked()),
              this, SLOT(clearTracePoints()));
+    connect(m_settings->entryFilter(), SIGNAL(changed()),
+            m_entryItemModel, SLOT(reApplyFilter()));
+    connect(m_settings->columnsInfo(), SIGNAL(changed()),
+            m_entryItemModel, SLOT(reApplyFilter()));
 
     m_settings->setDatabaseFile(databaseFileName);
 
@@ -295,8 +299,6 @@ void MainWindow::postRestore()
 {
     m_filterForm->restoreSettings();
     updateColumns();
-    connect(m_settings->entryFilter(), SIGNAL(changed()), m_entryItemModel, SLOT(reApplyFilter()));
-    connect(m_settings->columnsInfo(), SIGNAL(changed()), m_entryItemModel, SLOT(reApplyFilter()));
 }
 
 void MainWindow::filterChange()
