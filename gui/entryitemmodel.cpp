@@ -57,50 +57,6 @@ static QVariant stackPositionFormatter(QSqlDatabase, const EntryItemModel *model
     return QString( "0x%1" ).arg( QString::number( i, 16 ) );
 }
 
-static QString variablesForEntryId(QSqlDatabase db, unsigned int id)
-{
-    QSqlQuery q = db.exec(QString(
-                "SELECT"
-                " name,"
-                " value,"
-                " type "
-                "FROM"
-                " variable "
-                "WHERE"
-                " trace_entry_id=%1;").arg(id));
-    if (db.lastError().isValid()) {
-        qWarning() << "Failed to get variables for trace entry id " << id
-            << ": " << db.lastError().text();
-        return QString();
-    }
-
-    QStringList items;
-    while (q.next()) {
-        const QString varName = q.value(0).toString();
-
-        QString varValue = q.value(1).toString();
-        using TRACELIB_NAMESPACE_IDENT(VariableType);
-        const VariableType::Value varType = static_cast<VariableType::Value>(q.value(2).toInt());
-        if (varType == VariableType::String) {
-            varValue = QString("'%1'").arg(varValue);
-        }
-
-        items << QString("%1 (%2) = %3")
-                    .arg(q.value(0).toString())
-                    .arg(VariableType::valueAsString(varType))
-                    .arg(varValue);
-    }
-    return items.join(", ");
-}
-
-static QVariant variablesFormatter(QSqlDatabase db, const EntryItemModel *model, int row, int column)
-{
-    bool ok;
-    unsigned int traceEntryId = model->getValue(row, 0).toUInt(&ok);
-    assert(ok);
-    return variablesForEntryId(db, traceEntryId);
-}
-
 static const struct {
     const char *name;
     DataFormatter formatterFn;
@@ -117,8 +73,7 @@ static const struct {
     { "Verbosity", 0 },
 #endif
     { "Message", 0 },
-    { "Stack Position", stackPositionFormatter },
-    { "Variables", variablesFormatter }
+    { "Stack Position", stackPositionFormatter }
 };
 
 EntryItemModel::EntryItemModel(EntryFilter *filter, ColumnsInfo *ci,
