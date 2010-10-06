@@ -168,6 +168,13 @@ bool EntryItemModel::queryForEntries(QString *errMsg, int startRow)
             assert(ok);
         }
         m_numMatchingEntries = m_idForRow.size();
+        if (m_numMatchingEntries == 0) {
+            // bail out early if none of the entries matched
+            m_topRow = -1;
+            m_data.clear();
+            updateHighlightedEntries();
+            return true;
+        }
     }
 
     assert(startRow >= 0);
