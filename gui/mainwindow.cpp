@@ -119,7 +119,7 @@ bool MainWindow::setDatabase(const QString &databaseFileName, QString *errMsg)
     if (!m_db.isValid())
         return false;
 
-    m_server = new Server(m_db, m_settings->serverPort(), this);
+    m_server = new Server(databaseFileName, m_db, m_settings->serverPort(), this);
     m_filterForm->setTraceKeys( m_server->seenGroupIds() );
 
     m_entryItemModel = new EntryItemModel(m_settings->entryFilter(),

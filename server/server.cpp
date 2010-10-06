@@ -7,8 +7,11 @@
 
 #include "database.h"
 
+#include <QDir>
 #include <QDomDocument>
 #include <QFile>
+#include <QFileInfo>
+#include <QSignalMapper>
 #include <QSqlDatabase>
 #include <QSqlDriver>
 #include <QSqlError>
@@ -199,18 +202,31 @@ void ServerSocket::incomingConnection( int socketDescriptor )
     thread->start();
 }
 
-Server::Server( QSqlDatabase database, unsigned short port,
+Server::Server( const QString &traceFile,
+                QSqlDatabase database, unsigned short port,
                 QObject *parent )
     : QObject( parent ),
       m_tcpServer( 0 ),
       m_db( database ),
-      m_xmlHandler( 0 )
+      m_xmlHandler( 0 ),
+      m_guiSocketSignalMapper( 0 )
 {
+    QFileInfo fi( traceFile );
+    m_traceFile = QDir::toNativeSeparators( fi.canonicalFilePath() );
+
     assert( m_db.isValid() );
     m_db.exec( "PRAGMA synchronous=OFF;");
 
+    m_guiSocketSignalMapper = new QSignalMapper( this );
+    connect( m_guiSocketSignalMapper, SIGNAL( mapped( QObject * ) ),
+             this, SLOT( guiSocketDisconnected( QObject * ) ) );
+
     m_tcpServer = new ServerSocket( this );
     m_tcpServer->listen( QHostAddress::Any, port );
+
+    m_guiServer = new QTcpServer( this );
+    connect( m_guiServer, SIGNAL( newConnection() ), SLOT( handleNewGUIConnection() ) );
+    m_guiServer->listen( QHostAddress::LocalHost, port + 1 );
 
     m_xmlHandler = new XmlContentHandler( this );
     m_xmlReader.setContentHandler( m_xmlHandler );
@@ -218,6 +234,20 @@ Server::Server( QSqlDatabase database, unsigned short port,
 
     m_xmlInput.setData( QString::fromUtf8( "<toplevel_trace_element>" ) );
     m_xmlReader.parse( &m_xmlInput, true );
+}
+
+const quint32 MagicServerProtocolCookie = 0x22021990;
+
+template <typename T>
+QByteArray serializeGUIClientData( ServerDatagramType type, const T &v )
+{
+    static const quint32 ProtocolVersion = 1;
+
+    QByteArray data;
+    QDataStream stream( &data, QIODevice::WriteOnly );
+    stream.setVersion( QDataStream::Qt_4_0 );
+    stream << MagicServerProtocolCookie << ProtocolVersion << (quint8)type << v;
+    return data;
 }
 
 Server::~Server()
@@ -228,12 +258,28 @@ Server::~Server()
 void Server::handleTraceEntry( const TraceEntry &entry )
 {
     storeEntry( entry );
+
+    QByteArray serializedEntry = serializeGUIClientData( TraceEntryDatagram, entry );
+
+    QList<QTcpSocket *>::Iterator it, end = m_guiSockets.end();
+    for ( it = m_guiSockets.begin(); it != end; ++it ) {
+        ( *it )->write( serializedEntry );
+    }
+
     emit traceEntryReceived( entry );
 }
 
 void Server::handleShutdownEvent( const ProcessShutdownEvent &ev )
 {
     storeShutdownEvent( ev );
+
+    QByteArray serializedEvent = serializeGUIClientData( ProcessShutdownEventDatagram, ev );
+
+    QList<QTcpSocket *>::Iterator it, end = m_guiSockets.end();
+    for ( it = m_guiSockets.begin(); it != end; ++it ) {
+        ( *it )->write( serializedEvent );
+    }
+
     emit processShutdown( ev );
 }
 
@@ -536,5 +582,135 @@ QList<TracedApplicationInfo> Server::tracedApplications() const
         l.append( info );
     }
     return l;
+}
+
+void Server::handleNewGUIConnection()
+{
+    QTcpSocket *guiSocket = m_guiServer->nextPendingConnection();
+    m_guiSockets.append( guiSocket );
+
+    connect( guiSocket, SIGNAL( disconnected() ),
+             m_guiSocketSignalMapper, SLOT( map() ) );
+    m_guiSocketSignalMapper->setMapping( guiSocket, guiSocket );
+
+    guiSocket->write( serializeGUIClientData( TraceFileNameDatagram, m_traceFile ) );
+}
+
+void Server::guiSocketDisconnected( QObject *sock )
+{
+    QTcpSocket *guiSocket = qobject_cast<QTcpSocket *>( sock );
+    assert( guiSocket != 0 );
+    m_guiSockets.removeAll( guiSocket );
+    guiSocket->deleteLater();
+}
+
+QDataStream &operator<<( QDataStream &stream, const TraceEntry &entry )
+{
+    return stream << (quint32)entry.pid
+        << entry.processStartTime
+        << entry.processName
+        << (quint32)entry.tid
+        << entry.timestamp
+        << (quint8)entry.verbosity
+        << (quint8)entry.type
+        << entry.path
+        << (quint32)entry.lineno
+        << entry.groupName
+        << entry.function
+        << entry.message
+        << entry.variables
+        << entry.backtrace
+        << (quint64)entry.stackPosition;
+}
+
+QDataStream &operator>>( QDataStream &stream, TraceEntry &entry )
+{
+    quint32 pid, tid, lineno;
+    quint8 verbosity, type;
+    quint64 stackPosition;
+
+    stream >> pid
+        >> entry.processStartTime
+        >> entry.processName
+        >> tid
+        >> entry.timestamp
+        >> verbosity
+        >> type
+        >> entry.path
+        >> lineno
+        >> entry.groupName
+        >> entry.function
+        >> entry.message
+        >> entry.variables
+        >> entry.backtrace
+        >> stackPosition;
+
+    entry.pid = pid;
+    entry.tid = tid;
+    entry.lineno = lineno;
+    entry.verbosity = verbosity;
+    entry.type = type;
+    entry.stackPosition = stackPosition;
+
+    return stream;
+}
+
+QDataStream &operator<<( QDataStream &stream, const ProcessShutdownEvent &ev )
+{
+    return stream << (quint32)ev.pid
+        << ev.startTime
+        << ev.stopTime
+        << ev.name;
+}
+
+QDataStream &operator>>( QDataStream &stream, ProcessShutdownEvent &ev )
+{
+    quint32 pid;
+    stream >> pid
+        >> ev.startTime
+        >> ev.stopTime
+        >> ev.name;
+    ev.pid = pid;
+    return stream;
+}
+
+QDataStream &operator<<( QDataStream &stream, const StackFrame &entry )
+{
+    return stream << entry.module
+        << entry.function
+        << (quint64)entry.functionOffset
+        << entry.sourceFile
+        << (quint32)entry.lineNumber;
+}
+
+QDataStream &operator>>( QDataStream &stream, StackFrame &entry )
+{
+    quint64 functionOffset;
+    quint32 lineNumber;
+    stream >> entry.module
+        >> entry.function
+        >> functionOffset
+        >> entry.sourceFile
+        >> lineNumber;
+    entry.functionOffset = functionOffset;
+    entry.lineNumber = lineNumber;
+    return stream;
+}
+
+QDataStream &operator<<( QDataStream &stream, const Variable &entry )
+{
+    return stream << entry.name
+        << (quint8)entry.type
+        << entry.value;
+}
+
+QDataStream &operator>>( QDataStream &stream, Variable &entry )
+{
+    quint8 type;
+    stream >> entry.name
+        >> type
+        >> entry.value;
+    entry.type = (TRACELIB_NAMESPACE_IDENT(VariableType)::Value)type;
+    return stream;
 }
 

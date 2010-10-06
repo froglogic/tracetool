@@ -20,6 +20,8 @@
 
 #include "../hooklib/tracelib.h"
 
+class QSignalMapper;
+
 struct StackFrame
 {
     QString module;
@@ -29,12 +31,18 @@ struct StackFrame
     size_t lineNumber;
 };
 
+QDataStream &operator<<( QDataStream &stream, const StackFrame &entry );
+QDataStream &operator>>( QDataStream &stream, StackFrame &entry );
+
 struct Variable
 {
     QString name;
     TRACELIB_NAMESPACE_IDENT(VariableType)::Value type;
     QString value;
 };
+
+QDataStream &operator<<( QDataStream &stream, const Variable &entry );
+QDataStream &operator>>( QDataStream &stream, Variable &entry );
 
 struct TraceEntry
 {
@@ -55,6 +63,9 @@ struct TraceEntry
     unsigned long stackPosition;
 };
 
+QDataStream &operator<<( QDataStream &stream, const TraceEntry &entry );
+QDataStream &operator>>( QDataStream &stream, TraceEntry &entry );
+
 struct ProcessShutdownEvent
 {
     unsigned int pid;
@@ -62,6 +73,9 @@ struct ProcessShutdownEvent
     QDateTime stopTime;
     QString name;
 };
+
+QDataStream &operator<<( QDataStream &stream, const ProcessShutdownEvent &ev );
+QDataStream &operator>>( QDataStream &stream, ProcessShutdownEvent &ev );
 
 struct TracedApplicationInfo
 {
@@ -117,6 +131,13 @@ private:
     QList<NetworkingThread *> m_networkingThreads;
 };
 
+extern const quint32 MagicServerProtocolCookie;
+enum ServerDatagramType {
+    TraceFileNameDatagram,
+    TraceEntryDatagram,
+    ProcessShutdownEventDatagram
+};
+
 class XmlContentHandler;
 
 class Server : public QObject
@@ -125,7 +146,8 @@ class Server : public QObject
 
     Q_OBJECT
 public:
-    Server( QSqlDatabase database, unsigned short port,
+    Server( const QString &traceFile,
+            QSqlDatabase database, unsigned short port,
             QObject *parent = 0 );
     virtual ~Server();
 
@@ -143,6 +165,10 @@ signals:
     void traceEntryReceived( const TraceEntry &e );
     void processShutdown( const ProcessShutdownEvent &e );
 
+private slots:
+    void handleNewGUIConnection();
+    void guiSocketDisconnected( QObject *socket );
+
 private:
     void storeEntry( const TraceEntry &e );
     void storeShutdownEvent( const ProcessShutdownEvent &ev );
@@ -153,12 +179,16 @@ private:
     template <typename T>
     QString formatValue( const T &v ) const;
 
+    QTcpServer *m_guiServer;
     ServerSocket *m_tcpServer;
     QSqlDatabase m_db;
     XmlContentHandler *m_xmlHandler;
     QXmlSimpleReader m_xmlReader;
     QXmlInputSource m_xmlInput;
     bool m_receivedData;
+    QString m_traceFile;
+    QSignalMapper *m_guiSocketSignalMapper;
+    QList<QTcpSocket *> m_guiSockets;
 };
 
 #endif // !defined(TRACE_SERVER_H)

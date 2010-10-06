@@ -83,7 +83,7 @@ int main( int argc, char **argv )
         return Error::Database;
     }
 
-    Server server(database, port);
+    Server server(traceFile, database, port);
 
     return app.exec();
 }
