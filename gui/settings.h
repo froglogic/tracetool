@@ -35,7 +35,13 @@ public:
     // [Server]
     void setServerPort(int port) { m_serverPort = port; }
     int serverPort() const { return m_serverPort; }
-    
+
+    bool startServerAutomatically() const { return m_serverStartedAutomatically; }
+    void setStartServerAutomatically(bool b) { m_serverStartedAutomatically = b; }
+
+    QString serverOutputFile() const { return m_serverOutputFile; }
+    void setServerOutputFile( const QString &fn ) { m_serverOutputFile = fn; }
+
     void setSoftLimit(int bytes);
     int softLimit() const { return m_softLimit; }
 
@@ -64,6 +70,8 @@ private:
     ColumnsInfo *m_columnsInfo;
     int m_softLimit, m_hardLimit;
     QStringList m_configFiles;
+    bool m_serverStartedAutomatically;
+    QString m_serverOutputFile;
 };
 
 #endif

@@ -64,6 +64,8 @@ bool Settings::save() const
     // [Server]
     qs.beginGroup(serverGroup);
     qs.setValue("Port", m_serverPort);
+    qs.setValue("Start Automatically", m_serverStartedAutomatically);
+    qs.setValue("Output File", m_serverOutputFile);
     qs.endGroup();
 
     qs.sync();
@@ -90,6 +92,8 @@ bool Settings::load()
     // [Server]
     qs.beginGroup(serverGroup);
     m_serverPort = qs.value("Port", TRACELIB_DEFAULT_PORT).toInt();
+    m_serverStartedAutomatically = qs.value("Start Automatically", true).toBool();
+    m_serverOutputFile = qs.value("Output File", QString()).toString();
 
     qs.endGroup();
 

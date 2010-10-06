@@ -6,12 +6,15 @@
 #include "storageview.h"
 
 #include <QDir>
+#include <QFileDialog>
 #include <QFileInfo>
 
 StorageView::StorageView(Settings *settings, QWidget *parent)
     : m_settings(settings)
 {
     setupUi(this);
+
+    connect(traceFileBrowseButton, SIGNAL(clicked()), SLOT(browseForTraceFile()));
 
     restoreSettings();
 }
@@ -26,6 +29,9 @@ void StorageView::saveSettings()
 {
     m_settings->setSoftLimit(softLimitSpin->value());
     m_settings->setHardLimit(hardLimitSpin->value());
+    m_settings->setStartServerAutomatically(startServerAutomaticallyButton->isChecked());
+    m_settings->setServerPort(serverPort->value());
+    m_settings->setServerOutputFile(QDir::fromNativeSeparators(traceFileEdit->text()));
 }
 
 void StorageView::restoreSettings()
@@ -43,4 +49,26 @@ void StorageView::restoreSettings()
     } else {
         currentFile->setText(fi.fileName());
     }
+
+    // server
+    if (m_settings->startServerAutomatically()) {
+        startServerAutomaticallyButton->setChecked(true);
+    } else {
+        connectToServerButton->setChecked(true);
+    }
+    serverPort->setValue(m_settings->serverPort());
+    traceFileEdit->setText(QDir::toNativeSeparators(m_settings->serverOutputFile()));
 }
+
+void StorageView::browseForTraceFile()
+{
+    QString fn = QFileDialog::getSaveFileName(
+            this,
+            tr("Server Output File"),
+            QString(),
+            tr("Trace Files (*.trace)"));
+    if (!fn.isEmpty()) {
+        traceFileEdit->setText(QDir::toNativeSeparators(fn));
+    }
+}
+

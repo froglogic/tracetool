@@ -20,6 +20,9 @@ public:
 
     void restoreSettings();
 
+private slots:
+    void browseForTraceFile();
+
 private:
     void saveSettings();
 
