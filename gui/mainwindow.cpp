@@ -120,7 +120,7 @@ bool MainWindow::setDatabase(const QString &databaseFileName, QString *errMsg)
         return false;
 
     m_server = new Server(databaseFileName, m_db, m_settings->serverPort(), this);
-    m_filterForm->setTraceKeys( m_server->seenGroupIds() );
+    m_filterForm->setTraceKeys(Database::seenGroupIds(m_db));
 
     m_entryItemModel = new EntryItemModel(m_settings->entryFilter(),
                                           m_settings->columnsInfo(), this);
@@ -136,7 +136,7 @@ bool MainWindow::setDatabase(const QString &databaseFileName, QString *errMsg)
         return false;
     }
 
-    m_applicationTable->setApplications(m_server->tracedApplications());
+    m_applicationTable->setApplications(Database::tracedApplications(m_db));
 
     connect(m_server, SIGNAL(traceEntryReceived(const TraceEntry &)),
             m_entryItemModel, SLOT(handleNewTraceEntry(const TraceEntry &)));
@@ -334,7 +334,7 @@ void MainWindow::updateColumns()
 
 void MainWindow::clearTracePoints()
 {
-    m_server->trimTo( 0 );
+    Database::trimTo(m_db, 0);
     m_entryItemModel->reApplyFilter();
     m_watchTree->reApplyFilter();
     m_filterForm->setTraceKeys( QStringList() );
@@ -344,7 +344,7 @@ void MainWindow::clearTracePoints()
 void MainWindow::traceEntryDoubleClicked(const QModelIndex &index)
 {
     const unsigned int id = m_entryItemModel->idForIndex(index);
-    const QList<StackFrame> backtrace = m_server->backtraceForEntry( id );
+    const QList<StackFrame> backtrace = Database::backtraceForEntry(m_db, id);
     if ( backtrace.isEmpty() ) {
         QMessageBox::information( this,
                                   tr( "Backtrace" ),
@@ -377,15 +377,15 @@ void MainWindow::traceEntryDoubleClicked(const QModelIndex &index)
 void MainWindow::toolBoxPageChanged( int index )
 {
     if ( index == 0 && m_server ) {
-        m_filterForm->setTraceKeys( m_server->seenGroupIds() );
+        m_filterForm->setTraceKeys( Database::seenGroupIds( m_db ) );
     }
 }
 
 void MainWindow::addNewTraceKey( const QString &id )
 {
     if ( m_server ) {
-        m_server->addGroupId(id);
-        m_filterForm->setTraceKeys( m_server->seenGroupIds() );
+        Database::addGroupId( m_db, id );
+        m_filterForm->setTraceKeys( Database::seenGroupIds( m_db ) );
     }
 }
 

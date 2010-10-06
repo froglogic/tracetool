@@ -21,6 +21,35 @@ public:
         : runtime_error(what.toUtf8().constData()) { }
 };
 
+Transaction::Transaction( QSqlDatabase db )
+    : m_query( db ),
+    m_commitChanges( true )
+{
+    m_query.setForwardOnly( true );
+    m_query.exec( "BEGIN TRANSACTION;" );
+}
+
+Transaction::~Transaction()
+{
+    m_query.exec( m_commitChanges ? "COMMIT;" : "ROLLBACK;" );
+}
+
+QVariant Transaction::exec( const QString &statement )
+{
+    if ( !m_query.exec( statement ) ) {
+        m_commitChanges = false;
+
+        const QString msg = QString( "Failed to store entry in database: executing SQL command '%1' failed: %2" )
+            .arg( statement )
+            .arg( m_query.lastError().text() );
+        throw Qruntime_error( msg );
+    }
+    if ( m_query.next() ) {
+        return m_query.value( 0 );
+    }
+    return QVariant();
+}
+
 const int Database::expectedVersion = 3;
 
 static const char * const schemaStatements[] = {
@@ -343,3 +372,137 @@ bool Database::isValidFileName(const QString &fileName,
 
     return true;
 }
+
+QList<StackFrame> Database::backtraceForEntry(QSqlDatabase db,
+                                              unsigned int entryId)
+{
+    const QString statement = QString(
+                      "SELECT"
+                      " module_name,"
+                      " function_name,"
+                      " offset,"
+                      " file_name,"
+                      " line "
+                      "FROM"
+                      " stackframe "
+                      "WHERE"
+                      " trace_entry_id=%1 "
+                      "ORDER BY"
+                      " depth" ).arg( entryId );
+
+    QSqlQuery q( db );
+    q.setForwardOnly( true );
+    if ( !q.exec( statement ) ) {
+        const QString msg = QString( "Failed to retrieve backtrace for trace entry: executing SQL command '%1' failed: %2" )
+                        .arg( statement )
+                        .arg( q.lastError().text() );
+        throw Qruntime_error( msg );
+    }
+
+    QList<StackFrame> frames;
+    while ( q.next() ) {
+        StackFrame f;
+        f.module = q.value( 0 ).toString();
+        f.function = q.value( 1 ).toString();
+        f.functionOffset = q.value( 2 ).toUInt();
+        f.sourceFile = q.value( 3 ).toString();
+        f.lineNumber = q.value( 4 ).toUInt();
+        frames.append( f );
+    }
+
+    return frames;
+}
+
+QStringList Database::seenGroupIds(QSqlDatabase db)
+{
+    const QString statement = QString(
+                      "SELECT"
+                      " name "
+                      "FROM"
+                      " trace_point_group;" );
+
+    QSqlQuery q( db );
+    q.setForwardOnly( true );
+    if ( !q.exec( statement ) ) {
+        const QString msg = QString( "Failed to retrieve list of available trace groups: executing SQL command '%1' failed: %2" )
+                        .arg( statement )
+                        .arg( q.lastError().text() );
+        throw Qruntime_error( msg );
+    }
+
+    QStringList l;
+    while ( q.next() ) {
+        l.append( q.value( 0 ).toString() );
+    }
+    return l;
+}
+
+void Database::addGroupId(QSqlDatabase db, const QString &id)
+{
+    Transaction transaction( db );
+    if ( !transaction.exec( QString( "SELECT id FROM trace_point_group WHERE name=%1;" ).arg( formatValue( db, id ) ) ).isValid() ) {
+        transaction.exec( QString( "INSERT INTO trace_point_group VALUES(NULL, %1);" ).arg( formatValue( db, id ) ) );
+    }
+}
+
+void Database::trimTo(QSqlDatabase db, size_t nMostRecent)
+{
+    /* Special handling in case we want to remove all entries from
+     * the database; these simple DELETE FROM statements are
+     * recognized by sqlite and they run much faster than those
+     * with a WHERE clause.
+     */
+    if ( nMostRecent == 0 ) {
+        Transaction transaction( db );
+        transaction.exec( "DELETE FROM trace_entry;" );
+        transaction.exec( "DELETE FROM trace_point;" );
+        transaction.exec( "DELETE FROM function_name;" );
+        transaction.exec( "DELETE FROM path_name;" );
+        transaction.exec( "DELETE FROM process;" );
+        transaction.exec( "DELETE FROM traced_thread;" );
+        transaction.exec( "DELETE FROM variable;" );
+        transaction.exec( "DELETE FROM stackframe;" );
+#if 0 // cache for the user's convenenience
+        transaction.exec( "DELETE FROM trace_point_group;" );
+#endif
+        return;
+    }
+    qWarning() << "Server::trimTo: deleting all but the n most recent trace "
+                  "entries not implemented yet!";
+}
+
+QList<TracedApplicationInfo> Database::tracedApplications(QSqlDatabase db)
+{
+    const QString statement = QString(
+                      "SELECT"
+                      " name,"
+                      " pid,"
+                      " start_time,"
+                      " end_time "
+                      "FROM"
+                      " process;" );
+
+    QSqlQuery q( db );
+    q.setForwardOnly( true );
+    if ( !q.exec( statement ) ) {
+        const QString msg = QString( "Failed to retrieve list of traced applications: executing SQL command '%1' failed: %2" )
+                        .arg( statement )
+                        .arg( q.lastError().text() );
+        throw Qruntime_error( msg );
+    }
+
+    QList<TracedApplicationInfo> l;
+    while ( q.next() ) {
+        TracedApplicationInfo info;
+        bool ok;
+        info.pid = q.value( 1 ).toUInt( &ok );
+        assert( ok );
+        info.startTime = QDateTime::fromString( q.value( 2 ).toString(), Qt::ISODate );
+        info.stopTime = QDateTime::fromString( q.value( 3 ).toString(), Qt::ISODate );
+        info.name = q.value( 0 ).toString();
+
+        l.append( info );
+    }
+    return l;
+}
+

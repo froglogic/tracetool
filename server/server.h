@@ -151,13 +151,6 @@ public:
             QObject *parent = 0 );
     virtual ~Server();
 
-    void trimTo( size_t nMostRecent );
-
-    QList<StackFrame> backtraceForEntry( unsigned int id );
-    void addGroupId( const QString &id );
-    QStringList seenGroupIds() const;
-    QList<TracedApplicationInfo> tracedApplications() const;
-
 public slots:
     void handleIncomingData(const QByteArray &data);
 
@@ -175,9 +168,6 @@ private:
     void handleDatagram( const QByteArray &datagram );
     void handleTraceEntry( const TraceEntry &e );
     void handleShutdownEvent( const ProcessShutdownEvent &ev );
-
-    template <typename T>
-    QString formatValue( const T &v ) const;
 
     QTcpServer *m_guiServer;
     ServerSocket *m_tcpServer;

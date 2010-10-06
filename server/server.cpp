@@ -13,9 +13,6 @@
 #include <QFileInfo>
 #include <QSignalMapper>
 #include <QSqlDatabase>
-#include <QSqlDriver>
-#include <QSqlError>
-#include <QSqlField>
 #include <QSqlQuery>
 #include <QVariant>
 
@@ -293,51 +290,6 @@ void Server::handleIncomingData( const QByteArray &xmlData )
     }
 }
 
-template <typename T>
-QString Server::formatValue( const T &v ) const
-{
-    const QVariant variant = QVariant::fromValue( v );
-    QSqlField field( QString(), variant.type() );
-    field.setValue( variant );
-    return m_db.driver()->formatValue( field );
-}
-
-class Transaction
-{
-public:
-    Transaction( QSqlDatabase db )
-        : m_query( db ), m_commitChanges( true ) {
-        m_query.setForwardOnly( true );
-        m_query.exec( "BEGIN TRANSACTION;" );
-    }
-
-    ~Transaction() {
-        m_query.exec( m_commitChanges ? "COMMIT;" : "ROLLBACK;" );
-    }
-
-    QVariant exec( const QString &statement ) {
-        if ( !m_query.exec( statement ) ) {
-            m_commitChanges = false;
-
-            const QString msg = QString( "Failed to store entry in database: executing SQL command '%1' failed: %2" )
-                            .arg( statement )
-                            .arg( m_query.lastError().text() );
-            throw runtime_error( msg.toLatin1().data() );
-        }
-        if ( m_query.next() ) {
-            return m_query.value( 0 );
-        }
-        return QVariant();
-    }
-
-private:
-    Transaction( const Transaction &other );
-    void operator=( const Transaction &rhs );
-
-    QSqlQuery m_query;
-    bool m_commitChanges;
-};
-
 void Server::storeEntry( const TraceEntry &e )
 {
     Transaction transaction( m_db );
@@ -345,9 +297,9 @@ void Server::storeEntry( const TraceEntry &e )
     unsigned int pathId;
     bool ok;
     {
-        QVariant v = transaction.exec( QString( "SELECT id FROM path_name WHERE name=%1;" ).arg( formatValue( e.path ) ) );
+        QVariant v = transaction.exec( QString( "SELECT id FROM path_name WHERE name=%1;" ).arg( Database::formatValue( m_db, e.path ) ) );
         if ( !v.isValid() ) {
-            transaction.exec( QString( "INSERT INTO path_name VALUES(NULL, %1);" ).arg( formatValue( e.path ) ) );
+            transaction.exec( QString( "INSERT INTO path_name VALUES(NULL, %1);" ).arg( Database::formatValue( m_db, e.path ) ) );
             v = transaction.exec( "SELECT last_insert_rowid() FROM path_name LIMIT 1;" );
         }
         pathId = v.toUInt( &ok );
@@ -358,9 +310,9 @@ void Server::storeEntry( const TraceEntry &e )
 
     unsigned int functionId;
     {
-        QVariant v = transaction.exec( QString( "SELECT id FROM function_name WHERE name=%1;" ).arg( formatValue( e.function ) ) );
+        QVariant v = transaction.exec( QString( "SELECT id FROM function_name WHERE name=%1;" ).arg( Database::formatValue( m_db, e.function ) ) );
         if ( !v.isValid() ) {
-            transaction.exec( QString( "INSERT INTO function_name VALUES(NULL, %1);" ).arg( formatValue( e.function ) ) );
+            transaction.exec( QString( "INSERT INTO function_name VALUES(NULL, %1);" ).arg( Database::formatValue( m_db, e.function ) ) );
             v = transaction.exec( "SELECT last_insert_rowid() FROM function_name LIMIT 1;" );
         }
         functionId = v.toUInt( &ok );
@@ -371,9 +323,9 @@ void Server::storeEntry( const TraceEntry &e )
 
     unsigned int processId;
     {
-        QVariant v = transaction.exec( QString( "SELECT id FROM process WHERE pid=%1 AND start_time=%2;" ).arg( e.pid ).arg( formatValue( e.processStartTime ) ) );
+        QVariant v = transaction.exec( QString( "SELECT id FROM process WHERE pid=%1 AND start_time=%2;" ).arg( e.pid ).arg( Database::formatValue( m_db, e.processStartTime ) ) );
         if ( !v.isValid() ) {
-            transaction.exec( QString( "INSERT INTO process VALUES(NULL, %1, %2, %3, 0);" ).arg( formatValue( e.processName ) ).arg( e.pid ).arg( formatValue( e.processStartTime ) ) );
+            transaction.exec( QString( "INSERT INTO process VALUES(NULL, %1, %2, %3, 0);" ).arg( Database::formatValue( m_db, e.processName ) ).arg( e.pid ).arg( Database::formatValue( m_db, e.processStartTime ) ) );
             v = transaction.exec( "SELECT last_insert_rowid() FROM process LIMIT 1;" );
         }
         processId = v.toUInt( &ok );
@@ -397,9 +349,9 @@ void Server::storeEntry( const TraceEntry &e )
 
     unsigned int groupId = 0;
     if ( !e.groupName.isNull() ) {
-        QVariant v = transaction.exec( QString( "SELECT id FROM trace_point_group WHERE name=%1;" ).arg( formatValue( e.groupName ) ) );
+        QVariant v = transaction.exec( QString( "SELECT id FROM trace_point_group WHERE name=%1;" ).arg( Database::formatValue( m_db, e.groupName ) ) );
         if ( !v.isValid() ) {
-            transaction.exec( QString( "INSERT INTO trace_point_group VALUES(NULL, %1);" ).arg( formatValue( e.groupName ) ) );
+            transaction.exec( QString( "INSERT INTO trace_point_group VALUES(NULL, %1);" ).arg( Database::formatValue( m_db, e.groupName ) ) );
             v = transaction.exec( "SELECT last_insert_rowid() FROM trace_point_group LIMIT 1;" );
         }
         groupId = v.toUInt( &ok );
@@ -423,16 +375,16 @@ void Server::storeEntry( const TraceEntry &e )
 
     transaction.exec( QString( "INSERT INTO trace_entry VALUES(NULL, %1, %2, %3, %4, %5)" )
                     .arg( tracedThreadId )
-                    .arg( formatValue( e.timestamp ) )
+                    .arg( Database::formatValue( m_db, e.timestamp ) )
                     .arg( tracepointId )
-                    .arg( formatValue( e.message ) )
+                    .arg( Database::formatValue( m_db, e.message ) )
                     .arg( e.stackPosition ) );
     const unsigned int traceentryId = transaction.exec( "SELECT last_insert_rowid() FROM trace_entry LIMIT 1;" ).toUInt();
 
     {
         QList<Variable>::ConstIterator it, end = e.variables.end();
         for ( it = e.variables.begin(); it != end; ++it ) {
-            transaction.exec( QString( "INSERT INTO variable VALUES(%1, %2, %3, %4);" ).arg( traceentryId ).arg( formatValue( it->name ) ).arg( formatValue( it->value ) ).arg( it->type ) );
+            transaction.exec( QString( "INSERT INTO variable VALUES(%1, %2, %3, %4);" ).arg( traceentryId ).arg( Database::formatValue( m_db, it->name ) ).arg( Database::formatValue( m_db, it->value ) ).arg( it->type ) );
         }
     }
 
@@ -440,7 +392,7 @@ void Server::storeEntry( const TraceEntry &e )
         unsigned int depthCount = 0;
         QList<StackFrame>::ConstIterator it, end = e.backtrace.end();
         for ( it = e.backtrace.begin(); it != end; ++it, ++depthCount ) {
-            transaction.exec( QString( "INSERT INTO stackframe VALUES(%1, %2, %3, %4, %5, %6, %7);" ).arg( traceentryId ).arg( depthCount ).arg( formatValue( it->module ) ).arg( formatValue( it->function ) ).arg( it->functionOffset ).arg( formatValue( it->sourceFile ) ).arg( it->lineNumber ) );
+            transaction.exec( QString( "INSERT INTO stackframe VALUES(%1, %2, %3, %4, %5, %6, %7);" ).arg( traceentryId ).arg( depthCount ).arg( Database::formatValue( m_db, it->module ) ).arg( Database::formatValue( m_db, it->function ) ).arg( it->functionOffset ).arg( Database::formatValue( m_db, it->sourceFile ) ).arg( it->lineNumber ) );
         }
     }
 }
@@ -448,140 +400,7 @@ void Server::storeEntry( const TraceEntry &e )
 void Server::storeShutdownEvent( const ProcessShutdownEvent &ev )
 {
     Transaction transaction( m_db );
-    transaction.exec( QString( "UPDATE process SET end_time=%1 WHERE pid=%2 AND start_time=%3;" ).arg( formatValue( ev.stopTime ) ).arg( ev.pid ).arg( formatValue( ev.startTime ) ) );
-}
-
-void Server::trimTo( size_t nMostRecent )
-{
-    /* Special handling in case we want to remove all entries from
-     * the database; these simple DELETE FROM statements are
-     * recognized by sqlite and they run much faster than those
-     * with a WHERE clause.
-     */
-    if ( nMostRecent == 0 ) {
-        Transaction transaction( m_db );
-        transaction.exec( "DELETE FROM trace_entry;" );
-        transaction.exec( "DELETE FROM trace_point;" );
-        transaction.exec( "DELETE FROM function_name;" );
-        transaction.exec( "DELETE FROM path_name;" );
-        transaction.exec( "DELETE FROM process;" );
-        transaction.exec( "DELETE FROM traced_thread;" );
-        transaction.exec( "DELETE FROM variable;" );
-        transaction.exec( "DELETE FROM stackframe;" );
-#if 0 // cache for the user's convenenience
-        transaction.exec( "DELETE FROM trace_point_group;" );
-#endif
-        return;
-    }
-    qWarning() << "Server::trimTo: deleting all but the n most recent trace "
-                  "entries not implemented yet!";
-}
-
-QList<StackFrame> Server::backtraceForEntry( unsigned int id )
-{
-    const QString statement = QString(
-                      "SELECT"
-                      " module_name,"
-                      " function_name,"
-                      " offset,"
-                      " file_name,"
-                      " line "
-                      "FROM"
-                      " stackframe "
-                      "WHERE"
-                      " trace_entry_id=%1 "
-                      "ORDER BY"
-                      " depth" ).arg( id );
-
-    QSqlQuery q( m_db );
-    q.setForwardOnly( true );
-    if ( !q.exec( statement ) ) {
-        const QString msg = QString( "Failed to retrieve backtrace for trace entry: executing SQL command '%1' failed: %2" )
-                        .arg( statement )
-                        .arg( q.lastError().text() );
-        throw runtime_error( msg.toUtf8().constData() );
-    }
-
-    QList<StackFrame> frames;
-    while ( q.next() ) {
-        StackFrame f;
-        f.module = q.value( 0 ).toString();
-        f.function = q.value( 1 ).toString();
-        f.functionOffset = q.value( 2 ).toUInt();
-        f.sourceFile = q.value( 3 ).toString();
-        f.lineNumber = q.value( 4 ).toUInt();
-        frames.append( f );
-    }
-
-    return frames;
-}
-
-void Server::addGroupId( const QString &id )
-{
-    Transaction transaction( m_db );
-    if ( !transaction.exec( QString( "SELECT id FROM trace_point_group WHERE name=%1;" ).arg( formatValue( id ) ) ).isValid() ) {
-        transaction.exec( QString( "INSERT INTO trace_point_group VALUES(NULL, %1);" ).arg( formatValue( id ) ) );
-        return;
-    }
-}
-
-QStringList Server::seenGroupIds() const
-{
-    const QString statement = QString(
-                      "SELECT"
-                      " name "
-                      "FROM"
-                      " trace_point_group;" );
-
-    QSqlQuery q( m_db );
-    q.setForwardOnly( true );
-    if ( !q.exec( statement ) ) {
-        const QString msg = QString( "Failed to retrieve list of available trace groups: executing SQL command '%1' failed: %2" )
-                        .arg( statement )
-                        .arg( q.lastError().text() );
-        throw runtime_error( msg.toUtf8().constData() );
-    }
-
-    QStringList l;
-    while ( q.next() ) {
-        l.append( q.value( 0 ).toString() );
-    }
-    return l;
-}
-
-QList<TracedApplicationInfo> Server::tracedApplications() const
-{
-    const QString statement = QString(
-                      "SELECT"
-                      " name,"
-                      " pid,"
-                      " start_time,"
-                      " end_time "
-                      "FROM"
-                      " process;" );
-
-    QSqlQuery q( m_db );
-    q.setForwardOnly( true );
-    if ( !q.exec( statement ) ) {
-        const QString msg = QString( "Failed to retrieve list of traced applications: executing SQL command '%1' failed: %2" )
-                        .arg( statement )
-                        .arg( q.lastError().text() );
-        throw runtime_error( msg.toUtf8().constData() );
-    }
-
-    QList<TracedApplicationInfo> l;
-    while ( q.next() ) {
-        TracedApplicationInfo info;
-        bool ok;
-        info.pid = q.value( 1 ).toUInt( &ok );
-        assert( ok );
-        info.startTime = QDateTime::fromString( q.value( 2 ).toString(), Qt::ISODate );
-        info.stopTime = QDateTime::fromString( q.value( 3 ).toString(), Qt::ISODate );
-        info.name = q.value( 0 ).toString();
-
-        l.append( info );
-    }
-    return l;
+    transaction.exec( QString( "UPDATE process SET end_time=%1 WHERE pid=%2 AND start_time=%3;" ).arg( Database::formatValue( m_db, ev.stopTime ) ).arg( ev.pid ).arg( Database::formatValue( m_db, ev.startTime ) ) );
 }
 
 void Server::handleNewGUIConnection()
