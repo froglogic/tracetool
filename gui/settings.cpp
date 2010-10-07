@@ -62,10 +62,10 @@ bool Settings::save() const
 
     // [Server]
     qs.beginGroup(serverGroup);
-    qs.setValue("GUI Port", m_serverGUIPort);
-    qs.setValue("Trace Port", m_serverTracePort);
-    qs.setValue("Start Automatically", m_serverStartedAutomatically);
-    qs.setValue("Output File", m_databaseFile);
+    qs.setValue("GUIPort", m_serverGUIPort);
+    qs.setValue("TracePort", m_serverTracePort);
+    qs.setValue("StartAutomatically", m_serverStartedAutomatically);
+    qs.setValue("OutputFile", m_databaseFile);
     qs.endGroup();
 
     qs.sync();
@@ -90,10 +90,10 @@ bool Settings::load()
 
     // [Server]
     qs.beginGroup(serverGroup);
-    m_serverGUIPort = qs.value("GUI Port", TRACELIB_DEFAULT_PORT).toInt();
-    m_serverTracePort = qs.value("Trace Port", m_serverGUIPort + 1).toInt();
-    m_serverStartedAutomatically = qs.value("Start Automatically", true).toBool();
-    m_databaseFile = qs.value("Output File", QString()).toString();
+    m_serverGUIPort = qs.value("GUIPort", TRACELIB_DEFAULT_PORT).toInt();
+    m_serverTracePort = qs.value("TracePort", m_serverGUIPort + 1).toInt();
+    m_serverStartedAutomatically = qs.value("StartAutomatically", true).toBool();
+    m_databaseFile = qs.value("OutputFile", QString()).toString();
 
     qs.endGroup();
 
