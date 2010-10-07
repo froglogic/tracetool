@@ -8,6 +8,7 @@
 
 #include <QMainWindow>
 #include <QSqlDatabase>
+#include <QTcpSocket>
 #include "ui_mainwindow.h"
 #include "settings.h"
 
@@ -17,6 +18,25 @@ class Server;
 class WatchTree;
 class FilterForm;
 class QModelIndex;
+struct TraceEntry;
+struct ProcessShutdownEvent;
+class QLabel;
+class QProcess;
+
+class ServerSocket : public QTcpSocket
+{
+    Q_OBJECT
+public:
+    ServerSocket(QObject *parent = 0);
+
+signals:
+    void traceFileNameReceived(const QString &fn);
+    void traceEntryReceived(const TraceEntry &entry);
+    void processShutdown(const ProcessShutdownEvent &ev);
+
+private slots:
+    void handleIncomingData();
+};
 
 class MainWindow : public QMainWindow, private Ui::MainWindow,
                    public RestorableObject
@@ -27,9 +47,13 @@ public:
                         QWidget *parent = 0, Qt::WindowFlags flags = 0);
     virtual ~MainWindow();
 
+    void postRestore();
+    void connectToServer();
+
     bool setDatabase(const QString &databaseFileName, QString *errMsg);
 
-    void postRestore();
+public slots:
+    void setDatabase(const QString &databaseFileName);
     
 protected:
     // from RestorableObject interface
@@ -51,6 +75,8 @@ private slots:
     void traceEntryDoubleClicked(const QModelIndex &index);
     void toolBoxPageChanged(int index);
     void addNewTraceKey(const QString &id);
+    void handleConnectionError(QAbstractSocket::SocketError error);
+    void serverSocketDisconnected();
 
 private:
     bool openConfigurationFile(const QString &fileName);
@@ -61,9 +87,11 @@ private:
     EntryItemModel* m_entryItemModel;
     WatchTree* m_watchTree;
     FilterForm *m_filterForm;
-    Server *m_server;
+    ServerSocket *m_serverSocket;
     QMenu *m_configFilesMenu;
     ApplicationTable *m_applicationTable;
+    QLabel *m_connectionStatusLabel;
+    QProcess *m_automaticServerProcess;
 };
 
 #endif

@@ -6,7 +6,7 @@
 #ifndef APPLICATIONTABLE_H
 #define APPLICATIONTABLE_H
 
-#include "../server/server.h"
+#include "../server/database.h"
 
 #include <QDateTime>
 #include <QList>

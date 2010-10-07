@@ -27,7 +27,7 @@ using namespace std;
 static void printUsage(const string &app)
 {
     cout << "Usage: " << app << " --help" << endl
-         << "       " << app << " [--port <port>] <.trace-file>" << endl;
+         << "       " << app << " <.trace-file>" << endl;
 }
 
 int main(int argc, char **argv)
@@ -36,9 +36,8 @@ int main(int argc, char **argv)
 
     GetOpt opt;
     bool help;
-    QString traceFile, portStr;
+    QString traceFile;
     opt.addSwitch("help", &help);
-    opt.addOption('p', "port", &portStr);
     opt.addOptionalArgument("trace_file", &traceFile);
     if (!opt.parse()) {
         cout << "Invalid command line argument. Try --help." << endl;
@@ -55,25 +54,12 @@ int main(int argc, char **argv)
         cout << errMsg.toLocal8Bit().constData() << endl;
         return Error::CommandLineArgs;
     }
-    int portOverride = -1;
-    if (!portStr.isEmpty()) {
-        bool ok;
-        portOverride = portStr.toInt(&ok);
-        if (!ok) {
-            cout << "Invalid port number '"
-                 << portStr.toLocal8Bit().constData()
-                 << "' given." << endl;
-            return Error::CommandLineArgs;
-        }
-    }
 
     Settings settings;
 
     // respect overrides from command line
     if (!traceFile.isEmpty())
         settings.setDatabaseFile(traceFile);
-    if (portOverride != -1 )
-        settings.setServerPort(portOverride);
 
     MainWindow mw(&settings);
 
@@ -82,12 +68,14 @@ int main(int argc, char **argv)
     // ### ugly
     mw.postRestore();
 
-    if (!settings.databaseFile().isEmpty()) {
-        if (!mw.setDatabase(settings.databaseFile(), &errMsg)) {
+    if (!traceFile.isEmpty()) {
+        if (!mw.setDatabase(traceFile, &errMsg)) {
             QMessageBox::critical(0, "Database error",
                                   errMsg);
             return Error::Open;
         }
+    } else {
+        mw.connectToServer();
     }
 
     mw.show();

@@ -30,8 +30,9 @@ void StorageView::saveSettings()
     m_settings->setSoftLimit(softLimitSpin->value());
     m_settings->setHardLimit(hardLimitSpin->value());
     m_settings->setStartServerAutomatically(startServerAutomaticallyButton->isChecked());
-    m_settings->setServerPort(serverPort->value());
-    m_settings->setServerOutputFile(QDir::fromNativeSeparators(traceFileEdit->text()));
+    m_settings->setServerGUIPort(serverPort->value());
+    m_settings->setServerTracePort(serverTracePort->value());
+    m_settings->setDatabaseFile(QDir::fromNativeSeparators(traceFileEdit->text()));
 }
 
 void StorageView::restoreSettings()
@@ -40,24 +41,15 @@ void StorageView::restoreSettings()
     softLimitSpin->setValue(m_settings->softLimit());
     hardLimitSpin->setValue(m_settings->hardLimit());
 
-    // current file
-    QFileInfo fi(m_settings->databaseFile()); // ### let Settings do that
-    if (fi.exists()) {
-        currentFile->setText(QDir::toNativeSeparators(fi.absoluteFilePath()));
-        // ### note life
-        currentSize->setText(QString("%1 Bytes").arg(fi.size()));
-    } else {
-        currentFile->setText(fi.fileName());
-    }
-
     // server
     if (m_settings->startServerAutomatically()) {
         startServerAutomaticallyButton->setChecked(true);
     } else {
         connectToServerButton->setChecked(true);
     }
-    serverPort->setValue(m_settings->serverPort());
-    traceFileEdit->setText(QDir::toNativeSeparators(m_settings->serverOutputFile()));
+    serverPort->setValue(m_settings->serverGUIPort());
+    serverTracePort->setValue(m_settings->serverTracePort());
+    traceFileEdit->setText(QDir::toNativeSeparators(m_settings->databaseFile()));
 }
 
 void StorageView::browseForTraceFile()

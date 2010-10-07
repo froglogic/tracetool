@@ -33,14 +33,14 @@ public:
     QString databaseFile() const { return m_databaseFile; }
 
     // [Server]
-    void setServerPort(int port) { m_serverPort = port; }
-    int serverPort() const { return m_serverPort; }
+    void setServerGUIPort(int port) { m_serverGUIPort = port; }
+    int serverGUIPort() const { return m_serverGUIPort; }
+
+    void setServerTracePort(int port) { m_serverTracePort = port; }
+    int serverTracePort() const { return m_serverTracePort; }
 
     bool startServerAutomatically() const { return m_serverStartedAutomatically; }
     void setStartServerAutomatically(bool b) { m_serverStartedAutomatically = b; }
-
-    QString serverOutputFile() const { return m_serverOutputFile; }
-    void setServerOutputFile( const QString &fn ) { m_serverOutputFile = fn; }
 
     void setSoftLimit(int bytes);
     int softLimit() const { return m_softLimit; }
@@ -65,13 +65,13 @@ private:
     QMap<QString, RestorableObject*> m_restorables;
 
     QString m_databaseFile;
-    int m_serverPort;
+    int m_serverGUIPort;
+    int m_serverTracePort;
     EntryFilter* m_entryFilter;
     ColumnsInfo *m_columnsInfo;
     int m_softLimit, m_hardLimit;
     QStringList m_configFiles;
     bool m_serverStartedAutomatically;
-    QString m_serverOutputFile;
 };
 
 #endif

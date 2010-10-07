@@ -18,12 +18,60 @@
 #include "entryfilter.h"
 
 #include <cassert>
+#include <QtCore>
 #include <QtGui>
 #include <QtSql>
+#include <QtNetwork>
 
 #include "../hooklib/tracelib.h"
-#include "../server/server.h"
 #include "../server/database.h"
+#include "../server/datagramtypes.h"
+
+ServerSocket::ServerSocket(QObject *parent)
+    : QTcpSocket(parent)
+{
+    connect(this, SIGNAL(readyRead()), SLOT(handleIncomingData()));
+}
+
+void ServerSocket::handleIncomingData()
+{
+    QByteArray data = readAll();
+    QDataStream stream(&data, QIODevice::ReadOnly);
+
+    quint32 magicCookie;
+    stream >> magicCookie;
+    if (magicCookie != MagicServerProtocolCookie) {
+        disconnect();
+        return;
+    }
+
+    quint32 protocolVersion;
+    stream >> protocolVersion;
+    assert(protocolVersion == 1);
+
+    quint8 datagramType;
+    stream >> datagramType;
+    switch (static_cast<ServerDatagramType>(datagramType)) {
+        case TraceFileNameDatagram: {
+            QString traceFileName;
+            stream >> traceFileName;
+            emit traceFileNameReceived(traceFileName);
+            break;
+        }
+        case TraceEntryDatagram: {
+            TraceEntry te;
+            stream >> te;
+            emit traceEntryReceived(te);
+            break;
+        }
+        case ProcessShutdownEventDatagram: {
+            ProcessShutdownEvent ev;
+            stream >> ev;
+            emit processShutdown(ev);
+            break;
+        }
+    }
+}
 
 MainWindow::MainWindow(Settings *settings,
                        QWidget *parent, Qt::WindowFlags flags)
@@ -31,11 +79,16 @@ MainWindow::MainWindow(Settings *settings,
       m_settings(settings),
       m_entryItemModel(NULL),
       m_watchTree(NULL),
-      m_server(NULL),
-      m_applicationTable(NULL)
+      m_serverSocket(NULL),
+      m_applicationTable(NULL),
+      m_connectionStatusLabel(NULL),
+      m_automaticServerProcess(NULL)
 {
     setupUi(this);
     m_settings->registerRestorable("MainWindow", this);
+
+    m_connectionStatusLabel = new QLabel(tr("Not connected"));
+    statusBar()->addWidget(m_connectionStatusLabel);
 
     tracePointsSearchWidget->setFields( QStringList()
             << tr( "Application" )
@@ -100,16 +153,33 @@ MainWindow::~MainWindow()
 {
 }
 
+void MainWindow::setDatabase(const QString &databaseFileName)
+{
+    QString errMsg;
+    if (!setDatabase(databaseFileName, &errMsg)) {
+        qWarning() << "Failed to load database " << databaseFileName << ": " << errMsg;
+    }
+}
+
 bool MainWindow::setDatabase(const QString &databaseFileName, QString *errMsg)
 {
+    QString statusMsg;
+    if (m_serverSocket) {
+        if (m_settings->startServerAutomatically()) {
+            statusMsg = tr("Connected to automatically started server, trace file: %1").arg(databaseFileName);
+        } else {
+            statusMsg = tr("Connected to server on port %1, trace file: %2").arg(m_settings->serverGUIPort()).arg(databaseFileName);
+        }
+    } else {
+        statusMsg = tr("Not connected. Trace file: %1").arg(databaseFileName);
+    }
+    m_connectionStatusLabel->setText(statusMsg);
+
     // Delete model(s) that might have existed previously
     if (m_entryItemModel) {
 	tracePointsView->setModel(NULL);
 	delete m_entryItemModel; m_entryItemModel = NULL;
     }
-
-    delete m_server; m_server = NULL;
-    // will create new db file if necessary
 
     if (QFile::exists(databaseFileName)) {
         m_db = Database::open(databaseFileName, errMsg);
@@ -119,33 +189,32 @@ bool MainWindow::setDatabase(const QString &databaseFileName, QString *errMsg)
     if (!m_db.isValid())
         return false;
 
-    m_server = new Server(databaseFileName, m_db, m_settings->serverPort(), this);
     m_filterForm->setTraceKeys(Database::seenGroupIds(m_db));
 
     m_entryItemModel = new EntryItemModel(m_settings->entryFilter(),
                                           m_settings->columnsInfo(), this);
     if (!m_entryItemModel->setDatabase(m_db, errMsg)) {
 	delete m_entryItemModel; m_entryItemModel = NULL;
-	delete m_server; m_server = NULL;
         return false;
     }
 
     if (!m_watchTree->setDatabase(m_db, errMsg)) {
 	delete m_entryItemModel; m_entryItemModel = NULL;
-	delete m_server; m_server = NULL;
         return false;
     }
 
     m_applicationTable->setApplications(Database::tracedApplications(m_db));
 
-    connect(m_server, SIGNAL(traceEntryReceived(const TraceEntry &)),
-            m_entryItemModel, SLOT(handleNewTraceEntry(const TraceEntry &)));
-    connect(m_server, SIGNAL(traceEntryReceived(const TraceEntry &)),
-            m_watchTree, SLOT(handleNewTraceEntry(const TraceEntry &)));
-    connect(m_server, SIGNAL(traceEntryReceived(const TraceEntry &)),
-            m_applicationTable, SLOT(handleNewTraceEntry(const TraceEntry &)));
-    connect(m_server, SIGNAL(processShutdown(const ProcessShutdownEvent &)),
-            m_applicationTable, SLOT(handleProcessShutdown(const ProcessShutdownEvent &)));
+    if (m_serverSocket) {
+        connect(m_serverSocket, SIGNAL(traceEntryReceived(const TraceEntry &)),
+                m_entryItemModel, SLOT(handleNewTraceEntry(const TraceEntry &)));
+        connect(m_serverSocket, SIGNAL(traceEntryReceived(const TraceEntry &)),
+                m_watchTree, SLOT(handleNewTraceEntry(const TraceEntry &)));
+        connect(m_serverSocket, SIGNAL(traceEntryReceived(const TraceEntry &)),
+                m_applicationTable, SLOT(handleNewTraceEntry(const TraceEntry &)));
+        connect(m_serverSocket, SIGNAL(processShutdown(const ProcessShutdownEvent &)),
+                m_applicationTable, SLOT(handleProcessShutdown(const ProcessShutdownEvent &)));
+    }
     connect( tracePointsSearchWidget, SIGNAL( searchCriteriaChanged( const QString &,
                                                                      const QStringList &,
                                                                      SearchWidget::MatchType ) ),
@@ -201,6 +270,13 @@ void MainWindow::fileOpenTrace()
 					      tr("Trace Files (*.trace)"));
     if (fn.isEmpty())
 	return;
+
+    if (m_serverSocket) {
+        disconnect(m_serverSocket, 0, 0, 0);
+        serverSocketDisconnected();
+    }
+    delete m_automaticServerProcess;
+    m_automaticServerProcess = 0;
 
     QString errMsg;
     if (!setDatabase(fn, &errMsg)) {
@@ -295,6 +371,56 @@ void MainWindow::toggleFreezeState()
     }
 }
 
+void MainWindow::connectToServer()
+{
+    delete m_automaticServerProcess;
+    m_automaticServerProcess = 0;
+    if (m_settings->startServerAutomatically()) {
+        m_automaticServerProcess = new QProcess(this);
+        // XXX Don't hardcode path to traced.exe
+        m_automaticServerProcess->start("S:\\tracer\\build\\server\\traced.exe",
+                                        QStringList()
+                                            << QString("--port=%1").arg(m_settings->serverTracePort())
+                                            << QString("--guiport=%1").arg(m_settings->serverGUIPort())
+                                            << m_settings->databaseFile());
+    }
+
+    delete m_serverSocket;
+    m_serverSocket = new ServerSocket(this);
+    connect(m_serverSocket, SIGNAL(traceFileNameReceived(const QString &)),
+            this, SLOT(setDatabase(const QString &)));
+    connect(m_serverSocket, SIGNAL(error(QAbstractSocket::SocketError)),
+            this, SLOT(handleConnectionError(QAbstractSocket::SocketError)));
+    connect(m_serverSocket, SIGNAL(disconnected()),
+            this, SLOT(serverSocketDisconnected()));
+    m_serverSocket->connectToHost(QHostAddress::LocalHost, m_settings->serverGUIPort());
+    m_connectionStatusLabel->setText(tr("Attempting to connect to server on port %1...").arg(m_settings->serverGUIPort()));
+}
+
+void MainWindow::handleConnectionError(QAbstractSocket::SocketError error)
+{
+    QString msg;
+    switch (error) {
+        case QAbstractSocket::ConnectionRefusedError:
+            msg = tr("Failed to find storage server listening on port %1. Is traced running?").arg(m_settings->serverGUIPort());
+            break;
+        case QAbstractSocket::NetworkError:
+            msg = tr("The network connection broke down.");
+            break;
+        default:
+            break;
+    }
+    m_connectionStatusLabel->setText(tr("Not connected."));
+    statusBar()->showMessage( msg, 2000 );
+}
+
+void MainWindow::serverSocketDisconnected()
+{
+    m_connectionStatusLabel->setText(tr("Not connected."));
+    m_serverSocket->deleteLater();
+    m_serverSocket = 0;
+}
+
 void MainWindow::postRestore()
 {
     m_filterForm->restoreSettings();
@@ -317,9 +443,34 @@ void MainWindow::editColumns()
 
 void MainWindow::editStorage()
 {
+    QString oldFileName = m_settings->databaseFile();
+    int oldServerGUIPort = m_settings->serverGUIPort();
+    int oldServerTracePort = m_settings->serverTracePort();
+    bool oldStartServerAutomatically = m_settings->startServerAutomatically();
     StorageView dlg(m_settings, this);
     if (dlg.exec() == QDialog::Accepted) {
-        // ###?
+        /* Determine if we need to reconnect (and/or restart!) the storage
+         * server.
+         * XXX Consider a way to enforce reconnecting (for instance, when
+         * starting the server after the GUI).
+         */
+        bool needToReconnect = true;
+        if (m_serverSocket &&
+            m_settings->startServerAutomatically() == oldStartServerAutomatically &&
+            m_settings->serverGUIPort() == oldServerGUIPort) {
+            if (m_settings->startServerAutomatically()) {
+                if (oldFileName == m_settings->databaseFile() &&
+                    oldServerTracePort == m_settings->serverTracePort()) {
+                    needToReconnect = false;
+                }
+            } else {
+                needToReconnect = false;
+            }
+        }
+
+        if (needToReconnect) {
+            connectToServer();
+        }
     }
 }
 
@@ -376,14 +527,14 @@ void MainWindow::traceEntryDoubleClicked(const QModelIndex &index)
 
 void MainWindow::toolBoxPageChanged( int index )
 {
-    if ( index == 0 && m_server ) {
+    if ( index == 0 && ( !m_serverSocket || m_serverSocket->state() == QAbstractSocket::ConnectedState ) ) {
         m_filterForm->setTraceKeys( Database::seenGroupIds( m_db ) );
     }
 }
 
 void MainWindow::addNewTraceKey( const QString &id )
 {
-    if ( m_server ) {
+    if ( !m_serverSocket || m_serverSocket->state() == QAbstractSocket::ConnectedState ) {
         Database::addGroupId( m_db, id );
         m_filterForm->setTraceKeys( Database::seenGroupIds( m_db ) );
     }

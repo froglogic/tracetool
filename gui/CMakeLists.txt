@@ -15,8 +15,7 @@ SET(GUI_SOURCES
   applicationtable.cpp
   searchwidget.cpp
   ../convertdb/getopt.cpp
-  ../server/database.cpp
-  ../server/server.cpp)
+  ../server/database.cpp)
 
 SET(GUI_MOCABLES
   mainwindow.h
@@ -31,8 +30,7 @@ SET(GUI_MOCABLES
   entryitemmodel.h
   watchtree.h
   applicationtable.h
-  searchwidget.h
-  ../server/server.h)
+  searchwidget.h)
 
 SET(GUI_UIS
   mainwindow.ui

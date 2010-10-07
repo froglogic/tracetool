@@ -51,7 +51,6 @@ bool Settings::save() const
 
     // [Database]
     qs.beginGroup(databaseGroup);
-    qs.setValue("File", m_databaseFile);
     qs.setValue("SoftLimit", m_softLimit);
     qs.setValue("HardLimit", m_hardLimit);
     qs.endGroup();
@@ -63,9 +62,10 @@ bool Settings::save() const
 
     // [Server]
     qs.beginGroup(serverGroup);
-    qs.setValue("Port", m_serverPort);
+    qs.setValue("GUI Port", m_serverGUIPort);
+    qs.setValue("Trace Port", m_serverTracePort);
     qs.setValue("Start Automatically", m_serverStartedAutomatically);
-    qs.setValue("Output File", m_serverOutputFile);
+    qs.setValue("Output File", m_databaseFile);
     qs.endGroup();
 
     qs.sync();
@@ -79,7 +79,6 @@ bool Settings::load()
 
     // [Database]
     qs.beginGroup(databaseGroup);
-    m_databaseFile = qs.value("File", QString()).toString();
     m_softLimit = qs.value("SoftLimit", defaultSoftLimit).toInt();
     m_hardLimit = qs.value("HardLimit", defaultHardLimit).toInt();
     qs.endGroup();
@@ -91,9 +90,10 @@ bool Settings::load()
 
     // [Server]
     qs.beginGroup(serverGroup);
-    m_serverPort = qs.value("Port", TRACELIB_DEFAULT_PORT).toInt();
+    m_serverGUIPort = qs.value("GUI Port", TRACELIB_DEFAULT_PORT).toInt();
+    m_serverTracePort = qs.value("Trace Port", m_serverGUIPort + 1).toInt();
     m_serverStartedAutomatically = qs.value("Start Automatically", true).toBool();
-    m_serverOutputFile = qs.value("Output File", QString()).toString();
+    m_databaseFile = qs.value("Output File", QString()).toString();
 
     qs.endGroup();
 
