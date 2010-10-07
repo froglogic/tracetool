@@ -80,6 +80,7 @@ private slots:
     void serverSocketDisconnected();
     void automaticServerError(QProcess::ProcessError error);
     void automaticServerExit(int code, QProcess::ExitStatus status);
+    void automaticServerOutput();
 
 private:
     bool openConfigurationFile(const QString &fileName);

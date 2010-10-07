@@ -413,6 +413,14 @@ bool MainWindow::startAutomaticServer()
         return false;
     }
     m_automaticServerProcess = new QProcess(this);
+    m_automaticServerProcess->
+        setReadChannelMode(QProcess::MergedChannels);
+    m_automaticServerProcess->
+        setReadChannel(QProcess::StandardOutput);
+    connect(m_automaticServerProcess,
+            SIGNAL(readyRead()),
+            this,
+            SLOT(automaticServerOutput()));
     connect(m_automaticServerProcess,
             SIGNAL(error(QProcess::ProcessError)),
             this,
@@ -502,6 +510,16 @@ void MainWindow::automaticServerExit(int code,
                                             "with status code %1.")
                                          .arg(code));
     }
+}
+
+void MainWindow::automaticServerOutput()
+{
+    assert(m_automaticServerProcess != NULL);
+    QByteArray raw = m_automaticServerProcess->readAll();
+    QString output = QString::fromLocal8Bit(raw);
+
+    showError(tr("Trace Daemon Output"),
+              output);
 }
 
 void MainWindow::postRestore()

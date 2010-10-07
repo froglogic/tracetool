@@ -97,9 +97,6 @@ int main( int argc, char **argv )
 
     Server server(traceFile, database, port, guiport);
 
-    cout << "Trace server started." << endl
-         << "Trace data port: " << port << endl
-         << "GUI client port: " << guiport << endl;
     return app.exec();
 }
 
