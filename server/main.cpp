@@ -27,7 +27,7 @@ using namespace std;
 static void printUsage(const string &app)
 {
     cout << "Usage: " << app << " --help" << endl
-         << "       " << app << " [--port <port>] <.trace-file>" << endl;
+         << "       " << app << " [--port <port> [--guiport <port>]] <.trace-file>" << endl;
 }
 
 int main( int argc, char **argv )
@@ -36,9 +36,10 @@ int main( int argc, char **argv )
 
     GetOpt opt;
     bool help;
-    QString traceFile, portStr;
+    QString traceFile, portStr, guiPortStr;
     opt.addSwitch("help", &help);
     opt.addOption('p', "port", &portStr);
+    opt.addOption('g', "guiport", &guiPortStr);
     opt.addOptionalArgument("trace_file", &traceFile);
     if (!opt.parse()) {
 	cout << "Invalid command line argument. Try --help." << endl;
@@ -69,6 +70,17 @@ int main( int argc, char **argv )
 	    return Error::CommandLineArgs;
 	}
     }
+    int guiport = port + 1;
+    if (!guiPortStr.isEmpty()) {
+	bool ok;
+	guiport = guiPortStr.toInt(&ok);
+	if (!ok) {
+	    cout << "Invalid port number '"
+		 << guiPortStr.toLocal8Bit().constData()
+		 << "' given." << endl;
+	    return Error::CommandLineArgs;
+	}
+    }
 
     QSqlDatabase database;
     if (QFile::exists(traceFile)) {
@@ -83,8 +95,11 @@ int main( int argc, char **argv )
         return Error::Database;
     }
 
-    Server server(traceFile, database, port);
+    Server server(traceFile, database, port, guiport);
 
+    cout << "Trace server started." << endl
+         << "Trace data port: " << port << endl
+         << "GUI client port: " << guiport << endl;
     return app.exec();
 }
 

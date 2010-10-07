@@ -75,7 +75,7 @@ class Server : public QObject
     Q_OBJECT
 public:
     Server( const QString &traceFile,
-            QSqlDatabase database, unsigned short port,
+            QSqlDatabase database, unsigned short port, unsigned short guiPort,
             QObject *parent = 0 );
     virtual ~Server();
 

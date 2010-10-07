@@ -201,7 +201,8 @@ void ServerSocket::incomingConnection( int socketDescriptor )
 }
 
 Server::Server( const QString &traceFile,
-                QSqlDatabase database, unsigned short port,
+                QSqlDatabase database,
+                unsigned short port, unsigned short guiPort,
                 QObject *parent )
     : QObject( parent ),
       m_tcpServer( 0 ),
@@ -224,7 +225,7 @@ Server::Server( const QString &traceFile,
 
     m_guiServer = new QTcpServer( this );
     connect( m_guiServer, SIGNAL( newConnection() ), SLOT( handleNewGUIConnection() ) );
-    m_guiServer->listen( QHostAddress::LocalHost, port + 1 );
+    m_guiServer->listen( QHostAddress::LocalHost, guiPort );
 
     m_xmlHandler = new XmlContentHandler( this );
     m_xmlReader.setContentHandler( m_xmlHandler );
