@@ -55,6 +55,16 @@ INSTALL(EXPORT tracelibTargets
               DESTINATION lib/cmake/tracelib COMPONENT devel
               NAMESPACE tracelibImport__
               FILE tracelibTargets.cmake)
+INSTALL(FILES
+        ${QT_BINARY_DIR}/QtCore4.dll
+        ${QT_BINARY_DIR}/QtGui4.dll
+        ${QT_BINARY_DIR}/QtNetwork4.dll
+        ${QT_BINARY_DIR}/QtSql4.dll
+        ${QT_BINARY_DIR}/QtXml4.dll
+        DESTINATION bin)
+INSTALL(FILES
+        ${QT_PLUGINS_DIR}/sqldrivers/qsqlite4.dll
+        DESTINATION bin/sqldrivers)
 
 ## Package Creation Setup
 # See http://www.paraview.org/Wiki/CMake:CPackConfiguration for documentation of variables
