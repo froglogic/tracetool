@@ -151,6 +151,11 @@ MainWindow::MainWindow(Settings *settings,
 
 MainWindow::~MainWindow()
 {
+    if (m_automaticServerProcess) {
+        // nobody is supposed to hear the death cry of this object.
+        m_automaticServerProcess->disconnect();
+        m_automaticServerProcess->close();
+    }
 }
 
 void MainWindow::setDatabase(const QString &databaseFileName)
@@ -501,6 +506,7 @@ void MainWindow::automaticServerExit(int code,
     if (status == QProcess::CrashExit) {
         showError(tr("Trace Daemon Error"),
                   tr("The trace daemon crashed"));
+        return;
     }
     assert(status == QProcess::NormalExit);
     if (code == 0) {
