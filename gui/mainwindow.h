@@ -7,6 +7,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QProcess>
 #include <QSqlDatabase>
 #include <QTcpSocket>
 #include "ui_mainwindow.h"
@@ -77,10 +78,13 @@ private slots:
     void addNewTraceKey(const QString &id);
     void handleConnectionError(QAbstractSocket::SocketError error);
     void serverSocketDisconnected();
+    void automaticServerError(QProcess::ProcessError error);
+    void automaticServerExit(int code, QProcess::ExitStatus status);
 
 private:
     bool openConfigurationFile(const QString &fileName);
     void showError(const QString &title, const QString &message);
+    void startAutomaticServer();
 
     Settings* const m_settings;
     QSqlDatabase m_db;

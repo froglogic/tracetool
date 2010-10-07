@@ -397,24 +397,38 @@ static QString locateTraceD()
     return QString();
 }
 
+void MainWindow::startAutomaticServer()
+{
+    QString executable = locateTraceD();
+    if (executable.isEmpty()) {
+        m_connectionStatusLabel->setText(tr("Failed to locate "
+                                            "'traced' "
+                                            "executable."));
+        return;
+    }
+    m_automaticServerProcess = new QProcess(this);
+    connect(m_automaticServerProcess,
+            SIGNAL(error(QProcess::ProcessError)),
+            this,
+            SLOT(automaticServerError(QProcess::ProcessError)));
+    connect(m_automaticServerProcess,
+            SIGNAL(finished(int, QProcess::ExitStatus)),
+            this,
+            SLOT(automaticServerExit(int, QProcess::ExitStatus)));
+    QStringList args;
+    args << QString("--port=%1").arg(m_settings->serverTracePort());
+    args << QString("--guiport=%1").arg(m_settings->serverGUIPort());
+    args << m_settings->databaseFile();
+
+    m_automaticServerProcess->start(executable, args);
+}
+
 void MainWindow::connectToServer()
 {
     delete m_automaticServerProcess;
     m_automaticServerProcess = 0;
     if (m_settings->startServerAutomatically()) {
-        QString executable = locateTraceD();
-        if (executable.isEmpty()) {
-            m_connectionStatusLabel->setText(tr("Failed to locate "
-                                                "'traced' "
-                                                "executable."));
-            return;
-        }
-        m_automaticServerProcess = new QProcess(this);
-        m_automaticServerProcess->start(executable,
-                                        QStringList()
-                                            << QString("--port=%1").arg(m_settings->serverTracePort())
-                                            << QString("--guiport=%1").arg(m_settings->serverGUIPort())
-                                            << m_settings->databaseFile());
+        startAutomaticServer();
     }
 
     delete m_serverSocket;
@@ -451,6 +465,30 @@ void MainWindow::serverSocketDisconnected()
     m_connectionStatusLabel->setText(tr("Not connected."));
     m_serverSocket->deleteLater();
     m_serverSocket = 0;
+}
+
+void MainWindow::automaticServerError(QProcess::ProcessError error)
+{
+    m_connectionStatusLabel->setText(tr("Traced daemon reported an "
+                                        "error with code %1.")
+                                     .arg(int(error)));
+}
+
+void MainWindow::automaticServerExit(int code,
+                                     QProcess::ExitStatus status)
+{
+    if (status == QProcess::CrashExit) {
+        showError(tr("Trace Daemon Error"),
+                  tr("The trace daemon crashed"));
+    }
+    assert(status == QProcess::NormalExit);
+    if (code == 0) {
+        m_connectionStatusLabel->setText(tr("Traced daemon exited."));
+    } else {
+        m_connectionStatusLabel->setText(tr("Traced daemon exited "
+                                            "with status code %1.")
+                                         .arg(code));
+    }
 }
 
 void MainWindow::postRestore()
