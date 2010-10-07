@@ -7,8 +7,6 @@
 #define TRACE_SERVER_H
 
 #include <QByteArray>
-#include <QDateTime>
-#include <QDomDocument>
 #include <QList>
 #include <QObject>
 #include <QSqlDatabase>
@@ -18,72 +16,9 @@
 #include <QXmlInputSource>
 #include <QXmlSimpleReader>
 
-#include "../hooklib/tracelib.h"
+#include "database.h"
 
 class QSignalMapper;
-
-struct StackFrame
-{
-    QString module;
-    QString function;
-    size_t functionOffset;
-    QString sourceFile;
-    size_t lineNumber;
-};
-
-QDataStream &operator<<( QDataStream &stream, const StackFrame &entry );
-QDataStream &operator>>( QDataStream &stream, StackFrame &entry );
-
-struct Variable
-{
-    QString name;
-    TRACELIB_NAMESPACE_IDENT(VariableType)::Value type;
-    QString value;
-};
-
-QDataStream &operator<<( QDataStream &stream, const Variable &entry );
-QDataStream &operator>>( QDataStream &stream, Variable &entry );
-
-struct TraceEntry
-{
-    unsigned int pid;
-    QDateTime processStartTime;
-    QString processName;
-    unsigned int tid;
-    QDateTime timestamp;
-    unsigned int verbosity;
-    unsigned int type;
-    QString path;
-    unsigned long lineno;
-    QString groupName;
-    QString function;
-    QString message;
-    QList<Variable> variables;
-    QList<StackFrame> backtrace;
-    unsigned long stackPosition;
-};
-
-QDataStream &operator<<( QDataStream &stream, const TraceEntry &entry );
-QDataStream &operator>>( QDataStream &stream, TraceEntry &entry );
-
-struct ProcessShutdownEvent
-{
-    unsigned int pid;
-    QDateTime startTime;
-    QDateTime stopTime;
-    QString name;
-};
-
-QDataStream &operator<<( QDataStream &stream, const ProcessShutdownEvent &ev );
-QDataStream &operator>>( QDataStream &stream, ProcessShutdownEvent &ev );
-
-struct TracedApplicationInfo
-{
-    unsigned int pid;
-    QDateTime startTime;
-    QDateTime stopTime;
-    QString name;
-};
 
 class ClientSocket : public QTcpSocket
 {

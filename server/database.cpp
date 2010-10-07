@@ -7,6 +7,7 @@
 
 #include <cassert>
 #include <stdexcept>
+#include <QDebug>
 #include <QFile>
 #include <QSqlDatabase>
 #include <QSqlError>
@@ -504,5 +505,115 @@ QList<TracedApplicationInfo> Database::tracedApplications(QSqlDatabase db)
         l.append( info );
     }
     return l;
+}
+
+QDataStream &operator<<( QDataStream &stream, const TraceEntry &entry )
+{
+    return stream << (quint32)entry.pid
+        << entry.processStartTime
+        << entry.processName
+        << (quint32)entry.tid
+        << entry.timestamp
+        << (quint8)entry.verbosity
+        << (quint8)entry.type
+        << entry.path
+        << (quint32)entry.lineno
+        << entry.groupName
+        << entry.function
+        << entry.message
+        << entry.variables
+        << entry.backtrace
+        << (quint64)entry.stackPosition;
+}
+
+QDataStream &operator>>( QDataStream &stream, TraceEntry &entry )
+{
+    quint32 pid, tid, lineno;
+    quint8 verbosity, type;
+    quint64 stackPosition;
+
+    stream >> pid
+        >> entry.processStartTime
+        >> entry.processName
+        >> tid
+        >> entry.timestamp
+        >> verbosity
+        >> type
+        >> entry.path
+        >> lineno
+        >> entry.groupName
+        >> entry.function
+        >> entry.message
+        >> entry.variables
+        >> entry.backtrace
+        >> stackPosition;
+
+    entry.pid = pid;
+    entry.tid = tid;
+    entry.lineno = lineno;
+    entry.verbosity = verbosity;
+    entry.type = type;
+    entry.stackPosition = stackPosition;
+
+    return stream;
+}
+
+QDataStream &operator<<( QDataStream &stream, const ProcessShutdownEvent &ev )
+{
+    return stream << (quint32)ev.pid
+        << ev.startTime
+        << ev.stopTime
+        << ev.name;
+}
+
+QDataStream &operator>>( QDataStream &stream, ProcessShutdownEvent &ev )
+{
+    quint32 pid;
+    stream >> pid
+        >> ev.startTime
+        >> ev.stopTime
+        >> ev.name;
+    ev.pid = pid;
+    return stream;
+}
+
+QDataStream &operator<<( QDataStream &stream, const StackFrame &entry )
+{
+    return stream << entry.module
+        << entry.function
+        << (quint64)entry.functionOffset
+        << entry.sourceFile
+        << (quint32)entry.lineNumber;
+}
+
+QDataStream &operator>>( QDataStream &stream, StackFrame &entry )
+{
+    quint64 functionOffset;
+    quint32 lineNumber;
+    stream >> entry.module
+        >> entry.function
+        >> functionOffset
+        >> entry.sourceFile
+        >> lineNumber;
+    entry.functionOffset = functionOffset;
+    entry.lineNumber = lineNumber;
+    return stream;
+}
+
+QDataStream &operator<<( QDataStream &stream, const Variable &entry )
+{
+    return stream << entry.name
+        << (quint8)entry.type
+        << entry.value;
+}
+
+QDataStream &operator>>( QDataStream &stream, Variable &entry )
+{
+    quint8 type;
+    stream >> entry.name
+        >> type
+        >> entry.value;
+    entry.type = (TRACELIB_NAMESPACE_IDENT(VariableType)::Value)type;
+    return stream;
 }
 
