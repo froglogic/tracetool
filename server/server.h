@@ -66,13 +66,6 @@ private:
     QList<NetworkingThread *> m_networkingThreads;
 };
 
-extern const quint32 MagicServerProtocolCookie;
-enum ServerDatagramType {
-    TraceFileNameDatagram,
-    TraceEntryDatagram,
-    ProcessShutdownEventDatagram
-};
-
 class XmlContentHandler;
 
 class Server : public QObject

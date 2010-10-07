@@ -6,6 +6,7 @@
 #include "server.h"
 
 #include "database.h"
+#include "datagramtypes.h"
 
 #include <QDir>
 #include <QDomDocument>
@@ -232,8 +233,6 @@ Server::Server( const QString &traceFile,
     m_xmlInput.setData( QString::fromUtf8( "<toplevel_trace_element>" ) );
     m_xmlReader.parse( &m_xmlInput, true );
 }
-
-const quint32 MagicServerProtocolCookie = 0x22021990;
 
 template <typename T>
 QByteArray serializeGUIClientData( ServerDatagramType type, const T &v )
