@@ -84,7 +84,7 @@ private slots:
 private:
     bool openConfigurationFile(const QString &fileName);
     void showError(const QString &title, const QString &message);
-    void startAutomaticServer();
+    bool startAutomaticServer();
 
     Settings* const m_settings;
     QSqlDatabase m_db;

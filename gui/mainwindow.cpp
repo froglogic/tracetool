@@ -397,14 +397,20 @@ static QString locateTraceD()
     return QString();
 }
 
-void MainWindow::startAutomaticServer()
+bool MainWindow::startAutomaticServer()
 {
+    if (m_settings->databaseFile().isEmpty()) {
+        showError(tr("Trace Daemon Error"),
+                  tr("No log file specified. Cannot start daemon."));
+        return false;
+    }
+
     QString executable = locateTraceD();
     if (executable.isEmpty()) {
         m_connectionStatusLabel->setText(tr("Failed to locate "
                                             "'traced' "
                                             "executable."));
-        return;
+        return false;
     }
     m_automaticServerProcess = new QProcess(this);
     connect(m_automaticServerProcess,
@@ -421,6 +427,11 @@ void MainWindow::startAutomaticServer()
     args << m_settings->databaseFile();
 
     m_automaticServerProcess->start(executable, args);
+
+    // QProcess::start() is async so we cannot guarantee
+    // that the daemon has really started successfully
+    // at this point.
+    return true;
 }
 
 void MainWindow::connectToServer()
@@ -428,7 +439,9 @@ void MainWindow::connectToServer()
     delete m_automaticServerProcess;
     m_automaticServerProcess = 0;
     if (m_settings->startServerAutomatically()) {
-        startAutomaticServer();
+        if (!startAutomaticServer()) {
+            return;
+        }
     }
 
     delete m_serverSocket;
