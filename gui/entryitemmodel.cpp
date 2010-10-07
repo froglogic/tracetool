@@ -99,6 +99,11 @@ EntryItemModel::~EntryItemModel()
 bool EntryItemModel::setDatabase(QSqlDatabase database,
                                  QString *errMsg)
 {
+    m_databasePollingTimer->stop();
+    m_numNewEntries = 0;
+    m_numMatchingEntries = -1;
+    m_suspended = false;
+
     m_db = database;
     if (!queryForEntries(errMsg, 0))
         return false;
@@ -333,7 +338,6 @@ void EntryItemModel::handleNewTraceEntry(const TraceEntry &e)
     if (!m_filter->matches(e))
         return;
 
-    m_numMatchingEntries = -1;
     ++m_numNewEntries;
     if (!m_suspended && !m_databasePollingTimer->isActive()) {
         m_databasePollingTimer->start(200);
@@ -365,6 +369,7 @@ void EntryItemModel::insertNewTraceEntries()
         return;
 
     beginInsertRows(QModelIndex(), m_numMatchingEntries, m_numMatchingEntries + m_numNewEntries - 1);
+    m_numMatchingEntries = -1;
     QString errorMsg;
     if (!queryForEntries(&errorMsg, 0)) {
         qDebug() << "EntryItemModel::insertNewTraceEntries: failed: " << errorMsg;
