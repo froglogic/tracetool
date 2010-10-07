@@ -11,6 +11,7 @@
 
 #include <cassert>
 #include <QDebug>
+#include <QDir>
 #include <QSettings>
 #include <QStringList>
 
@@ -23,6 +24,11 @@ const char configGroup[] = "Configuration";
 
 const int defaultSoftLimit = 1500000;
 const int defaultHardLimit = defaultSoftLimit + 500000;
+
+static QString defaultFile()
+{
+    return QDir::temp().absoluteFilePath("demo.trace");
+}
 
 Settings::Settings()
     : m_softLimit(-1),
@@ -93,7 +99,7 @@ bool Settings::load()
     m_serverGUIPort = qs.value("GUIPort", TRACELIB_DEFAULT_PORT).toInt();
     m_serverTracePort = qs.value("TracePort", m_serverGUIPort + 1).toInt();
     m_serverStartedAutomatically = qs.value("StartAutomatically", true).toBool();
-    m_databaseFile = qs.value("OutputFile", QString()).toString();
+    m_databaseFile = qs.value("OutputFile", defaultFile()).toString();
 
     qs.endGroup();
 
