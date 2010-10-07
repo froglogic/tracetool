@@ -371,14 +371,46 @@ void MainWindow::toggleFreezeState()
     }
 }
 
+static QString locateTraceD()
+{
+    // XXX possibly retrieve executable and directory names
+    // XXX from the build system
+#ifdef Q_OS_WIN
+    const QString exe = "traced.exe";
+#else
+    const QString exe = "traced";
+#endif
+
+    QDir ourDir = QCoreApplication::applicationDirPath();
+    // binary package layout?
+    if (ourDir.exists(exe))
+        return ourDir.absoluteFilePath(exe);
+
+    // try source build layout
+    if (!ourDir.cdUp())
+        return QString();
+    if (!ourDir.cd("server"))
+        return QString();
+    if (ourDir.exists(exe))
+        return ourDir.absoluteFilePath(exe);
+
+    return QString();
+}
+
 void MainWindow::connectToServer()
 {
     delete m_automaticServerProcess;
     m_automaticServerProcess = 0;
     if (m_settings->startServerAutomatically()) {
+        QString executable = locateTraceD();
+        if (executable.isEmpty()) {
+            m_connectionStatusLabel->setText(tr("Failed to locate "
+                                                "'traced' "
+                                                "executable."));
+            return;
+        }
         m_automaticServerProcess = new QProcess(this);
-        // XXX Don't hardcode path to traced.exe
-        m_automaticServerProcess->start("S:\\tracer\\build\\server\\traced.exe",
+        m_automaticServerProcess->start(executable,
                                         QStringList()
                                             << QString("--port=%1").arg(m_settings->serverTracePort())
                                             << QString("--guiport=%1").arg(m_settings->serverGUIPort())
