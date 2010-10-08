@@ -48,7 +48,7 @@ another system using the GUI
 
 \image html post-analysis.png Two-phase usage
 
-\subsection live_analysis_sec Live Monitoring
+\subsection live_analysis_sec Pure Live Monitoring
 
 The live-monitoring setup makes use of the fact that the GUI includes
 an instance of the \c traced daemon. All that's need to commence
@@ -63,5 +63,15 @@ two-phase usage the log file can later be re-opened for post-execution
 analysis.
 
 \image html live-monitoring.png All-in-one usage
+
+\subsection attached_sec Mixed Usage
+
+Sometimes a mix of the pure setups described above is desired: the
+installation is set up to log data in the background continously but a
+human operator wants to attach to the process and monitor it live. For
+this case the GUI can be configured to connect to a running daemon and
+will display already recorded and newly recorded data.
+
+\image html attached.png Attached to ongoing trace
 
 */
