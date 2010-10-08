@@ -86,6 +86,7 @@ private:
     bool openConfigurationFile(const QString &fileName);
     void showError(const QString &title, const QString &message);
     bool startAutomaticServer();
+    void stopAutomaticServer();
 
     Settings* const m_settings;
     QSqlDatabase m_db;

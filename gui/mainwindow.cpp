@@ -151,11 +151,7 @@ MainWindow::MainWindow(Settings *settings,
 
 MainWindow::~MainWindow()
 {
-    if (m_automaticServerProcess) {
-        // nobody is supposed to hear the death cry of this object.
-        m_automaticServerProcess->disconnect();
-        m_automaticServerProcess->close();
-    }
+    stopAutomaticServer();
 }
 
 void MainWindow::setDatabase(const QString &databaseFileName)
@@ -280,8 +276,7 @@ void MainWindow::fileOpenTrace()
         disconnect(m_serverSocket, 0, 0, 0);
         serverSocketDisconnected();
     }
-    delete m_automaticServerProcess;
-    m_automaticServerProcess = 0;
+    stopAutomaticServer();
 
     QString errMsg;
     if (!setDatabase(fn, &errMsg)) {
@@ -447,10 +442,23 @@ bool MainWindow::startAutomaticServer()
     return true;
 }
 
-void MainWindow::connectToServer()
+void MainWindow::stopAutomaticServer()
 {
+    if (!m_automaticServerProcess)
+        return;
+
+    // nobody is supposed to hear the death cry of this object.
+    m_automaticServerProcess->disconnect();
+
+    m_automaticServerProcess->close();
     delete m_automaticServerProcess;
     m_automaticServerProcess = 0;
+}
+
+void MainWindow::connectToServer()
+{
+    stopAutomaticServer();
+
     if (m_settings->startServerAutomatically()) {
         if (!startAutomaticServer()) {
             return;
