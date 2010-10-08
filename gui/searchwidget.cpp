@@ -71,10 +71,6 @@ SearchWidget::SearchWidget( QWidget *parent )
              this, SLOT( emitSearchCriteria() ) );
     m_regexpMatch->hide();
 
-    // XXX Enable the radio button once regexp matching is
-    // implemented in EntryItemModel
-    m_regexpMatch->setEnabled( false );
-
     m_buttonLayout = new QHBoxLayout;
     m_buttonLayout->setMargin( 0 );
     m_buttonLayout->setSpacing( 0 );
