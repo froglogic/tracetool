@@ -81,6 +81,10 @@ int main( int argc, char **argv )
 	    return Error::CommandLineArgs;
 	}
     }
+    if (port == guiport) {
+	cout << "Trace port and GUI port have to be different." << endl;
+	return Error::CommandLineArgs;
+    }
 
     QSqlDatabase database;
     if (QFile::exists(traceFile)) {
