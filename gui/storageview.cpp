@@ -8,6 +8,7 @@
 #include <QDir>
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QMessageBox>
 
 StorageView::StorageView(Settings *settings, QWidget *parent)
     : m_settings(settings)
@@ -21,6 +22,14 @@ StorageView::StorageView(Settings *settings, QWidget *parent)
 
 void StorageView::accept()
 {
+    if (startServerAutomaticallyButton->isChecked() &&
+        serverPort->value() == serverTracePort->value()) {
+        QMessageBox::critical(this,
+                tr("Cannot Apply Settings"),
+                tr("Cannot apply these settings; the two ports opened by the "
+                   "trace server must have different numbers."));
+        return;
+    }
     saveSettings();
     QDialog::accept();
 }
