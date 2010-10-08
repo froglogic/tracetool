@@ -96,8 +96,8 @@ bool Settings::load()
 
     // [Server]
     qs.beginGroup(serverGroup);
-    m_serverGUIPort = qs.value("GUIPort", TRACELIB_DEFAULT_PORT).toInt();
-    m_serverTracePort = qs.value("TracePort", m_serverGUIPort + 1).toInt();
+    m_serverTracePort = qs.value("TracePort", TRACELIB_DEFAULT_PORT).toInt();
+    m_serverGUIPort = qs.value("GUIPort", m_serverTracePort + 1).toInt();
     m_serverStartedAutomatically = qs.value("StartAutomatically", true).toBool();
     m_databaseFile = qs.value("OutputFile", defaultFile()).toString();
 
