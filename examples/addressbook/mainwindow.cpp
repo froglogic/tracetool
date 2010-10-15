@@ -28,7 +28,7 @@
 #include <QtGui/QTableWidget>
 #include <QtGui/QToolBar>
 
-#include <tracelib.h>
+#include <tracelib_qt.h>
 
 const int COLUMNS = 4;
 

@@ -53,6 +53,7 @@ SET(TRACELIB_PUBLIC_HEADERS
 IF(QT4_FOUND)
     SET(TRACELIB_PUBLIC_HEADERS
             ${TRACELIB_PUBLIC_HEADERS}
+            tracelib_qt.h
             variabledumping_qt.h)
 ENDIF(QT4_FOUND)
 
@@ -128,28 +129,6 @@ SET(TRACELIB_PUBLIC_HEADERS_WS "${TRACELIB_PUBLIC_HEADERS_WS}" PARENT_SCOPE)
 ADD_LIBRARY(tracelib SHARED ${TRACELIB_SOURCES})
 TARGET_LINK_LIBRARIES(tracelib ${TRACELIB_LIBRARIES})
 TARGET_LINK_LIBRARIES(tracelib LINK_INTERFACE_LIBRARIES ${TRACELIB_LIBRARIES})
-
-# Optional tracelib_qtsupport library
-IF(QT4_FOUND)
-    SET(TRACELIB_QTSUPPORT_SOURCES
-        variabledumping_qt.cpp)
-
-    ADD_LIBRARY(tracelib_qtsupport SHARED ${TRACELIB_QTSUPPORT_SOURCES})
-    # Necessary so we can get Qt out of the list of interface-link-libs
-    # so we don't depend on either absolute paths from building of the package
-    # or qt-import targets which are only available in cmake 2.8.2
-    # this is a bit of a hack, as the qtsupport lib does expose the Qt API
-    # in its own API, so it would be correct ot have Qt in the link-interface
-    SET_TARGET_PROPERTIES(tracelib_qtsupport PROPERTIES LINK_INTERFACE_LIBRARIES "")
-    TARGET_LINK_LIBRARIES(tracelib_qtsupport tracelib ${QT_LIBRARIES})
-    # Add tracelib to link-interface so one doesn't have to link to it explicitly
-    TARGET_LINK_LIBRARIES(tracelib_qtsupport LINK_INTERFACE_LIBRARIES tracelib)
-
-    INSTALL(TARGETS tracelib_qtsupport EXPORT tracelibTargets
-                                       RUNTIME DESTINATION bin
-                                       LIBRARY DESTINATION lib
-                                       ARCHIVE DESTINATION lib COMPONENT devel)
-ENDIF(QT4_FOUND)
 
 # Installation
 INSTALL(TARGETS tracelib EXPORT tracelibTargets
