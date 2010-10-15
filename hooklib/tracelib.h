@@ -93,8 +93,7 @@ public:
 
     template <class T>
     StringBuilder &operator<<( const T &v ) {
-        m_stream << v;
-        return *this;
+        return *this << convertVariable( v );
     }
 
 private:
