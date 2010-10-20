@@ -29,6 +29,9 @@
 #  error "Unsupported compiler!"
 #endif
 
+#define TRACELIB_TOKEN_GLUE_(x, y) x ## y
+#define TRACELIB_TOKEN_GLUE(x, y) TRACELIB_TOKEN_GLUE_(x, y)
+
 /* The three core macros which actually expand to C++ code; all other macros
  * simply call these. They are no-ops in case TRACELIB_DISABLE_TRACE_CODE is
  * defined.
@@ -46,10 +49,13 @@
     static TRACELIB_NAMESPACE_IDENT(TracePoint) tracePoint(type, (verbosity), TRACELIB_CURRENT_FILE_NAME, TRACELIB_CURRENT_LINE_NUMBER, TRACELIB_CURRENT_FUNCTION_NAME, key); \
     TRACELIB_NAMESPACE_IDENT(visitTracePoint)( &tracePoint, msg ); \
 }
+#  define TRACELIB_VISIT_TRACEPOINT_STREAM(type, verbosity, key) \
+    static TRACELIB_NAMESPACE_IDENT(TracePoint) TRACELIB_TOKEN_GLUE(tracePoint, TRACELIB_CURRENT_LINE_NUMBER)((type), (verbosity), TRACELIB_CURRENT_FILE_NAME, TRACELIB_CURRENT_LINE_NUMBER, TRACELIB_CURRENT_FUNCTION_NAME, (key)); (TRACELIB_NAMESPACE_IDENT(TracePointVisitor)( &TRACELIB_TOKEN_GLUE(tracePoint, TRACELIB_CURRENT_LINE_NUMBER) ))
 #  define TRACELIB_VAR(v) TRACELIB_NAMESPACE_IDENT(makeConverter)(#v, v)
 #else
 #  define TRACELIB_VISIT_TRACEPOINT_VARS(verbosity, key, vars, msg) (void)0;
 #  define TRACELIB_VISIT_TRACEPOINT(type, verbosity, key, msg) (void)0;
+#  define TRACELIB_VISIT_TRACEPOINT_STREAM(type, verbosity, key) if (false)
 #  define TRACELIB_VAR(v) (void)0;
 #endif
 
@@ -78,6 +84,11 @@
 #define TRACELIB_WATCH_KEY_MSG_IMPL(key, msg, vars) TRACELIB_VISIT_TRACEPOINT_VARS(1, key, vars, TRACELIB_NAMESPACE_IDENT(StringBuilder)() << msg)
 
 #define TRACELIB_VALUE_IMPL(v) #v << "=" << v
+
+#define TRACELIB_DEBUG_STREAM_IMPL(key) TRACELIB_VISIT_TRACEPOINT_STREAM(TRACELIB_NAMESPACE_IDENT(TracePointType)::Debug, 1, (key))
+#define TRACELIB_ERROR_STREAM_IMPL(key) TRACELIB_VISIT_TRACEPOINT_STREAM(TRACELIB_NAMESPACE_IDENT(TracePointType)::Error, 1, (key))
+#define TRACELIB_TRACE_STREAM_IMPL(key) TRACELIB_VISIT_TRACEPOINT_STREAM(TRACELIB_NAMESPACE_IDENT(TracePointType)::Log, 1, (key))
+#define TRACELIB_WATCH_STREAM_IMPL(key) TRACELIB_VISIT_TRACEPOINT_STREAM(TRACELIB_NAMESPACE_IDENT(TracePointType)::Watch, 1, (key))
 
 TRACELIB_NAMESPACE_BEGIN
 
@@ -113,6 +124,39 @@ inline StringBuilder &StringBuilder::operator<<( const VariableValue &v ) {
 TRACELIB_EXPORT void visitTracePoint( TracePoint *tracePoint,
                       const char *msg = 0,
                       VariableSnapshot *variables = 0 );
+
+class TracePointVisitor {
+public:
+    inline TracePointVisitor( TracePoint *tracePoint ) : m_tracePoint( tracePoint ), m_variables( 0 ) { }
+    inline ~TracePointVisitor() { visitTracePoint( m_tracePoint, m_stream.str().c_str(), m_variables ); }
+
+    template <class T>
+    inline TracePointVisitor &operator<<( T v ) {
+        return *this << convertVariable( v );
+    }
+
+private:
+    TracePointVisitor( const TracePointVisitor &other );
+    void operator=( const TracePointVisitor &rhs );
+
+    TracePoint *m_tracePoint;
+    std::ostringstream m_stream;
+    VariableSnapshot *m_variables;
+};
+
+template <>
+inline TracePointVisitor &TracePointVisitor::operator<<( VariableValue v ) {
+    m_stream << VariableValue::convertToString( v );
+    return *this;
+}
+
+template <>
+inline TracePointVisitor &TracePointVisitor::operator<<( AbstractVariable *v ) {
+    if ( !m_variables )
+        m_variables = new VariableSnapshot;
+    (*m_variables) << v;
+    return *this;
+}
 
 TRACELIB_NAMESPACE_END
 

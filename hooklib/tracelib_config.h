@@ -22,6 +22,7 @@
  *     <li>#TRACELIB_TRACE_MSG</li>
  *     <li>#TRACELIB_TRACE_KEY</li>
  *     <li>#TRACELIB_TRACE_KEY_MSG</li>
+ *     <li>#TRACELIB_TRACE_STREAM</li>
  *   </ul>
  * </li>
  * <li>Logging debug trace entries, possibly with a custom message and/or a key:
@@ -30,6 +31,7 @@
  *     <li>#TRACELIB_DEBUG_MSG</li>
  *     <li>#TRACELIB_DEBUG_KEY</li>
  *     <li>#TRACELIB_DEBUG_KEY_MSG</li>
+ *     <li>#TRACELIB_DEBUG_STREAM</li>
  *   </ul>
  * </li>
  * <li>Logging error entries, possibly with a custom message and/or a key:
@@ -38,6 +40,7 @@
  *     <li>#TRACELIB_ERROR_MSG</li>
  *     <li>#TRACELIB_ERROR_KEY</li>
  *     <li>#TRACELIB_ERROR_KEY_MSG</li>
+ *     <li>#TRACELIB_ERROR_STREAM</li>
  *   </ul>
  * </li>
  * <li>Logging watch point entries (including variable values), possibly with a custom message and/or a key:
@@ -46,6 +49,7 @@
  *     <li>#TRACELIB_WATCH_MSG</li>
  *     <li>#TRACELIB_WATCH_KEY</li>
  *     <li>#TRACELIB_WATCH_KEY_MSG</li>
+ *     <li>#TRACELIB_WATCH_STREAM</li>
  *   </ul>
  * </li>
  * </ol>
@@ -427,6 +431,88 @@
  * \endcode
  */
 #define TRACELIB_VALUE TRACELIB_VALUE_IMPL
+
+/**
+ * @brief Add a debug entry to the trace in a streaming syntax.
+ *
+ * This macro can be added to record debug trace entries in a streaming
+ * syntax
+ *
+ * \code
+ * void f( int i, bool j ) {
+ *     TRACELIB_DEBUG_STREAM(NULL) << "f() called with " << i << " and " << j;
+ * }
+ * \endcode
+ *
+ * @param[in] key A UTF-8 encoded C string specifying a trace key; specify NULL
+ * to signal that no dedicated trace key should be used.
+ */
+#define TRACELIB_DEBUG_STREAM(key) TRACELIB_DEBUG_STREAM_IMPL(key)
+
+/**
+ * @brief Add an error entry to the trace in a streaming syntax.
+ *
+ * This macro can be added to record error trace entries in a streaming
+ * syntax
+ *
+ * \code
+ * void read_file( const char *fn ) {
+ *     FILE *f = fopen( fn, "r" );
+ *     if ( !f ) {
+ *         TRACELIB_ERROR_STREAM(NULL) << "Failed to open file " << fn << " for reading";
+ *     }
+ *     TRACELIB_DEBUG_STREAM(NULL) << "Opened file for reading";
+ *     ...
+ * }
+ * \endcode
+ *
+ * @param[in] key A UTF-8 encoded C string specifying a trace key; specify NULL
+ * to signal that no dedicated trace key should be used.
+ */
+#define TRACELIB_ERROR_STREAM(key) TRACELIB_ERROR_STREAM_IMPL(key)
+
+/**
+ * @brief Add an generic trace entry to the trace in a streaming syntax.
+ *
+ * This macro can be added to record generic 'trace' trace entries in a streaming
+ * syntax
+ *
+ * \code
+ * int get_largest_value( int a, int b, int c ) {
+ *     TRACELIB_TRACE_STREAM(NULL) << "get_largest_value called";
+ *     if ( a > b ) {
+ *         TRACELIB_TRACE_STREAM(NULL);
+ *         return a > c ? a : c;
+ *     }
+ *     TRACELIB_TRACE_STREAM(NULL);
+ *     return b > c ? b : c;
+ * }
+ * \endcode
+ *
+ * @param[in] key A UTF-8 encoded C string specifying a trace key; specify NULL
+ * to signal that no dedicated trace key should be used.
+ */
+#define TRACELIB_TRACE_STREAM(key) TRACELIB_TRACE_STREAM_IMPL(key)
+
+/**
+ * @brief Add a watch point entry in a streaming syntax.
+ *
+ * This macro can be added to record watch entries in a streaming
+ * syntax
+ *
+ * \code
+ * bool is_nonnegative_number( const char *s ) {
+ *     TRACELIB_WATCH_STREAM(NULL) << "is_nonnegative_number called" << TRACELIB_VAR(s);
+ *     while ( *s && *s >= '0' && *s <= '9' ) ++s;
+ *     TRACELIB_WATCH_STREAM(NULL) << "is_nonnegative_number exiting" << TRACELIB_VAR(s) << TRACELIB_VAR(*s == '\0');
+ *     return *s == '\0';
+ * }
+ * \endcode
+ *
+ * @param[in] key A UTF-8 encoded C string specifying a trace key; specify NULL
+ * to signal that no dedicated trace key should be used.
+ */
+#define TRACELIB_WATCH_STREAM(key) TRACELIB_WATCH_STREAM_IMPL(key)
 
 #endif // !defined(TRACELIB_CONFIG_H)
 
