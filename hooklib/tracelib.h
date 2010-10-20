@@ -51,12 +51,12 @@
 }
 #  define TRACELIB_VISIT_TRACEPOINT_STREAM(type, verbosity, key) \
     static TRACELIB_NAMESPACE_IDENT(TracePoint) TRACELIB_TOKEN_GLUE(tracePoint, TRACELIB_CURRENT_LINE_NUMBER)((type), (verbosity), TRACELIB_CURRENT_FILE_NAME, TRACELIB_CURRENT_LINE_NUMBER, TRACELIB_CURRENT_FUNCTION_NAME, (key)); (TRACELIB_NAMESPACE_IDENT(TracePointVisitor)( &TRACELIB_TOKEN_GLUE(tracePoint, TRACELIB_CURRENT_LINE_NUMBER) ))
-#  define TRACELIB_VAR(v) TRACELIB_NAMESPACE_IDENT(makeConverter)(#v, v)
+#  define TRACELIB_VAR_IMPL(v) TRACELIB_NAMESPACE_IDENT(makeConverter)(#v, v)
 #else
 #  define TRACELIB_VISIT_TRACEPOINT_VARS(verbosity, key, vars, msg) (void)0;
 #  define TRACELIB_VISIT_TRACEPOINT(type, verbosity, key, msg) (void)0;
 #  define TRACELIB_VISIT_TRACEPOINT_STREAM(type, verbosity, key) if (false)
-#  define TRACELIB_VAR(v) (void)0;
+#  define TRACELIB_VAR_IMPL(v) (void)0;
 #endif
 
 /* All the _IMPL macros which are referenced from the public macros listed

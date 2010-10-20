@@ -51,6 +51,7 @@
  *     <li>#TRACELIB_WATCH_KEY_MSG</li>
  *     <li>#TRACELIB_WATCH_STREAM</li>
  *   </ul>
+ *   These macros are used together with the #TRACELIB_VAR macro.
  * </li>
  * </ol>
  *
@@ -513,6 +514,20 @@
  * to signal that no dedicated trace key should be used.
  */
 #define TRACELIB_WATCH_STREAM(key) TRACELIB_WATCH_STREAM_IMPL(key)
+
+/**
+ * @brief Log variables with watch entries.
+ *
+ * This macro can be used to log variables (their name, type and value) with
+ * watch entries.
+ *
+ * \sa TRACELIB_WATCH
+ * \sa TRACELIB_WATCH_MSG
+ * \sa TRACELIB_WATCH_KEY
+ * \sa TRACELIB_WATCH_KEY_MSG
+ * \sa TRACELIB_WATCH_STREAM
+ */
+#define TRACELIB_VAR(v) TRACELIB_VAR_IMPL(v)
 
 #endif // !defined(TRACELIB_CONFIG_H)
 
