@@ -161,7 +161,7 @@ bool EntryItemModel::queryForEntries(QString *errMsg, int startRow)
 #endif
         QSqlQuery q(m_db);
         q.setForwardOnly(true);
-        if (!q.exec(QString( "SELECT trace_entry.id %1 ORDER BY trace_entry.id;" ).arg(fromAndWhereClause))) {
+        if (!q.exec(QString( "SELECT DISTINCT trace_entry.id %1 ORDER BY trace_entry.id;" ).arg(fromAndWhereClause))) {
             *errMsg = m_db.lastError().text();
             return false;
         }
@@ -218,7 +218,7 @@ bool EntryItemModel::queryForEntries(QString *errMsg, int startRow)
         }
     }
 
-    QString statement = "SELECT ";
+    QString statement = "SELECT DISTINCT ";
     statement += fieldsToSelect.join( ", ");
     statement += " %1 AND trace_entry.id >= %2 ORDER BY trace_entry.id LIMIT 100";
 
