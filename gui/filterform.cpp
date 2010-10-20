@@ -31,62 +31,10 @@ FilterForm::FilterForm(Settings *settings, QWidget *parent)
     pidEdit->setValidator(new QIntValidator(this));
     tidEdit->setValidator(new QIntValidator(this));
 
-    addTraceKeyEdit->setPlaceholderText(tr("Enter name of trace key to add..."));
-    connect(addTraceKeyEdit, SIGNAL(returnPressed()),
-            this, SLOT(addTraceKey()));
     connect(applyButton, SIGNAL(clicked()),
             this, SLOT(apply()));
 }
 
-void FilterForm::addTraceKey()
-{
-    emit addNewTraceKey(addTraceKeyEdit->text());
-    addTraceKeyEdit->clear();
-}
-
-void FilterForm::setTraceKeys(const QStringList &keys)
-{
-    QSet<QString> keysToBeAdded = QSet<QString>::fromList(keys);
-
-    QMap<QString, QListWidgetItem *> currentItems;
-    QStringList keysToBeRemoved;
-    {
-        const int cnt = traceKeyList->count();
-        for (int i = 0; i < cnt; ++i) {
-            QListWidgetItem *item = traceKeyList->item(i);
-            currentItems[item->text()] = item;
-            keysToBeRemoved.append(item->text());
-        }
-    }
-
-    {
-        QStringList::Iterator it, end = keysToBeRemoved.end();
-        for (it = keysToBeRemoved.begin(); it != end; ++it) {
-            QSet<QString>::Iterator keyIt = keysToBeAdded.find(*it);
-            if (keyIt != keysToBeAdded.end()) {
-                keysToBeRemoved.erase(it);
-                keysToBeAdded.erase(keyIt);
-            }
-        }
-    }
-
-    traceKeyList->setUpdatesEnabled(false);
-    {
-        QStringList::ConstIterator it, end = keysToBeRemoved.end();
-        for (it = keysToBeRemoved.begin(); it != end; ++it) {
-            delete currentItems[*it];
-        }
-    }
-    {
-        QSet<QString>::ConstIterator it, end = keysToBeAdded.end();
-        for (it = keysToBeAdded.begin(); it != end; ++it) {
-            QListWidgetItem *item = new QListWidgetItem(*it, traceKeyList);
-            item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsUserCheckable);
-            item->setCheckState(Qt::Checked);
-        }
-    }
-    traceKeyList->setUpdatesEnabled(true);
-}
 
 void FilterForm::apply()
 {
@@ -106,17 +54,6 @@ void FilterForm::saveSettings()
     f->setFunction(funcEdit->text());
     f->setMessage(messageEdit->text());
     f->setType(typeCombo->itemData(typeCombo->currentIndex()).toInt());
-
-    QStringList keys;
-    const int cnt = traceKeyList->count();
-    for (int i = 0; i < cnt; ++i) {
-        QListWidgetItem *item = traceKeyList->item(i);
-        if (item->checkState() == Qt::Unchecked) {
-            keys.append(item->text());
-        }
-    }
-    f->setInactiveKeys(keys);
-    f->setAcceptEntriesWithoutKey(showTraceEntriesWithoutKey->checkState() == Qt::Checked);
 
     f->emitChanged();
 }

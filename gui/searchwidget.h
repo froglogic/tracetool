@@ -8,6 +8,8 @@
 
 #include <QLineEdit>
 
+class QLabel;
+class QComboBox;
 class QHBoxLayout;
 class QPushButton;
 class QRadioButton;
@@ -42,13 +44,18 @@ public:
     SearchWidget( QWidget *parent = 0 );
 
     void setFields( const QStringList &fields );
+    void setTraceKeys( const QStringList &keys );
+
 signals:
     void searchCriteriaChanged( const QString &term,
                                 const QStringList &fields,
                                 SearchWidget::MatchType matchType );
+    void activeTraceKeyChanged( const QString &activeKey,
+                                const QStringList &inactiveKeys );
 
 private slots:
     void termEdited( const QString &term );
+    void traceKeyChanged( const QString &key );
     void emitSearchCriteria();
 
 private:
@@ -59,6 +66,8 @@ private:
     QRadioButton *m_strictMatch;
     QRadioButton *m_wildcardMatch;
     QRadioButton *m_regexpMatch;
+    QComboBox *m_activeTraceKeyCombo;
+    QLabel *m_activeTraceKeyComboLabel;
 };
 
 #endif // !defined(SEARCHWIDGET_H)

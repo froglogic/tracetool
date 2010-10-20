@@ -5,8 +5,10 @@
 
 #include "searchwidget.h"
 
+#include <QComboBox>
 #include <QGridLayout>
 #include <QHBoxLayout>
+#include <QLabel>
 #include <QLineEdit>
 #include <QPainter>
 #include <QPushButton>
@@ -52,6 +54,12 @@ SearchWidget::SearchWidget( QWidget *parent )
     m_lineEdit( 0 ),
     m_buttonLayout( 0 )
 {
+    m_activeTraceKeyComboLabel = new QLabel( tr( "Active trace key:" ) );
+
+    m_activeTraceKeyCombo = new QComboBox( this );
+    connect( m_activeTraceKeyCombo, SIGNAL( activated( const QString & ) ),
+             this, SLOT( traceKeyChanged( const QString & ) ) );
+
     m_lineEdit = new UnlabelledLineEdit( this );
     connect( m_lineEdit, SIGNAL( textEdited( const QString & ) ),
              this, SLOT( termEdited( const QString & ) ) );
@@ -84,9 +92,29 @@ SearchWidget::SearchWidget( QWidget *parent )
 
     QGridLayout *layout = new QGridLayout( this );
     layout->setMargin( 0 );
-    layout->addWidget( m_lineEdit, 0, 0 );
-    layout->addLayout( m_buttonLayout, 1, 0 );
-    layout->addLayout( m_modifierLayout, 0, 1, 2, 1 );
+    layout->addWidget( m_activeTraceKeyComboLabel, 0, 0 );
+    layout->addWidget( m_activeTraceKeyCombo, 0, 1 );
+    layout->addWidget( m_lineEdit, 0, 2 );
+    layout->addLayout( m_buttonLayout, 1, 2 );
+    layout->addLayout( m_modifierLayout, 0, 3, 2, 3 );
+}
+
+void SearchWidget::traceKeyChanged(const QString &key)
+{
+    if ( key == tr( "<All keys>" ) ) {
+        emit activeTraceKeyChanged("", QStringList() );
+        return;
+    }
+
+    QStringList inactiveKeys;
+    const int cnt = m_activeTraceKeyCombo->count();
+    for (int i = 0; i < cnt; ++i) {
+        const QString text = m_activeTraceKeyCombo->itemText(i);
+        if (text != key) {
+            inactiveKeys.append(text);
+        }
+    }
+    emit activeTraceKeyChanged(key, inactiveKeys);
 }
 
 void SearchWidget::emitSearchCriteria()
@@ -125,6 +153,13 @@ void SearchWidget::termEdited( const QString &newTerm )
     emitSearchCriteria();
 }
 
+void SearchWidget::setTraceKeys( const QStringList &keys )
+{
+    m_activeTraceKeyCombo->clear();
+    m_activeTraceKeyCombo->addItem( tr( "<All keys>" ) );
+    m_activeTraceKeyCombo->addItems( keys );
+}
+
 void SearchWidget::setFields( const QStringList &fields )
 {
     qDeleteAll( m_fieldButtons );
@@ -153,6 +188,9 @@ void SearchWidget::setFields( const QStringList &fields )
         fieldButton->hide();
     }
 
-    setMinimumWidth( qMax( width, m_lineEdit->minimumWidth() ) );
+    setMinimumWidth( m_activeTraceKeyComboLabel->sizeHint().width() +
+                     m_activeTraceKeyCombo->sizeHint().width() +
+                     qMax( width, m_lineEdit->minimumWidth() ) +
+                     m_wildcardMatch->sizeHint().width() );
 }
 

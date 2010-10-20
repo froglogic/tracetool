@@ -74,13 +74,13 @@ private slots:
     void filterChange();
     void clearTracePoints();
     void traceEntryDoubleClicked(const QModelIndex &index);
-    void toolBoxPageChanged(int index);
     void addNewTraceKey(const QString &id);
     void handleConnectionError(QAbstractSocket::SocketError error);
     void serverSocketDisconnected();
     void automaticServerError(QProcess::ProcessError error);
     void automaticServerExit(int code, QProcess::ExitStatus status);
     void automaticServerOutput();
+    void activeTraceKeyChanged(const QString &key, const QStringList &inactiveKeys);
 
 private:
     bool openConfigurationFile(const QString &fileName);

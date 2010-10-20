@@ -114,9 +114,6 @@ MainWindow::MainWindow(Settings *settings,
     connect(freezeButton, SIGNAL(clicked()),
             this, SLOT(toggleFreezeState()));
 
-    connect(toolBox, SIGNAL(currentChanged(int)),
-           this, SLOT(toolBoxPageChanged(int)));
-
     // File menu
     connect(action_Open_Trace, SIGNAL(triggered()),
 	    this, SLOT(fileOpenTrace()));
@@ -145,8 +142,15 @@ MainWindow::MainWindow(Settings *settings,
     gridLayout->addWidget(m_filterForm);
     connect(m_filterForm, SIGNAL(filterApplied()),
             this, SLOT(filterChange()));
-    connect(m_filterForm, SIGNAL(addNewTraceKey(const QString &)),
-            this, SLOT(addNewTraceKey(const QString &)));
+
+    connect(tracePointsSearchWidget, SIGNAL(activeTraceKeyChanged(const QString &, const QStringList &)),
+            this, SLOT(activeTraceKeyChanged(const QString &, const QStringList &)));
+}
+
+void MainWindow::activeTraceKeyChanged(const QString &key, const QStringList &inactiveKeys)
+{
+    m_settings->entryFilter()->setInactiveKeys(inactiveKeys);
+    m_settings->entryFilter()->emitChanged();
 }
 
 MainWindow::~MainWindow()
@@ -190,7 +194,7 @@ bool MainWindow::setDatabase(const QString &databaseFileName, QString *errMsg)
     if (!m_db.isValid())
         return false;
 
-    m_filterForm->setTraceKeys(Database::seenGroupIds(m_db));
+    tracePointsSearchWidget->setTraceKeys(Database::seenGroupIds(m_db));
 
     m_entryItemModel = new EntryItemModel(m_settings->entryFilter(),
                                           m_settings->columnsInfo(), this);
@@ -203,6 +207,8 @@ bool MainWindow::setDatabase(const QString &databaseFileName, QString *errMsg)
 	delete m_entryItemModel; m_entryItemModel = NULL;
         return false;
     }
+
+    tracePointsSearchWidget->setTraceKeys(Database::seenGroupIds(m_db));
 
     m_applicationTable->setApplications(Database::tracedApplications(m_db));
 
@@ -603,7 +609,7 @@ void MainWindow::clearTracePoints()
     Database::trimTo(m_db, 0);
     m_entryItemModel->reApplyFilter();
     m_watchTree->reApplyFilter();
-    m_filterForm->setTraceKeys( QStringList() );
+    tracePointsSearchWidget->setTraceKeys( QStringList() );
     m_applicationTable->setApplications( QList<TracedApplicationInfo>() );
 }
 
@@ -639,19 +645,11 @@ void MainWindow::traceEntryDoubleClicked(const QModelIndex &index)
                               QString( "<pre>%1</pre>" ).arg( lines.join( "\n" ) ) );
 }
 
-
-void MainWindow::toolBoxPageChanged( int index )
-{
-    if ( index == 0 && ( !m_serverSocket || m_serverSocket->state() == QAbstractSocket::ConnectedState ) ) {
-        m_filterForm->setTraceKeys( Database::seenGroupIds( m_db ) );
-    }
-}
-
 void MainWindow::addNewTraceKey( const QString &id )
 {
     if ( !m_serverSocket || m_serverSocket->state() == QAbstractSocket::ConnectedState ) {
         Database::addGroupId( m_db, id );
-        m_filterForm->setTraceKeys( Database::seenGroupIds( m_db ) );
+        tracePointsSearchWidget->setTraceKeys( Database::seenGroupIds( m_db ) );
     }
 }
 
