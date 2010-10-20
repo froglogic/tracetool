@@ -55,6 +55,19 @@
  * </li>
  * </ol>
  *
+ * Furthermore, a few short alias macros are available in case the
+ * TRACELIB_CLEAN_NAMESPACE symbol is not defined while compiling this header
+ * file. These macros simplify the macro usage through shorter names at the
+ * expense of polluting the global namespace:
+ * <ul>
+ *   <li>fTrace</li>
+ *   <li>fDebug</li>
+ *   <li>fError</li>
+ *   <li>fWatch</li>
+ *   <li>fVar</li>
+ *   <li>fValue</li>
+ * </ul>
+ *
  * In addition, three macros are available for configuring the namespace within
  * which all the tracelib library's symbols are to be defined. This is useful
  * for avoiding symbol clashes with existing definitions when linking the
@@ -528,6 +541,50 @@
  * \sa TRACELIB_WATCH_STREAM
  */
 #define TRACELIB_VAR(v) TRACELIB_VAR_IMPL(v)
+
+#ifndef TRACELIB_CLEAN_NAMESPACE
+/**
+ * @brief Short alias for #TRACELIB_ERROR_STREAM
+ *
+ * This macro is merely a (short) alias for the #TRACELIB_ERROR_STREAM macro.
+ */
+#  define fError(key) TRACELIB_ERROR_STREAM(key)
+
+/**
+ * @brief Short alias for #TRACELIB_DEBUG_STREAM
+ *
+ * This macro is merely a (short) alias for the #TRACELIB_DEBUG_STREAM macro.
+ */
+#  define fDebug(key) TRACELIB_DEBUG_STREAM(key)
+
+/**
+ * @brief Short alias for #TRACELIB_TRACE_STREAM
+ *
+ * This macro is merely a (short) alias for the #TRACELIB_TRACE_STREAM macro.
+ */
+#  define fTrace(key) TRACELIB_TRACE_STREAM(key)
+
+/**
+ * @brief Short alias for #TRACELIB_WATCH_STREAM
+ *
+ * This macro is merely a (short) alias for the #TRACELIB_WATCH_STREAM macro.
+ */
+#  define fWatch(key) TRACELIB_WATCH_STREAM(key)
+
+/**
+ * @brief Short alias for #TRACELIB_VAR
+ *
+ * This macro is merely a (short) alias for the #TRACELIB_VAR macro.
+ */
+#  define fVar(v) TRACELIB_VAR(v)
+
+/**
+ * @brief Short alias for #TRACELIB_VALUE
+ *
+ * This macro is merely a (short) alias for the #TRACELIB_VALUE macro.
+ */
+#  define fValue(v) TRACELIB_VALUE(v)
+#endif // !defined(TRACELIB_CLEAN_NAMESPACE)
 
 #endif // !defined(TRACELIB_CONFIG_H)
 
