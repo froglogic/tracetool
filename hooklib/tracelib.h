@@ -55,8 +55,8 @@
 #else
 #  define TRACELIB_VISIT_TRACEPOINT_VARS(verbosity, key, vars, msg) (void)0;
 #  define TRACELIB_VISIT_TRACEPOINT(type, verbosity, key, msg) (void)0;
-#  define TRACELIB_VISIT_TRACEPOINT_STREAM(type, verbosity, key) if (false)
-#  define TRACELIB_VAR_IMPL(v) (void)0;
+#  define TRACELIB_VISIT_TRACEPOINT_STREAM(VisitorType, type, verbosity, key) if (false) (TRACELIB_NAMESPACE_IDENT(VisitorType)( NULL ))
+#  define TRACELIB_VAR_IMPL(v) NULL
 #endif
 
 /* All the _IMPL macros which are referenced from the public macros listed
