@@ -516,9 +516,9 @@
  *
  * \code
  * bool is_nonnegative_number( const char *s ) {
- *     TRACELIB_WATCH_STREAM(NULL) << "is_nonnegative_number called" << TRACELIB_VAR(s);
+ *     TRACELIB_WATCH_STREAM(NULL) << TRACELIB_VAR(s);
  *     while ( *s && *s >= '0' && *s <= '9' ) ++s;
- *     TRACELIB_WATCH_STREAM(NULL) << "is_nonnegative_number exiting" << TRACELIB_VAR(s) << TRACELIB_VAR(*s == '\0');
+ *     TRACELIB_WATCH_STREAM(NULL) << TRACELIB_VAR(s) << TRACELIB_VAR(*s == '\0');
  *     return *s == '\0';
  * }
  * \endcode
