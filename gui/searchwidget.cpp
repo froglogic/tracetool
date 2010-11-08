@@ -54,9 +54,10 @@ SearchWidget::SearchWidget( QWidget *parent )
     m_lineEdit( 0 ),
     m_buttonLayout( 0 )
 {
-    m_activeTraceKeyComboLabel = new QLabel( tr( "Active trace key:" ) );
+    m_activeTraceKeyComboLabel = new QLabel( tr( "Trace Key:" ) );
 
     m_activeTraceKeyCombo = new QComboBox( this );
+    m_activeTraceKeyCombo->setSizeAdjustPolicy( QComboBox::AdjustToContents );
     connect( m_activeTraceKeyCombo, SIGNAL( activated( const QString & ) ),
              this, SLOT( traceKeyChanged( const QString & ) ) );
 
