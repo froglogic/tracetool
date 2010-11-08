@@ -24,6 +24,7 @@ const char* const columnNames[] = {
 #ifdef SHOW_VERBOSITY
     QT_TRANSLATE_NOOP("ColumnsInfo", "Verbosity"),
 #endif
+    QT_TRANSLATE_NOOP("ColumnsInfo", "Key"),
     QT_TRANSLATE_NOOP("ColumnsInfo", "Message"),
     QT_TRANSLATE_NOOP("ColumnsInfo", "Stack Position"),
 };

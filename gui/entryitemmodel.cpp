@@ -72,6 +72,7 @@ static const struct {
 #ifdef SHOW_VERBOSITY
     { "Verbosity", 0 },
 #endif
+    { "Key", 0 },
     { "Message", 0 },
     { "Stack Position", stackPositionFormatter }
 };
@@ -134,11 +135,8 @@ bool EntryItemModel::queryForEntries(QString *errMsg, int startRow)
     QString fromAndWhereClause =
                         "FROM"
                         " trace_entry,"
-                        " trace_point,";
-    if (!m_filter->inactiveKeys().isEmpty())
-        fromAndWhereClause +=
-                        " trace_point_group,";
-    fromAndWhereClause +=
+                        " trace_point,"
+                        " trace_point_group,"
                         " path_name, "
                         " function_name, "
                         " process, "
@@ -147,6 +145,8 @@ bool EntryItemModel::queryForEntries(QString *errMsg, int startRow)
                         " trace_entry.trace_point_id = trace_point.id "
                         "AND"
                         " trace_point.function_id = function_name.id "
+                        "AND"
+                        " trace_point.group_id = trace_point_group.id "
                         "AND"
                         " trace_point.path_id = path_name.id "
                         "AND"
@@ -210,6 +210,8 @@ bool EntryItemModel::queryForEntries(QString *errMsg, int startRow)
                 fieldsToSelect.append("trace_point.type");
             } else if (cn == "Verbosity") {
                 fieldsToSelect.append("trace_point.verbosity");
+            } else if (cn == "Key") {
+                fieldsToSelect.append("trace_point_group.name");
             } else if (cn == "Message") {
                 fieldsToSelect.append("trace_entry.message");
             } else if (cn == "Stack Position") {
