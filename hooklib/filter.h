@@ -85,6 +85,25 @@ private:
     pcrecpp::RE *m_rx;
 };
 
+class GroupFilter : public Filter
+{
+public:
+    enum Mode {
+        Blacklist, Whitelist
+    };
+
+    GroupFilter();
+
+    void setMode( Mode mode );
+    void addGroupName( const std::string &group );
+
+    virtual bool acceptsTracePoint( const TracePoint *tracePoint );
+
+private:
+    Mode m_mode;
+    std::vector<std::string> m_groups;
+};
+
 class ConjunctionFilter : public Filter
 {
 public:

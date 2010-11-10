@@ -146,12 +146,45 @@ static void testPathFilter()
     testWildcardPathFilter();
 }
 
+static void testGroupFilter()
+{
+    static TracePoint consoleIOTP( TracePointType::Log, 0, "S:\\hello\\main.cpp", 13, "main()", "ConsoleIO" );
+    static TracePoint noGroupTP( TracePointType::Log, 0, "S:\\hello\\main.cpp", 13, "main()", NULL );
+    static TracePoint noGroupTP2( TracePointType::Log, 0, "S:\\hello\\main.cpp", 13, "main()", "" );
+
+    GroupFilter f;
+    f.setMode( GroupFilter::Blacklist );
+    f.addGroupName( "ConsoleIO" );
+    verify( "f (blacklisting) on consoleIOTP", false, f.acceptsTracePoint( &consoleIOTP ) );
+    verify( "f (blacklisting) on noGroupTP", true, f.acceptsTracePoint( &noGroupTP ) );
+    verify( "f (blacklisting) on noGroupTP2", true, f.acceptsTracePoint( &noGroupTP2 ) );
+
+    f.setMode( GroupFilter::Whitelist );
+    verify( "f (whitelisting) on consoleIOTP", true, f.acceptsTracePoint( &consoleIOTP ) );
+    verify( "f (whitelisting) on noGroupTP", false, f.acceptsTracePoint( &noGroupTP ) );
+    verify( "f (whitelisting) on noGroupTP2", false, f.acceptsTracePoint( &noGroupTP2 ) );
+
+    GroupFilter f2;
+    f2.setMode( GroupFilter::Whitelist );
+    f2.addGroupName( "ConsoleIO" );
+    f2.addGroupName( "" );
+    verify( "f2 (whitelisting) on consoleIOTP", true, f2.acceptsTracePoint( &consoleIOTP ) );
+    verify( "f2 (whitelisting) on noGroupTP", true, f2.acceptsTracePoint( &noGroupTP ) );
+    verify( "f2 (whitelisting) on noGroupTP2", true, f2.acceptsTracePoint( &noGroupTP2 ) );
+
+    f2.setMode( GroupFilter::Blacklist );
+    verify( "f2 (blacklisting) on consoleIOTP", false, f2.acceptsTracePoint( &consoleIOTP ) );
+    verify( "f2 (blacklisting) on noGroupTP", false, f2.acceptsTracePoint( &noGroupTP ) );
+    verify( "f2 (blacklisting) on noGroupTP2", false, f2.acceptsTracePoint( &noGroupTP2 ) );
+}
+
 TRACELIB_NAMESPACE_END
 
 int main()
 {
     TRACELIB_NAMESPACE_IDENT(testVerbosityFilter)();
     TRACELIB_NAMESPACE_IDENT(testPathFilter)();
+    TRACELIB_NAMESPACE_IDENT(testGroupFilter)();
     cout << g_verificationCount << " verifications; " << g_failureCount << " failures found." << endl;
     return g_failureCount;
 }

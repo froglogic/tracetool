@@ -124,6 +124,40 @@ bool FunctionFilter::acceptsTracePoint( const TracePoint *tracePoint )
     return false;
 }
 
+GroupFilter::GroupFilter()
+    : m_mode( Blacklist )
+{
+}
+
+void GroupFilter::setMode( Mode mode )
+{
+    m_mode = mode;
+}
+
+void GroupFilter::addGroupName( const string &group )
+{
+    m_groups.push_back( group );
+}
+
+bool GroupFilter::acceptsTracePoint( const TracePoint *tracePoint )
+{
+    const string tpGroup = tracePoint->groupName ? tracePoint->groupName
+                                                 : "";
+    bool result = m_mode == Blacklist;
+    vector<string>::const_iterator it, end = m_groups.end();
+    for ( it = m_groups.begin(); it != end; ++it ) {
+        if ( m_mode == Whitelist && *it == tpGroup ) {
+            result = true;
+            break;
+        }
+        if ( m_mode == Blacklist && *it == tpGroup ) {
+            result = false;
+            break;
+        }
+    }
+    return result;
+}
+
 ConjunctionFilter::~ConjunctionFilter()
 {
     deleteRange( m_filters.begin(), m_filters.end() );
