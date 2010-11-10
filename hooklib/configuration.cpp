@@ -260,6 +260,36 @@ Filter *Configuration::createFilterFromElement( TiXmlElement *e )
         return f;
     }
 
+    if ( e->ValueStr() == "tracekeyfilter" ) {
+        GroupFilter::Mode mode = GroupFilter::Whitelist;
+
+        string modeValue;
+        if ( e->QueryStringAttribute( "mode", &modeValue ) == TIXML_SUCCESS ) {
+            if ( modeValue == "whitelist" ) {
+                mode = GroupFilter::Whitelist;
+            } else if ( modeValue == "blacklist" ) {
+                mode = GroupFilter::Blacklist;
+            } else {
+                m_errorLog->write( "Tracelib Configuration: while reading %s: unsupported mode '%s' specified for <tracekeyfilter> element.", m_fileName.c_str(), modeValue.c_str() );
+                return 0;
+            }
+        }
+
+        GroupFilter *f = new GroupFilter;
+        f->setMode( mode );
+        for ( TiXmlElement *childElement = e->FirstChildElement(); childElement; childElement = childElement->NextSiblingElement() ) {
+            if ( childElement->ValueStr() == "key" ) {
+                f->addGroupName( childElement->GetText() ); // XXX Consider encoding issues
+            } else {
+                delete f;
+                m_errorLog->write( "Tracelib Configuration: while reading %s: unsupported child element '%s' specified for <tracekeyfilter> element.", m_fileName.c_str(), childElement->ValueStr().c_str() );
+                return 0;
+            }
+        }
+
+        return f;
+    }
+
     m_errorLog->write( "Tracelib Configuration: while reading %s: Unexpected filter element '%s' found.", m_fileName.c_str(), e->Value() );
     return 0;
 }
