@@ -47,4 +47,7 @@ void FixedHeaderView::calcSize()
     m_sectionSize =
         style()->sizeFromContents(QStyle::CT_HeaderSection,
                                   &opt, QSize(), this);
+
+    setDefaultSectionSize( this->orientation() == Qt::Horizontal ? m_sectionSize.width()
+                                                                 : m_sectionSize.height() );
 }
