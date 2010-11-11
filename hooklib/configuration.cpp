@@ -160,7 +160,7 @@ bool Configuration::readProcessElement( TiXmlElement *processElement )
             continue;
         }
 
-        m_errorLog->write( "Tracelib Configuration: while reading %s: unexpected child element '%s' found inside <tracelibConfiguration>.", m_fileName.c_str(), processElement->Value() );
+        m_errorLog->write( "Tracelib Configuration: while reading %s: unexpected child element '%s' found inside <process>.", m_fileName.c_str(), processElement->Value() );
     }
     return true;
 }
