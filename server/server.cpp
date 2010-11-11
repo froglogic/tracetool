@@ -120,6 +120,9 @@ public:
             m_currentShutdownEvent.name = m_s.trimmed();
             m_s.clear();
             m_server->handleShutdownEvent( m_currentShutdownEvent );
+        } else if ( lName == "key" ) {
+            m_currentEntry.traceKeys.append( m_s.trimmed() );
+            m_s.clear();
         }
         return true;
     }

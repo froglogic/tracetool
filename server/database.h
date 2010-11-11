@@ -55,6 +55,7 @@ struct TraceEntry
     QList<Variable> variables;
     QList<StackFrame> backtrace;
     unsigned long stackPosition;
+    QList<QString> traceKeys;
 };
 
 QDataStream &operator<<( QDataStream &stream, const TraceEntry &entry );
