@@ -164,6 +164,20 @@ vector<char> XMLSerializer::serialize( const TraceEntry &entry )
     if ( entry.tracePoint->groupName ) {
         str << indent << "<group>" << entry.tracePoint->groupName << "</group>";
     }
+    if ( !entry.process.availableTraceKeys.empty() ) {
+        str << indent << "<tracekeys>";
+        if ( m_beautifiedOutput ) {
+            indent = "\n    ";
+        }
+        vector<string>::const_iterator it, end = entry.process.availableTraceKeys.end();
+        for ( it = entry.process.availableTraceKeys.begin(); it != end; ++it ) {
+            str << indent << "<key><![CDATA[" << *it << "]]></key>";
+        }
+        if ( m_beautifiedOutput ) {
+            indent = "\n  ";
+        }
+        str << indent << "</tracekeys>";
+    }
     str << indent << "<type>" << entry.tracePoint->type << "</type>";
     str << indent << "<verbosity>" << entry.tracePoint->verbosity << "</verbosity>";
     str << indent << "<location lineno=\"" << entry.tracePoint->lineno << "\"><![CDATA[" << entry.tracePoint->sourceFile << "]]></location>";
