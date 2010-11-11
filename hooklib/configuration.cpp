@@ -87,32 +87,30 @@ bool Configuration::loadFrom( TiXmlDocument *xmlDoc )
 
     static string myProcessName = currentProcessName();
 
-    TiXmlElement *processElement = rootElement->FirstChildElement();
-    while ( processElement ) {
-        if ( processElement->ValueStr() != "process" ) {
-            m_errorLog->write( "Tracelib Configuration: while reading %s: unexpected child element '%s' found inside <tracelibConfiguration>.", m_fileName.c_str(), processElement->Value() );
-            return false;
-        }
-
-        TiXmlElement *nameElement = processElement->FirstChildElement( "name" );
-        if ( !nameElement ) {
-            m_errorLog->write( "Tracelib Configuration: while reading %s: found <process> element without <name> child element.", m_fileName.c_str() );
-            return false;
-        }
+    for ( TiXmlElement *e = rootElement->FirstChildElement(); e; e = e->NextSiblingElement() ) {
+        if ( e->ValueStr() == "process" ) {
+            TiXmlElement *nameElement = e->FirstChildElement( "name" );
+            if ( !nameElement ) {
+                m_errorLog->write( "Tracelib Configuration: while reading %s: found <process> element without <name> child element.", m_fileName.c_str() );
+                return false;
+            }
 
 
-        // XXX Consider encoding issues (e.g. if myProcessName contains umlauts)
+            // XXX Consider encoding issues (e.g. if myProcessName contains umlauts)
 #ifdef _WIN32
-        const bool isMyProcessElement = _stricmp( myProcessName.c_str(), nameElement->GetText() ) == 0;
+            const bool isMyProcessElement = _stricmp( myProcessName.c_str(), nameElement->GetText() ) == 0;
 #else
-        const bool isMyProcessElement = strcmp( myProcessName.c_str(), nameElement->GetText() ) == 0;
+            const bool isMyProcessElement = strcmp( myProcessName.c_str(), nameElement->GetText() ) == 0;
 #endif
-        if ( isMyProcessElement ) {
-            m_errorLog->write( "Tracelib Configuration: found configuration for process %s", myProcessName.c_str() );
-            return readProcessElement( processElement );
+            if ( isMyProcessElement ) {
+                m_errorLog->write( "Tracelib Configuration: found configuration for process %s", myProcessName.c_str() );
+                return readProcessElement( e );
+            }
+            continue;
         }
 
-        processElement = processElement->NextSiblingElement();
+        m_errorLog->write( "Tracelib Configuration: while reading %s: unexpected child element '%s' found inside <tracelibConfiguration>.", m_fileName.c_str(), e->Value() );
+        return false;
     }
     m_errorLog->write( "Tracelib Configuration: no configuration found for process %s", myProcessName.c_str() );
     return true;
