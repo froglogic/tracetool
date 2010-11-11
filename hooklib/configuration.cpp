@@ -109,53 +109,58 @@ bool Configuration::loadFrom( TiXmlDocument *xmlDoc )
 #endif
         if ( isMyProcessElement ) {
             m_errorLog->write( "Tracelib Configuration: found configuration for process %s", myProcessName.c_str() );
-            for ( TiXmlElement *e = processElement->FirstChildElement(); e; e = e->NextSiblingElement() ) {
-                if ( e->ValueStr() == "name" ) {
-                    continue;
-                }
-
-                if ( e->ValueStr() == "serializer" ) {
-                    if ( m_configuredSerializer ) {
-                        m_errorLog->write( "Tracelib Configuration: while reading %s: found multiple <serializer> elements in <process> element.", m_fileName.c_str() );
-                        return false;
-                    }
-
-                    Serializer *s = createSerializerFromElement( e );
-                    if ( !s ) {
-                        return false;
-                    }
-
-                    m_configuredSerializer = s;
-                    continue;
-                }
-
-                if ( e->ValueStr() == "tracepointset" ) {
-                    TracePointSet *tracePointSet = createTracePointSetFromElement( e );
-                    if ( !tracePointSet ) {
-                        return false;
-                    }
-                    m_configuredTracePointSets.push_back( tracePointSet );
-                    continue;
-                }
-
-                if ( e->ValueStr() == "output" ) {
-                    if ( m_configuredOutput ) {
-                        m_errorLog->write( "Tracelib Configuration: while reading %s: found multiple <output> elements in <process> element.", m_fileName.c_str() );
-                        return false;
-                    }
-                    Output *output = createOutputFromElement( e );
-                    if ( !output ) {
-                        return false;
-                    }
-                    m_configuredOutput = output;
-                }
-            }
-            return true;
+            return readProcessElement( processElement );
         }
 
         processElement = processElement->NextSiblingElement();
     }
     m_errorLog->write( "Tracelib Configuration: no configuration found for process %s", myProcessName.c_str() );
+    return true;
+}
+
+bool Configuration::readProcessElement( TiXmlElement *processElement )
+{
+    for ( TiXmlElement *e = processElement->FirstChildElement(); e; e = e->NextSiblingElement() ) {
+        if ( e->ValueStr() == "name" ) {
+            continue;
+        }
+
+        if ( e->ValueStr() == "serializer" ) {
+            if ( m_configuredSerializer ) {
+                m_errorLog->write( "Tracelib Configuration: while reading %s: found multiple <serializer> elements in <process> element.", m_fileName.c_str() );
+                return false;
+            }
+
+            Serializer *s = createSerializerFromElement( e );
+            if ( !s ) {
+                return false;
+            }
+
+            m_configuredSerializer = s;
+            continue;
+        }
+
+        if ( e->ValueStr() == "tracepointset" ) {
+            TracePointSet *tracePointSet = createTracePointSetFromElement( e );
+            if ( !tracePointSet ) {
+                return false;
+            }
+            m_configuredTracePointSets.push_back( tracePointSet );
+            continue;
+        }
+
+        if ( e->ValueStr() == "output" ) {
+            if ( m_configuredOutput ) {
+                m_errorLog->write( "Tracelib Configuration: while reading %s: found multiple <output> elements in <process> element.", m_fileName.c_str() );
+                return false;
+            }
+            Output *output = createOutputFromElement( e );
+            if ( !output ) {
+                return false;
+            }
+            m_configuredOutput = output;
+        }
+    }
     return true;
 }
 

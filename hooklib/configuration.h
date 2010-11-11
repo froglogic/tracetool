@@ -46,6 +46,8 @@ private:
     TracePointSet *createTracePointSetFromElement( TiXmlElement *e );
     Output *createOutputFromElement( TiXmlElement *e );
 
+    bool readProcessElement( TiXmlElement *e );
+
     std::string m_fileName;
     std::vector<TracePointSet *> m_configuredTracePointSets;
     Serializer *m_configuredSerializer;
