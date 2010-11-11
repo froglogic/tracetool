@@ -34,6 +34,7 @@ public:
     const std::vector<TracePointSet *> &configuredTracePointSets() const;
     Serializer *configuredSerializer();
     Output *configuredOutput();
+    const std::vector<std::string> &configuredTraceKeys() const;
 
 private:
     explicit Configuration( ErrorLog *errorLog );
@@ -47,12 +48,14 @@ private:
     Output *createOutputFromElement( TiXmlElement *e );
 
     bool readProcessElement( TiXmlElement *e );
+    bool readTraceKeysElement( TiXmlElement *e );
 
     std::string m_fileName;
     std::vector<TracePointSet *> m_configuredTracePointSets;
     Serializer *m_configuredSerializer;
     Output *m_configuredOutput;
     ErrorLog *m_errorLog;
+    std::vector<std::string> m_configuredTraceKeys;
 };
 
 TRACELIB_NAMESPACE_END

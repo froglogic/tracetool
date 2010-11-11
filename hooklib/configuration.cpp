@@ -109,6 +109,13 @@ bool Configuration::loadFrom( TiXmlDocument *xmlDoc )
             continue;
         }
 
+        if ( e->ValueStr() == "tracekeys" ) {
+            if ( !readTraceKeysElement( e ) ) {
+                return false;
+            }
+            continue;
+        }
+
         m_errorLog->write( "Tracelib Configuration: while reading %s: unexpected child element '%s' found inside <tracelibConfiguration>.", m_fileName.c_str(), e->Value() );
         return false;
     }
@@ -165,6 +172,21 @@ bool Configuration::readProcessElement( TiXmlElement *processElement )
     return true;
 }
 
+bool Configuration::readTraceKeysElement( TiXmlElement *traceKeysElem )
+{
+    for ( TiXmlElement *e = traceKeysElem->FirstChildElement(); e; e = e->NextSiblingElement() ) {
+        if ( e->ValueStr() == "key" ) {
+            const string key = e->GetText(); // XXX consider encoding issues
+            m_configuredTraceKeys.push_back( key );
+            continue;
+        }
+
+        m_errorLog->write( "Tracelib Configuration: while reading %s: unexpected child element '%s' found inside <tracekeys>.", m_fileName.c_str(), e->Value() );
+        return false;
+    }
+    return true;
+}
+
 const vector<TracePointSet *> &Configuration::configuredTracePointSets() const
 {
     return m_configuredTracePointSets;
@@ -178,6 +200,11 @@ Serializer *Configuration::configuredSerializer()
 Output *Configuration::configuredOutput()
 {
     return m_configuredOutput;
+}
+
+const vector<string> &Configuration::configuredTraceKeys() const
+{
+    return m_configuredTraceKeys;
 }
 
 Filter *Configuration::createFilterFromElement( TiXmlElement *e )
