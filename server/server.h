@@ -97,6 +97,8 @@ private:
     void handleTraceEntry( const TraceEntry &e );
     void handleShutdownEvent( const ProcessShutdownEvent &ev );
 
+    bool getGroupId( Transaction *transaction, const QString &name, unsigned int *id );
+
     QTcpServer *m_guiServer;
     ServerSocket *m_tcpServer;
     QSqlDatabase m_db;

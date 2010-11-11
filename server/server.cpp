@@ -352,13 +352,7 @@ void Server::storeEntry( const TraceEntry &e )
 
     unsigned int groupId = 0;
     if ( !e.groupName.isNull() ) {
-        QVariant v = transaction.exec( QString( "SELECT id FROM trace_point_group WHERE name=%1;" ).arg( Database::formatValue( m_db, e.groupName ) ) );
-        if ( !v.isValid() ) {
-            transaction.exec( QString( "INSERT INTO trace_point_group VALUES(NULL, %1);" ).arg( Database::formatValue( m_db, e.groupName ) ) );
-            v = transaction.exec( "SELECT last_insert_rowid() FROM trace_point_group LIMIT 1;" );
-        }
-        groupId = v.toUInt( &ok );
-        if ( !ok ) {
+        if ( !getGroupId( &transaction, e.groupName, &groupId ) ) {
             throw runtime_error( "Failed to store entry in database: read non-numeric trace point group id from database - corrupt database?" );
         }
     }
@@ -398,6 +392,13 @@ void Server::storeEntry( const TraceEntry &e )
             transaction.exec( QString( "INSERT INTO stackframe VALUES(%1, %2, %3, %4, %5, %6, %7);" ).arg( traceentryId ).arg( depthCount ).arg( Database::formatValue( m_db, it->module ) ).arg( Database::formatValue( m_db, it->function ) ).arg( it->functionOffset ).arg( Database::formatValue( m_db, it->sourceFile ) ).arg( it->lineNumber ) );
         }
     }
+
+    {
+        QList<QString>::ConstIterator it, end = e.traceKeys.end();
+        for ( it = e.traceKeys.begin(); it != end; ++it ) {
+            getGroupId( &transaction, *it, 0 );
+        }
+    }
 }
 
 void Server::storeShutdownEvent( const ProcessShutdownEvent &ev )
@@ -424,5 +425,24 @@ void Server::guiSocketDisconnected( QObject *sock )
     assert( guiSocket != 0 );
     m_guiSockets.removeAll( guiSocket );
     guiSocket->deleteLater();
+}
+
+bool Server::getGroupId( Transaction *transaction, const QString &name, unsigned int *id )
+{
+    QVariant v = transaction->exec( QString( "SELECT id FROM trace_point_group WHERE name=%1;" ).arg( Database::formatValue( m_db, name ) ) );
+    if ( !v.isValid() ) {
+        transaction->exec( QString( "INSERT INTO trace_point_group VALUES(NULL, %1);" ).arg( Database::formatValue( m_db, name ) ) );
+        if ( id ) {
+            v = transaction->exec( "SELECT last_insert_rowid() FROM trace_point_group LIMIT 1;" );
+        }
+    }
+
+    if ( !id ) {
+        return true;
+    }
+
+    bool ok;
+    *id = v.toUInt( &ok );
+    return ok;
 }
 
