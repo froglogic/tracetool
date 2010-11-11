@@ -72,9 +72,10 @@ unsigned int TracePointSet::actionForTracePoint( const TracePoint *tracePoint )
     return IgnoreTracePoint;
 }
 
-const TracedProcess TraceEntry::process = {
+TracedProcess TraceEntry::process = {
     getCurrentProcessId(),
-    getCurrentProcessStartTime()
+    getCurrentProcessStartTime(),
+    vector<string>()
 };
 
 ProcessShutdownEvent::ProcessShutdownEvent()
@@ -180,6 +181,7 @@ void Trace::reloadConfiguration( const string &fileName )
             delete m_configuration;
             m_configuration = cfg;
         }
+        TraceEntry::process.availableTraceKeys = cfg->configuredTraceKeys();
     } else {
         {
             MutexLocker serializerLocker( m_serializerMutex );
@@ -196,6 +198,7 @@ void Trace::reloadConfiguration( const string &fileName )
             delete m_configuration;
             m_configuration = 0;
         }
+        TraceEntry::process.availableTraceKeys.clear();
     }
     m_errorLog->write( "Trace::reloadConfiguration: cfg = %p, m_serializer = %p, m_output = %p, m_configuration = %p", cfg, m_serializer, m_output, m_configuration );
 }

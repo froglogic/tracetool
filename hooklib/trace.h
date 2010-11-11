@@ -50,6 +50,7 @@ struct TracedProcess
 {
     ProcessId id;
     time_t startTime;
+    std::vector<std::string> availableTraceKeys;
 };
 
 struct TraceEntry
@@ -57,7 +58,7 @@ struct TraceEntry
     TraceEntry( const TracePoint *tracePoint_, const char *msg = 0 );
     ~TraceEntry();
 
-    static const TracedProcess process;
+    static TracedProcess process;
     const ThreadId threadId;
     const time_t timeStamp;
     const TracePoint *tracePoint;
