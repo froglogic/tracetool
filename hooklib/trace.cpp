@@ -181,7 +181,29 @@ void Trace::reloadConfiguration( const string &fileName )
             delete m_configuration;
             m_configuration = cfg;
         }
-        TraceEntry::process.availableTraceKeys = cfg->configuredTraceKeys();
+
+        /* If any trace keys are given in the XML file, they also implicitely
+         * filter out all those trace entries which do not have any of the
+         * specified keys. A feature requested by Siemens.
+         */
+        const vector<string> traceKeys = cfg->configuredTraceKeys();
+        TraceEntry::process.availableTraceKeys = traceKeys;
+        if ( !traceKeys.empty() ) {
+            vector<TracePointSet *>::iterator setIt, setEnd = m_tracePointSets.end();
+            for ( setIt = m_tracePointSets.begin(); setIt != setEnd; ++setIt ) {
+                GroupFilter *groupFilter = new GroupFilter;
+                groupFilter->setMode( GroupFilter::Whitelist );
+                vector<string>::const_iterator keyIt, keyEnd = traceKeys.end();
+                for ( keyIt = traceKeys.begin(); keyIt != keyEnd; ++keyIt ) {
+                    groupFilter->addGroupName( *keyIt );
+                }
+
+                ConjunctionFilter *newFilter = new ConjunctionFilter;
+                newFilter->addFilter( groupFilter );
+                newFilter->addFilter( ( *setIt )->filter() );
+                ( *setIt )->setFilter( newFilter );
+            }
+        }
     } else {
         {
             MutexLocker serializerLocker( m_serializerMutex );

@@ -36,6 +36,9 @@ public:
     TracePointSet( Filter *filter, unsigned int actions );
     ~TracePointSet();
 
+    Filter *filter() { return m_filter; }
+    void setFilter( Filter *filter ) { m_filter = filter; }
+
     unsigned int actionForTracePoint( const TracePoint *tracePoint );
 
 private:
