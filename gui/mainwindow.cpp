@@ -219,6 +219,8 @@ bool MainWindow::setDatabase(const QString &databaseFileName, QString *errMsg)
                 m_watchTree, SLOT(handleNewTraceEntry(const TraceEntry &)));
         connect(m_serverSocket, SIGNAL(traceEntryReceived(const TraceEntry &)),
                 m_applicationTable, SLOT(handleNewTraceEntry(const TraceEntry &)));
+        connect(m_serverSocket, SIGNAL(traceEntryReceived(const TraceEntry &)),
+                this, SLOT(handleNewTraceEntry(const TraceEntry &)));
         connect(m_serverSocket, SIGNAL(processShutdown(const ProcessShutdownEvent &)),
                 m_applicationTable, SLOT(handleProcessShutdown(const ProcessShutdownEvent &)));
     }
@@ -651,5 +653,10 @@ void MainWindow::addNewTraceKey( const QString &id )
         Database::addGroupId( m_db, id );
         tracePointsSearchWidget->setTraceKeys( Database::seenGroupIds( m_db ) );
     }
+}
+
+void MainWindow::handleNewTraceEntry( const TraceEntry &e )
+{
+    tracePointsSearchWidget->addTraceKeys( Database::seenGroupIds( m_db ) );
 }
 
