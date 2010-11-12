@@ -50,6 +50,7 @@ public slots:
     void highlightEntries(const QString &term,
                           const QStringList &fields,
                           SearchWidget::MatchType matchType);
+    void highlightTraceKey(const QString &key);
 
 private slots:
     void insertNewTraceEntries();
@@ -73,6 +74,7 @@ private:
     QRegExp m_lastSearchTerm;
     QStringList m_scannedFieldNames;
     QList<int> m_scannedFields;
+    QString m_highlightedTraceKey;
 };
 
 #endif

@@ -427,21 +427,50 @@ void EntryItemModel::highlightEntries(const QString &term,
     updateHighlightedEntries();
 }
 
+void EntryItemModel::highlightTraceKey(const QString &traceKey)
+{
+    if ( m_highlightedTraceKey != traceKey ) {
+        m_highlightedTraceKey = traceKey;
+        updateHighlightedEntries();
+    }
+}
+
 void EntryItemModel::updateHighlightedEntries()
 {
     QSet<unsigned int> entriesToHighlight;
+
+    int traceKeyColumn = -1;
+    if ( !m_highlightedTraceKey.isEmpty() ) {
+        const QList<int> visibleColumns = m_columnsInfo->visibleColumns();
+        QList<int>::ConstIterator it, end = visibleColumns.end();
+        int pos = -1;
+        for ( it = visibleColumns.begin(); it != end; ++it, ++pos ) {
+            if ( m_columnsInfo->columnCaption( *it ) == tr( "Key" ) ) {
+                traceKeyColumn = pos + 1;
+                break;
+            }
+        }
+    }
 
     QVector<QVector<QVariant> >::ConstIterator it, end = m_data.end();
     for ( it = m_data.begin(); it != end; ++it ) {
         const QVector<QVariant> &row = *it;
 
+        bool ok;
+        const unsigned int entryId = row[0].toUInt(&ok);
+        assert(ok);
+
         QList<int>::ConstIterator fieldIdxIt, fieldIdxEnd = m_scannedFields.end();
         for ( fieldIdxIt = m_scannedFields.begin(); fieldIdxIt != fieldIdxEnd; ++fieldIdxIt ) {
             const QVariant &v = row[*fieldIdxIt + 1];
             if ( m_lastSearchTerm.exactMatch( v.toString() ) ) {
-                bool ok;
-                const unsigned int entryId = row[0].toUInt(&ok);
-                assert(ok);
+                entriesToHighlight.insert(entryId);
+            }
+        }
+
+        if ( traceKeyColumn != -1 ) {
+            const QVariant &v = row[traceKeyColumn + 1];
+            if ( v.toString() == m_highlightedTraceKey ) {
                 entriesToHighlight.insert(entryId);
             }
         }
