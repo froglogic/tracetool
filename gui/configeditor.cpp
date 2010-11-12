@@ -272,6 +272,13 @@ ConfigEditor::ConfigEditor(Configuration *conf,
     connect(clearFiltersButton, SIGNAL(clicked()),
             this, SLOT(clearFilters()));
 
+    connect(traceKeyList, SIGNAL(currentRowChanged(int)),
+            this, SLOT(traceKeyItemActivated(int)));
+    connect(addTraceKeyButton, SIGNAL(clicked()),
+            this, SLOT(addTraceKey()));
+    connect(removeTraceKeyButton, SIGNAL(clicked()),
+            this, SLOT(removeTraceKey()));
+
     fillInConfiguration();
 }
 
@@ -289,6 +296,14 @@ void ConfigEditor::fillInConfiguration()
 
     if (processList->count() > 0)
         processList->setCurrentRow(0);
+
+    traceKeyList->clear();
+    traceKeyList->addItems(QStringList(m_conf->traceKeys()));
+    for (int i = 0; i < traceKeyList->count(); ++i) {
+        traceKeyList->item(i)->setFlags(Qt::ItemIsEnabled | Qt::ItemIsEditable | Qt::ItemIsSelectable);
+    }
+
+    updateTraceKeyButtons();
 }
 
 void ConfigEditor::saveCurrentProcess(int row)
@@ -324,6 +339,17 @@ void ConfigEditor::saveCurrentProcess(int row)
     QList<TracePointSet> tpsets;
     filterTable->saveFilters(&tpsets);
     p->m_tracePointSets = tpsets;
+}
+
+void ConfigEditor::saveTraceKeyList()
+{
+    /* Use a QSet<QString> instead of QStringList to avoid writing out
+     * duplicate trace keys.
+     */
+    QSet<QString> traceKeys;
+    for (int i = 0; i < traceKeyList->count(); ++i)
+        traceKeys.insert(traceKeyList->item(i)->text());
+    m_conf->setTraceKeys(QStringList(traceKeys.toList()));
 }
 
 void ConfigEditor::currentProcessChanged(QListWidgetItem *current, QListWidgetItem *previous)
@@ -409,6 +435,7 @@ void ConfigEditor::processNameChanged(const QString &text)
 void ConfigEditor::accept()
 {
     saveCurrentProcess(processList->currentRow());
+    saveTraceKeyList();
     save();
     QDialog::accept();
 }
@@ -436,3 +463,27 @@ void ConfigEditor::outputTypeComboChanged(int index)
     hostLabel->setEnabled(tcp);
     portLabel->setEnabled(tcp);
 }
+
+void ConfigEditor::updateTraceKeyButtons()
+{
+    removeTraceKeyButton->setEnabled(traceKeyList->currentRow() != -1);
+}
+
+void ConfigEditor::traceKeyItemActivated(int)
+{
+    updateTraceKeyButtons();
+}
+
+void ConfigEditor::addTraceKey()
+{
+    QListWidgetItem *newItem = new QListWidgetItem;
+    newItem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsEditable | Qt::ItemIsSelectable);
+    traceKeyList->addItem(newItem);
+    traceKeyList->editItem(newItem);
+}
+
+void ConfigEditor::removeTraceKey()
+{
+    traceKeyList->takeItem(traceKeyList->currentRow());
+}
+

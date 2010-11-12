@@ -69,6 +69,7 @@ protected:
 private slots:
     void currentProcessChanged(QListWidgetItem *, QListWidgetItem *);
     void saveCurrentProcess(int row);
+    void saveTraceKeyList();
     void newConfig();
     void deleteConfig();
     void processNameChanged(const QString &text);
@@ -76,10 +77,14 @@ private slots:
     void clearFilters();
     void serializerComboChanged(int index);
     void outputTypeComboChanged(int index);
+    void traceKeyItemActivated(int row);
+    void addTraceKey();
+    void removeTraceKey();
 
 private:
     void fillInConfiguration();
     void save();
+    void updateTraceKeyButtons();
 
     Configuration *m_conf;
     FilterTable *filterTable;
