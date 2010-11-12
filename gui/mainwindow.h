@@ -80,7 +80,6 @@ private slots:
     void automaticServerError(QProcess::ProcessError error);
     void automaticServerExit(int code, QProcess::ExitStatus status);
     void automaticServerOutput();
-    void activeTraceKeyChanged(const QString &key, const QStringList &inactiveKeys);
     void handleNewTraceEntry(const TraceEntry &e);
 
 private:

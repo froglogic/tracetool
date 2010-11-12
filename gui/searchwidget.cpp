@@ -103,20 +103,8 @@ SearchWidget::SearchWidget( QWidget *parent )
 
 void SearchWidget::traceKeyChanged(const QString &key)
 {
-    if ( key == tr( "<All keys>" ) ) {
-        emit activeTraceKeyChanged("", QStringList() );
-        return;
-    }
-
-    QStringList inactiveKeys;
-    const int cnt = m_activeTraceKeyCombo->count();
-    for (int i = 0; i < cnt; ++i) {
-        const QString text = m_activeTraceKeyCombo->itemText(i);
-        if (text != key) {
-            inactiveKeys.append(text);
-        }
-    }
-    emit activeTraceKeyChanged(key, inactiveKeys);
+    emit activeTraceKeyChanged( key == tr( "<All keys>" ) ? ""
+                                                          : key );
 }
 
 void SearchWidget::emitSearchCriteria()

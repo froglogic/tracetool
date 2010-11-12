@@ -142,15 +142,6 @@ MainWindow::MainWindow(Settings *settings,
     gridLayout->addWidget(m_filterForm);
     connect(m_filterForm, SIGNAL(filterApplied()),
             this, SLOT(filterChange()));
-
-    connect(tracePointsSearchWidget, SIGNAL(activeTraceKeyChanged(const QString &, const QStringList &)),
-            this, SLOT(activeTraceKeyChanged(const QString &, const QStringList &)));
-}
-
-void MainWindow::activeTraceKeyChanged(const QString &key, const QStringList &inactiveKeys)
-{
-    m_settings->entryFilter()->setInactiveKeys(inactiveKeys);
-    m_settings->entryFilter()->emitChanged();
 }
 
 MainWindow::~MainWindow()
@@ -230,6 +221,9 @@ bool MainWindow::setDatabase(const QString &databaseFileName, QString *errMsg)
              m_entryItemModel, SLOT( highlightEntries( const QString &,
                                                        const QStringList &,
                                                        SearchWidget::MatchType ) ) );
+    connect(tracePointsSearchWidget, SIGNAL(activeTraceKeyChanged(const QString &)),
+            m_entryItemModel, SLOT(highlightTraceKey(const QString &)));
+
     connect( tracePointsClear, SIGNAL(clicked()),
              this, SLOT(clearTracePoints()));
     connect(m_settings->entryFilter(), SIGNAL(changed()),

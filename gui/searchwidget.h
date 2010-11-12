@@ -51,8 +51,7 @@ signals:
     void searchCriteriaChanged( const QString &term,
                                 const QStringList &fields,
                                 SearchWidget::MatchType matchType );
-    void activeTraceKeyChanged( const QString &activeKey,
-                                const QStringList &inactiveKeys );
+    void activeTraceKeyChanged( const QString &activeKey );
 
 private slots:
     void termEdited( const QString &term );
