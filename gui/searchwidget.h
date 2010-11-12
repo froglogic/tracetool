@@ -45,6 +45,7 @@ public:
 
     void setFields( const QStringList &fields );
     void setTraceKeys( const QStringList &keys );
+    void addTraceKeys( const QStringList &keys );
 
 signals:
     void searchCriteriaChanged( const QString &term,

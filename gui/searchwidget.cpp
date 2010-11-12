@@ -13,6 +13,7 @@
 #include <QPainter>
 #include <QPushButton>
 #include <QRadioButton>
+#include <QSet>
 #include <QStringList>
 #include <QStyle>
 #include <QStyleOptionFrameV2>
@@ -159,6 +160,21 @@ void SearchWidget::setTraceKeys( const QStringList &keys )
     m_activeTraceKeyCombo->clear();
     m_activeTraceKeyCombo->addItem( tr( "<All keys>" ) );
     m_activeTraceKeyCombo->addItems( keys );
+}
+
+void SearchWidget::addTraceKeys( const QStringList &keys )
+{
+    QSet<QString> currentKeys;
+
+    const int cnt = m_activeTraceKeyCombo->count();
+    for ( int i = 0; i < cnt; ++i ) {
+        currentKeys.insert( m_activeTraceKeyCombo->itemText( i ) );
+    }
+
+    QSet<QString> newKeys = QSet<QString>::fromList( keys );
+    newKeys.subtract( currentKeys );
+
+    m_activeTraceKeyCombo->addItems( newKeys.toList() );
 }
 
 void SearchWidget::setFields( const QStringList &fields )
