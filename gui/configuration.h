@@ -10,6 +10,7 @@
 #include <QMap>
 #include <QObject>
 #include <QString>
+#include <QStringList>
 #include <QXmlStreamReader>
 
 enum MatchingMode { StrictMatching, WildcardMatching, RegExpMatching };
@@ -60,6 +61,9 @@ public:
     int processCount() const { return m_processes.count(); }
     ProcessConfiguration* process(int num);
 
+    void setTraceKeys(const QStringList &traceKeys) { m_traceKeys = traceKeys; }
+    const QStringList &traceKeys() const { return m_traceKeys; }
+
     void addProcessConfiguration(ProcessConfiguration *pc);
 
     static QString modeToString(MatchingMode m);
@@ -68,6 +72,7 @@ public:
 private:
     void readConfigurationElement();
     void readProcessElement();
+    void readTraceKeysElement();
     void readNameElement(ProcessConfiguration *proc);
     void readOutputElement(ProcessConfiguration *proc);
     void readOutputOption(ProcessConfiguration *proc);
@@ -83,6 +88,7 @@ private:
     QXmlStreamReader m_xml;
     QList<ProcessConfiguration*> m_processes;
     QString m_fileName;
+    QStringList m_traceKeys;
 };
 
 #endif

@@ -57,6 +57,8 @@ void Configuration::readConfigurationElement()
     while (m_xml.readNextStartElement()) {
         if (m_xml.name() == "process")
             readProcessElement();
+        else if (m_xml.name() == "tracekeys")
+            readTraceKeysElement();
         else
             m_xml.raiseError(tr("Missing process element."));
     }
@@ -86,6 +88,19 @@ void Configuration::readProcessElement()
         delete proc;
     else
         m_processes.append(proc);
+}
+
+void Configuration::readTraceKeysElement()
+{
+    assert(m_xml.isStartElement() && m_xml.name() == "tracekeys");
+
+    while (m_xml.readNextStartElement()) {
+        if (m_xml.name() == "key")
+            m_traceKeys.append(m_xml.readElementText());
+        else
+            m_xml.raiseError(tr("Unexpected element '%1' in tracekeys element")
+                             .arg(m_xml.name().toString()));
+    }
 }
 
 void Configuration::readNameElement(ProcessConfiguration *proc)
@@ -216,6 +231,15 @@ bool Configuration::save(QString *errMsg)
     stream.writeStartDocument();
     stream.writeStartElement("tracelibConfiguration");
     
+    if (!m_traceKeys.isEmpty()) {
+        stream.writeStartElement("tracekeys");
+        QStringList::ConstIterator it, end = m_traceKeys.end();
+        for (it = m_traceKeys.begin(); it != end; ++it) {
+            stream.writeTextElement("key", *it);
+        }
+        stream.writeEndElement(); // tracekeys
+    }
+
     QListIterator<ProcessConfiguration*> it(m_processes);
     while (it.hasNext()) {
         ProcessConfiguration *p = it.next();
