@@ -15,6 +15,10 @@
 #include <iostream>
 #include <string>
 
+#ifdef Q_OS_WIN32
+#  include <windows.h>
+#endif
+
 namespace Error
 {
     const int None = 0;
@@ -30,8 +34,40 @@ static void printUsage(const string &app)
          << "       " << app << " [--port <port> [--guiport <port>]] <.trace-file>" << endl;
 }
 
+#ifdef Q_OS_WIN32
+static BOOL WINAPI ctrlCHandler(DWORD eventType)
+{
+    switch (eventType) {
+        case CTRL_C_EVENT:
+            cout << "traced: Detected Ctrl+C, shutting down..." << endl;
+            break;
+        case CTRL_BREAK_EVENT:
+            cout << "traced: Detected Ctrl+Break, shutting down..." << endl;
+            break;
+        case CTRL_CLOSE_EVENT:
+            cout << "traced: Detected console closing, shutting down..." << endl;
+            break;
+        case CTRL_LOGOFF_EVENT:
+            cout << "traced: Detected user logging off, shutting down..." << endl;
+            break;
+        case CTRL_SHUTDOWN_EVENT:
+            cout << "traced: Detected system shutdown, shutting down..." << endl;
+            break;
+    }
+    QCoreApplication::quit();
+    return TRUE;
+}
+#endif
+
 int main( int argc, char **argv )
 {
+#ifdef Q_OS_WIN32
+    if (::SetConsoleCtrlHandler(ctrlCHandler, TRUE) == 0) {
+        cout << "Warning: failed to install Ctrl+C handler" << endl;
+        cout << "Terminating server using Ctrl+C will not cause a clean shutdown." << endl;
+    }
+#endif
+
     QCoreApplication app( argc, argv );
 
     GetOpt opt;
