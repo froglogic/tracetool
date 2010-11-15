@@ -131,7 +131,7 @@ public:
     inline ~TracePointVisitor() { visitTracePoint( m_tracePoint, m_stream.str().c_str(), 0 ); }
 
     template <class T>
-    inline TracePointVisitor &operator<<( T v ) {
+    inline TracePointVisitor &operator<<( const T &v ) {
         return *this << convertVariable( v );
     }
 
@@ -144,7 +144,7 @@ private:
 };
 
 template <>
-inline TracePointVisitor &TracePointVisitor::operator<<( VariableValue v ) {
+inline TracePointVisitor &TracePointVisitor::operator<<( const VariableValue &v ) {
     m_stream << VariableValue::convertToString( v );
     return *this;
 }
