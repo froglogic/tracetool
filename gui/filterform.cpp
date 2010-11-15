@@ -35,6 +35,16 @@ FilterForm::FilterForm(Settings *settings, QWidget *parent)
             this, SLOT(apply()));
 }
 
+void FilterForm::setTraceKeys( const QStringList &keys )
+{
+    traceKeyList->clear();
+    QStringList::ConstIterator it, end = keys.end();
+    for ( it = keys.begin(); it != end; ++it ) {
+        QListWidgetItem *item = new QListWidgetItem;
+        item->setText( *it );
+        traceKeyList->addItem( item );
+    }
+}
 
 void FilterForm::apply()
 {

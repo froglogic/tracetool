@@ -186,6 +186,7 @@ bool MainWindow::setDatabase(const QString &databaseFileName, QString *errMsg)
         return false;
 
     tracePointsSearchWidget->setTraceKeys(Database::seenGroupIds(m_db));
+    m_filterForm->setTraceKeys(Database::seenGroupIds(m_db));
 
     m_entryItemModel = new EntryItemModel(m_settings->entryFilter(),
                                           m_settings->columnsInfo(), this);
@@ -200,6 +201,7 @@ bool MainWindow::setDatabase(const QString &databaseFileName, QString *errMsg)
     }
 
     tracePointsSearchWidget->setTraceKeys(Database::seenGroupIds(m_db));
+    m_filterForm->setTraceKeys(Database::seenGroupIds(m_db));
 
     m_applicationTable->setApplications(Database::tracedApplications(m_db));
 
@@ -606,6 +608,7 @@ void MainWindow::clearTracePoints()
     m_entryItemModel->reApplyFilter();
     m_watchTree->reApplyFilter();
     tracePointsSearchWidget->setTraceKeys( QStringList() );
+    m_filterForm->setTraceKeys( QStringList() );
     m_applicationTable->setApplications( QList<TracedApplicationInfo>() );
 }
 
@@ -646,6 +649,7 @@ void MainWindow::addNewTraceKey( const QString &id )
     if ( !m_serverSocket || m_serverSocket->state() == QAbstractSocket::ConnectedState ) {
         Database::addGroupId( m_db, id );
         tracePointsSearchWidget->setTraceKeys( Database::seenGroupIds( m_db ) );
+        m_filterForm->setTraceKeys( Database::seenGroupIds( m_db ) );
     }
 }
 
