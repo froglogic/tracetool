@@ -112,56 +112,100 @@ bool EntryItemModel::setDatabase(QSqlDatabase database,
     return true;
 }
 
-static QString filterClause(EntryFilter *f)
-{
-    QString sql = f->whereClause("process.name",
-                                 "process.pid",
-                                 "traced_thread.tid",
-                                 "function_name.name",
-                                 "message",
-                                 "trace_point.type");
-    if (sql.isEmpty())
-        return QString();
-
-    return "AND " + sql + " ";
-}
-
 bool EntryItemModel::queryForEntries(QString *errMsg, int startRow)
 {
 #ifdef DEBUG_MODEL
     qDebug() << "EntryItemModel::queryForEntries: startRow = " << startRow;
 #endif
 
-    QString fromAndWhereClause =
-                        "FROM"
-                        " trace_entry,"
-                        " trace_point,"
-                        " trace_point_group,"
-                        " path_name, "
-                        " function_name, "
-                        " process, "
-                        " traced_thread "
-                        "WHERE"
-                        " trace_entry.trace_point_id = trace_point.id "
-                        "AND"
-                        " trace_point.function_id = function_name.id "
-                        "AND"
-                        " trace_point.group_id = trace_point_group.id "
-                        "AND"
-                        " trace_point.path_id = path_name.id "
-                        "AND"
-                        " trace_entry.traced_thread_id = traced_thread.id "
-                        "AND"
-                        " traced_thread.process_id = process.id " +
-                        filterClause(m_filter);
+    QStringList tablesToSelectFrom;
+    tablesToSelectFrom.append("trace_entry");
+
+    QStringList predicates;
+
+    if (!m_filter->application().isEmpty()) {
+        tablesToSelectFrom.append("process");
+        tablesToSelectFrom.append("traced_thread");
+
+        predicates << "trace_entry.traced_thread_id = traced_thread.id"
+                   << "traced_thread.process_id = process.id"
+                   << QString("process.name LIKE '%%1%'").arg(m_filter->application());
+    }
+
+    if (m_filter->processId() != -1) {
+        tablesToSelectFrom.append("process");
+        tablesToSelectFrom.append("traced_thread");
+
+        predicates << "trace_entry.traced_thread_id = traced_thread.id"
+                   << "traced_thread.process_id = process.id"
+                   << QString("process.id = %1").arg(m_filter->processId());
+    }
+
+    if (m_filter->threadId() != -1) {
+        tablesToSelectFrom.append("traced_thread");
+
+        predicates << "trace_entry.traced_thread_id = traced_thread.id"
+                   << QString("traced_thread.tid = %1").arg(m_filter->threadId());
+    }
+
+    if (!m_filter->function().isEmpty()) {
+        tablesToSelectFrom.append("trace_point");
+        tablesToSelectFrom.append("function_name");
+
+        predicates << "trace_entry.trace_point_id = trace_point.id"
+                   << "trace_point.function_id = function_name.id"
+                   << QString("function_name.name LIKE '%%1%'").arg(m_filter->function());
+    }
+
+    if (!m_filter->message().isEmpty()) {
+        predicates << QString("trace_entry.message LIKE '%%1%'").arg(m_filter->message());
+    }
+
+    if (m_filter->type() != -1) {
+        tablesToSelectFrom.append("trace_point");
+
+        predicates << "trace_entry.trace_point_id = trace_point.id"
+                   << QString("trace_point.type = %1").arg(m_filter->type());
+    }
+
+    if (!m_filter->inactiveKeys().isEmpty()) {
+        tablesToSelectFrom.append("trace_point");
+
+        QStringList disjunction;
+        if (m_filter->acceptsEntriesWithoutKey()) {
+            disjunction << "trace_entry.trace_point_id = trace_point.id AND "
+                           "trace_point.group_id = 0";
+        }
+
+        tablesToSelectFrom.append("trace_point_group");
+        QStringList inactiveKeys = m_filter->inactiveKeys();
+        QStringList::ConstIterator it, end = inactiveKeys.end();
+        for (it = inactiveKeys.begin(); it != end; ++it) {
+            disjunction << QString("trace_entry.trace_point_id = trace_point.id AND "
+                           "trace_point.group_id = trace_point_group.id AND "
+                           "trace_point_group.name != '%1'").arg(*it);
+        }
+        predicates << QString("(%1)").arg(disjunction.join(" OR "));
+    }
+
+    tablesToSelectFrom.removeDuplicates();
+    predicates.removeDuplicates();
+
+    QString fromAndWhereClause = "FROM ";
+    fromAndWhereClause += tablesToSelectFrom.join(", ");
+    if (!predicates.isEmpty()) {
+        fromAndWhereClause += " WHERE ";
+        fromAndWhereClause += predicates.join(" AND ");
+    }
 
     if ( m_numMatchingEntries == -1 ) {
+        QString countQuery = QString( "SELECT DISTINCT trace_entry.id %1 ORDER BY trace_entry.id;" ).arg(fromAndWhereClause);
 #ifdef DEBUG_MODEL
         qDebug() << "Recomputing number of matching entries...";
 #endif
         QSqlQuery q(m_db);
         q.setForwardOnly(true);
-        if (!q.exec(QString( "SELECT DISTINCT trace_entry.id %1 ORDER BY trace_entry.id;" ).arg(fromAndWhereClause))) {
+        if (!q.exec(countQuery)) {
             *errMsg = m_db.lastError().text();
             return false;
         }
@@ -196,22 +240,50 @@ bool EntryItemModel::queryForEntries(QString *errMsg, int startRow)
                 fieldsToSelect.append("trace_entry.timestamp");
             } else if (cn == "Application") {
                 fieldsToSelect.append("process.name");
+                tablesToSelectFrom.append("traced_thread");
+                tablesToSelectFrom.append("process");
+                predicates << "trace_entry.traced_thread_id = traced_thread.id"
+                           << "traced_thread.process_id = process.id";
             } else if (cn == "PID") {
                 fieldsToSelect.append("process.pid");
+                tablesToSelectFrom.append("traced_thread");
+                tablesToSelectFrom.append("process");
+                predicates << "trace_entry.traced_thread_id = traced_thread.id"
+                           << "traced_thread.process_id = process.id";
             } else if (cn == "Thread") {
                 fieldsToSelect.append("traced_thread.tid");
+                tablesToSelectFrom.append("traced_thread");
+                predicates << "trace_entry.traced_thread_id = traced_thread.id";
             } else if (cn == "File") {
                 fieldsToSelect.append("path_name.name");
+                tablesToSelectFrom.append("trace_point");
+                tablesToSelectFrom.append("path_name");
+                predicates << "trace_entry.trace_point_id = trace_point.id"
+                           << "trace_point.path_id = path_name.id";
             } else if (cn == "Line") {
                 fieldsToSelect.append("trace_point.line");
+                tablesToSelectFrom.append("trace_point");
+                predicates << "trace_entry.trace_point_id = trace_point.id";
             } else if (cn == "Function") {
                 fieldsToSelect.append("function_name.name");
+                tablesToSelectFrom.append("trace_point");
+                tablesToSelectFrom.append("function_name");
+                predicates << "trace_entry.trace_point_id = trace_point.id"
+                           << "trace_point.function_id = function_name.id";
             } else if (cn == "Type") {
                 fieldsToSelect.append("trace_point.type");
+                tablesToSelectFrom.append("trace_point");
+                predicates << "trace_entry.trace_point_id = trace_point.id";
             } else if (cn == "Verbosity") {
                 fieldsToSelect.append("trace_point.verbosity");
+                tablesToSelectFrom.append("trace_point");
+                predicates << "trace_entry.trace_point_id = trace_point.id";
             } else if (cn == "Key") {
                 fieldsToSelect.append("trace_point_group.name");
+                tablesToSelectFrom.append("trace_point");
+                tablesToSelectFrom.append("trace_point_group");
+                predicates << "trace_entry.trace_point_id = trace_point.id"
+                           << "trace_point.group_id = trace_point_group.id";
             } else if (cn == "Message") {
                 fieldsToSelect.append("trace_entry.message");
             } else if (cn == "Stack Position") {
@@ -220,13 +292,22 @@ bool EntryItemModel::queryForEntries(QString *errMsg, int startRow)
         }
     }
 
+    tablesToSelectFrom.removeDuplicates();
+    predicates.removeDuplicates();
+
+    predicates << QString("trace_entry.id >= %1").arg(m_idForRow[startRow]);
+
     QString statement = "SELECT DISTINCT ";
     statement += fieldsToSelect.join( ", ");
-    statement += " %1 AND trace_entry.id >= %2 ORDER BY trace_entry.id LIMIT 100";
+    statement += " FROM ";
+    statement += tablesToSelectFrom.join(", ");
+    statement += " WHERE ";
+    statement += predicates.join(" AND ");
+    statement += " ORDER BY trace_entry.id LIMIT 100";
 
     QSqlQuery query(m_db);
     query.setForwardOnly(true);
-    if (!query.exec(statement.arg(fromAndWhereClause).arg(m_idForRow[startRow]))) {
+    if (!query.exec(statement)) {
         *errMsg = m_db.lastError().text();
         return false;
     }
