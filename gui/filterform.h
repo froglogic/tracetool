@@ -17,6 +17,7 @@ public:
     explicit FilterForm(Settings *settings, QWidget *parent = 0);
 
     void setTraceKeys( const QStringList &keys );
+    void addTraceKeys( const QStringList &keys );
 
 signals:
     void filterApplied();

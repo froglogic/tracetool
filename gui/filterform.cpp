@@ -38,10 +38,23 @@ FilterForm::FilterForm(Settings *settings, QWidget *parent)
 void FilterForm::setTraceKeys( const QStringList &keys )
 {
     traceKeyList->clear();
+    addTraceKeys(keys);
+}
+
+void FilterForm::addTraceKeys( const QStringList &keys )
+{
+    QSet<QString> currentKeys;
+    for ( int i = 0; i < traceKeyList->count(); ++i ) {
+        currentKeys.insert( traceKeyList->item( i )->text() );
+    }
+
     QStringList::ConstIterator it, end = keys.end();
     for ( it = keys.begin(); it != end; ++it ) {
-        QListWidgetItem *i = new QListWidgetItem( *it, traceKeyList );
-        i->setCheckState(Qt::Checked);
+        if ( !currentKeys.contains( *it ) ) {
+            QListWidgetItem *i = new QListWidgetItem( *it, traceKeyList );
+            i->setCheckState(Qt::Checked);
+            currentKeys.insert( *it );
+        }
     }
 }
 

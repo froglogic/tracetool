@@ -656,5 +656,6 @@ void MainWindow::addNewTraceKey( const QString &id )
 void MainWindow::handleNewTraceEntry( const TraceEntry &e )
 {
     tracePointsSearchWidget->addTraceKeys( Database::seenGroupIds( m_db ) );
+    m_filterForm->addTraceKeys( Database::seenGroupIds( m_db ) );
 }
 
