@@ -61,6 +61,14 @@ static QVariant stackPositionFormatter(QSqlDatabase, const EntryItemModel *model
     return QString( "0x%1" ).arg( QString::number( i, 16 ) );
 }
 
+static QVariant keyFormatter(QSqlDatabase, const EntryItemModel *model, int row, int column)
+{
+    bool ok;
+    qulonglong i = model->getValue(row, column).toULongLong(&ok);
+    assert(ok);
+    return model->keyName(i);
+}
+
 static const struct {
     const char *name;
     DataFormatter formatterFn;
@@ -76,7 +84,7 @@ static const struct {
 #ifdef SHOW_VERBOSITY
     { "Verbosity", 0 },
 #endif
-    { "Key", 0 },
+    { "Key", keyFormatter },
     { "Message", 0 },
     { "Stack Position", stackPositionFormatter }
 };
@@ -89,7 +97,8 @@ EntryItemModel::EntryItemModel(EntryFilter *filter, ColumnsInfo *ci,
       m_databasePollingTimer(NULL),
       m_suspended(false),
       m_filter(filter),
-      m_columnsInfo(ci)
+      m_columnsInfo(ci),
+      m_highlightedTraceKeyId(-1)
 {
     m_databasePollingTimer = new QTimer(this);
     m_databasePollingTimer->setSingleShot(true);
@@ -172,22 +181,27 @@ bool EntryItemModel::queryForEntries(QString *errMsg, int startRow)
                    << QString("trace_point.type = %1").arg(m_filter->type());
     }
 
-    if (!m_filter->inactiveKeys().isEmpty()) {
+    if (!m_filter->acceptsEntriesWithoutKey() || !m_filter->inactiveKeys().isEmpty()) {
         tablesToSelectFrom.append("trace_point");
 
         QStringList disjunction;
         if (m_filter->acceptsEntriesWithoutKey()) {
-            disjunction << "trace_entry.trace_point_id = trace_point.id AND "
-                           "trace_point.group_id = 0";
+            disjunction << "(trace_entry.trace_point_id = trace_point.id AND "
+                           "trace_point.group_id = 0)";
         }
 
-        tablesToSelectFrom.append("trace_point_group");
-        QStringList inactiveKeys = m_filter->inactiveKeys();
-        QStringList::ConstIterator it, end = inactiveKeys.end();
-        for (it = inactiveKeys.begin(); it != end; ++it) {
-            disjunction << QString("trace_entry.trace_point_id = trace_point.id AND "
-                           "trace_point.group_id = trace_point_group.id AND "
-                           "trace_point_group.name != '%1'").arg(*it);
+        if (!m_filter->inactiveKeys().isEmpty()) {
+            tablesToSelectFrom.append("trace_point_group");
+
+            QStringList keyPredicates;
+            QStringList inactiveKeys = m_filter->inactiveKeys();
+            QStringList::ConstIterator it, end = inactiveKeys.end();
+            for (it = inactiveKeys.begin(); it != end; ++it) {
+                keyPredicates << QString("trace_point_group.name != '%1'").arg(*it);
+            }
+
+            disjunction << QString("(trace_entry.trace_point_id = trace_point.id AND "
+                            "trace_point.group_id = trace_point_group.id AND %1)").arg(keyPredicates.join(" AND "));
         }
         predicates << QString("(%1)").arg(disjunction.join(" OR "));
     }
@@ -290,11 +304,9 @@ bool EntryItemModel::queryForEntries(QString *errMsg, int startRow)
                 tablesToSelectFrom.append("trace_point");
                 predicates << "trace_entry.trace_point_id = trace_point.id";
             } else if (cn == "Key") {
-                fieldsToSelect.append("trace_point_group.name");
+                fieldsToSelect.append("trace_point.group_id");
                 tablesToSelectFrom.append("trace_point");
-                tablesToSelectFrom.append("trace_point_group");
-                predicates << "trace_entry.trace_point_id = trace_point.id"
-                           << "trace_point.group_id = trace_point_group.id";
+                predicates << "trace_entry.trace_point_id = trace_point.id";
             } else if (cn == "Message") {
                 fieldsToSelect.append("trace_entry.message");
             } else if (cn == "Stack Position") {
@@ -534,6 +546,13 @@ void EntryItemModel::highlightTraceKey(const QString &traceKey)
 {
     if ( m_highlightedTraceKey != traceKey ) {
         m_highlightedTraceKey = traceKey;
+
+        QSqlQuery q(m_db);
+        q.setForwardOnly(true);
+        if (q.exec(QString("SELECT trace_point_group.id FROM trace_point_group WHERE trace_point_group.name = '%1'").arg(traceKey))) {
+            q.next();
+            m_highlightedTraceKeyId = q.value(0).toInt();
+        }
         updateHighlightedEntries();
     }
 }
@@ -573,7 +592,7 @@ void EntryItemModel::updateHighlightedEntries()
 
         if ( traceKeyColumn != -1 ) {
             const QVariant &v = row[traceKeyColumn + 1];
-            if ( v.toString() == m_highlightedTraceKey ) {
+            if ( v.toInt() == m_highlightedTraceKeyId ) {
                 entriesToHighlight.insert(entryId);
             }
         }
@@ -601,5 +620,19 @@ void EntryItemModel::updateScannedFieldsList()
             m_scannedFields.append(pos);
         }
     }
+}
+
+QString EntryItemModel::keyName(int id) const
+{
+    if (id == 0) {
+        return QString("<None>");
+    }
+    QSqlQuery q(m_db);
+    q.setForwardOnly(true);
+    if (!q.exec(QString("SELECT trace_point_group.name FROM trace_point_group WHERE trace_point_group.id = %1").arg(id))) {
+        return "";
+    }
+    q.next();
+    return q.value(0).toString();
 }
 

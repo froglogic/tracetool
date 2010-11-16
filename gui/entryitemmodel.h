@@ -44,6 +44,8 @@ public:
     unsigned int idForIndex(const QModelIndex &index);
     const QVariant &getValue(int row, int column) const;
 
+    QString keyName(int id) const;
+
 public slots:
     void handleNewTraceEntry(const TraceEntry &e);
     void reApplyFilter();
@@ -75,6 +77,7 @@ private:
     QStringList m_scannedFieldNames;
     QList<int> m_scannedFields;
     QString m_highlightedTraceKey;
+    int m_highlightedTraceKeyId;
 };
 
 #endif
