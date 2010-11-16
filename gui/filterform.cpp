@@ -40,9 +40,8 @@ void FilterForm::setTraceKeys( const QStringList &keys )
     traceKeyList->clear();
     QStringList::ConstIterator it, end = keys.end();
     for ( it = keys.begin(); it != end; ++it ) {
-        QListWidgetItem *item = new QListWidgetItem;
-        item->setText( *it );
-        traceKeyList->addItem( item );
+        QListWidgetItem *i = new QListWidgetItem( *it, traceKeyList );
+        i->setCheckState(Qt::Checked);
     }
 }
 
@@ -65,6 +64,15 @@ void FilterForm::saveSettings()
     f->setMessage(messageEdit->text());
     f->setType(typeCombo->itemData(typeCombo->currentIndex()).toInt());
 
+    QStringList inactiveKeys;
+    for (int i = 0; i < traceKeyList->count(); ++i) {
+        QListWidgetItem *item = traceKeyList->item(i);
+        if (item->checkState() != Qt::Checked) {
+            inactiveKeys.append(item->text());
+        }
+    }
+    f->setInactiveKeys(inactiveKeys);
+    f->setAcceptEntriesWithoutKey(acceptEntriesWithoutKey->isChecked());
     f->emitChanged();
 }
 
