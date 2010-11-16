@@ -24,6 +24,10 @@
 // #define SHOW_VERBOSITY
 // #define DEBUG_MODEL
 
+#ifdef DEBUG_MODEL
+#  include <QTime>
+#endif
+
 typedef QVariant (*DataFormatter)(QSqlDatabase db, const EntryItemModel *model, int row, int column);
 
 static QVariant timeFormatter(QSqlDatabase, const EntryItemModel *model, int row, int column)
@@ -201,7 +205,11 @@ bool EntryItemModel::queryForEntries(QString *errMsg, int startRow)
     if ( m_numMatchingEntries == -1 ) {
         QString countQuery = QString( "SELECT DISTINCT trace_entry.id %1 ORDER BY trace_entry.id;" ).arg(fromAndWhereClause);
 #ifdef DEBUG_MODEL
+        QTime t;
+        t.start();
+
         qDebug() << "Recomputing number of matching entries...";
+        qDebug() << "Query = " << countQuery;
 #endif
         QSqlQuery q(m_db);
         q.setForwardOnly(true);
@@ -217,6 +225,9 @@ bool EntryItemModel::queryForEntries(QString *errMsg, int startRow)
             assert(ok);
         }
         m_numMatchingEntries = m_idForRow.size();
+#ifdef DEBUG_MODEL
+        qDebug() << "Counted " << m_numMatchingEntries << " matching entries in " << t.elapsed() << "ms";
+#endif
         if (m_numMatchingEntries == 0) {
             // bail out early if none of the entries matched
             m_topRow = -1;
@@ -305,6 +316,13 @@ bool EntryItemModel::queryForEntries(QString *errMsg, int startRow)
     statement += predicates.join(" AND ");
     statement += " ORDER BY trace_entry.id LIMIT 100";
 
+#ifdef DEBUG_MODEL
+    QTime t;
+    t.start();
+    qDebug() << "Selecting data...";
+    qDebug() << "Query = " << statement;
+#endif
+
     QSqlQuery query(m_db);
     query.setForwardOnly(true);
     if (!query.exec(statement)) {
@@ -328,6 +346,10 @@ bool EntryItemModel::queryForEntries(QString *errMsg, int startRow)
             m_data.append(row);
         }
     }
+
+#ifdef DEBUG_MODEL
+    qDebug() << "Selected " << m_data.size() << " rows in " << t.elapsed() << "ms";
+#endif
 
     updateHighlightedEntries();
 
