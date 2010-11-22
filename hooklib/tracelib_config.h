@@ -534,6 +534,37 @@
  * This macro can be used to log variables (their name, type and value) with
  * watch entries.
  *
+ * @param[in] v A value to be logged. The value is only actually used (in the
+ * case of pointer values: dereferenced) at the end of the #TRACELIB_WATCH_STREAM
+ * macro invocation.
+ *
+ * \note
+ * When passing an object (or a reference or a pointer to an object), make sure
+ * that the lifetime of the given object lasts until the end of the
+ * #TRACELIB_WATCH_STREAM invocation. The argument v is only dereferenced and
+ * evaluated at the end of the #TRACELIB_WATCH_STREAM macro invocation.
+ *
+ * The lifetime of the given value must be at least as long as the
+ * #TRACELIB_WATCH_STREAM macro invocation. Don't pass temporary objects to
+ * #TRACELIB_VAR which are only created within the macro invocation, as in this
+ * example:
+ *
+ * \code
+ * std::string getName() {
+ *     return std::string( "John Doe" );
+ * }
+ *
+ * void f() {
+ *   TRACELIB_WATCH_STREAM(NULL) << TRACELIB_VAR(getName().c_str());
+ * }
+ * \endcode
+ *
+ * In this example, the pointer returned by the c_str() function will only be
+ * evaluated after the complete TRACELIB_WATCH_STREAM line was evaluated - at
+ * which point the temporary std::string object returned by the getName()
+ * function will be destroyed, so the pointer returned by c_str() is invalid.
+ * \endnote
+ *
  * \sa TRACELIB_WATCH
  * \sa TRACELIB_WATCH_MSG
  * \sa TRACELIB_WATCH_KEY
