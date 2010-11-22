@@ -31,7 +31,7 @@ PROJECT_NAME           = @CMAKE_PROJECT_NAME@
 # This could be handy for archiving the generated documentation or
 # if some version control system is used.
 
-PROJECT_NUMBER         = 1.0
+PROJECT_NUMBER         = @TRACELIB_VERSION_MAJOR@.@TRACELIB_VERSION_MINOR@.@TRACELIB_VERSION_PATCH@
 
 # The OUTPUT_DIRECTORY tag is used to specify the (relative or absolute)
 # base path where the generated documentation will be put.
