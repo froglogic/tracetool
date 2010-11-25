@@ -428,6 +428,8 @@ QVariant EntryItemModel::data(const QModelIndex& index, int role) const
         if ( m_highlightedEntryIds.contains( entryId ) ) {
             return QBrush( Qt::yellow );
         }
+    } else if (role == Qt::FontRole) {
+        return m_cellFont;
     }
 
     return QVariant();
@@ -634,5 +636,10 @@ QString EntryItemModel::keyName(int id) const
     }
     q.next();
     return q.value(0).toString();
+}
+
+void EntryItemModel::setCellFont(const QFont &font)
+{
+    m_cellFont = font;
 }
 

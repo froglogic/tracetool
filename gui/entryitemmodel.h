@@ -46,6 +46,8 @@ public:
 
     QString keyName(int id) const;
 
+    void setCellFont(const QFont &font);
+
 public slots:
     void handleNewTraceEntry(const TraceEntry &e);
     void reApplyFilter();
@@ -78,6 +80,7 @@ private:
     QList<int> m_scannedFields;
     QString m_highlightedTraceKey;
     int m_highlightedTraceKeyId;
+    QFont m_cellFont;
 };
 
 #endif
