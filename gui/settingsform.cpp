@@ -7,6 +7,8 @@
 
 #include "columnsinfo.h"
 
+#include <QFontDialog>
+
 #include <cassert>
 
 const int RealIndexDataRole = Qt::UserRole;
@@ -26,6 +28,8 @@ SettingsForm::SettingsForm(Settings *settings,
             this, SLOT(moveToInvisible()));
     connect(toVisible, SIGNAL(clicked()),
             this, SLOT(moveToVisible()));
+    connect(fontButton, SIGNAL(clicked()),
+            this, SLOT(selectFont()));
 
     restoreSettings();
 }
@@ -98,6 +102,8 @@ void SettingsForm::saveSettings()
     }
 
     m_settings->columnsInfo()->setSorting(visibleColumns, invisibleColumns);
+
+    m_settings->setFont(m_currentFont);
 }
 
 void SettingsForm::restoreSettings()
@@ -123,4 +129,20 @@ void SettingsForm::restoreSettings()
         item->setData(RealIndexDataRole, realIndex);
         listWidgetInvisible->addItem(item);
     }
+
+    m_currentFont = m_settings->font();
+    fontButton->setText(m_currentFont.family());
+    fontButton->setFont(m_currentFont);
 }
+
+void SettingsForm::selectFont()
+{
+    bool ok;
+    QFont f = QFontDialog::getFont(&ok, m_currentFont, this, tr("Select Font"));
+    if (ok) {
+        m_currentFont = f;
+        fontButton->setText(m_currentFont.family());
+        fontButton->setFont(m_currentFont);
+    }
+}
+

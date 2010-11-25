@@ -7,6 +7,7 @@
 #define SETTINGSFORM_H
 
 #include <QDialog>
+#include <QFont>
 #include "ui_settingsform.h"
 #include "settings.h"
 
@@ -25,12 +26,14 @@ private slots:
     void moveDown();
     void moveToInvisible();
     void moveToVisible();
+    void selectFont();
 
 private:
     void saveSettings();
     void restoreSettings();
 
     Settings* const m_settings;
+    QFont m_currentFont;
 };
 
 #endif
