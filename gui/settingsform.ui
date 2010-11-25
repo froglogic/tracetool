@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>ColumnsForm</class>
- <widget class="QDialog" name="ColumnsForm">
+ <class>SettingsForm</class>
+ <widget class="QDialog" name="SettingsForm">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Edit Columns</string>
+   <string>Trace Tool Settings</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_3">
    <item>
@@ -158,7 +158,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>ColumnsForm</receiver>
+   <receiver>SettingsForm</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -174,7 +174,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>ColumnsForm</receiver>
+   <receiver>SettingsForm</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">

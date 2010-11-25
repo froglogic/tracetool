@@ -3,19 +3,19 @@
 ** All rights reserved.
 **********************************************************************/
 
-#ifndef COLUMNSFORM_H
-#define COLUMNSFORM_H
+#ifndef SETTINGSFORM_H
+#define SETTINGSFORM_H
 
 #include <QDialog>
-#include "ui_columnsform.h"
+#include "ui_settingsform.h"
 #include "settings.h"
 
-class ColumnsForm : public QDialog, private Ui::ColumnsForm
+class SettingsForm : public QDialog, private Ui::SettingsForm
 {
     Q_OBJECT
 public:
-    explicit ColumnsForm(Settings *settings,
-                        QWidget *parent = 0, Qt::WindowFlags flags = 0);
+    explicit SettingsForm(Settings *settings,
+                          QWidget *parent = 0, Qt::WindowFlags flags = 0);
 
 protected:
     void accept();

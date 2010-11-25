@@ -68,7 +68,7 @@ private slots:
     void openRecentConfigFile();
     void helpAbout();
     void toggleFreezeState();
-    void editColumns();
+    void editSettings();
     void editStorage();
     void updateColumns();
     void filterChange();

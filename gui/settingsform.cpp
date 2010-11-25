@@ -3,7 +3,7 @@
 ** All rights reserved.
 **********************************************************************/
 
-#include "columnsform.h"
+#include "settingsform.h"
 
 #include "columnsinfo.h"
 
@@ -11,7 +11,7 @@
 
 const int RealIndexDataRole = Qt::UserRole;
 
-ColumnsForm::ColumnsForm(Settings *settings,
+SettingsForm::SettingsForm(Settings *settings,
                          QWidget *parent, Qt::WindowFlags flags)
     : QDialog(parent, flags),
       m_settings(settings)
@@ -30,13 +30,13 @@ ColumnsForm::ColumnsForm(Settings *settings,
     restoreSettings();
 }
 
-void ColumnsForm::accept()
+void SettingsForm::accept()
 {
     saveSettings();
     QDialog::accept();
 }
 
-void ColumnsForm::moveToInvisible()
+void SettingsForm::moveToInvisible()
 {
     int row = listWidgetVisible->currentRow();
     if (row != -1) {
@@ -45,7 +45,7 @@ void ColumnsForm::moveToInvisible()
     }
 }
 
-void ColumnsForm::moveToVisible()
+void SettingsForm::moveToVisible()
 {
     int row = listWidgetInvisible->currentRow();
     if (row != -1) {
@@ -54,7 +54,7 @@ void ColumnsForm::moveToVisible()
     }
 }
 
-void ColumnsForm::moveUp()
+void SettingsForm::moveUp()
 {
     int row = listWidgetVisible->currentRow();
     if (row >= 1) {
@@ -64,7 +64,7 @@ void ColumnsForm::moveUp()
     }
 }
 
-void ColumnsForm::moveDown()
+void SettingsForm::moveDown()
 {
     int row = listWidgetVisible->currentRow();
     if (row + 1 < listWidgetVisible->count()) {
@@ -74,7 +74,7 @@ void ColumnsForm::moveDown()
     }
 }
 
-void ColumnsForm::saveSettings()
+void SettingsForm::saveSettings()
 {
     QList<int> visibleColumns;
     for (int row = 0; row < listWidgetVisible->count(); ++row) {
@@ -100,7 +100,7 @@ void ColumnsForm::saveSettings()
     m_settings->columnsInfo()->setSorting(visibleColumns, invisibleColumns);
 }
 
-void ColumnsForm::restoreSettings()
+void SettingsForm::restoreSettings()
 {
     const ColumnsInfo *inf = m_settings->columnsInfo();
 

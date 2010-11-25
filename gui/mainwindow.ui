@@ -76,8 +76,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>925</width>
-         <height>477</height>
+         <width>98</width>
+         <height>28</height>
         </rect>
        </property>
        <attribute name="label">
@@ -184,7 +184,7 @@
     <property name="title">
      <string>&amp;Edit</string>
     </property>
-    <addaction name="actionColumns"/>
+    <addaction name="actionSettings"/>
     <addaction name="actionStorage"/>
    </widget>
    <addaction name="menu_File"/>
@@ -213,9 +213,9 @@
     <string>&amp;About</string>
    </property>
   </action>
-  <action name="actionColumns">
+  <action name="actionSettings">
    <property name="text">
-    <string>&amp;Columns...</string>
+    <string>&amp;Display Settings...</string>
    </property>
   </action>
   <action name="actionStorage">

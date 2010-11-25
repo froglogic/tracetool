@@ -8,7 +8,7 @@
 #include "configeditor.h"
 #include "configuration.h"
 #include "filterform.h"
-#include "columnsform.h"
+#include "settingsform.h"
 #include "entryitemmodel.h"
 #include "watchtree.h"
 #include "columnsinfo.h"
@@ -128,8 +128,8 @@ MainWindow::MainWindow(Settings *settings,
             qApp, SLOT(quit()));
 
     // Edit menu
-    connect(actionColumns, SIGNAL(triggered()),
-	    this, SLOT(editColumns()));
+    connect(actionSettings, SIGNAL(triggered()),
+	    this, SLOT(editSettings()));
     connect(actionStorage, SIGNAL(triggered()),
 	    this, SLOT(editStorage()));
 
@@ -552,9 +552,9 @@ void MainWindow::filterChange()
     toolBox->setCurrentIndex(1);
 }
 
-void MainWindow::editColumns()
+void MainWindow::editSettings()
 {
-    ColumnsForm form(m_settings, this);
+    SettingsForm form(m_settings, this);
     if (form.exec() == QDialog::Accepted) {
         updateColumns();
     }

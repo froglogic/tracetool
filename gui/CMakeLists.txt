@@ -6,7 +6,7 @@ SET(GUI_SOURCES
   entryfilter.cpp
   columnsinfo.cpp
   filterform.cpp
-  columnsform.cpp
+  settingsform.cpp
   storageview.cpp
   configuration.cpp
   configeditor.cpp
@@ -23,7 +23,7 @@ SET(GUI_MOCABLES
   entryfilter.h
   columnsinfo.h
   filterform.h
-  columnsform.h
+  settingsform.h
   storageview.h
   configuration.h
   configeditor.h
@@ -34,7 +34,7 @@ SET(GUI_MOCABLES
 
 SET(GUI_UIS
   mainwindow.ui
-  columnsform.ui
+  settingsform.ui
   storageview.ui
   configeditor.ui
   filterform.ui)
