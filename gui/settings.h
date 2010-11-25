@@ -8,6 +8,7 @@
 
 #include "restorableobject.h"
 
+#include <QFont>
 #include <QList>
 #include <QStringList>
 
@@ -59,6 +60,10 @@ public:
     bool hasConfigurationFiles() const { return m_configFiles.isEmpty(); }
     QStringList configurationFiles() const { return m_configFiles; }
 
+    // [Display]
+    const QFont &font() const { return m_font; }
+    void setFont( const QFont &font ) { m_font = font; }
+
 private:
     bool load();
 
@@ -72,6 +77,7 @@ private:
     int m_softLimit, m_hardLimit;
     QStringList m_configFiles;
     bool m_serverStartedAutomatically;
+    QFont m_font;
 };
 
 #endif

@@ -10,6 +10,7 @@
 #include "../hooklib/tracelib_config.h"
 
 #include <cassert>
+#include <QApplication>
 #include <QDebug>
 #include <QDir>
 #include <QSettings>
@@ -21,6 +22,7 @@ const char sessionGroup[] = "Session";
 const char databaseGroup[] = "Database";
 const char serverGroup[] = "Server";
 const char configGroup[] = "Configuration";
+const char displayGroup[] = "Display";
 
 const int defaultSoftLimit = 1500000;
 const int defaultHardLimit = defaultSoftLimit + 500000;
@@ -74,6 +76,11 @@ bool Settings::save() const
     qs.setValue("OutputFile", m_databaseFile);
     qs.endGroup();
 
+    // [Display]
+    qs.beginGroup(displayGroup);
+    qs.setValue("Font", m_font.toString());
+    qs.endGroup();
+
     qs.sync();
     return qs.status() == QSettings::NoError;
 }
@@ -100,7 +107,11 @@ bool Settings::load()
     m_serverGUIPort = qs.value("GUIPort", m_serverTracePort + 1).toInt();
     m_serverStartedAutomatically = qs.value("StartAutomatically", true).toBool();
     m_databaseFile = qs.value("OutputFile", defaultFile()).toString();
+    qs.endGroup();
 
+    // [Display]
+    qs.beginGroup(displayGroup);
+    m_font.fromString(qs.value("Font", QApplication::font().toString()).toString());
     qs.endGroup();
 
     return qs.status() == QSettings::NoError;
