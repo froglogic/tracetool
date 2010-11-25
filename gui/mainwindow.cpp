@@ -236,6 +236,7 @@ bool MainWindow::setDatabase(const QString &databaseFileName, QString *errMsg)
     m_settings->setDatabaseFile(databaseFileName);
 
     tracePointsView->setModel(m_entryItemModel);
+    m_entryItemModel->setCellFont(m_settings->font());
 
     return true;
 }
@@ -557,6 +558,7 @@ void MainWindow::editSettings()
     SettingsForm form(m_settings, this);
     if (form.exec() == QDialog::Accepted) {
         updateColumns();
+        m_entryItemModel->setCellFont(m_settings->font());
     }
 }
 
