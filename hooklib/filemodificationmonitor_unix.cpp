@@ -63,9 +63,13 @@ int INotifyEventObserver::addWatch( const std::string &dir,
 {
     int wd = -1;
     if ( fd > -1 ) {
-        wd = inotify_add_watch( fd, dir.c_str(), IN_CREATE | IN_DELETE | IN_MODIFY );
+        wd = inotify_add_watch( fd, dir.c_str(), IN_CREATE | IN_DELETE |
+                                IN_MODIFY | IN_ATTRIB );
         if ( wd > -1 )
             monitor_map[wd] = file_observer;
+        else
+            fprintf( stderr, "inotify_add_watch() failed with error number "
+                     "%d.\n", errno );
     }
     return wd;
 }
@@ -94,7 +98,7 @@ void INotifyEventObserver::handleEvent( EventContext*, Event *event )
                 else if ( inev->mask & ( IN_DELETE | IN_DELETE_SELF ) )
                     it->second->inotify( inev->name,
                             FileModificationMonitorObserver::FileDisappeared );
-                else if ( inev->mask & IN_MODIFY )
+                else if ( inev->mask & ( IN_MODIFY | IN_ATTRIB ) )
                     it->second->inotify( inev->name,
                             FileModificationMonitorObserver::FileModified );
                 else
