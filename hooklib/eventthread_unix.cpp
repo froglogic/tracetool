@@ -256,8 +256,8 @@ static int processFds( EventContext *data, int nds, fd_set *rfds, fd_set *wfds )
                         strerror( errno ) );
                 return -1;
             }
-            retval = 0; // tell caller we didn't do anything
         }
+        retval = 0; // tell caller we didn't do anything
     } else if ( retval > 0 ) {
         if ( FD_ISSET( data->command_pipe[0], rfds ) ) {
             FileEvent event( data->command_pipe[0], 0, FileEvent::FileRead );
