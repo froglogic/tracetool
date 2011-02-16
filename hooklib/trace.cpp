@@ -202,6 +202,7 @@ void Trace::reloadConfiguration( const string &fileName )
         {
             MutexLocker configurationLocker( m_configurationMutex );
             deleteRange( m_tracePointSets.begin(), m_tracePointSets.end() );
+            m_tracePointSets.clear();
             delete m_configuration;
             m_configuration = 0;
         }
