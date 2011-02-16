@@ -164,16 +164,8 @@ void Trace::reloadConfiguration( const string &fileName )
     m_errorLog->write( "Trace::reloadConfiguration: reading configuration file from '%s'", fileName.c_str() );
     Configuration *cfg = Configuration::fromFile( fileName, m_errorLog );
     if ( cfg ) {
-        {
-            MutexLocker serializerLocker( m_serializerMutex );
-            delete m_serializer;
-            m_serializer = cfg->configuredSerializer();
-        }
-        {
-            MutexLocker outputLocker( m_outputMutex );
-            delete m_output;
-            m_output = cfg->configuredOutput();
-        }
+        setSerializer( cfg->configuredSerializer() );
+        setOutput( cfg->configuredOutput() );
         {
             MutexLocker configurationLocker( m_configurationMutex );
             deleteRange( m_tracePointSets.begin(), m_tracePointSets.end() );
@@ -205,15 +197,8 @@ void Trace::reloadConfiguration( const string &fileName )
             }
         }
     } else {
-        {
-            MutexLocker serializerLocker( m_serializerMutex );
-            delete m_serializer;
-            m_serializer = 0;
-        }
-        {
-            MutexLocker outputLocker( m_outputMutex );
-            delete m_output;
-        }
+        setSerializer( 0 );
+        setOutput( 0 );
         {
             MutexLocker configurationLocker( m_configurationMutex );
             deleteRange( m_tracePointSets.begin(), m_tracePointSets.end() );
