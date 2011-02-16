@@ -229,6 +229,47 @@ static void handleTimeout( EventContext *ctx, const timeval &now )
     }
 }
 
+static int processFds( EventContext *data, int nds, fd_set *rfds, fd_set *wfds )
+{
+    timeval tv;
+    timeval *cur = NULL;
+    TimeOutMap::iterator it = data->m_timeout_map.begin();
+    if ( it != data->m_timeout_map.end() ) {
+        timeval now;
+        gettimeofday( &now, NULL );
+        handleTimeout( data, now );
+
+        it = data->m_timeout_map.begin();
+        if ( it != data->m_timeout_map.end() ) {
+            timersub( &it->first, &now, &tv );
+            cur = &tv;
+        }
+    }
+
+    int retval = select( nds, rfds, wfds, NULL, cur );
+    if ( retval == -1 ) {
+        if ( errno != EINTR ) {
+            if ( !handleError( data, data->m_read_list, FileEvent::FileRead ) &&
+                    !handleError( data, data->m_write_list, FileEvent::FileWrite ) ) {
+                fprintf( stderr, "Unknown error in %s: %s\n",
+                        __FUNCTION__,
+                        strerror( errno ) );
+                return -1;
+            }
+            retval = 0; // tell caller we didn't do anything
+        }
+    } else if ( retval > 0 ) {
+        if ( FD_ISSET( data->command_pipe[0], rfds ) ) {
+            FileEvent event( data->command_pipe[0], 0, FileEvent::FileRead );
+            data->handleEvent( data, &event );
+        } else {
+            handleFDSet( data, data->m_read_list, rfds, FileEvent::FileRead );
+            handleFDSet( data, data->m_write_list, wfds, FileEvent::FileWrite );
+        }
+    }
+    return retval;
+}
+
 static void *unixEventProc( void *user_data )
 {
     EventContext *data = (EventContext*)user_data;
@@ -240,41 +281,8 @@ static void *unixEventProc( void *user_data )
 
     int nds = data->getFDSets( &rfds, &wfds );
     while ( data->keep_running && nds > 0 ) {
-        timeval tv;
-        timeval *cur = NULL;
-        TimeOutMap::iterator it = data->m_timeout_map.begin();
-        if ( it != data->m_timeout_map.end() ) {
-            timeval now;
-            gettimeofday( &now, NULL );
-            handleTimeout( data, now );
-
-            it = data->m_timeout_map.begin();
-            if ( it != data->m_timeout_map.end() ) {
-                timersub( &it->first, &now, &tv );
-                cur = &tv;
-            }
-        }
-
-        int retval = select( nds, &rfds, &wfds, NULL, cur );
-        if ( retval == -1 ) {
-            if ( errno != EINTR ) {
-                if ( !handleError( data, data->m_read_list, FileEvent::FileRead ) &&
-                        !handleError( data, data->m_write_list, FileEvent::FileWrite ) ) {
-                    fprintf( stderr, "Unknown error in %s: %s\n",
-                            __FUNCTION__,
-                            strerror( errno ) );
-                    break;
-                }
-            }
-        } else if ( retval > 0 ) {
-            if ( FD_ISSET( data->command_pipe[0], &rfds ) ) {
-                FileEvent event( data->command_pipe[0], 0, FileEvent::FileRead );
-                data->handleEvent( data, &event );
-            } else {
-                handleFDSet( data, data->m_read_list, &rfds, FileEvent::FileRead );
-                handleFDSet( data, data->m_write_list, &wfds, FileEvent::FileWrite );
-            }
-        }
+        if ( processFds( data, nds, &rfds, &wfds ) < 0 )
+            break;
 
         nds = data->getFDSets( &rfds, &wfds );
     }
@@ -466,6 +474,23 @@ void EventThreadUnix::stop()
         pthread_detach( d->event_list_thread );
         d->event_list_thread = 0;
     }
+}
+
+ThreadId EventThreadUnix::threadId() const
+{
+    return d->event_list_thread;
+}
+
+int EventThreadUnix::processEvents( EventContext *ctx )
+{
+    fd_set rfds;
+    fd_set wfds;
+    int nds = ctx->getFDSets( &rfds, &wfds );
+
+    if ( !ctx->keep_running || nds <= 0 )
+        return -1;
+
+    return processFds( ctx, nds, &rfds, &wfds );
 }
 
 EventThreadUnix *EventThreadUnix::m_self;

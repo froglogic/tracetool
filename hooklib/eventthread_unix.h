@@ -7,6 +7,7 @@
 #define TRACELIB_EVENTTHREAD_UNIX_H
 
 #include "tracelib_config.h"
+#include "getcurrentthreadid.h"
 
 TRACELIB_NAMESPACE_BEGIN
 
@@ -141,6 +142,12 @@ public:
     void postTask( Task *task );
     void *sendTask( Task *task );
     void commandChannels( int *in, int *out );
+
+    ThreadId threadId() const;
+    EventContext *getContext() const { return d; }
+
+    /* only run this in the event thread, eg. in a handleEvent call */
+    static int processEvents( EventContext *ctx );
 
 private:
     EventThreadUnix();
