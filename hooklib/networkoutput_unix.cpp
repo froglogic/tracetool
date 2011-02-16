@@ -34,6 +34,8 @@ public:
     BufferList buffers;
     string host;
     unsigned short port;
+    bool notify_on_close;
+    bool dummy;
     int m_socket;
     ErrorLog *error_log;
     ssize_t buf_pos;
@@ -98,6 +100,7 @@ public:
 NetworkOutputPrivate::NetworkOutputPrivate( const string h, unsigned short p, ErrorLog *log )
  : host( h ),
    port( p ),
+   notify_on_close( true ),
    m_socket( -1 ),
    error_log( log ),
    buf_pos( 0),
@@ -234,15 +237,23 @@ bool NetworkOutputPrivate::write( EventContext *ctx, std::vector<char>* buffer )
 
 void NetworkOutputPrivate::close()
 {
-    EventThreadUnix::self()->postTask( new SocketClosingTask( this ) );
+    if ( EventThreadUnix::self()->threadId() == getCurrentThreadId() ) {
+        notify_on_close = false;
+        EventContext *ctx = EventThreadUnix::self()->getContext();
+        SocketClosingTask( this ).exec( ctx );
+        while (NetworkOutputPrivate::Connected == state )
+            EventThreadUnix::processEvents( ctx );
+    } else {
+        EventThreadUnix::self()->postTask( new SocketClosingTask( this ) );
 
-    int in, out;
-    void *response;
-    EventThreadUnix::self()->commandChannels( &in, &out );
+        int in, out;
+        void *response;
+        EventThreadUnix::self()->commandChannels( &in, &out );
 
-    read( in, &response, sizeof ( response ) );
+        read( in, &response, sizeof ( response ) );
 
-    clear();
+        clear();
+    }
 }
 
 void NetworkOutputPrivate::endClosing( EventContext *ctx )
@@ -253,12 +264,14 @@ void NetworkOutputPrivate::endClosing( EventContext *ctx )
     }
     state = NotConnected;
 
-    int in, out;
-    void *response = 0;
-    EventThreadUnix::self()->commandChannels( &in, &out );
-    ::write( out, &response, sizeof ( response ) );
+    if ( notify_on_close ) {
+        int in, out;
+        void *response = 0;
+        EventThreadUnix::self()->commandChannels( &in, &out );
+        ::write( out, &response, sizeof ( response ) );
 
-    TimerTask( this ).exec( ctx );
+        TimerTask( this ).exec( ctx );
+    }
 }
 
 void NetworkOutputPrivate::clear()
