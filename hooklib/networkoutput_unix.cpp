@@ -238,11 +238,13 @@ bool NetworkOutputPrivate::write( EventContext *ctx, std::vector<char>* buffer )
 void NetworkOutputPrivate::close()
 {
     if ( EventThreadUnix::self()->threadId() == getCurrentThreadId() ) {
+        bool old_notify_on_close = notify_on_close;
         notify_on_close = false;
         EventContext *ctx = EventThreadUnix::self()->getContext();
         SocketClosingTask( this ).exec( ctx );
         while (NetworkOutputPrivate::Connected == state )
             EventThreadUnix::processEvents( ctx );
+        notify_on_close = old_notify_on_close;
     } else {
         EventThreadUnix::self()->postTask( new SocketClosingTask( this ) );
 
