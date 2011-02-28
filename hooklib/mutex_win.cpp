@@ -21,6 +21,7 @@ Mutex::Mutex() : m_handle( new MutexHandle )
 Mutex::~Mutex()
 {
     ::DeleteCriticalSection( &m_handle->section );
+    delete m_handle;
 }
 
 void Mutex::lock()
