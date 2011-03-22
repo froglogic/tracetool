@@ -38,38 +38,53 @@ void ServerSocket::handleIncomingData()
     QDataStream stream(this);
     stream.setVersion(QDataStream::Qt_4_0);
 
-    quint32 magicCookie;
-    stream >> magicCookie;
-    if (magicCookie != MagicServerProtocolCookie) {
-        disconnect();
-        return;
-    }
+    while (true) {
+        static quint16 nextPayloadSize = 0;
+        if (nextPayloadSize == 0) {
+            if (bytesAvailable() < sizeof(nextPayloadSize)) {
+                return;
+            }
+            stream >> nextPayloadSize;
+        }
 
-    quint32 protocolVersion;
-    stream >> protocolVersion;
-    assert(protocolVersion == 1);
+        if (bytesAvailable() < nextPayloadSize) {
+            return;
+        }
 
-    quint8 datagramType;
-    stream >> datagramType;
-    switch (static_cast<ServerDatagramType>(datagramType)) {
-        case TraceFileNameDatagram: {
-            QString traceFileName;
-            stream >> traceFileName;
-            emit traceFileNameReceived(traceFileName);
-            break;
+        quint32 magicCookie;
+        stream >> magicCookie;
+        if (magicCookie != MagicServerProtocolCookie) {
+            disconnect();
+            return;
         }
-        case TraceEntryDatagram: {
-            TraceEntry te;
-            stream >> te;
-            emit traceEntryReceived(te);
-            break;
+
+        quint32 protocolVersion;
+        stream >> protocolVersion;
+        assert(protocolVersion == 1);
+
+        quint8 datagramType;
+        stream >> datagramType;
+        switch (static_cast<ServerDatagramType>(datagramType)) {
+            case TraceFileNameDatagram: {
+                QString traceFileName;
+                stream >> traceFileName;
+                emit traceFileNameReceived(traceFileName);
+                break;
+            }
+            case TraceEntryDatagram: {
+                TraceEntry te;
+                stream >> te;
+                emit traceEntryReceived(te);
+                break;
+            }
+            case ProcessShutdownEventDatagram: {
+                ProcessShutdownEvent ev;
+                stream >> ev;
+                emit processShutdown(ev);
+                break;
+            }
         }
-        case ProcessShutdownEventDatagram: {
-            ProcessShutdownEvent ev;
-            stream >> ev;
-            emit processShutdown(ev);
-            break;
-        }
+        nextPayloadSize = 0;
     }
 }
 

@@ -241,12 +241,23 @@ Server::Server( const QString &traceFile,
 template <typename T>
 QByteArray serializeGUIClientData( ServerDatagramType type, const T &v )
 {
-    static const quint32 ProtocolVersion = 1;
+    QByteArray payload;
+    {
+        static const quint32 ProtocolVersion = 1;
+
+        QDataStream stream( &payload, QIODevice::WriteOnly );
+        stream.setVersion( QDataStream::Qt_4_0 );
+        stream << MagicServerProtocolCookie << ProtocolVersion << (quint8)type << v;
+    }
 
     QByteArray data;
-    QDataStream stream( &data, QIODevice::WriteOnly );
-    stream.setVersion( QDataStream::Qt_4_0 );
-    stream << MagicServerProtocolCookie << ProtocolVersion << (quint8)type << v;
+    {
+        QDataStream stream( &data, QIODevice::WriteOnly );
+        stream.setVersion( QDataStream::Qt_4_0 );
+        stream << (quint16)payload.size();
+        data.append( payload );
+    }
+
     return data;
 }
 
