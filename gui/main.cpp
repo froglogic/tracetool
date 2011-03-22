@@ -11,6 +11,9 @@
 #include "settings.h"
 #include "../convertdb/getopt.h"
 #include "../server/database.h"
+#ifdef Q_OS_WIN
+#  include "jobobject.h"
+#endif
 
 #include <iostream>
 #include <string>
@@ -32,6 +35,11 @@ static void printUsage(const string &app)
 
 int main(int argc, char **argv)
 {
+#ifdef Q_OS_WIN
+    JobObject job;
+    job.assignProcess(::GetCurrentProcess());
+#endif
+
     QApplication a(argc, argv);
 
     GetOpt opt;
@@ -61,8 +69,11 @@ int main(int argc, char **argv)
     if (!traceFile.isEmpty())
         settings.setDatabaseFile(traceFile);
 
+#ifdef Q_OS_WIN
+    MainWindow mw(&settings, &job);
+#else
     MainWindow mw(&settings);
-
+#endif
     settings.restoreSession();
 
     // ### ugly

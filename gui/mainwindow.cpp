@@ -16,6 +16,9 @@
 #include "applicationtable.h"
 #include "fixedheaderview.h"
 #include "entryfilter.h"
+#ifdef Q_OS_WIN
+#  include "jobobject.h"
+#endif
 
 #include <cassert>
 #include <QtCore>
@@ -89,6 +92,9 @@ void ServerSocket::handleIncomingData()
 }
 
 MainWindow::MainWindow(Settings *settings,
+#ifdef Q_OS_WIN
+                       JobObject *job,
+#endif
                        QWidget *parent, Qt::WindowFlags flags)
     : QMainWindow(parent, flags),
       m_settings(settings),
@@ -98,6 +104,9 @@ MainWindow::MainWindow(Settings *settings,
       m_applicationTable(NULL),
       m_connectionStatusLabel(NULL),
       m_automaticServerProcess(NULL)
+#ifdef Q_OS_WIN
+      , m_job(job)
+#endif
 {
     setupUi(this);
     m_settings->registerRestorable("MainWindow", this);
@@ -484,6 +493,12 @@ void MainWindow::connectToServer()
             return;
         }
     }
+
+#ifdef Q_OS_WIN
+    if (m_automaticServerProcess && m_job) {
+        m_job->assignProcess(m_automaticServerProcess->pid()->hProcess);
+    }
+#endif
 
     delete m_serverSocket;
     m_serverSocket = new ServerSocket(this);

@@ -23,6 +23,7 @@ struct TraceEntry;
 struct ProcessShutdownEvent;
 class QLabel;
 class QProcess;
+class JobObject;
 
 class ServerSocket : public QTcpSocket
 {
@@ -45,6 +46,9 @@ class MainWindow : public QMainWindow, private Ui::MainWindow,
     Q_OBJECT
 public:
     explicit MainWindow(Settings *settings,
+#ifdef Q_OS_WIN
+                        JobObject *job,
+#endif
                         QWidget *parent = 0, Qt::WindowFlags flags = 0);
     virtual ~MainWindow();
 
@@ -98,6 +102,9 @@ private:
     ApplicationTable *m_applicationTable;
     QLabel *m_connectionStatusLabel;
     QProcess *m_automaticServerProcess;
+#ifdef Q_OS_WIN
+    JobObject *m_job;
+#endif
 };
 
 #endif
