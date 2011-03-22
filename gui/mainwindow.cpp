@@ -37,6 +37,7 @@ void ServerSocket::handleIncomingData()
 {
     QByteArray data = readAll();
     QDataStream stream(&data, QIODevice::ReadOnly);
+    stream.setVersion(QDataStream::Qt_4_0);
 
     quint32 magicCookie;
     stream >> magicCookie;
