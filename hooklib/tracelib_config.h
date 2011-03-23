@@ -205,7 +205,8 @@
  * This macro is a variant of #TRACELIB_DEBUG, making it possible to specify
  * a 'trace key'. This key can be used by clients to group trace entries.
  *
- * @param[in] key A UTF-8 encoded C string
+ * @param[in] key A UTF-8 encoded C string; this key must be the same for
+ * all threads executing the same #TRACELIB_DEBUG_KEY statement.
  *
  * All other arguments are the same as with #TRACELIB_DEBUG.
  *
@@ -229,7 +230,8 @@
  * This macro is a variant of #TRACELIB_ERROR, making it possible to specify
  * a 'trace key'. This key can be used by clients to group trace entries.
  *
- * @param[in] key A UTF-8 encoded C string
+ * @param[in] key A UTF-8 encoded C string; this key must be the same for
+ * all threads executing the same #TRACELIB_ERROR_KEY statement.
  *
  * All other arguments are the same as with #TRACELIB_ERROR.
  *
@@ -253,7 +255,8 @@
  * This macro is a variant of #TRACELIB_TRACE, making it possible to specify
  * a 'trace key'. This key can be used by clients to group trace entries.
  *
- * @param[in] key A UTF-8 encoded C string
+ * @param[in] key A UTF-8 encoded C string; this key must be the same for
+ * all threads executing the same #TRACELIB_TRACE_KEY statement.
  *
  * All other arguments are the same as with #TRACELIB_TRACE.
  *
@@ -277,7 +280,8 @@
  * This macro is a variant of #TRACELIB_WATCH, making it possible to specify
  * a 'trace key'. This key can be used by clients to group trace entries.
  *
- * @param[in] key A UTF-8 encoded C string
+ * @param[in] key A UTF-8 encoded C string; this key must be the same for
+ * all threads executing the same #TRACELIB_WATCH_KEY statement.
  *
  * All other arguments are the same as with #TRACELIB_WATCH.
  *
@@ -315,7 +319,8 @@
  * This macro is a variant of #TRACELIB_DEBUG_MSG, making it possible to specify
  * a 'trace key'. This key can be used by clients to group trace entries.
  *
- * @param[in] key A UTF-8 encoded C string
+ * @param[in] key A UTF-8 encoded C string; this key must be the same for
+ * all threads executing the same #TRACELIB_DEBUG_KEY_MSG statement.
  *
  * All other arguments are the same as with #TRACELIB_DEBUG_MSG.
  *
@@ -343,7 +348,8 @@
  * This macro is a variant of #TRACELIB_ERROR_MSG, making it possible to specify
  * a 'trace key'. This key can be used by clients to group trace entries.
  *
- * @param[in] key A UTF-8 encoded C string
+ * @param[in] key A UTF-8 encoded C string; this key must be the same for
+ * all threads executing the same #TRACELIB_ERROR_KEY_MSG statement.
  *
  * All other arguments are the same as with #TRACELIB_ERROR_MSG.
  *
@@ -382,7 +388,8 @@
  * This macro is a variant of #TRACELIB_TRACE_MSG, making it possible to specify
  * a 'trace key'. This key can be used by clients to group trace entries.
  *
- * @param[in] key A UTF-8 encoded C string
+ * @param[in] key A UTF-8 encoded C string; this key must be the same for
+ * all threads executing the same #TRACELIB_TRACE_KEY_MSG statement.
  *
  * All other arguments are the same as with #TRACELIB_TRACE_MSG.
  *
@@ -420,7 +427,8 @@
  * This macro is a variant of #TRACELIB_WATCH_MSG, making it possible to specify
  * a 'trace key'. This key can be used by clients to group trace entries.
  *
- * @param[in] key A UTF-8 encoded C string
+ * @param[in] key A UTF-8 encoded C string; this key must be the same for
+ * all threads executing the same #TRACELIB_WATCH_KEY_MSG statement.
  *
  * All other arguments are the same as with #TRACELIB_WATCH_MSG.
  *
@@ -459,7 +467,8 @@
  * \endcode
  *
  * @param[in] key A UTF-8 encoded C string specifying a trace key; specify NULL
- * to signal that no dedicated trace key should be used.
+ * to signal that no dedicated trace key should be used. This key must be the
+ * same for all threads executing the same #TRACELIB_DEBUG_STREAM statement.
  */
 #define TRACELIB_DEBUG_STREAM(key) TRACELIB_DEBUG_STREAM_IMPL(key)
 
@@ -481,7 +490,8 @@
  * \endcode
  *
  * @param[in] key A UTF-8 encoded C string specifying a trace key; specify NULL
- * to signal that no dedicated trace key should be used.
+ * to signal that no dedicated trace key should be used. This key must be the
+ * same for all threads executing the same #TRACELIB_ERROR_STREAM statement.
  */
 #define TRACELIB_ERROR_STREAM(key) TRACELIB_ERROR_STREAM_IMPL(key)
 
@@ -504,7 +514,8 @@
  * \endcode
  *
  * @param[in] key A UTF-8 encoded C string specifying a trace key; specify NULL
- * to signal that no dedicated trace key should be used.
+ * to signal that no dedicated trace key should be used. This key must be the
+ * same for all threads executing the same #TRACELIB_TRACE_STREAM statement.
  */
 #define TRACELIB_TRACE_STREAM(key) TRACELIB_TRACE_STREAM_IMPL(key)
 
@@ -524,7 +535,8 @@
  * \endcode
  *
  * @param[in] key A UTF-8 encoded C string specifying a trace key; specify NULL
- * to signal that no dedicated trace key should be used.
+ * to signal that no dedicated trace key should be used. This key must be the
+ * same for all threads executing the same #TRACELIB_WATCH_STREAM statement.
  */
 #define TRACELIB_WATCH_STREAM(key) TRACELIB_WATCH_STREAM_IMPL(key)
 
