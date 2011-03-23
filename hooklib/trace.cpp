@@ -348,7 +348,7 @@ static Trace *g_activeTrace = 0;
 Trace *getActiveTrace()
 {
     if ( !g_activeTrace ) {
-        setActiveTrace( new Trace );
+        g_activeTrace = new Trace;
     }
     return g_activeTrace;
 }
