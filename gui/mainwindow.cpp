@@ -279,7 +279,7 @@ QVariant MainWindow::sessionState() const
 bool MainWindow::restoreSessionState(const QVariant &state)
 {
     QList<QVariant> dataSet = state.value< QList<QVariant> >();
-    if (dataSet.size() != 5)
+    if (dataSet.size() < 5)
         return false;
     QByteArray geo = dataSet[0].value<QByteArray>();
     QByteArray docks = dataSet[1].value<QByteArray>();
