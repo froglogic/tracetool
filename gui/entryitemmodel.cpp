@@ -370,7 +370,7 @@ bool EntryItemModel::queryForEntries(QString *errMsg, int startRow)
 
 int EntryItemModel::columnCount(const QModelIndex & parent) const
 {
-    return static_cast<int>( sizeof(g_fields) / sizeof(g_fields[0]) );
+    return m_columnsInfo->visibleColumns().count();
 }
 
 int EntryItemModel::rowCount(const QModelIndex & parent) const
