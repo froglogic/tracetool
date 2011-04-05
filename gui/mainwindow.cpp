@@ -286,11 +286,13 @@ bool MainWindow::restoreSessionState(const QVariant &state)
     QByteArray horizTableHeader = dataSet[2].value<QByteArray>();
     QByteArray watchTreeHeader = dataSet[3].value<QByteArray>();
     QByteArray applicationTableHeader = dataSet[4].value<QByteArray>();
-    return restoreGeometry(geo)
-        && restoreState(docks)
-        && tracePointsView->horizontalHeader()->restoreState(horizTableHeader)
-        && m_watchTree->header()->restoreState(watchTreeHeader)
-        && m_applicationTable->horizontalHeader()->restoreState(applicationTableHeader);
+
+    bool success = restoreGeometry(geo);
+    success &= restoreState(docks);
+    success &= tracePointsView->horizontalHeader()->restoreState(horizTableHeader);
+    success &= m_watchTree->header()->restoreState(watchTreeHeader);
+    success &= m_applicationTable->horizontalHeader()->restoreState(applicationTableHeader);
+    return success;
 }
 
 void MainWindow::fileOpenTrace()
