@@ -456,6 +456,10 @@ void Database::trimTo(QSqlDatabase db, size_t nMostRecent)
     if ( nMostRecent == 0 ) {
         Transaction transaction( db );
         transaction.exec( "DELETE FROM trace_entry;" );
+
+        // Resets all AUTOINCREMENT fields in trace_entry to zero
+        transaction.exec( "DELETE FROM sqlite_sequence WHERE name='trace_entry';" );
+
         transaction.exec( "DELETE FROM trace_point;" );
         transaction.exec( "DELETE FROM function_name;" );
         transaction.exec( "DELETE FROM path_name;" );
@@ -466,8 +470,6 @@ void Database::trimTo(QSqlDatabase db, size_t nMostRecent)
 #if 0 // cache for the user's convenenience
         transaction.exec( "DELETE FROM trace_point_group;" );
 #endif
-        // Resets all AUTOINCREMENT fields used in any of the tables
-        transaction.exec( "DELETE FROM sqlite_sequence;" );
         return;
     }
     qWarning() << "Server::trimTo: deleting all but the n most recent trace "
