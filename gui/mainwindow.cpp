@@ -265,6 +265,44 @@ bool MainWindow::setDatabase(const QString &databaseFileName, QString *errMsg)
     return true;
 }
 
+static QByteArray saveHeaderViewSizes(QHeaderView *hv)
+{
+    QByteArray result;
+    QDataStream stream(&result, QIODevice::WriteOnly);
+
+    const int cnt = hv->count();
+    stream << cnt;
+
+    for (int i = 0; i < cnt; ++i) {
+        stream << hv->sectionSize(i);
+    }
+
+    return result;
+}
+
+static bool restoreHeaderViewSizes(QHeaderView *hv, const QByteArray &data)
+{
+    QDataStream stream(data);
+
+    int cnt = 0;
+    stream >> cnt;
+    if (stream.status() != QDataStream::Ok) {
+        return false;
+    }
+
+    if (cnt != hv->count()) {
+        return false;
+    }
+
+    for (int i = 0; i < cnt; ++i) {
+        int size = 0;
+        stream >> size;
+        hv->resizeSection(i, size);
+    }
+
+    return true;
+}
+
 QVariant MainWindow::sessionState() const
 {
     QList<QVariant> dataSet;
@@ -273,6 +311,7 @@ QVariant MainWindow::sessionState() const
     dataSet.append(tracePointsView->horizontalHeader()->saveState());
     dataSet.append(m_watchTree->header()->saveState());
     dataSet.append(m_applicationTable->horizontalHeader()->saveState());
+    dataSet.append(saveHeaderViewSizes(tracePointsView->horizontalHeader()));
     return dataSet;
 }
 
@@ -286,12 +325,25 @@ bool MainWindow::restoreSessionState(const QVariant &state)
     QByteArray horizTableHeader = dataSet[2].value<QByteArray>();
     QByteArray watchTreeHeader = dataSet[3].value<QByteArray>();
     QByteArray applicationTableHeader = dataSet[4].value<QByteArray>();
+    QByteArray horizTableHeaderSizes;
+    if (dataSet.size() >= 6)
+        horizTableHeaderSizes = dataSet[5].value<QByteArray>();
 
     bool success = restoreGeometry(geo);
     success &= restoreState(docks);
+
+    /* Call reset() to work around strange QHeaderView behaviour in Qt 4.6 and
+     * Qt 4.7.1; without this, calling count() after the restoreState() call
+     * below will yield 0. Has something to do with the executePostedLayout()
+     * call in QHeaderView::count().
+     */
+    tracePointsView->horizontalHeader()->reset();
+
     success &= tracePointsView->horizontalHeader()->restoreState(horizTableHeader);
     success &= m_watchTree->header()->restoreState(watchTreeHeader);
     success &= m_applicationTable->horizontalHeader()->restoreState(applicationTableHeader);
+    if (dataSet.size() >= 6)
+        success &= restoreHeaderViewSizes(tracePointsView->horizontalHeader(), horizTableHeaderSizes);
     return success;
 }
 
