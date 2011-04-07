@@ -186,8 +186,7 @@ bool EntryItemModel::queryForEntries(QString *errMsg, int startRow)
 
         QStringList disjunction;
         if (m_filter->acceptsEntriesWithoutKey()) {
-            disjunction << "(trace_entry.trace_point_id = trace_point.id AND "
-                           "trace_point.group_id = 0)";
+            disjunction << "(trace_point.group_id = 0)";
         }
 
         if (!m_filter->inactiveKeys().isEmpty()) {
@@ -200,10 +199,10 @@ bool EntryItemModel::queryForEntries(QString *errMsg, int startRow)
                 keyPredicates << QString("trace_point_group.name != '%1'").arg(*it);
             }
 
-            disjunction << QString("(trace_entry.trace_point_id = trace_point.id AND "
-                            "trace_point.group_id = trace_point_group.id AND %1)").arg(keyPredicates.join(" AND "));
+            disjunction << QString("(trace_point.group_id = trace_point_group.id "
+                                     "AND %1)").arg(keyPredicates.join(" AND "));
         }
-        predicates << QString("(%1)").arg(disjunction.join(" OR "));
+        predicates << "trace_entry.trace_point_id = trace_point.id" << QString("(%1)").arg(disjunction.join(" OR "));
     }
 
     tablesToSelectFrom.removeDuplicates();
