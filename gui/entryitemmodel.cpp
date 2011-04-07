@@ -184,11 +184,7 @@ bool EntryItemModel::queryForEntries(QString *errMsg, int startRow)
     if (!m_filter->acceptsEntriesWithoutKey() || !m_filter->inactiveKeys().isEmpty()) {
         tablesToSelectFrom.append("trace_point");
 
-        QStringList disjunction;
-        if (m_filter->acceptsEntriesWithoutKey()) {
-            disjunction << "(trace_point.group_id = 0)";
-        }
-
+        QString inactiveKeyIdTest;
         if (!m_filter->inactiveKeys().isEmpty()) {
             tablesToSelectFrom.append("trace_point_group");
 
@@ -199,10 +195,28 @@ bool EntryItemModel::queryForEntries(QString *errMsg, int startRow)
                 keyPredicates << QString("trace_point_group.name != '%1'").arg(*it);
             }
 
-            disjunction << QString("(trace_point.group_id = trace_point_group.id "
-                                     "AND %1)").arg(keyPredicates.join(" AND "));
+            inactiveKeyIdTest = QString("(trace_point.group_id = trace_point_group.id "
+                                          "AND %1)").arg(keyPredicates.join(" AND "));
         }
-        predicates << "trace_entry.trace_point_id = trace_point.id" << QString("(%1)").arg(disjunction.join(" OR "));
+
+        QString withoutKeyIdTest;
+        if (m_filter->acceptsEntriesWithoutKey()) {
+            withoutKeyIdTest = "(trace_point.group_id = 0)";
+        } else {
+            withoutKeyIdTest = "(trace_point.group_id != 0)";
+        }
+
+        QString keyIdTest = withoutKeyIdTest;
+        if (!inactiveKeyIdTest.isEmpty()) {
+            if (m_filter->acceptsEntriesWithoutKey()) {
+                keyIdTest += " OR ";
+            } else {
+                keyIdTest += " AND ";
+            }
+            keyIdTest += inactiveKeyIdTest;
+        }
+
+        predicates << "trace_entry.trace_point_id = trace_point.id" << QString("(%1)").arg(keyIdTest);
     }
 
     tablesToSelectFrom.removeDuplicates();
