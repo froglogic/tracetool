@@ -23,6 +23,13 @@ static bool fileExists( const string &filename )
    return ifstream( filename.c_str() ).is_open();
 }
 
+static std::string getText( const TiXmlElement *e )
+{
+    const char *s = e->GetText();
+    return s ? s
+             : "";
+}
+
 TRACELIB_NAMESPACE_BEGIN
 
 Configuration *Configuration::fromFile( const string &fileName, ErrorLog *errorLog )
@@ -98,9 +105,10 @@ bool Configuration::loadFrom( TiXmlDocument *xmlDoc )
 
             // XXX Consider encoding issues (e.g. if myProcessName contains umlauts)
 #ifdef _WIN32
-            const bool isMyProcessElement = _stricmp( myProcessName.c_str(), nameElement->GetText() ) == 0;
+            const bool isMyProcessElement = _stricmp( myProcessName.c_str(),
+                                                      getText( nameElement ).c_str() ) == 0;
 #else
-            const bool isMyProcessElement = strcmp( myProcessName.c_str(), nameElement->GetText() ) == 0;
+            const bool isMyProcessElement = getText( nameElement ) == myProcessName;
 #endif
             if ( isMyProcessElement ) {
                 m_errorLog->write( "Tracelib Configuration: found configuration for process %s", myProcessName.c_str() );
@@ -176,8 +184,8 @@ bool Configuration::readTraceKeysElement( TiXmlElement *traceKeysElem )
 {
     for ( TiXmlElement *e = traceKeysElem->FirstChildElement(); e; e = e->NextSiblingElement() ) {
         if ( e->ValueStr() == "key" ) {
-            const string key = e->GetText(); // XXX consider encoding issues
-            m_configuredTraceKeys.push_back( key );
+            // XXX consider encoding issues
+            m_configuredTraceKeys.push_back( getText( e ) );
             continue;
         }
 
@@ -312,7 +320,7 @@ Filter *Configuration::createFilterFromElement( TiXmlElement *e )
         f->setMode( mode );
         for ( TiXmlElement *childElement = e->FirstChildElement(); childElement; childElement = childElement->NextSiblingElement() ) {
             if ( childElement->ValueStr() == "key" ) {
-                f->addGroupName( childElement->GetText() ); // XXX Consider encoding issues
+                f->addGroupName( getText( childElement ) ); // XXX Consider encoding issues
             } else {
                 delete f;
                 m_errorLog->write( "Tracelib Configuration: while reading %s: unsupported child element '%s' specified for <tracekeyfilter> element.", m_fileName.c_str(), childElement->ValueStr().c_str() );
@@ -351,7 +359,7 @@ Serializer *Configuration::createSerializerFromElement( TiXmlElement *e )
             }
 
             if ( optionName == "timestamps" ) {
-                serializer->setTimestampsShown( strcmp( optionElement->GetText(), "yes" ) == 0 );
+                serializer->setTimestampsShown( getText( optionElement ) == "yes" );
             } else {
                 m_errorLog->write( "Tracelib Configuration: while reading %s: Unknown <option> element with name '%s' found in plaintext serializer; ignoring this.", m_fileName.c_str(), optionName.c_str() );
                 continue;
@@ -376,9 +384,7 @@ Serializer *Configuration::createSerializerFromElement( TiXmlElement *e )
             }
 
             if ( optionName == "beautifiedOutput" ) {
-                const char *beautifiedOutputValue = optionElement->GetText();
-                if ( beautifiedOutputValue )
-                    beautifiedOutput = strcmp( beautifiedOutputValue, "yes" ) == 0;
+                beautifiedOutput = getText( optionElement ) == "yes";
             } else {
                 m_errorLog->write( "Tracelib Configuration: while reading %s: Unknown <option> element with name '%s' found in xml serializer; ignoring this.", m_fileName.c_str(), optionName.c_str() );
                 continue;
@@ -467,15 +473,10 @@ Output *Configuration::createOutputFromElement( TiXmlElement *e )
             }
 
             if ( optionName == "host" ) {
-                const char *hostValue = optionElement->GetText();
-                if ( hostValue )
-                    hostname = hostValue; // XXX Consider encoding issues
+                hostname = getText( optionElement ); // XXX Consider encoding issues
             } else if ( optionName == "port" ) {
-                const char *portValue = optionElement->GetText();
-                if ( portValue ) {
-                    istringstream str( portValue );
-                    str >> port; // XXX Error handling for non-numeric port numbers
-               }
+                istringstream str( getText( optionElement ) );
+                str >> port; // XXX Error handling for non-numeric port numbers
             } else {
                 m_errorLog->write( "Tracelib Configuration: while reading %s: Unknown <option> element with name '%s' found in tcp output; ignoring this.", m_fileName.c_str(), optionName.c_str() );
                 continue;
