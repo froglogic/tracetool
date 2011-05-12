@@ -210,6 +210,10 @@ bool FilterTableItem::saveFilter(TracePointSet *tpset)
 void FilterTable::loadFilters(const QList<TracePointSet> &tpsets)
 {
     clearContents();
+    if ( tpsets.isEmpty() ) {
+        return;
+    }
+
     TracePointSet tpset = tpsets.first();
     QList<Filter>::ConstIterator it, end = tpset.m_filters.end();
     for ( it = tpset.m_filters.begin(); it != end; ++it ) {
