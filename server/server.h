@@ -18,8 +18,6 @@
 
 #include "database.h"
 
-class QSignalMapper;
-
 class ClientSocket : public QTcpSocket
 {
     Q_OBJECT
@@ -66,6 +64,27 @@ private:
     QList<NetworkingThread *> m_networkingThreads;
 };
 
+class Server;
+
+class GUIConnection : public QObject
+{
+    Q_OBJECT
+public:
+    GUIConnection( Server *server, QTcpSocket *sock );
+
+    void write( const QByteArray &data );
+
+signals:
+    void disconnected( GUIConnection *c );
+
+private slots:
+    void handleDisconnect();
+
+private:
+    Server *m_server;
+    QTcpSocket *m_sock;
+};
+
 class XmlContentHandler;
 
 class Server : public QObject
@@ -88,7 +107,7 @@ signals:
 
 private slots:
     void handleNewGUIConnection();
-    void guiSocketDisconnected( QObject *socket );
+    void guiDisconnected( GUIConnection *c );
 
 private:
     void storeEntry( const TraceEntry &e );
@@ -107,8 +126,7 @@ private:
     QXmlInputSource m_xmlInput;
     bool m_receivedData;
     QString m_traceFile;
-    QSignalMapper *m_guiSocketSignalMapper;
-    QList<QTcpSocket *> m_guiSockets;
+    QList<GUIConnection *> m_guiConnections;
 };
 
 #endif // !defined(TRACE_SERVER_H)

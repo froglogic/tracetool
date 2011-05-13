@@ -12,7 +12,6 @@
 #include <QDomDocument>
 #include <QFile>
 #include <QFileInfo>
-#include <QSignalMapper>
 #include <QSqlDatabase>
 #include <QSqlQuery>
 #include <QVariant>
@@ -203,6 +202,26 @@ void ServerSocket::incomingConnection( int socketDescriptor )
     thread->start();
 }
 
+GUIConnection::GUIConnection( Server *server, QTcpSocket *sock )
+    : QObject( server ),
+    m_server( server ),
+    m_sock( sock )
+{
+    connect( m_sock, SIGNAL( disconnected() ), SLOT( handleDisconnect() ) );
+}
+
+void GUIConnection::write( const QByteArray &data )
+{
+    m_sock->write( data );
+}
+
+void GUIConnection::handleDisconnect()
+{
+    emit disconnected( this );
+    m_sock->deleteLater();
+    delete this;
+}
+
 Server::Server( const QString &traceFile,
                 QSqlDatabase database,
                 unsigned short port, unsigned short guiPort,
@@ -210,18 +229,13 @@ Server::Server( const QString &traceFile,
     : QObject( parent ),
       m_tcpServer( 0 ),
       m_db( database ),
-      m_xmlHandler( 0 ),
-      m_guiSocketSignalMapper( 0 )
+      m_xmlHandler( 0 )
 {
     QFileInfo fi( traceFile );
     m_traceFile = QDir::toNativeSeparators( fi.canonicalFilePath() );
 
     assert( m_db.isValid() );
     m_db.exec( "PRAGMA synchronous=OFF;");
-
-    m_guiSocketSignalMapper = new QSignalMapper( this );
-    connect( m_guiSocketSignalMapper, SIGNAL( mapped( QObject * ) ),
-             this, SLOT( guiSocketDisconnected( QObject * ) ) );
 
     m_tcpServer = new ServerSocket( this );
     m_tcpServer->listen( QHostAddress::Any, port );
@@ -272,8 +286,8 @@ void Server::handleTraceEntry( const TraceEntry &entry )
 
     QByteArray serializedEntry = serializeGUIClientData( TraceEntryDatagram, entry );
 
-    QList<QTcpSocket *>::Iterator it, end = m_guiSockets.end();
-    for ( it = m_guiSockets.begin(); it != end; ++it ) {
+    QList<GUIConnection *>::Iterator it, end = m_guiConnections.end();
+    for ( it = m_guiConnections.begin(); it != end; ++it ) {
         ( *it )->write( serializedEntry );
     }
 
@@ -286,8 +300,8 @@ void Server::handleShutdownEvent( const ProcessShutdownEvent &ev )
 
     QByteArray serializedEvent = serializeGUIClientData( ProcessShutdownEventDatagram, ev );
 
-    QList<QTcpSocket *>::Iterator it, end = m_guiSockets.end();
-    for ( it = m_guiSockets.begin(); it != end; ++it ) {
+    QList<GUIConnection *>::Iterator it, end = m_guiConnections.end();
+    for ( it = m_guiConnections.begin(); it != end; ++it ) {
         ( *it )->write( serializedEvent );
     }
 
@@ -420,22 +434,16 @@ void Server::storeShutdownEvent( const ProcessShutdownEvent &ev )
 
 void Server::handleNewGUIConnection()
 {
-    QTcpSocket *guiSocket = m_guiServer->nextPendingConnection();
-    m_guiSockets.append( guiSocket );
-
-    connect( guiSocket, SIGNAL( disconnected() ),
-             m_guiSocketSignalMapper, SLOT( map() ) );
-    m_guiSocketSignalMapper->setMapping( guiSocket, guiSocket );
-
-    guiSocket->write( serializeGUIClientData( TraceFileNameDatagram, m_traceFile ) );
+    GUIConnection *c = new GUIConnection( this, m_guiServer->nextPendingConnection() );
+    connect( c, SIGNAL( disconnected( GUIConnection * ) ),
+             SLOT( guiDisconnected( GUIConnection * ) ) );
+    m_guiConnections.append( c );
+    c->write( serializeGUIClientData( TraceFileNameDatagram, m_traceFile ) );
 }
 
-void Server::guiSocketDisconnected( QObject *sock )
+void Server::guiDisconnected( GUIConnection *c )
 {
-    QTcpSocket *guiSocket = qobject_cast<QTcpSocket *>( sock );
-    assert( guiSocket != 0 );
-    m_guiSockets.removeAll( guiSocket );
-    guiSocket->deleteLater();
+    m_guiConnections.removeAll( c );
 }
 
 bool Server::getGroupId( Transaction *transaction, const QString &name, unsigned int *id )
