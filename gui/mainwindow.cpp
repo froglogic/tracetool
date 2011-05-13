@@ -691,7 +691,7 @@ void MainWindow::updateColumns()
 void MainWindow::clearTracePoints()
 {
     Database::trimTo(m_db, 0);
-    m_entryItemModel->reApplyFilter();
+    m_entryItemModel->clear();
     m_watchTree->reApplyFilter();
     tracePointsSearchWidget->setTraceKeys( QStringList() );
     m_filterForm->setTraceKeys( QStringList() );

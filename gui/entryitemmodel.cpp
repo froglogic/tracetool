@@ -487,6 +487,12 @@ void EntryItemModel::resume()
     insertNewTraceEntries();
 }
 
+void EntryItemModel::clear()
+{
+    m_numNewEntries = 0;
+    reApplyFilter();
+}
+
 unsigned int EntryItemModel::idForIndex(const QModelIndex &index)
 {
     bool ok;

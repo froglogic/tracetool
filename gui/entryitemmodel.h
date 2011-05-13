@@ -40,6 +40,7 @@ public:
 
     void suspend();
     void resume();
+    void clear();
 
     unsigned int idForIndex(const QModelIndex &index);
     const QVariant &getValue(int row, int column) const;
