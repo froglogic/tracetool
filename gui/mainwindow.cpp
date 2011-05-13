@@ -30,12 +30,49 @@
 #include "../server/database.h"
 #include "../server/datagramtypes.h"
 
+// duplicated in server/server.cpp
+template <typename DatagramType, typename ValueType>
+QByteArray serializeDatagram( DatagramType type, const ValueType *v )
+{
+    QByteArray payload;
+    {
+        static const quint32 ProtocolVersion = 1;
+
+        QDataStream stream( &payload, QIODevice::WriteOnly );
+        stream.setVersion( QDataStream::Qt_4_0 );
+        stream << MagicServerProtocolCookie << ProtocolVersion << (quint8)type;
+        if ( v ) {
+            stream << *v;
+        }
+    }
+
+    QByteArray data;
+    {
+        QDataStream stream( &data, QIODevice::WriteOnly );
+        stream.setVersion( QDataStream::Qt_4_0 );
+        stream << (quint16)payload.size();
+        data.append( payload );
+    }
+
+    return data;
+}
+
+QByteArray serializeServerDatagram( ServerDatagramType type ) {
+    return serializeDatagram( type, (int *)0 );
+}
+
+template <typename T>
+QByteArray serializeServerDatagram( ServerDatagramType type, const T &v ) {
+    return serializeDatagram( type, &v );
+}
+
 ServerSocket::ServerSocket(QObject *parent)
     : QTcpSocket(parent)
 {
     connect(this, SIGNAL(readyRead()), SLOT(handleIncomingData()));
 }
 
+// Mostly duplicated in server/server.cpp (GUIConnection::handleIncomingData)
 void ServerSocket::handleIncomingData()
 {
     QDataStream stream(this);
@@ -86,6 +123,9 @@ void ServerSocket::handleIncomingData()
                 emit processShutdown(ev);
                 break;
             }
+            case DatabaseNukeFinishedDatagram:
+                emit databaseWasNuked();
+                break;
         }
         nextPayloadSize = 0;
     }
@@ -240,6 +280,8 @@ bool MainWindow::setDatabase(const QString &databaseFileName, QString *errMsg)
                 this, SLOT(handleNewTraceEntry(const TraceEntry &)));
         connect(m_serverSocket, SIGNAL(processShutdown(const ProcessShutdownEvent &)),
                 m_applicationTable, SLOT(handleProcessShutdown(const ProcessShutdownEvent &)));
+        connect(m_serverSocket, SIGNAL(databaseWasNuked()),
+                this, SLOT(databaseWasNuked()));
     }
     connect( tracePointsSearchWidget, SIGNAL( searchCriteriaChanged( const QString &,
                                                                      const QStringList &,
@@ -690,12 +732,23 @@ void MainWindow::updateColumns()
 
 void MainWindow::clearTracePoints()
 {
-    Database::trimTo(m_db, 0);
+    if ( m_serverSocket ) {
+        tracePointsClear->setEnabled( false );
+        m_serverSocket->write( serializeServerDatagram( DatabaseNukeDatagram ) );
+    } else {
+        Database::trimTo( m_db, 0 );
+        databaseWasNuked();
+    }
+}
+
+void MainWindow::databaseWasNuked()
+{
     m_entryItemModel->clear();
     m_watchTree->reApplyFilter();
     tracePointsSearchWidget->setTraceKeys( QStringList() );
     m_filterForm->setTraceKeys( QStringList() );
     m_applicationTable->setApplications( QList<TracedApplicationInfo>() );
+    tracePointsClear->setEnabled( true );
 }
 
 void MainWindow::traceEntryDoubleClicked(const QModelIndex &index)

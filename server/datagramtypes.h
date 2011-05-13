@@ -11,7 +11,9 @@
 enum ServerDatagramType {
     TraceFileNameDatagram,
     TraceEntryDatagram,
-    ProcessShutdownEventDatagram
+    ProcessShutdownEventDatagram,
+    DatabaseNukeDatagram,
+    DatabaseNukeFinishedDatagram
 };
 
 #endif // !defined(TRACE_DATAGRAMTYPES_H)

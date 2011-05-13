@@ -207,12 +207,54 @@ GUIConnection::GUIConnection( Server *server, QTcpSocket *sock )
     m_server( server ),
     m_sock( sock )
 {
+    connect( m_sock, SIGNAL( readyRead() ), SLOT( handleIncomingData() ) );
     connect( m_sock, SIGNAL( disconnected() ), SLOT( handleDisconnect() ) );
 }
 
 void GUIConnection::write( const QByteArray &data )
 {
     m_sock->write( data );
+}
+
+// Mostly duplicated in gui/mainwindow.cpp (ServerSocket::handleIncomingData)
+void GUIConnection::handleIncomingData()
+{
+    QDataStream stream(m_sock);
+    stream.setVersion(QDataStream::Qt_4_0);
+
+    while (true) {
+        static quint16 nextPayloadSize = 0;
+        if (nextPayloadSize == 0) {
+            if (m_sock->bytesAvailable() < sizeof(nextPayloadSize)) {
+                return;
+            }
+            stream >> nextPayloadSize;
+        }
+
+        if (m_sock->bytesAvailable() < nextPayloadSize) {
+            return;
+        }
+
+        quint32 magicCookie;
+        stream >> magicCookie;
+        if (magicCookie != MagicServerProtocolCookie) {
+            m_sock->disconnectFromHost();
+            return;
+        }
+
+        quint32 protocolVersion;
+        stream >> protocolVersion;
+        assert(protocolVersion == 1);
+
+        quint8 datagramType;
+        stream >> datagramType;
+        switch (static_cast<ServerDatagramType>(datagramType)) {
+            case DatabaseNukeDatagram:
+                emit databaseNukeRequested();
+                break;
+        }
+        nextPayloadSize = 0;
+    }
 }
 
 void GUIConnection::handleDisconnect()
@@ -252,8 +294,9 @@ Server::Server( const QString &traceFile,
     m_xmlReader.parse( &m_xmlInput, true );
 }
 
-template <typename T>
-QByteArray serializeGUIClientData( ServerDatagramType type, const T &v )
+// duplicated in gui/mainwindow.cpp
+template <typename DatagramType, typename ValueType>
+QByteArray serializeDatagram( DatagramType type, const ValueType *v )
 {
     QByteArray payload;
     {
@@ -261,7 +304,10 @@ QByteArray serializeGUIClientData( ServerDatagramType type, const T &v )
 
         QDataStream stream( &payload, QIODevice::WriteOnly );
         stream.setVersion( QDataStream::Qt_4_0 );
-        stream << MagicServerProtocolCookie << ProtocolVersion << (quint8)type << v;
+        stream << MagicServerProtocolCookie << ProtocolVersion << (quint8)type;
+        if ( v ) {
+            stream << *v;
+        }
     }
 
     QByteArray data;
@@ -273,6 +319,15 @@ QByteArray serializeGUIClientData( ServerDatagramType type, const T &v )
     }
 
     return data;
+}
+
+QByteArray serializeGUIClientData( ServerDatagramType type ) {
+    return serializeDatagram( type, (int *)0 );
+}
+
+template <typename T>
+QByteArray serializeGUIClientData( ServerDatagramType type, const T &v ) {
+    return serializeDatagram( type, &v );
 }
 
 Server::~Server()
@@ -435,6 +490,7 @@ void Server::storeShutdownEvent( const ProcessShutdownEvent &ev )
 void Server::handleNewGUIConnection()
 {
     GUIConnection *c = new GUIConnection( this, m_guiServer->nextPendingConnection() );
+    connect( c, SIGNAL( databaseNukeRequested() ), SLOT( nukeDatabase() ) );
     connect( c, SIGNAL( disconnected( GUIConnection * ) ),
              SLOT( guiDisconnected( GUIConnection * ) ) );
     m_guiConnections.append( c );
@@ -444,6 +500,18 @@ void Server::handleNewGUIConnection()
 void Server::guiDisconnected( GUIConnection *c )
 {
     m_guiConnections.removeAll( c );
+}
+
+void Server::nukeDatabase()
+{
+    Database::trimTo( m_db, 0 );
+
+    QByteArray serializedEntry = serializeGUIClientData( DatabaseNukeFinishedDatagram );
+
+    QList<GUIConnection *>::Iterator it, end = m_guiConnections.end();
+    for ( it = m_guiConnections.begin(); it != end; ++it ) {
+        ( *it )->write( serializedEntry );
+    }
 }
 
 bool Server::getGroupId( Transaction *transaction, const QString &name, unsigned int *id )

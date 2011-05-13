@@ -75,9 +75,11 @@ public:
     void write( const QByteArray &data );
 
 signals:
+    void databaseNukeRequested();
     void disconnected( GUIConnection *c );
 
 private slots:
+    void handleIncomingData();
     void handleDisconnect();
 
 private:
@@ -107,6 +109,7 @@ signals:
 
 private slots:
     void handleNewGUIConnection();
+    void nukeDatabase();
     void guiDisconnected( GUIConnection *c );
 
 private:

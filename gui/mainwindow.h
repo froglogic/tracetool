@@ -35,6 +35,7 @@ signals:
     void traceFileNameReceived(const QString &fn);
     void traceEntryReceived(const TraceEntry &entry);
     void processShutdown(const ProcessShutdownEvent &ev);
+    void databaseWasNuked();
 
 private slots:
     void handleIncomingData();
@@ -85,6 +86,7 @@ private slots:
     void automaticServerExit(int code, QProcess::ExitStatus status);
     void automaticServerOutput();
     void handleNewTraceEntry(const TraceEntry &e);
+    void databaseWasNuked();
 
 private:
     bool openConfigurationFile(const QString &fileName);
