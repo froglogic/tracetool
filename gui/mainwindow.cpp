@@ -237,7 +237,6 @@ bool MainWindow::setDatabase(const QString &databaseFileName, QString *errMsg)
 
     // Delete model(s) that might have existed previously
     if (m_entryItemModel) {
-	tracePointsView->setModel(NULL);
 	delete m_entryItemModel; m_entryItemModel = NULL;
     }
 
