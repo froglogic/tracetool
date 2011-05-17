@@ -22,6 +22,12 @@ class Output;
 class Serializer;
 class TracePointSet;
 
+struct StorageConfiguration {
+    unsigned long maximumTraceSize;
+    unsigned short shrinkPercentage;
+    std::string archiveDirectoryName;
+};
+
 class Configuration
 {
 public:
@@ -31,6 +37,7 @@ public:
     static Configuration *fromFile( const std::string &fileName, ErrorLog *errorLog );
     static Configuration *fromMarkup( const std::string &markup, ErrorLog *errorLog );
 
+    const StorageConfiguration &storageConfiguration() const;
     const std::vector<TracePointSet *> &configuredTracePointSets() const;
     Serializer *configuredSerializer();
     Output *configuredOutput();
@@ -49,6 +56,7 @@ private:
 
     bool readProcessElement( TiXmlElement *e );
     bool readTraceKeysElement( TiXmlElement *e );
+    bool readStorageElement( TiXmlElement *e );
 
     std::string m_fileName;
     std::vector<TracePointSet *> m_configuredTracePointSets;
@@ -56,6 +64,7 @@ private:
     Output *m_configuredOutput;
     ErrorLog *m_errorLog;
     std::vector<std::string> m_configuredTraceKeys;
+    StorageConfiguration m_storageConfiguration;
 };
 
 TRACELIB_NAMESPACE_END

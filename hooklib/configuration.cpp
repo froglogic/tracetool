@@ -124,6 +124,13 @@ bool Configuration::loadFrom( TiXmlDocument *xmlDoc )
             continue;
         }
 
+        if ( e->ValueStr() == "storage" ) {
+            if ( !readStorageElement( e ) ) {
+                return false;
+            }
+            continue;
+        }
+
         m_errorLog->write( "Tracelib Configuration: while reading %s: unexpected child element '%s' found inside <tracelibConfiguration>.", m_fileName.c_str(), e->Value() );
         return false;
     }
@@ -193,6 +200,11 @@ bool Configuration::readTraceKeysElement( TiXmlElement *traceKeysElem )
         return false;
     }
     return true;
+}
+
+const StorageConfiguration &Configuration::storageConfiguration() const
+{
+    return m_storageConfiguration;
 }
 
 const vector<TracePointSet *> &Configuration::configuredTracePointSets() const
@@ -499,6 +511,86 @@ Output *Configuration::createOutputFromElement( TiXmlElement *e )
 
     m_errorLog->write( "Tracelib Configuration: while reading %s: Unknown type '%s' specified for <output> element", m_fileName.c_str(), outputType.c_str() );
     return 0;
+}
+
+bool Configuration::readStorageElement( TiXmlElement *storageElem )
+{
+    bool haveMaximumSize = false;
+    bool haveShrinkBy = false;
+    bool haveArchiveDirectory = false;
+    for ( TiXmlElement *e = storageElem->FirstChildElement(); e; e = e->NextSiblingElement() ) {
+        if ( e->ValueStr() == "maximumSize" ) {
+            if ( haveMaximumSize ) {
+                m_errorLog->write( "Tracelib Configuration: while reading %s: duplicated <maximumSize> specified in <storage>", m_fileName.c_str() );
+                return false;
+            }
+
+            const std::string txt = getText( e );
+            if ( txt.empty() ) {
+                m_errorLog->write( "Tracelib Configuration: while reading %s: empty <maximumSize> specified in <storage>", m_fileName.c_str() );
+                return false;
+            }
+
+            istringstream str( txt );
+            str >> m_storageConfiguration.maximumTraceSize; // XXX Error handling for non-numeric values
+            haveMaximumSize = true;
+            continue;
+        }
+
+        if ( e->ValueStr() == "shrinkBy" ) {
+            if ( haveShrinkBy ) {
+                m_errorLog->write( "Tracelib Configuration: while reading %s: duplicate <shrinkBy> specified in <storage>", m_fileName.c_str() );
+                return false;
+            }
+
+            const std::string txt = getText( e );
+            if ( txt.empty() ) {
+                m_errorLog->write( "Tracelib Configuration: while reading %s: empty <shrinkBy> specified in <storage>", m_fileName.c_str() );
+                return false;
+            }
+
+            istringstream str( txt );
+            str >> m_storageConfiguration.shrinkPercentage; // XXX Error handling for non-numeric values
+            haveShrinkBy = true;
+            continue;
+        }
+
+        if ( e->ValueStr() == "archiveDirectory" ) {
+            if ( haveArchiveDirectory ) {
+                m_errorLog->write( "Tracelib Configuration: while reading %s: duplicate <archiveDirectory> specified in <storage>", m_fileName.c_str() );
+                return false;
+            }
+
+            const std::string txt = getText( e );
+            if ( txt.empty() ) {
+                m_errorLog->write( "Tracelib Configuration: while reading %s: empty <archiveDirectory> specified in <storage>", m_fileName.c_str() );
+                return false;
+            }
+            m_storageConfiguration.archiveDirectoryName = txt;
+            haveArchiveDirectory = true;
+            continue;
+        }
+
+        m_errorLog->write( "Tracelib Configuration: while reading %s: unexpected element <%s> specified in <storage>", e->ValueStr(), m_fileName.c_str() );
+        return false;
+    }
+
+    if ( !haveMaximumSize ) {
+        m_errorLog->write( "Tracelib Configuration: while reading %s: <maximumSize> element missing in <storage>", m_fileName.c_str() );
+        return false;
+    }
+
+    if ( !haveShrinkBy ) {
+        m_errorLog->write( "Tracelib Configuration: while reading %s: <shrinkBy> element missing in <storage>", m_fileName.c_str() );
+        return false;
+    }
+
+    if ( !haveArchiveDirectory ) {
+        m_errorLog->write( "Tracelib Configuration: while reading %s: <archiveDirectory> element missing in <storage>", m_fileName.c_str() );
+        return false;
+    }
+
+    return true;
 }
 
 TRACELIB_NAMESPACE_END
