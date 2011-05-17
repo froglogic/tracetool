@@ -11,6 +11,8 @@
 #include <string>
 #include <vector>
 
+#include "configuration.h" // for StorageConfiguration
+
 TRACELIB_NAMESPACE_BEGIN
 
 struct TraceEntry;
@@ -24,6 +26,8 @@ public:
 
     virtual std::vector<char> serialize( const TraceEntry &entry ) = 0;
     virtual std::vector<char> serialize( const ProcessShutdownEvent &ev ) = 0;
+
+    virtual void setStorageConfiguration( const StorageConfiguration &cfg ) { }
 
 protected:
     Serializer();
@@ -58,10 +62,15 @@ public:
     virtual std::vector<char> serialize( const TraceEntry &entry );
     virtual std::vector<char> serialize( const ProcessShutdownEvent &ev );
 
+    virtual void setStorageConfiguration( const StorageConfiguration &cfg ) {
+        m_cfg = cfg;
+    }
+
 private:
     std::string convertVariable( const char *name, const VariableValue &v ) const;
 
     bool m_beautifiedOutput;
+    StorageConfiguration m_cfg;
 };
 
 TRACELIB_NAMESPACE_END

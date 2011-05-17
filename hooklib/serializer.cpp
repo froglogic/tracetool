@@ -229,6 +229,19 @@ vector<char> XMLSerializer::serialize( const TraceEntry &entry )
         str << indent << "<message><![CDATA[" << entry.message << "]]></message>";
     }
 
+    str << indent << "<storageconfiguration"
+                  << " maxSize=\"" << m_cfg.maximumTraceSize << "\""
+                  << " shrinkBy=\"" << m_cfg.shrinkPercentage << "\""
+                  << ">";
+    if ( m_beautifiedOutput ) {
+        indent += "  ";
+    }
+    str << indent << "<![CDATA[" << m_cfg.archiveDirectoryName << "]]>";
+    if ( m_beautifiedOutput ) {
+        indent = "\n  ";
+    }
+    str << indent << "</storageconfiguration>";
+
     if ( m_beautifiedOutput ) {
         indent = "\n";
     }

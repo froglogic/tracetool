@@ -174,6 +174,8 @@ void Trace::reloadConfiguration( const string &fileName )
             m_configuration = cfg;
         }
 
+        m_serializer->setStorageConfiguration( cfg->storageConfiguration() );
+
         /* If any trace keys are given in the XML file, they also implicitely
          * filter out all those trace entries which do not have any of the
          * specified keys. A feature requested by Siemens.
