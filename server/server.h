@@ -18,6 +18,13 @@
 
 #include "database.h"
 
+struct StorageConfiguration
+{
+    unsigned long maximumSize;
+    unsigned short shrinkBy;
+    QString archiveDir;
+};
+
 class ClientSocket : public QTcpSocket
 {
     Q_OBJECT
@@ -118,8 +125,7 @@ private:
     void handleDatagram( const QByteArray &datagram );
     void handleTraceEntry( const TraceEntry &e );
     void handleShutdownEvent( const ProcessShutdownEvent &ev );
-
-    bool getGroupId( Transaction *transaction, const QString &name, unsigned int *id );
+    void applyStorageConfiguration( const StorageConfiguration &cfg );
 
     QTcpServer *m_guiServer;
     ServerSocket *m_tcpServer;
@@ -130,6 +136,9 @@ private:
     bool m_receivedData;
     QString m_traceFile;
     QList<GUIConnection *> m_guiConnections;
+    QString m_archiveDir;
+    unsigned short m_shrinkBy;
+    unsigned long m_maximumSize;
 };
 
 #endif // !defined(TRACE_SERVER_H)

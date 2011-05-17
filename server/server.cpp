@@ -13,6 +13,7 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QSqlDatabase>
+#include <QSqlError>
 #include <QSqlQuery>
 #include <QVariant>
 
@@ -59,6 +60,10 @@ public:
             m_currentShutdownEvent.pid = atts.value( "pid" ).toUInt();
             m_currentShutdownEvent.startTime = QDateTime::fromTime_t( atts.value( "starttime" ).toUInt() );
             m_currentShutdownEvent.stopTime = QDateTime::fromTime_t( atts.value( "endtime" ).toUInt() );
+        } else if ( lName == "storageconfiguration" ) {
+            m_currentStorageConfig = StorageConfiguration();
+            m_currentStorageConfig.maximumSize = atts.value( "maxSize" ).toULong();
+            m_currentStorageConfig.shrinkBy = atts.value( "shrinkBy" ).toUInt();
         }
         return true;
     }
@@ -122,6 +127,10 @@ public:
         } else if ( lName == "key" ) {
             m_currentEntry.traceKeys.append( m_s.trimmed() );
             m_s.clear();
+        } else {
+            m_currentStorageConfig.archiveDir = m_s.trimmed();
+            m_s.clear();
+            m_server->applyStorageConfiguration( m_currentStorageConfig );
         }
         return true;
     }
@@ -138,7 +147,299 @@ private:
     StackFrame m_currentFrame;
     bool m_inFrameElement;
     ProcessShutdownEvent m_currentShutdownEvent;
+    StorageConfiguration m_currentStorageConfig;
 };
+
+static bool getGroupId( QSqlDatabase db, Transaction *transaction, const QString &name, unsigned int *id )
+{
+    QVariant v = transaction->exec( QString( "SELECT id FROM trace_point_group WHERE name=%1;" ).arg( Database::formatValue( db, name ) ) );
+    if ( !v.isValid() ) {
+        transaction->exec( QString( "INSERT INTO trace_point_group VALUES(NULL, %1);" ).arg( Database::formatValue( db, name ) ) );
+        if ( id ) {
+            v = transaction->exec( "SELECT last_insert_rowid() FROM trace_point_group LIMIT 1;" );
+        }
+    }
+
+    if ( !id ) {
+        return true;
+    }
+
+    bool ok;
+    *id = v.toUInt( &ok );
+    return ok;
+}
+
+void archiveEntries( QSqlDatabase db, unsigned short percentage );
+
+static void storeEntry( QSqlDatabase db, Transaction *transaction, const TraceEntry &e )
+{
+    unsigned int pathId;
+    bool ok;
+    {
+        QVariant v = transaction->exec( QString( "SELECT id FROM path_name WHERE name=%1;" ).arg( Database::formatValue( db, e.path ) ) );
+        if ( !v.isValid() ) {
+            transaction->exec( QString( "INSERT INTO path_name VALUES(NULL, %1);" ).arg( Database::formatValue( db, e.path ) ) );
+            v = transaction->exec( "SELECT last_insert_rowid() FROM path_name LIMIT 1;" );
+        }
+        pathId = v.toUInt( &ok );
+        if ( !ok ) {
+            throw runtime_error( "Failed to store entry in database: read non-numeric path id from database - corrupt database?" );
+        }
+    }
+
+    unsigned int functionId;
+    {
+        QVariant v = transaction->exec( QString( "SELECT id FROM function_name WHERE name=%1;" ).arg( Database::formatValue( db, e.function ) ) );
+        if ( !v.isValid() ) {
+            transaction->exec( QString( "INSERT INTO function_name VALUES(NULL, %1);" ).arg( Database::formatValue( db, e.function ) ) );
+            v = transaction->exec( "SELECT last_insert_rowid() FROM function_name LIMIT 1;" );
+        }
+        functionId = v.toUInt( &ok );
+        if ( !ok ) {
+            throw runtime_error( "Failed to store entry in database: read non-numeric function id from database - corrupt database?" );
+        }
+    }
+
+    unsigned int processId;
+    {
+        QVariant v = transaction->exec( QString( "SELECT id FROM process WHERE pid=%1 AND start_time=%2;" ).arg( e.pid ).arg( Database::formatValue( db, e.processStartTime ) ) );
+        if ( !v.isValid() ) {
+            transaction->exec( QString( "INSERT INTO process VALUES(NULL, %1, %2, %3, 0);" ).arg( Database::formatValue( db, e.processName ) ).arg( e.pid ).arg( Database::formatValue( db, e.processStartTime ) ) );
+            v = transaction->exec( "SELECT last_insert_rowid() FROM process LIMIT 1;" );
+        }
+        processId = v.toUInt( &ok );
+        if ( !ok ) {
+            throw runtime_error( "Failed to store entry in database: read non-numeric process id from database - corrupt database?" );
+        }
+    }
+
+    unsigned int tracedThreadId;
+    {
+        QVariant v = transaction->exec( QString( "SELECT id FROM traced_thread WHERE process_id=%1 AND tid=%2;" ).arg( processId ).arg( e.tid ) );
+        if ( !v.isValid() ) {
+            transaction->exec( QString( "INSERT INTO traced_thread VALUES(NULL, %1, %2);" ).arg( processId ).arg( e.tid ) );
+            v = transaction->exec( "SELECT last_insert_rowid() FROM traced_thread LIMIT 1;" );
+        }
+        tracedThreadId = v.toUInt( &ok );
+        if ( !ok ) {
+            throw runtime_error( "Failed to store entry in database: read non-numeric traced thread id from database - corrupt database?" );
+        }
+    }
+
+    unsigned int groupId = 0;
+    if ( !e.groupName.isNull() ) {
+        if ( !getGroupId( db, transaction, e.groupName, &groupId ) ) {
+            throw runtime_error( "Failed to store entry in database: read non-numeric trace point group id from database - corrupt database?" );
+        }
+    }
+
+    unsigned int tracepointId;
+    {
+        QVariant v = transaction->exec( QString( "SELECT id FROM trace_point WHERE verbosity=%1 AND type=%2 AND path_id=%3 AND line=%4 AND function_id=%5 AND group_id=%6;" ).arg( e.verbosity ).arg( e.type ).arg( pathId ).arg( e.lineno ).arg( functionId ).arg( groupId ) );
+        if ( !v.isValid() ) {
+            transaction->exec( QString( "INSERT INTO trace_point VALUES(NULL, %1, %2, %3, %4, %5, %6);" ).arg( e.verbosity ).arg( e.type ).arg( pathId ).arg( e.lineno ).arg( functionId ).arg( groupId ) );
+            v = transaction->exec( "SELECT last_insert_rowid() FROM trace_point LIMIT 1;" );
+        }
+        tracepointId = v.toUInt( &ok );
+        if ( !ok ) {
+            throw runtime_error( "Failed to store entry in database: read non-numeric tracepoint id from database - corrupt database?" );
+        }
+    }
+
+    transaction->exec( QString( "INSERT INTO trace_entry VALUES(NULL, %1, %2, %3, %4, %5)" )
+                    .arg( tracedThreadId )
+                    .arg( Database::formatValue( db, e.timestamp ) )
+                    .arg( tracepointId )
+                    .arg( Database::formatValue( db, e.message ) )
+                    .arg( e.stackPosition ) );
+    const unsigned int traceentryId = transaction->exec( "SELECT last_insert_rowid() FROM trace_entry LIMIT 1;" ).toUInt();
+
+    {
+        QList<Variable>::ConstIterator it, end = e.variables.end();
+        for ( it = e.variables.begin(); it != end; ++it ) {
+            transaction->exec( QString( "INSERT INTO variable VALUES(%1, %2, %3, %4);" ).arg( traceentryId ).arg( Database::formatValue( db, it->name ) ).arg( Database::formatValue( db, it->value ) ).arg( it->type ) );
+        }
+    }
+
+    {
+        unsigned int depthCount = 0;
+        QList<StackFrame>::ConstIterator it, end = e.backtrace.end();
+        for ( it = e.backtrace.begin(); it != end; ++it, ++depthCount ) {
+            transaction->exec( QString( "INSERT INTO stackframe VALUES(%1, %2, %3, %4, %5, %6, %7);" ).arg( traceentryId ).arg( depthCount ).arg( Database::formatValue( db, it->module ) ).arg( Database::formatValue( db, it->function ) ).arg( it->functionOffset ).arg( Database::formatValue( db, it->sourceFile ) ).arg( it->lineNumber ) );
+        }
+    }
+
+    {
+        QList<QString>::ConstIterator it, end = e.traceKeys.end();
+        for ( it = e.traceKeys.begin(); it != end; ++it ) {
+            getGroupId( db, transaction, *it, 0 );
+        }
+    }
+}
+
+static QString archiveFileName( const QString &archiveDirName, const QString &currentFileName )
+{
+    const QString archiveFileName = QFileInfo( currentFileName ).completeBaseName() +
+                                    "_" +
+                                    QDateTime::currentDateTime().toString( "yyyy-MM-dd_hh-mm-ss" ) +
+                                    ".trace";
+    return archiveDirName + "/" + archiveFileName;
+}
+
+static void archiveEntries( QSqlDatabase db, unsigned short percentage, const QString &archiveDir )
+{
+    if ( percentage == 0 ) {
+        return;
+    }
+
+    if ( percentage > 100 ) {
+        percentage = 100;
+    }
+
+    Transaction transaction( db );
+    qulonglong numCopy = 0;
+    {
+        QVariant v = transaction.exec( QString( "SELECT ROUND(COUNT(id) / 100.0 * %1) FROM trace_entry;" ).arg( percentage ) );
+        bool ok;
+        numCopy = v.toULongLong( &ok );
+        if ( !ok ) {
+            throw runtime_error( "Failed to count number of entries to archive" );
+        }
+    }
+
+    QString connName;
+    {
+        QSqlDatabase archiveDB;
+        {
+            if ( !QDir().mkpath( archiveDir ) ) {
+                throw runtime_error( QString( "Failed to create archive database: creating archive directory %1 failed" ).arg( archiveDir ).toUtf8().constData() );
+            }
+
+            const QString fn = archiveFileName( archiveDir, db.databaseName() );
+            QString errorMsg;
+            archiveDB = Database::create( fn, &errorMsg );
+            if ( !archiveDB.isValid() ) {
+                throw runtime_error( QString( "Failed to create database in %1: %2" ).arg( fn ).arg( errorMsg ).toUtf8().constData() );
+            }
+        }
+        connName = archiveDB.connectionName();
+
+        {
+            QString query = QString( "SELECT"
+                            " trace_entry.id,"
+                            " process.pid,"
+                            " process.start_time,"
+                            " process.name,"
+                            " traced_thread.tid,"
+                            " trace_entry.timestamp,"
+                            " trace_point.verbosity,"
+                            " trace_point.type,"
+                            " path_name.name,"
+                            " trace_point.line,"
+                            " trace_point.group_id,"
+                            " function_name.name,"
+                            " trace_entry.message, "
+                            " trace_entry.stack_position "
+                            "FROM"
+                            " trace_entry,"
+                            " trace_point,"
+                            " path_name,"
+                            " function_name,"
+                            " process,"
+                            " traced_thread "
+                            "WHERE"
+                            " trace_entry.trace_point_id = trace_point.id "
+                            "AND"
+                            " trace_point.function_id = function_name.id "
+                            "AND"
+                            " trace_point.path_id = path_name.id "
+                            "AND"
+                            " trace_entry.traced_thread_id = traced_thread.id "
+                            "AND"
+                            " traced_thread.process_id = process.id "
+                            "ORDER BY"
+                            " trace_entry.id "
+                            "LIMIT"
+                            " %1" ).arg( numCopy );
+
+            QSqlQuery q( db );
+            q.setForwardOnly( true );
+            if ( !q.exec( query ) ) {
+                throw runtime_error( QString( "Cannot archive trace data: failed to extract entry data: %1" ).arg( q.lastError().text() ).toUtf8().constData() );
+            }
+
+            Transaction archiveTransaction( archiveDB );
+            while ( q.next() ) {
+                qulonglong id = q.value( 0 ).toULongLong();
+
+                TraceEntry e;
+                e.pid = q.value( 1 ).toUInt();
+                e.processStartTime = q.value( 2 ).toDateTime();
+                e.processName = q.value( 3 ).toString();
+                e.tid = q.value( 4 ).toUInt();
+                e.timestamp = q.value( 5 ).toDateTime();
+                e.verbosity = q.value( 6 ).toUInt();
+                e.type = q.value( 7 ).toUInt();
+                e.path = q.value( 8 ).toString();
+                e.lineno = q.value( 9 ).toULongLong();
+
+                const int groupId = q.value( 10 ).toInt();
+                if ( groupId != 0 ) {
+                    QSqlQuery gq( db );
+                    gq.setForwardOnly( true );
+                    if ( gq.exec( QString( "SELECT name FROM trace_point_group WHERE id = %1" ).arg( groupId ) ) ) {
+                        if ( gq.next() ) {
+                            e.groupName = gq.value( 0 ).toString();
+                        }
+                    }
+                }
+
+                e.function = q.value( 11 ).toString();
+                e.message = q.value( 12 ).toString();
+                e.stackPosition = q.value( 13 ).toULongLong();
+                e.backtrace = Database::backtraceForEntry( db, id );
+
+                {
+                    QSqlQuery vq( db );
+                    vq.setForwardOnly( true );
+                    if ( vq.exec( QString( "SELECT "
+                                    " name,"
+                                    " type,"
+                                    " value "
+                                    "FROM "
+                                    " variable "
+                                    "WHERE"
+                                    " trace_entry_id = %1" ).arg( id ) ) ) {
+                        while ( vq.next() ) {
+                            Variable v;
+                            v.name = vq.value( 0 ).toString();
+                            v.type = (TRACELIB_NAMESPACE_IDENT(VariableType)::Value)( vq.value( 1 ).toInt() );
+                            v.value = vq.value( 2 ).toString();
+                            e.variables.append( v );
+                        }
+                    }
+                }
+                ::storeEntry( archiveDB, &archiveTransaction, e );
+            }
+        }
+    }
+    QSqlDatabase::removeDatabase( connName );
+
+    {
+        transaction.exec( QString( "DELETE FROM trace_entry WHERE id IN (SELECT id FROM trace_entry ORDER BY id LIMIT %1);" ).arg( numCopy ) );
+
+        transaction.exec( QString( "DELETE FROM trace_point WHERE id NOT IN (SELECT trace_point_id FROM trace_entry);" ) );
+        transaction.exec( QString( "DELETE FROM function_name WHERE id NOT IN (SELECT function_id FROM trace_point);" ) );
+        transaction.exec( QString( "DELETE FROM path_name WHERE id NOT IN (SELECT path_id FROM trace_point);" ) );
+        transaction.exec( QString( "DELETE FROM trace_point_group WHERE id NOT IN (SELECT group_id FROM trace_point);" ) );
+
+        transaction.exec( QString( "DELETE FROM traced_thread WHERE id NOT IN (SELECT traced_thread_id FROM trace_entry);" ) );
+        transaction.exec( QString( "DELETE FROM process WHERE id NOT IN (SELECT process_id FROM traced_thread);" ) );
+
+        transaction.exec( QString( "DELETE FROM variable WHERE trace_entry_id NOT IN (SELECT id FROM trace_entry);" ) );
+        transaction.exec( QString( "DELETE FROM stackframe WHERE trace_entry_id NOT IN (SELECT id FROM trace_entry);" ) );
+    }
+}
 
 ClientSocket::ClientSocket( QObject *parent )
     : QTcpSocket( parent )
@@ -363,6 +664,65 @@ void Server::handleShutdownEvent( const ProcessShutdownEvent &ev )
     emit processShutdown( ev );
 }
 
+void Server::applyStorageConfiguration( const StorageConfiguration &cfg )
+{
+    m_archiveDir = cfg.archiveDir;
+
+    m_shrinkBy = cfg.shrinkBy;
+    if ( m_shrinkBy < 1 ) {
+        m_shrinkBy = 1;
+    }
+
+    if ( m_shrinkBy > 100 ) {
+        m_shrinkBy = 100;
+    }
+
+    if ( m_maximumSize != cfg.maximumSize && m_maximumSize != 0 ) {
+        qulonglong pageSize = 0;
+        {
+            QSqlQuery q = m_db.exec( "PRAGMA page_size;" );
+            if ( !q.next() ) {
+                return;
+            }
+
+            bool ok;
+            pageSize = q.value( 0 ).toULongLong( &ok );
+            if ( !ok || pageSize == 0 ) {
+                return;
+            }
+        }
+
+        qulonglong pageCount = 0;
+        {
+            QSqlQuery q = m_db.exec( "PRAGMA page_count;" );
+            if ( !q.next() ) {
+                return;
+            }
+
+            bool ok;
+            pageCount = q.value( 0 ).toULongLong( &ok );
+            if ( !ok ) {
+                return;
+            }
+        }
+
+        /* It's possible that the current file is larger than the given
+         * maximum size. In that case, lets just use the current size as
+         * the maximum to avoid that it grows even further. We cannot shrink
+         * existing files, so this is pretty much the best we can do.
+         */
+        qulonglong maxPageCount = cfg.maximumSize / pageSize;
+        if ( pageCount > maxPageCount ) {
+            maxPageCount = pageCount;
+        }
+
+        m_db.exec( QString( "PRAGMA max_page_count=%1" ).arg( maxPageCount ) );
+
+        m_maximumSize = cfg.maximumSize;
+    }
+}
+
+
 void Server::handleIncomingData( const QByteArray &xmlData )
 {
     try {
@@ -373,110 +733,20 @@ void Server::handleIncomingData( const QByteArray &xmlData )
     }
 }
 
+// Definition taken from http://www.sqlite.org/c_interface.html
+#define SQLITE_FULL        13   /* Insertion failed because database is full */
+
 void Server::storeEntry( const TraceEntry &e )
 {
-    Transaction transaction( m_db );
-
-    unsigned int pathId;
-    bool ok;
-    {
-        QVariant v = transaction.exec( QString( "SELECT id FROM path_name WHERE name=%1;" ).arg( Database::formatValue( m_db, e.path ) ) );
-        if ( !v.isValid() ) {
-            transaction.exec( QString( "INSERT INTO path_name VALUES(NULL, %1);" ).arg( Database::formatValue( m_db, e.path ) ) );
-            v = transaction.exec( "SELECT last_insert_rowid() FROM path_name LIMIT 1;" );
-        }
-        pathId = v.toUInt( &ok );
-        if ( !ok ) {
-            throw runtime_error( "Failed to store entry in database: read non-numeric path id from database - corrupt database?" );
-        }
-    }
-
-    unsigned int functionId;
-    {
-        QVariant v = transaction.exec( QString( "SELECT id FROM function_name WHERE name=%1;" ).arg( Database::formatValue( m_db, e.function ) ) );
-        if ( !v.isValid() ) {
-            transaction.exec( QString( "INSERT INTO function_name VALUES(NULL, %1);" ).arg( Database::formatValue( m_db, e.function ) ) );
-            v = transaction.exec( "SELECT last_insert_rowid() FROM function_name LIMIT 1;" );
-        }
-        functionId = v.toUInt( &ok );
-        if ( !ok ) {
-            throw runtime_error( "Failed to store entry in database: read non-numeric function id from database - corrupt database?" );
-        }
-    }
-
-    unsigned int processId;
-    {
-        QVariant v = transaction.exec( QString( "SELECT id FROM process WHERE pid=%1 AND start_time=%2;" ).arg( e.pid ).arg( Database::formatValue( m_db, e.processStartTime ) ) );
-        if ( !v.isValid() ) {
-            transaction.exec( QString( "INSERT INTO process VALUES(NULL, %1, %2, %3, 0);" ).arg( Database::formatValue( m_db, e.processName ) ).arg( e.pid ).arg( Database::formatValue( m_db, e.processStartTime ) ) );
-            v = transaction.exec( "SELECT last_insert_rowid() FROM process LIMIT 1;" );
-        }
-        processId = v.toUInt( &ok );
-        if ( !ok ) {
-            throw runtime_error( "Failed to store entry in database: read non-numeric process id from database - corrupt database?" );
-        }
-    }
-
-    unsigned int tracedThreadId;
-    {
-        QVariant v = transaction.exec( QString( "SELECT id FROM traced_thread WHERE process_id=%1 AND tid=%2;" ).arg( processId ).arg( e.tid ) );
-        if ( !v.isValid() ) {
-            transaction.exec( QString( "INSERT INTO traced_thread VALUES(NULL, %1, %2);" ).arg( processId ).arg( e.tid ) );
-            v = transaction.exec( "SELECT last_insert_rowid() FROM traced_thread LIMIT 1;" );
-        }
-        tracedThreadId = v.toUInt( &ok );
-        if ( !ok ) {
-            throw runtime_error( "Failed to store entry in database: read non-numeric traced thread id from database - corrupt database?" );
-        }
-    }
-
-    unsigned int groupId = 0;
-    if ( !e.groupName.isNull() ) {
-        if ( !getGroupId( &transaction, e.groupName, &groupId ) ) {
-            throw runtime_error( "Failed to store entry in database: read non-numeric trace point group id from database - corrupt database?" );
-        }
-    }
-
-    unsigned int tracepointId;
-    {
-        QVariant v = transaction.exec( QString( "SELECT id FROM trace_point WHERE verbosity=%1 AND type=%2 AND path_id=%3 AND line=%4 AND function_id=%5 AND group_id=%6;" ).arg( e.verbosity ).arg( e.type ).arg( pathId ).arg( e.lineno ).arg( functionId ).arg( groupId ) );
-        if ( !v.isValid() ) {
-            transaction.exec( QString( "INSERT INTO trace_point VALUES(NULL, %1, %2, %3, %4, %5, %6);" ).arg( e.verbosity ).arg( e.type ).arg( pathId ).arg( e.lineno ).arg( functionId ).arg( groupId ) );
-            v = transaction.exec( "SELECT last_insert_rowid() FROM trace_point LIMIT 1;" );
-        }
-        tracepointId = v.toUInt( &ok );
-        if ( !ok ) {
-            throw runtime_error( "Failed to store entry in database: read non-numeric tracepoint id from database - corrupt database?" );
-        }
-    }
-
-    transaction.exec( QString( "INSERT INTO trace_entry VALUES(NULL, %1, %2, %3, %4, %5)" )
-                    .arg( tracedThreadId )
-                    .arg( Database::formatValue( m_db, e.timestamp ) )
-                    .arg( tracepointId )
-                    .arg( Database::formatValue( m_db, e.message ) )
-                    .arg( e.stackPosition ) );
-    const unsigned int traceentryId = transaction.exec( "SELECT last_insert_rowid() FROM trace_entry LIMIT 1;" ).toUInt();
-
-    {
-        QList<Variable>::ConstIterator it, end = e.variables.end();
-        for ( it = e.variables.begin(); it != end; ++it ) {
-            transaction.exec( QString( "INSERT INTO variable VALUES(%1, %2, %3, %4);" ).arg( traceentryId ).arg( Database::formatValue( m_db, it->name ) ).arg( Database::formatValue( m_db, it->value ) ).arg( it->type ) );
-        }
-    }
-
-    {
-        unsigned int depthCount = 0;
-        QList<StackFrame>::ConstIterator it, end = e.backtrace.end();
-        for ( it = e.backtrace.begin(); it != end; ++it, ++depthCount ) {
-            transaction.exec( QString( "INSERT INTO stackframe VALUES(%1, %2, %3, %4, %5, %6, %7);" ).arg( traceentryId ).arg( depthCount ).arg( Database::formatValue( m_db, it->module ) ).arg( Database::formatValue( m_db, it->function ) ).arg( it->functionOffset ).arg( Database::formatValue( m_db, it->sourceFile ) ).arg( it->lineNumber ) );
-        }
-    }
-
-    {
-        QList<QString>::ConstIterator it, end = e.traceKeys.end();
-        for ( it = e.traceKeys.begin(); it != end; ++it ) {
-            getGroupId( &transaction, *it, 0 );
+    try {
+        Transaction transaction( m_db );
+        ::storeEntry( m_db, &transaction, e );
+    } catch ( const SQLTransactionException &ex ) {
+        if ( ex.driverCode() == SQLITE_FULL ) {
+            archiveEntries( m_db, m_shrinkBy, m_archiveDir );
+            storeEntry( e );
+        } else {
+            throw;
         }
     }
 }
@@ -512,24 +782,5 @@ void Server::nukeDatabase()
     for ( it = m_guiConnections.begin(); it != end; ++it ) {
         ( *it )->write( serializedEntry );
     }
-}
-
-bool Server::getGroupId( Transaction *transaction, const QString &name, unsigned int *id )
-{
-    QVariant v = transaction->exec( QString( "SELECT id FROM trace_point_group WHERE name=%1;" ).arg( Database::formatValue( m_db, name ) ) );
-    if ( !v.isValid() ) {
-        transaction->exec( QString( "INSERT INTO trace_point_group VALUES(NULL, %1);" ).arg( Database::formatValue( m_db, name ) ) );
-        if ( id ) {
-            v = transaction->exec( "SELECT last_insert_rowid() FROM trace_point_group LIMIT 1;" );
-        }
-    }
-
-    if ( !id ) {
-        return true;
-    }
-
-    bool ok;
-    *id = v.toUInt( &ok );
-    return ok;
 }
 
