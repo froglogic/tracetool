@@ -13,6 +13,8 @@
 
 #include "../hooklib/tracelib.h" // for VariableType
 
+#include <stdexcept>
+
 class QSqlDatabase;
 class QString;
 
@@ -78,6 +80,24 @@ struct TracedApplicationInfo
     QDateTime startTime;
     QDateTime stopTime;
     QString name;
+};
+
+class SQLTransactionException : public std::runtime_error
+{
+public:
+    SQLTransactionException( const QString &what, const QString &msg, int code )
+        : std::runtime_error( what.toUtf8().constData() ),
+        m_msg( msg ),
+        m_code( code )
+    {
+    }
+
+    const QString &driverMessage() const { return m_msg; }
+    int driverCode() const { return m_code; }
+
+private:
+    QString m_msg;
+    int m_code;
 };
 
 class Transaction

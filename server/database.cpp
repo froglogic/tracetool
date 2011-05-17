@@ -39,11 +39,10 @@ QVariant Transaction::exec( const QString &statement )
 {
     if ( !m_query.exec( statement ) ) {
         m_commitChanges = false;
-
-        const QString msg = QString( "Failed to store entry in database: executing SQL command '%1' failed: %2" )
-            .arg( statement )
-            .arg( m_query.lastError().text() );
-        throw Qruntime_error( msg );
+        throw SQLTransactionException( QString( "Failed to store entry in database: executing SQL command '%1' failed: %2" )
+                                        .arg( statement ).arg( m_query.lastError().text() ),
+                                       m_query.lastError().text(),
+                                       m_query.lastError().number() );
     }
     if ( m_query.next() ) {
         return m_query.value( 0 );
