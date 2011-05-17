@@ -33,8 +33,6 @@ static QString defaultFile()
 }
 
 Settings::Settings()
-    : m_softLimit(-1),
-      m_hardLimit(-1)
 {
     m_entryFilter = new EntryFilter();
     registerRestorable("Filter", m_entryFilter);
@@ -56,12 +54,6 @@ bool Settings::save() const
 {
     QSettings qs(QSettings::IniFormat, QSettings::UserScope,
                  companyName, productName);
-
-    // [Database]
-    qs.beginGroup(databaseGroup);
-    qs.setValue("SoftLimit", m_softLimit);
-    qs.setValue("HardLimit", m_hardLimit);
-    qs.endGroup();
 
     // [Configuration]
     qs.beginGroup(configGroup);
@@ -89,12 +81,6 @@ bool Settings::load()
 {
     QSettings qs(QSettings::IniFormat, QSettings::UserScope,
                  companyName, productName);
-
-    // [Database]
-    qs.beginGroup(databaseGroup);
-    m_softLimit = qs.value("SoftLimit", defaultSoftLimit).toInt();
-    m_hardLimit = qs.value("HardLimit", defaultHardLimit).toInt();
-    qs.endGroup();
 
     // [Configuration]
     qs.beginGroup(configGroup);
@@ -167,19 +153,6 @@ bool Settings::restoreSession() const
     qs.endGroup();
 
     return qs.status() == QSettings::NoError;
-}
-
-// ### do some sanity checks on the two limit values
-// ### E.g. minimum size possible, one bigger than the other
-void Settings::setSoftLimit(int bytes)
-{
-    m_softLimit = bytes;
-}
-
-void Settings::setHardLimit(int bytes)
-{
-    // ### shrink database?
-    m_hardLimit = bytes;
 }
 
 void Settings::addConfigurationFile(const QString &fileName)

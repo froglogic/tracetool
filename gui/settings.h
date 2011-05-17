@@ -43,12 +43,6 @@ public:
     bool startServerAutomatically() const { return m_serverStartedAutomatically; }
     void setStartServerAutomatically(bool b) { m_serverStartedAutomatically = b; }
 
-    void setSoftLimit(int bytes);
-    int softLimit() const { return m_softLimit; }
-
-    void setHardLimit(int bytes);
-    int hardLimit() const { return m_hardLimit; }
-
     // [Filter]
     EntryFilter* entryFilter() { return m_entryFilter; }
 
@@ -74,7 +68,6 @@ private:
     int m_serverTracePort;
     EntryFilter* m_entryFilter;
     ColumnsInfo *m_columnsInfo;
-    int m_softLimit, m_hardLimit;
     QStringList m_configFiles;
     bool m_serverStartedAutomatically;
     QFont m_font;

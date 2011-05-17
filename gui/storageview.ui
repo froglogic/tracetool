@@ -157,10 +157,10 @@
           </property>
          </widget>
         </item>
-        <item row="2" column="1" colspan="3">
+        <item row="2" column="1" colspan="2">
          <widget class="QLineEdit" name="traceFileEdit"/>
         </item>
-        <item row="2" column="4">
+        <item row="2" column="3">
          <widget class="QPushButton" name="traceFileBrowseButton">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
@@ -173,55 +173,7 @@
           </property>
          </widget>
         </item>
-        <item row="3" column="0">
-         <widget class="QLabel" name="softLimitLabel">
-          <property name="text">
-           <string>Soft Limit:</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="1">
-         <widget class="QSpinBox" name="softLimitSpin">
-          <property name="maximum">
-           <number>999999999</number>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="2">
-         <widget class="QLabel" name="softUnitsLabel">
-          <property name="text">
-           <string>Bytes</string>
-          </property>
-         </widget>
-        </item>
-        <item row="4" column="0">
-         <widget class="QLabel" name="hardLimitLabel">
-          <property name="text">
-           <string>Hard Limit:</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-          </property>
-         </widget>
-        </item>
-        <item row="4" column="1">
-         <widget class="QSpinBox" name="hardLimitSpin">
-          <property name="maximum">
-           <number>999999999</number>
-          </property>
-         </widget>
-        </item>
-        <item row="4" column="2">
-         <widget class="QLabel" name="hardUnitsLabel">
-          <property name="text">
-           <string>Bytes</string>
-          </property>
-         </widget>
-        </item>
-        <item row="5" column="3" colspan="2">
+        <item row="3" column="2" colspan="2">
          <spacer name="verticalSpacer_2">
           <property name="orientation">
            <enum>Qt::Vertical</enum>
@@ -451,102 +403,6 @@
     <hint type="destinationlabel">
      <x>516</x>
      <y>92</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>startServerAutomaticallyButton</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>softLimitLabel</receiver>
-   <slot>setEnabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>283</x>
-     <y>62</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>287</x>
-     <y>122</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>startServerAutomaticallyButton</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>softLimitSpin</receiver>
-   <slot>setEnabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>338</x>
-     <y>64</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>335</x>
-     <y>120</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>startServerAutomaticallyButton</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>softUnitsLabel</receiver>
-   <slot>setEnabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>353</x>
-     <y>62</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>405</x>
-     <y>116</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>startServerAutomaticallyButton</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>hardLimitLabel</receiver>
-   <slot>setEnabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>250</x>
-     <y>62</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>256</x>
-     <y>146</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>startServerAutomaticallyButton</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>hardLimitSpin</receiver>
-   <slot>setEnabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>244</x>
-     <y>65</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>316</x>
-     <y>146</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>startServerAutomaticallyButton</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>hardUnitsLabel</receiver>
-   <slot>setEnabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>235</x>
-     <y>60</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>401</x>
-     <y>144</y>
     </hint>
    </hints>
   </connection>

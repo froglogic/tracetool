@@ -36,8 +36,6 @@ void StorageView::accept()
 
 void StorageView::saveSettings()
 {
-    m_settings->setSoftLimit(softLimitSpin->value());
-    m_settings->setHardLimit(hardLimitSpin->value());
     m_settings->setStartServerAutomatically(startServerAutomaticallyButton->isChecked());
     m_settings->setServerGUIPort(serverPort->value());
     m_settings->setServerTracePort(serverTracePort->value());
@@ -46,10 +44,6 @@ void StorageView::saveSettings()
 
 void StorageView::restoreSettings()
 {
-    // limits
-    softLimitSpin->setValue(m_settings->softLimit());
-    hardLimitSpin->setValue(m_settings->hardLimit());
-
     // server
     if (m_settings->startServerAutomatically()) {
         startServerAutomaticallyButton->setChecked(true);
