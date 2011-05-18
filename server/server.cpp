@@ -744,6 +744,14 @@ void Server::storeEntry( const TraceEntry &e )
     } catch ( const SQLTransactionException &ex ) {
         if ( ex.driverCode() == SQLITE_FULL ) {
             archiveEntries( m_db, m_shrinkBy, m_archiveDir );
+
+            QByteArray serializedEntry = serializeGUIClientData( DatabaseNukeFinishedDatagram );
+
+            QList<GUIConnection *>::Iterator it, end = m_guiConnections.end();
+            for ( it = m_guiConnections.begin(); it != end; ++it ) {
+                ( *it )->write( serializedEntry );
+            }
+
             storeEntry( e );
         } else {
             throw;
