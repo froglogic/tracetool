@@ -491,7 +491,8 @@ void EntryItemModel::resume()
 void EntryItemModel::clear()
 {
     m_numNewEntries = 0;
-    reApplyFilter();
+    m_numMatchingEntries = 0;
+    reset();
 }
 
 unsigned int EntryItemModel::idForIndex(const QModelIndex &index)
