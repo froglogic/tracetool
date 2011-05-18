@@ -458,6 +458,7 @@ QVariant EntryItemModel::headerData(int section, Qt::Orientation orientation,
         int realSection = m_columnsInfo->unmap(section);
         return tr(g_fields[realSection].name);
     } else if (role == Qt::DisplayRole && orientation == Qt::Vertical) {
+        assert((section >= 0 && section < rowCount()) || !"Invalid section value");
         return getValue(section, 0);
     }
 
