@@ -91,6 +91,7 @@ public:
         m_code( code )
     {
     }
+    ~SQLTransactionException() throw() { }
 
     const QString &driverMessage() const { return m_msg; }
     int driverCode() const { return m_code; }
