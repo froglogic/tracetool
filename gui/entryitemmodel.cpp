@@ -8,6 +8,7 @@
 #include "entryfilter.h"
 #include "columnsinfo.h"
 #include "../hooklib/tracelib.h"
+#include "modeltest.h"
 
 #include <assert.h>
 
@@ -100,6 +101,9 @@ EntryItemModel::EntryItemModel(EntryFilter *filter, ColumnsInfo *ci,
       m_columnsInfo(ci),
       m_highlightedTraceKeyId(-1)
 {
+#ifdef DEBUG_MODEL
+    (void)new ModelTest( this, this );
+#endif
     m_databasePollingTimer = new QTimer(this);
     m_databasePollingTimer->setSingleShot(true);
     connect(m_databasePollingTimer, SIGNAL(timeout()), SLOT(insertNewTraceEntries()));

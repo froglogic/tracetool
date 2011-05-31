@@ -14,6 +14,7 @@ SET(GUI_SOURCES
   watchtree.cpp
   applicationtable.cpp
   searchwidget.cpp
+  modeltest.cpp
   ../convertdb/getopt.cpp
   ../server/database.cpp)
 
@@ -30,7 +31,8 @@ SET(GUI_MOCABLES
   entryitemmodel.h
   watchtree.h
   applicationtable.h
-  searchwidget.h)
+  searchwidget.h
+  modeltest.h)
 
 SET(GUI_UIS
   mainwindow.ui
