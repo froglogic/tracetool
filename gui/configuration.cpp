@@ -59,8 +59,10 @@ void Configuration::readConfigurationElement()
             readProcessElement();
         else if (m_xml.name() == "tracekeys")
             readTraceKeysElement();
+        else if (m_xml.name() == "storage")
+            m_xml.skipCurrentElement(); // TODO: handle?
         else
-            m_xml.raiseError(tr("Missing process element."));
+            m_xml.raiseError(tr("Unexpected element <%1>").arg(m_xml.name().toString()));
     }
 }
 
