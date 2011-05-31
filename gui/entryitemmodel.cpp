@@ -8,7 +8,9 @@
 #include "entryfilter.h"
 #include "columnsinfo.h"
 #include "../hooklib/tracelib.h"
-#include "modeltest.h"
+#ifdef HAVE_MODELTEST
+#  include "modeltest.h"
+#endif
 
 #include <assert.h>
 
@@ -101,7 +103,7 @@ EntryItemModel::EntryItemModel(EntryFilter *filter, ColumnsInfo *ci,
       m_columnsInfo(ci),
       m_highlightedTraceKeyId(-1)
 {
-#ifdef DEBUG_MODEL
+#if defined(DEBUG_MODEL) && defined(HAVE_MODELTEST)
     (void)new ModelTest( this, this );
 #endif
     m_databasePollingTimer = new QTimer(this);

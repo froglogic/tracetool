@@ -14,7 +14,6 @@ SET(GUI_SOURCES
   watchtree.cpp
   applicationtable.cpp
   searchwidget.cpp
-  modeltest.cpp
   ../convertdb/getopt.cpp
   ../server/database.cpp)
 
@@ -31,8 +30,7 @@ SET(GUI_MOCABLES
   entryitemmodel.h
   watchtree.h
   applicationtable.h
-  searchwidget.h
-  modeltest.h)
+  searchwidget.h)
 
 SET(GUI_UIS
   mainwindow.ui
@@ -52,6 +50,12 @@ INCLUDE(${QT_USE_FILE})
 
 IF (WIN32)
     LIST(APPEND GUI_SOURCES jobobject.cpp)
+ENDIF()
+
+IF (FALSE)
+    LIST(APPEND GUI_SOURCES modeltest.cpp)
+    LIST(APPEND GUI_MOCABLES modeltest.h)
+    ADD_DEFINITIONS(-DHAVE_MODELTEST)
 ENDIF()
 
 QT4_WRAP_CPP(GUI_MOC_SOURCES ${GUI_MOCABLES})
