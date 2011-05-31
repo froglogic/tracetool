@@ -422,6 +422,10 @@ const QVariant &EntryItemModel::getValue(int row, int column) const
 
 QVariant EntryItemModel::data(const QModelIndex& index, int role) const
 {
+    if (!index.isValid()) {
+        return QVariant();
+    }
+
     if (role == Qt::DisplayRole) {
         // undo possible column reordering 
         if (!m_columnsInfo->isVisible(index.column()))
