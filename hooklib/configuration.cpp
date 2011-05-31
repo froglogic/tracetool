@@ -571,7 +571,7 @@ bool Configuration::readStorageElement( TiXmlElement *storageElem )
             continue;
         }
 
-        m_errorLog->write( "Tracelib Configuration: while reading %s: unexpected element <%s> specified in <storage>", e->ValueStr(), m_fileName.c_str() );
+        m_errorLog->write( "Tracelib Configuration: while reading %s: unexpected element <%s> specified in <storage>", e->ValueStr().c_str(), m_fileName.c_str() );
         return false;
     }
 
