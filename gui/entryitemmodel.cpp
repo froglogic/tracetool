@@ -392,7 +392,7 @@ int EntryItemModel::columnCount(const QModelIndex & parent) const
 
 int EntryItemModel::rowCount(const QModelIndex & parent) const
 {
-    return m_numMatchingEntries;
+    return std::max( 0, m_numMatchingEntries );
 }
 
 QModelIndex EntryItemModel::index(int row, int column,
