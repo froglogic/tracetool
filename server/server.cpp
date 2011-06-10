@@ -423,7 +423,6 @@ static void archiveEntries( QSqlDatabase db, unsigned short percentage, const QS
             }
         }
     }
-    QSqlDatabase::removeDatabase( connName );
 
     {
         transaction.exec( QString( "DELETE FROM trace_entry WHERE id IN (SELECT id FROM trace_entry ORDER BY id LIMIT %1);" ).arg( numCopy ) );
@@ -439,6 +438,7 @@ static void archiveEntries( QSqlDatabase db, unsigned short percentage, const QS
         transaction.exec( QString( "DELETE FROM variable WHERE trace_entry_id NOT IN (SELECT id FROM trace_entry);" ) );
         transaction.exec( QString( "DELETE FROM stackframe WHERE trace_entry_id NOT IN (SELECT id FROM trace_entry);" ) );
     }
+    QSqlDatabase::removeDatabase( connName );
 }
 
 ClientSocket::ClientSocket( QObject *parent )
