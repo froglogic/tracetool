@@ -23,6 +23,13 @@ class Serializer;
 class TracePointSet;
 
 struct StorageConfiguration {
+    static const unsigned long UnlimitedTraceSize = 0;
+
+    StorageConfiguration()
+        : maximumTraceSize( UnlimitedTraceSize ),
+          shrinkPercentage( 10 )
+    { }
+
     unsigned long maximumTraceSize;
     unsigned short shrinkPercentage;
     std::string archiveDirectoryName;

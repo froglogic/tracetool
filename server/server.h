@@ -20,6 +20,13 @@
 
 struct StorageConfiguration
 {
+    static const unsigned long UnlimitedTraceSize = 0;
+
+    StorageConfiguration()
+        : maximumSize( UnlimitedTraceSize ),
+          shrinkBy( 10 )
+    { }
+
     unsigned long maximumSize;
     unsigned short shrinkBy;
     QString archiveDir;
