@@ -127,7 +127,7 @@ public:
         } else if ( lName == "key" ) {
             m_currentEntry.traceKeys.append( m_s.trimmed() );
             m_s.clear();
-        } else {
+        } else if ( lName == "storageconfiguration" ) {
             m_currentStorageConfig.archiveDir = m_s.trimmed();
             m_s.clear();
             m_server->applyStorageConfiguration( m_currentStorageConfig );
