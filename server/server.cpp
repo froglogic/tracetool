@@ -664,62 +664,76 @@ void Server::handleShutdownEvent( const ProcessShutdownEvent &ev )
     emit processShutdown( ev );
 }
 
+template <typename T>
+T clamp( T v, T lowerBound, T upperBound ) {
+    if ( v < lowerBound ) return lowerBound;
+    if ( v > upperBound ) return upperBound;
+    return v;
+}
+
 void Server::applyStorageConfiguration( const StorageConfiguration &cfg )
 {
-    m_archiveDir = cfg.archiveDir;
-
-    m_shrinkBy = cfg.shrinkBy;
-    if ( m_shrinkBy < 1 ) {
-        m_shrinkBy = 1;
+    const unsigned short shrinkBy = clamp<unsigned short>( cfg.shrinkBy, 1, 100 );
+    if ( m_maximumSize == cfg.maximumSize &&
+         m_shrinkBy == shrinkBy &&
+         m_archiveDir == cfg.archiveDir ) {
+        return;
     }
 
-    if ( m_shrinkBy > 100 ) {
-        m_shrinkBy = 100;
-    }
-
-    if ( m_maximumSize != cfg.maximumSize && m_maximumSize != 0 ) {
-        qulonglong pageSize = 0;
-        {
-            QSqlQuery q = m_db.exec( "PRAGMA page_size;" );
-            if ( !q.next() ) {
-                return;
-            }
-
-            bool ok;
-            pageSize = q.value( 0 ).toULongLong( &ok );
-            if ( !ok || pageSize == 0 ) {
-                return;
-            }
-        }
-
-        qulonglong pageCount = 0;
-        {
-            QSqlQuery q = m_db.exec( "PRAGMA page_count;" );
-            if ( !q.next() ) {
-                return;
-            }
-
-            bool ok;
-            pageCount = q.value( 0 ).toULongLong( &ok );
-            if ( !ok ) {
-                return;
-            }
-        }
-
-        /* It's possible that the current file is larger than the given
-         * maximum size. In that case, lets just use the current size as
-         * the maximum to avoid that it grows even further. We cannot shrink
-         * existing files, so this is pretty much the best we can do.
+    if ( cfg.maximumSize == StorageConfiguration::UnlimitedTraceSize ) {
+        /* XXX Don't hardcode this default value, might change if sqlite3 was
+         * compiled with different settings.
          */
-        qulonglong maxPageCount = cfg.maximumSize / pageSize;
-        if ( pageCount > maxPageCount ) {
-            maxPageCount = pageCount;
+        m_db.exec( "PRAGMA max_page_count=1073741823" );
+        m_maximumSize = cfg.maximumSize;
+        m_shrinkBy = shrinkBy;
+        m_archiveDir = cfg.archiveDir;
+        return;
+    }
+
+    qulonglong pageSize = 0;
+    {
+        QSqlQuery q = m_db.exec( "PRAGMA page_size;" );
+        if ( !q.next() ) {
+            return;
         }
 
-        m_db.exec( QString( "PRAGMA max_page_count=%1" ).arg( maxPageCount ) );
-
-        m_maximumSize = cfg.maximumSize;
+        bool ok;
+        pageSize = q.value( 0 ).toULongLong( &ok );
+        if ( !ok || pageSize == 0 ) {
+            return;
+        }
     }
+
+    qulonglong pageCount = 0;
+    {
+        QSqlQuery q = m_db.exec( "PRAGMA page_count;" );
+        if ( !q.next() ) {
+            return;
+        }
+
+        bool ok;
+        pageCount = q.value( 0 ).toULongLong( &ok );
+        if ( !ok ) {
+            return;
+        }
+    }
+
+    /* It's possible that the current file is larger than the given
+     * maximum size. In that case, lets just use the current size as
+     * the maximum to avoid that it grows even further. We cannot shrink
+     * existing files, so this is pretty much the best we can do.
+     */
+    qulonglong maxPageCount = cfg.maximumSize / pageSize;
+    if ( pageCount > maxPageCount ) {
+        maxPageCount = pageCount;
+    }
+
+    m_db.exec( QString( "PRAGMA max_page_count=%1" ).arg( maxPageCount ) );
+
+    m_maximumSize = cfg.maximumSize;
+    m_shrinkBy = shrinkBy;
+    m_archiveDir = cfg.archiveDir;
 }
 
 
