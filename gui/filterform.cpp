@@ -52,7 +52,7 @@ void FilterForm::addTraceKeys( const QStringList &keys )
     for ( it = keys.begin(); it != end; ++it ) {
         if ( !currentKeys.contains( *it ) ) {
             QListWidgetItem *i = new QListWidgetItem( *it, traceKeyList );
-            i->setCheckState(Qt::Checked);
+            i->setCheckState(Qt::Unchecked);
             currentKeys.insert( *it );
         }
     }
