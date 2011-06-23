@@ -75,7 +75,7 @@ unsigned int TracePointSet::actionForTracePoint( const TracePoint *tracePoint )
 TracedProcess TraceEntry::process = {
     getCurrentProcessId(),
     getCurrentProcessStartTime(),
-    vector<string>()
+    vector<TraceKey>()
 };
 
 ProcessShutdownEvent::ProcessShutdownEvent()
@@ -185,16 +185,16 @@ void Trace::reloadConfiguration( const string &fileName )
          * filter out all those trace entries which do not have any of the
          * specified keys. A feature requested by Siemens.
          */
-        const vector<string> traceKeys = cfg->configuredTraceKeys();
+        const vector<TraceKey> traceKeys = cfg->configuredTraceKeys();
         TraceEntry::process.availableTraceKeys = traceKeys;
         if ( !traceKeys.empty() ) {
             vector<TracePointSet *>::iterator setIt, setEnd = m_tracePointSets.end();
             for ( setIt = m_tracePointSets.begin(); setIt != setEnd; ++setIt ) {
                 GroupFilter *groupFilter = new GroupFilter;
                 groupFilter->setMode( GroupFilter::Whitelist );
-                vector<string>::const_iterator keyIt, keyEnd = traceKeys.end();
+                vector<TraceKey>::const_iterator keyIt, keyEnd = traceKeys.end();
                 for ( keyIt = traceKeys.begin(); keyIt != keyEnd; ++keyIt ) {
-                    groupFilter->addGroupName( *keyIt );
+                    groupFilter->addGroupName( keyIt->name );
                 }
 
                 ConjunctionFilter *newFilter = new ConjunctionFilter;

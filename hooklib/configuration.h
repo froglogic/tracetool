@@ -35,6 +35,11 @@ struct StorageConfiguration {
     std::string archiveDirectoryName;
 };
 
+struct TraceKey
+{
+    std::string name;
+};
+
 class Configuration
 {
 public:
@@ -48,7 +53,7 @@ public:
     const std::vector<TracePointSet *> &configuredTracePointSets() const;
     Serializer *configuredSerializer();
     Output *configuredOutput();
-    const std::vector<std::string> &configuredTraceKeys() const;
+    const std::vector<TraceKey> &configuredTraceKeys() const;
 
 private:
     explicit Configuration( ErrorLog *errorLog );
@@ -70,7 +75,7 @@ private:
     Serializer *m_configuredSerializer;
     Output *m_configuredOutput;
     ErrorLog *m_errorLog;
-    std::vector<std::string> m_configuredTraceKeys;
+    std::vector<TraceKey> m_configuredTraceKeys;
     StorageConfiguration m_storageConfiguration;
 };
 

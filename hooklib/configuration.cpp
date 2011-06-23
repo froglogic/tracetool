@@ -192,7 +192,9 @@ bool Configuration::readTraceKeysElement( TiXmlElement *traceKeysElem )
     for ( TiXmlElement *e = traceKeysElem->FirstChildElement(); e; e = e->NextSiblingElement() ) {
         if ( e->ValueStr() == "key" ) {
             // XXX consider encoding issues
-            m_configuredTraceKeys.push_back( getText( e ) );
+            TraceKey k;
+            k.name = getText( e );
+            m_configuredTraceKeys.push_back( k );
             continue;
         }
 
@@ -222,7 +224,7 @@ Output *Configuration::configuredOutput()
     return m_configuredOutput;
 }
 
-const vector<string> &Configuration::configuredTraceKeys() const
+const vector<TraceKey> &Configuration::configuredTraceKeys() const
 {
     return m_configuredTraceKeys;
 }

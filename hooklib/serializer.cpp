@@ -169,9 +169,9 @@ vector<char> XMLSerializer::serialize( const TraceEntry &entry )
         if ( m_beautifiedOutput ) {
             indent = "\n    ";
         }
-        vector<string>::const_iterator it, end = entry.process.availableTraceKeys.end();
+        vector<TraceKey>::const_iterator it, end = entry.process.availableTraceKeys.end();
         for ( it = entry.process.availableTraceKeys.begin(); it != end; ++it ) {
-            str << indent << "<key><![CDATA[" << *it << "]]></key>";
+            str << indent << "<key><![CDATA[" << it->name << "]]></key>";
         }
         if ( m_beautifiedOutput ) {
             indent = "\n  ";

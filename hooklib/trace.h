@@ -8,6 +8,7 @@
 
 #include "tracelib_config.h"
 #include "backtrace.h"
+#include "configuration.h" // for TraceKey
 #include "filemodificationmonitor.h"
 #include "getcurrentthreadid.h"
 #include "mutex.h"
@@ -18,7 +19,6 @@
 
 TRACELIB_NAMESPACE_BEGIN
 
-class Configuration;
 class Filter;
 class Output;
 class Serializer;
@@ -53,7 +53,7 @@ struct TracedProcess
 {
     ProcessId id;
     time_t startTime;
-    std::vector<std::string> availableTraceKeys;
+    std::vector<TraceKey> availableTraceKeys;
 };
 
 struct TraceEntry
