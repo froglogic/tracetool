@@ -793,6 +793,10 @@ void MainWindow::addNewTraceKey( const QString &id )
 
 void MainWindow::handleNewTraceEntry( const TraceEntry &e )
 {
+    QList<TraceKey>::ConstIterator it, end = e.traceKeys.end();
+    for ( it = e.traceKeys.begin(); it != end; ++it ) {
+        m_filterForm->enableTraceKeyByDefault( ( *it ).name, ( *it ).enabled );
+    }
     tracePointsSearchWidget->addTraceKeys( Database::seenGroupIds( m_db ) );
     m_filterForm->addTraceKeys( Database::seenGroupIds( m_db ) );
 }

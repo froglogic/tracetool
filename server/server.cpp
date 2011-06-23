@@ -64,6 +64,9 @@ public:
             m_currentStorageConfig = StorageConfiguration();
             m_currentStorageConfig.maximumSize = atts.value( "maxSize" ).toULong();
             m_currentStorageConfig.shrinkBy = atts.value( "shrinkBy" ).toUInt();
+        } else if ( lName == "key" ) {
+            m_currentTraceKey = TraceKey();
+            m_currentTraceKey.enabled = atts.value( "enabled" ) == "true";
         }
         return true;
     }
@@ -125,8 +128,9 @@ public:
             m_s.clear();
             m_server->handleShutdownEvent( m_currentShutdownEvent );
         } else if ( lName == "key" ) {
-            m_currentEntry.traceKeys.append( m_s.trimmed() );
+            m_currentTraceKey.name = m_s.trimmed();
             m_s.clear();
+            m_currentEntry.traceKeys.append( m_currentTraceKey );
         } else if ( lName == "storageconfiguration" ) {
             m_currentStorageConfig.archiveDir = m_s.trimmed();
             m_s.clear();
@@ -148,6 +152,7 @@ private:
     bool m_inFrameElement;
     ProcessShutdownEvent m_currentShutdownEvent;
     StorageConfiguration m_currentStorageConfig;
+    TraceKey m_currentTraceKey;
 };
 
 static bool getGroupId( QSqlDatabase db, Transaction *transaction, const QString &name, unsigned int *id )
@@ -270,9 +275,9 @@ static void storeEntry( QSqlDatabase db, Transaction *transaction, const TraceEn
     }
 
     {
-        QList<QString>::ConstIterator it, end = e.traceKeys.end();
+        QList<TraceKey>::ConstIterator it, end = e.traceKeys.end();
         for ( it = e.traceKeys.begin(); it != end; ++it ) {
-            getGroupId( db, transaction, *it, 0 );
+            getGroupId( db, transaction, ( *it ).name, 0 );
         }
     }
 }

@@ -52,7 +52,8 @@ void FilterForm::addTraceKeys( const QStringList &keys )
     for ( it = keys.begin(); it != end; ++it ) {
         if ( !currentKeys.contains( *it ) ) {
             QListWidgetItem *i = new QListWidgetItem( *it, traceKeyList );
-            i->setCheckState(Qt::Unchecked);
+            i->setCheckState(traceKeyDefaultState(*it) ? Qt::Checked
+                                                       : Qt::Unchecked);
             currentKeys.insert( *it );
         }
     }
@@ -107,3 +108,15 @@ void FilterForm::restoreSettings()
     if (idx != -1)
         typeCombo->setCurrentIndex(idx);
 }
+
+bool FilterForm::traceKeyDefaultState( const QString &key ) const
+{
+    QMap<QString, bool>::ConstIterator it = m_traceKeyDefaultState.find( key );
+    return it != m_traceKeyDefaultState.end() && *it;
+}
+
+void FilterForm::enableTraceKeyByDefault( const QString &name, bool enabled )
+{
+    m_traceKeyDefaultState[name] = enabled;
+}
+

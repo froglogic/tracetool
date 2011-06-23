@@ -18,6 +18,7 @@ public:
 
     void setTraceKeys( const QStringList &keys );
     void addTraceKeys( const QStringList &keys );
+    void enableTraceKeyByDefault( const QString &name, bool enabled );
 
 signals:
     void filterApplied();
@@ -29,8 +30,10 @@ public slots:
 
 private:
     void saveSettings();
+    bool traceKeyDefaultState( const QString &key ) const;
 
     Settings* const m_settings;
+    QMap<QString, bool> m_traceKeyDefaultState;
 };
 
 #endif

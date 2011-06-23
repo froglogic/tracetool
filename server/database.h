@@ -40,6 +40,12 @@ struct Variable
 QDataStream &operator<<( QDataStream &stream, const Variable &entry );
 QDataStream &operator>>( QDataStream &stream, Variable &entry );
 
+struct TraceKey
+{
+    QString name;
+    bool enabled;
+};
+
 struct TraceEntry
 {
     unsigned int pid;
@@ -57,7 +63,7 @@ struct TraceEntry
     QList<Variable> variables;
     QList<StackFrame> backtrace;
     unsigned long stackPosition;
-    QList<QString> traceKeys;
+    QList<TraceKey> traceKeys;
 };
 
 QDataStream &operator<<( QDataStream &stream, const TraceEntry &entry );
