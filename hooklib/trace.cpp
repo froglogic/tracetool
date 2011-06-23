@@ -194,7 +194,9 @@ void Trace::reloadConfiguration( const string &fileName )
                 groupFilter->setMode( GroupFilter::Whitelist );
                 vector<TraceKey>::const_iterator keyIt, keyEnd = traceKeys.end();
                 for ( keyIt = traceKeys.begin(); keyIt != keyEnd; ++keyIt ) {
-                    groupFilter->addGroupName( keyIt->name );
+                    if ( keyIt->enabled ) {
+                        groupFilter->addGroupName( keyIt->name );
+                    }
                 }
 
                 ConjunctionFilter *newFilter = new ConjunctionFilter;

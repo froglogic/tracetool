@@ -194,6 +194,10 @@ bool Configuration::readTraceKeysElement( TiXmlElement *traceKeysElem )
             // XXX consider encoding issues
             TraceKey k;
             k.name = getText( e );
+            std::string enabledValue = "true";
+            if ( e->QueryStringAttribute( "enabled", &enabledValue ) == TIXML_SUCCESS ) {
+                k.enabled = enabledValue == "true";
+            }
             m_configuredTraceKeys.push_back( k );
             continue;
         }

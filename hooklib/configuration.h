@@ -37,6 +37,8 @@ struct StorageConfiguration {
 
 struct TraceKey
 {
+    TraceKey() : enabled( true ) { }
+    bool enabled;
     std::string name;
 };
 

@@ -171,7 +171,7 @@ vector<char> XMLSerializer::serialize( const TraceEntry &entry )
         }
         vector<TraceKey>::const_iterator it, end = entry.process.availableTraceKeys.end();
         for ( it = entry.process.availableTraceKeys.begin(); it != end; ++it ) {
-            str << indent << "<key><![CDATA[" << it->name << "]]></key>";
+            str << indent << "<key enabled=\"" << ( it->enabled ? "true" : "false" ) << "\"><![CDATA[" << it->name << "]]></key>";
         }
         if ( m_beautifiedOutput ) {
             indent = "\n  ";
