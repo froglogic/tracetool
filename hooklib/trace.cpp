@@ -190,19 +190,23 @@ void Trace::reloadConfiguration( const string &fileName )
         if ( !traceKeys.empty() ) {
             vector<TracePointSet *>::iterator setIt, setEnd = m_tracePointSets.end();
             for ( setIt = m_tracePointSets.begin(); setIt != setEnd; ++setIt ) {
+                bool haveEnabledTraceKey = false;
                 GroupFilter *groupFilter = new GroupFilter;
                 groupFilter->setMode( GroupFilter::Whitelist );
                 vector<TraceKey>::const_iterator keyIt, keyEnd = traceKeys.end();
                 for ( keyIt = traceKeys.begin(); keyIt != keyEnd; ++keyIt ) {
                     if ( keyIt->enabled ) {
+                        haveEnabledTraceKey = true;
                         groupFilter->addGroupName( keyIt->name );
                     }
                 }
 
-                ConjunctionFilter *newFilter = new ConjunctionFilter;
-                newFilter->addFilter( groupFilter );
-                newFilter->addFilter( ( *setIt )->filter() );
-                ( *setIt )->setFilter( newFilter );
+                if ( haveEnabledTraceKey ) {
+                    ConjunctionFilter *newFilter = new ConjunctionFilter;
+                    newFilter->addFilter( groupFilter );
+                    newFilter->addFilter( ( *setIt )->filter() );
+                    ( *setIt )->setFilter( newFilter );
+                }
             }
         }
     } else {
