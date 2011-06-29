@@ -526,7 +526,8 @@ QDataStream &operator<<( QDataStream &stream, const TraceEntry &entry )
         << entry.message
         << entry.variables
         << entry.backtrace
-        << (quint64)entry.stackPosition;
+        << (quint64)entry.stackPosition
+        << entry.traceKeys;
 }
 
 QDataStream &operator>>( QDataStream &stream, TraceEntry &entry )
@@ -549,7 +550,8 @@ QDataStream &operator>>( QDataStream &stream, TraceEntry &entry )
         >> entry.message
         >> entry.variables
         >> entry.backtrace
-        >> stackPosition;
+        >> stackPosition
+        >> entry.traceKeys;
 
     entry.pid = pid;
     entry.tid = tid;
@@ -617,6 +619,19 @@ QDataStream &operator>>( QDataStream &stream, Variable &entry )
         >> type
         >> entry.value;
     entry.type = (TRACELIB_NAMESPACE_IDENT(VariableType)::Value)type;
+    return stream;
+}
+
+QDataStream &operator<<( QDataStream &stream, const TraceKey &key )
+{
+    return stream << key.name << (quint8)( key.enabled ? 1 : 0 );
+}
+
+QDataStream &operator>>( QDataStream &stream, TraceKey &key )
+{
+    quint8 flag;
+    stream >> key.name >> flag;
+    key.enabled = flag != 0;
     return stream;
 }
 

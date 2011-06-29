@@ -46,6 +46,9 @@ struct TraceKey
     bool enabled;
 };
 
+QDataStream &operator<<( QDataStream &stream, const TraceKey &key );
+QDataStream &operator>>( QDataStream &stream, TraceKey &key );
+
 struct TraceEntry
 {
     unsigned int pid;
