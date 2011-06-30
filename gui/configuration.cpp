@@ -278,6 +278,10 @@ bool Configuration::save(QString *errMsg)
         QListIterator<TracePointSet> lit(p->m_tracePointSets);
         while (lit.hasNext()) {
             TracePointSet tps = lit.next();
+            if ( tps.m_filters.isEmpty() ) {
+                continue;
+            }
+
             stream.writeStartElement("tracepointset");
             QString v = tps.m_variables ? "yes" : "no";
             stream.writeAttribute("variables", v);
