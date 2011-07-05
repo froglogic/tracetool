@@ -61,8 +61,8 @@ public:
     int processCount() const { return m_processes.count(); }
     ProcessConfiguration* process(int num);
 
-    void setTraceKeys(const QStringList &traceKeys) { m_traceKeys = traceKeys; }
-    const QStringList &traceKeys() const { return m_traceKeys; }
+    void setTraceKeys(const QMap<QString, bool> &traceKeys) { m_traceKeys = traceKeys; }
+    const QMap<QString, bool> &traceKeys() const { return m_traceKeys; }
 
     void addProcessConfiguration(ProcessConfiguration *pc);
 
@@ -88,7 +88,7 @@ private:
     QXmlStreamReader m_xml;
     QList<ProcessConfiguration*> m_processes;
     QString m_fileName;
-    QStringList m_traceKeys;
+    QMap<QString, bool> m_traceKeys;
 };
 
 #endif

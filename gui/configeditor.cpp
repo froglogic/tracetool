@@ -302,10 +302,10 @@ void ConfigEditor::fillInConfiguration()
         processList->setCurrentRow(0);
 
     traceKeyList->clear();
-    traceKeyList->addItems(QStringList(m_conf->traceKeys()));
-    for (int i = 0; i < traceKeyList->count(); ++i) {
-        traceKeyList->item(i)->setFlags(Qt::ItemIsEnabled | Qt::ItemIsEditable | Qt::ItemIsSelectable);
-    }
+    const QMap<QString, bool> &keys = m_conf->traceKeys();
+    QMap<QString, bool>::ConstIterator it, end = keys.constEnd();
+    for (it = keys.constBegin(); it != end; ++it)
+        addTraceKey(it.key(), it.value(), false);
 
     updateTraceKeyButtons();
 }
@@ -347,13 +347,12 @@ void ConfigEditor::saveCurrentProcess(int row)
 
 void ConfigEditor::saveTraceKeyList()
 {
-    /* Use a QSet<QString> instead of QStringList to avoid writing out
-     * duplicate trace keys.
-     */
-    QSet<QString> traceKeys;
-    for (int i = 0; i < traceKeyList->count(); ++i)
-        traceKeys.insert(traceKeyList->item(i)->text());
-    m_conf->setTraceKeys(QStringList(traceKeys.toList()));
+    QMap<QString, bool> traceKeys;
+    for (int i = 0; i < traceKeyList->count(); ++i) {
+        const QListWidgetItem *item = traceKeyList->item(i);
+        traceKeys.insert(item->text(), bool(item->checkState() == Qt::Checked));
+    }
+    m_conf->setTraceKeys(traceKeys);
 }
 
 void ConfigEditor::currentProcessChanged(QListWidgetItem *current, QListWidgetItem *previous)
@@ -478,12 +477,19 @@ void ConfigEditor::traceKeyItemActivated(int)
     updateTraceKeyButtons();
 }
 
-void ConfigEditor::addTraceKey()
+void ConfigEditor::addTraceKey(const QString &key, bool enabled, bool edit)
 {
-    QListWidgetItem *newItem = new QListWidgetItem;
-    newItem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsEditable | Qt::ItemIsSelectable);
+    QListWidgetItem *newItem = new QListWidgetItem(key);
+    newItem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsEditable |
+                      Qt::ItemIsSelectable | Qt::ItemIsUserCheckable);
+    if (enabled)
+        newItem->setCheckState(Qt::Checked);
+    else
+        newItem->setCheckState(Qt::Unchecked);
+
     traceKeyList->addItem(newItem);
-    traceKeyList->editItem(newItem);
+    if (edit)
+        traceKeyList->editItem(newItem);
 }
 
 void ConfigEditor::removeTraceKey()

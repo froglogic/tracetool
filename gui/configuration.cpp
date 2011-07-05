@@ -6,6 +6,7 @@
 #include "configuration.h"
 
 #include <QFile>
+#include <QVariant>
 
 Configuration::Configuration()
 {
@@ -97,9 +98,11 @@ void Configuration::readTraceKeysElement()
     assert(m_xml.isStartElement() && m_xml.name() == "tracekeys");
 
     while (m_xml.readNextStartElement()) {
-        if (m_xml.name() == "key")
-            m_traceKeys.append(m_xml.readElementText());
-        else
+        if (m_xml.name() == "key") {
+            QString en = m_xml.attributes().value("enabled").toString();
+            QVariant v(en);
+            m_traceKeys.insert(m_xml.readElementText(), v.toBool());
+        } else
             m_xml.raiseError(tr("Unexpected element '%1' in tracekeys element")
                              .arg(m_xml.name().toString()));
     }
@@ -235,9 +238,13 @@ bool Configuration::save(QString *errMsg)
     
     if (!m_traceKeys.isEmpty()) {
         stream.writeStartElement("tracekeys");
-        QStringList::ConstIterator it, end = m_traceKeys.end();
+        QMap<QString, bool>::ConstIterator it, end = m_traceKeys.end();
         for (it = m_traceKeys.begin(); it != end; ++it) {
-            stream.writeTextElement("key", *it);
+            stream.writeStartElement("key");
+            QVariant v(it.value());
+            stream.writeAttribute("enabled", v.toString());
+            stream.writeCharacters(it.key());
+            stream.writeEndElement();
         }
         stream.writeEndElement(); // tracekeys
     }

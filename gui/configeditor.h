@@ -78,7 +78,14 @@ private slots:
     void serializerComboChanged(int index);
     void outputTypeComboChanged(int index);
     void traceKeyItemActivated(int row);
-    void addTraceKey();
+
+    /// Adds a new checkable item to the list widget of keys.
+    /*!
+        @param key      The new of the key. Default value is empty string.
+        @param enabled  Sets the check box state. It is enabled by default.
+        @param edit     Determines whether item should be in edit state after adding.
+    */
+    void addTraceKey(const QString &key = QString(), bool enabled = true, bool edit = true);
     void removeTraceKey();
 
 private:
