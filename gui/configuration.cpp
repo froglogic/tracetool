@@ -99,8 +99,11 @@ void Configuration::readTraceKeysElement()
 
     while (m_xml.readNextStartElement()) {
         if (m_xml.name() == "key") {
-            QString en = m_xml.attributes().value("enabled").toString();
-            QVariant v(en);
+            QString attributeValue = m_xml.attributes().value("enabled").toString();
+            // Event if such attribute does not exist, set trace keys state to enabled.
+            if (attributeValue.isEmpty())
+                attributeValue = "true";
+            QVariant v(attributeValue);
             m_traceKeys.insert(m_xml.readElementText(), v.toBool());
         } else
             m_xml.raiseError(tr("Unexpected element '%1' in tracekeys element")
