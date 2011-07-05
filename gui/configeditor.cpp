@@ -302,8 +302,8 @@ void ConfigEditor::fillInConfiguration()
         processList->setCurrentRow(0);
 
     traceKeyList->clear();
-    const QMap<QString, bool> &keys = m_conf->traceKeys();
-    QMap<QString, bool>::ConstIterator it, end = keys.constEnd();
+    const Configuration::TraceKeys &keys = m_conf->traceKeys();
+    Configuration::TraceKeysConstIterator it, end = keys.constEnd();
     for (it = keys.constBegin(); it != end; ++it)
         addTraceKey(it.key(), it.value(), false);
 

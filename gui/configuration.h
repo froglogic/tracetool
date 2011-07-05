@@ -55,14 +55,20 @@ public:
     Configuration();
     ~Configuration();
 
+    /// Defines the collection of trace keys.
+    typedef QMap<QString, bool> TraceKeys;
+
+    /// Defines the const iterator for trace keys.
+    typedef QMap<QString, bool>::ConstIterator TraceKeysConstIterator;
+
     bool load(const QString &fileName, QString *errMsg);
     bool save(QString *errMsg);
 
     int processCount() const { return m_processes.count(); }
     ProcessConfiguration* process(int num);
 
-    void setTraceKeys(const QMap<QString, bool> &traceKeys) { m_traceKeys = traceKeys; }
-    const QMap<QString, bool> &traceKeys() const { return m_traceKeys; }
+    void setTraceKeys(const TraceKeys &traceKeys) { m_traceKeys = traceKeys; }
+    const TraceKeys &traceKeys() const { return m_traceKeys; }
 
     void addProcessConfiguration(ProcessConfiguration *pc);
 
@@ -88,7 +94,7 @@ private:
     QXmlStreamReader m_xml;
     QList<ProcessConfiguration*> m_processes;
     QString m_fileName;
-    QMap<QString, bool> m_traceKeys;
+    TraceKeys m_traceKeys;
 };
 
 #endif

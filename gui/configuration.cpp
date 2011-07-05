@@ -238,7 +238,7 @@ bool Configuration::save(QString *errMsg)
     
     if (!m_traceKeys.isEmpty()) {
         stream.writeStartElement("tracekeys");
-        QMap<QString, bool>::ConstIterator it, end = m_traceKeys.end();
+        TraceKeysConstIterator it, end = m_traceKeys.end();
         for (it = m_traceKeys.begin(); it != end; ++it) {
             stream.writeStartElement("key");
             QVariant v(it.value());
