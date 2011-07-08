@@ -50,11 +50,23 @@ void FilterForm::addTraceKeys( const QStringList &keys )
 
     QStringList::ConstIterator it, end = keys.end();
     for ( it = keys.begin(); it != end; ++it ) {
-        if ( !currentKeys.contains( *it ) ) {
-            QListWidgetItem *i = new QListWidgetItem( *it, traceKeyList );
-            i->setCheckState(traceKeyDefaultState(*it) ? Qt::Checked
-                                                       : Qt::Unchecked);
-            currentKeys.insert( *it );
+        const QString &keyName = *it;
+        if ( !currentKeys.contains( keyName ) ) {
+            QListWidgetItem *i = new QListWidgetItem( keyName, traceKeyList );
+            bool active = traceKeyDefaultState( keyName );
+            i->setCheckState(active ? Qt::Checked : Qt::Unchecked);
+            currentKeys.insert( keyName );
+
+            // Update filtered (inactive) keys list too.
+            EntryFilter *f = m_settings->entryFilter();
+            QStringList inactiveKeys = f->inactiveKeys();
+            if (!active)
+                inactiveKeys.append( keyName );
+            else
+                inactiveKeys.removeAll( keyName );
+            inactiveKeys.removeDuplicates();
+            f->setInactiveKeys(inactiveKeys);
+            f->emitChanged();
         }
     }
 }

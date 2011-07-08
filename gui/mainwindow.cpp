@@ -248,8 +248,9 @@ bool MainWindow::setDatabase(const QString &databaseFileName, QString *errMsg)
     if (!m_db.isValid())
         return false;
 
-    tracePointsSearchWidget->setTraceKeys(Database::seenGroupIds(m_db));
-    m_filterForm->setTraceKeys(Database::seenGroupIds(m_db));
+    QStringList traceKeysNames = Database::seenGroupIds(m_db);
+    tracePointsSearchWidget->setTraceKeys(traceKeysNames);
+    m_filterForm->setTraceKeys(traceKeysNames);
 
     m_entryItemModel = new EntryItemModel(m_settings->entryFilter(),
                                           m_settings->columnsInfo(), this);
@@ -263,18 +264,10 @@ bool MainWindow::setDatabase(const QString &databaseFileName, QString *errMsg)
         return false;
     }
 
-    tracePointsSearchWidget->setTraceKeys(Database::seenGroupIds(m_db));
-    m_filterForm->setTraceKeys(Database::seenGroupIds(m_db));
-
+    tracePointsSearchWidget->setTraceKeys(traceKeysNames);
     m_applicationTable->setApplications(Database::tracedApplications(m_db));
 
     if (m_serverSocket) {
-        connect(m_serverSocket, SIGNAL(traceEntryReceived(const TraceEntry &)),
-                m_entryItemModel, SLOT(handleNewTraceEntry(const TraceEntry &)));
-        connect(m_serverSocket, SIGNAL(traceEntryReceived(const TraceEntry &)),
-                m_watchTree, SLOT(handleNewTraceEntry(const TraceEntry &)));
-        connect(m_serverSocket, SIGNAL(traceEntryReceived(const TraceEntry &)),
-                m_applicationTable, SLOT(handleNewTraceEntry(const TraceEntry &)));
         connect(m_serverSocket, SIGNAL(traceEntryReceived(const TraceEntry &)),
                 this, SLOT(handleNewTraceEntry(const TraceEntry &)));
         connect(m_serverSocket, SIGNAL(processShutdown(const ProcessShutdownEvent &)),
@@ -797,7 +790,27 @@ void MainWindow::handleNewTraceEntry( const TraceEntry &e )
     for ( it = e.traceKeys.begin(); it != end; ++it ) {
         m_filterForm->enableTraceKeyByDefault( ( *it ).name, ( *it ).enabled );
     }
+
+    // This trick used to update filtered keys check boxes state.
+    // So, when the first trace entry received, we clean the list of existing
+    // list of keys on the filter form and let them populate again with correct
+    // check box states.
+    static bool firstEntryPassed = false;
+
+    if (!firstEntryPassed) {
+        m_filterForm->setTraceKeys(QStringList());
+        firstEntryPassed = true;
+    }
+
     tracePointsSearchWidget->addTraceKeys( Database::seenGroupIds( m_db ) );
     m_filterForm->addTraceKeys( Database::seenGroupIds( m_db ) );
+
+    // Function calls below were handled through connection to traceEntryReceived
+    // signal, but moved here in order we can have much control on the execution
+    // order. This will allow to synchronize the filter form and table model
+    // updates.
+    m_entryItemModel->handleNewTraceEntry(e);
+    m_watchTree->handleNewTraceEntry(e);
+    m_applicationTable->handleNewTraceEntry(e);
 }
 
