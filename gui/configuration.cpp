@@ -61,7 +61,7 @@ void Configuration::readConfigurationElement()
         else if (m_xml.name() == "tracekeys")
             readTraceKeysElement();
         else if (m_xml.name() == "storage")
-            m_xml.skipCurrentElement(); // TODO: handle?
+            readStorageElement();
         else
             m_xml.raiseError(tr("Unexpected element <%1>").arg(m_xml.name().toString()));
     }
@@ -108,6 +108,21 @@ void Configuration::readTraceKeysElement()
         } else
             m_xml.raiseError(tr("Unexpected element '%1' in tracekeys element")
                              .arg(m_xml.name().toString()));
+    }
+}
+
+void Configuration::readStorageElement()
+{
+    assert(m_xml.isStartElement() && m_xml.name() == "storage");
+
+    while (m_xml.readNextStartElement()) {
+        const QString &name = m_xml.name().toString();
+        if (name == "maximumSize" || name == "shrinkBy" || name == "archiveDirectory") {
+            // Store storage data as it is without type checking.
+            m_storageSettings.insert(name, m_xml.readElementText());
+        } else
+            m_xml.raiseError(tr("Unexpected element '%1' in storage element")
+                             .arg(name));
     }
 }
 
@@ -238,6 +253,15 @@ bool Configuration::save(QString *errMsg)
     stream.setAutoFormatting(true);
     stream.writeStartDocument();
     stream.writeStartElement("tracelibConfiguration");
+
+    if (!m_storageSettings.isEmpty()) {
+        stream.writeStartElement("storage");
+        StorageSettings::ConstIterator it, end = m_storageSettings.constEnd();
+        for (it = m_storageSettings.constBegin(); it != end; ++it)
+            stream.writeTextElement(it.key(), it.value());
+
+        stream.writeEndElement(); // storage
+    }
     
     if (!m_traceKeys.isEmpty()) {
         stream.writeStartElement("tracekeys");

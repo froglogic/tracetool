@@ -61,6 +61,9 @@ public:
     /// Defines the const iterator for trace keys.
     typedef QMap<QString, bool>::ConstIterator TraceKeysConstIterator;
 
+    /// Defines collection of storage settings.
+    typedef QMap<QString, QString> StorageSettings;
+
     bool load(const QString &fileName, QString *errMsg);
     bool save(QString *errMsg);
 
@@ -79,6 +82,7 @@ private:
     void readConfigurationElement();
     void readProcessElement();
     void readTraceKeysElement();
+    void readStorageElement();
     void readNameElement(ProcessConfiguration *proc);
     void readOutputElement(ProcessConfiguration *proc);
     void readOutputOption(ProcessConfiguration *proc);
@@ -95,6 +99,7 @@ private:
     QList<ProcessConfiguration*> m_processes;
     QString m_fileName;
     TraceKeys m_traceKeys;
+    StorageSettings m_storageSettings;
 };
 
 #endif
