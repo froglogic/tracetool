@@ -61,8 +61,7 @@ int main(int argc, char **argv)
 
     assertEquals("Number of tracepointsets", p0->m_tracePointSets.count(), 1);
     TracePointSet tps0 = p0->m_tracePointSets[0];
-    assertEquals("Max verbosity", string(tps0.m_filters[0].term.toUtf8().constData()), std::string("1"));
-    
+
     fprintf(stdout, "OK.\n");
     return 0;
 }

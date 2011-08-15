@@ -90,9 +90,6 @@ public:
         } else if ( lName == "stackposition" ) {
             m_currentEntry.stackPosition = m_s.trimmed().toULong();
             m_s.clear();
-        } else if ( lName == "verbosity" ) {
-            m_currentEntry.verbosity = m_s.trimmed().toUInt();
-            m_s.clear();
         } else if ( lName == "type" ) {
             m_currentEntry.type = m_s.trimmed().toUInt();
             m_s.clear();
@@ -240,9 +237,9 @@ static void storeEntry( QSqlDatabase db, Transaction *transaction, const TraceEn
 
     unsigned int tracepointId;
     {
-        QVariant v = transaction->exec( QString( "SELECT id FROM trace_point WHERE verbosity=%1 AND type=%2 AND path_id=%3 AND line=%4 AND function_id=%5 AND group_id=%6;" ).arg( e.verbosity ).arg( e.type ).arg( pathId ).arg( e.lineno ).arg( functionId ).arg( groupId ) );
+        QVariant v = transaction->exec( QString( "SELECT id FROM trace_point WHERE type=%1 AND path_id=%2 AND line=%3 AND function_id=%4 AND group_id=%5;" ).arg( e.type ).arg( pathId ).arg( e.lineno ).arg( functionId ).arg( groupId ) );
         if ( !v.isValid() ) {
-            transaction->exec( QString( "INSERT INTO trace_point VALUES(NULL, %1, %2, %3, %4, %5, %6);" ).arg( e.verbosity ).arg( e.type ).arg( pathId ).arg( e.lineno ).arg( functionId ).arg( groupId ) );
+            transaction->exec( QString( "INSERT INTO trace_point VALUES(NULL, %1, %2, %3, %4, %5);" ).arg( e.type ).arg( pathId ).arg( e.lineno ).arg( functionId ).arg( groupId ) );
             v = transaction->exec( "SELECT last_insert_rowid() FROM trace_point LIMIT 1;" );
         }
         tracepointId = v.toUInt( &ok );
@@ -337,7 +334,6 @@ static void archiveEntries( QSqlDatabase db, unsigned short percentage, const QS
                             " process.name,"
                             " traced_thread.tid,"
                             " trace_entry.timestamp,"
-                            " trace_point.verbosity,"
                             " trace_point.type,"
                             " path_name.name,"
                             " trace_point.line,"
@@ -383,12 +379,11 @@ static void archiveEntries( QSqlDatabase db, unsigned short percentage, const QS
                 e.processName = q.value( 3 ).toString();
                 e.tid = q.value( 4 ).toUInt();
                 e.timestamp = q.value( 5 ).toDateTime();
-                e.verbosity = q.value( 6 ).toUInt();
-                e.type = q.value( 7 ).toUInt();
-                e.path = q.value( 8 ).toString();
-                e.lineno = q.value( 9 ).toULongLong();
+                e.type = q.value( 6 ).toUInt();
+                e.path = q.value( 7 ).toString();
+                e.lineno = q.value( 8 ).toULongLong();
 
-                const int groupId = q.value( 10 ).toInt();
+                const int groupId = q.value( 9 ).toInt();
                 if ( groupId != 0 ) {
                     QSqlQuery gq( db );
                     gq.setForwardOnly( true );
@@ -399,9 +394,9 @@ static void archiveEntries( QSqlDatabase db, unsigned short percentage, const QS
                     }
                 }
 
-                e.function = q.value( 11 ).toString();
-                e.message = q.value( 12 ).toString();
-                e.stackPosition = q.value( 13 ).toULongLong();
+                e.function = q.value( 10 ).toString();
+                e.message = q.value( 11 ).toString();
+                e.stackPosition = q.value( 12 ).toULongLong();
                 e.backtrace = Database::backtraceForEntry( db, id );
 
                 {

@@ -25,36 +25,10 @@ static void verify( const char *what, T expected, T actual )
 
 TRACELIB_NAMESPACE_BEGIN
 
-static void testVerbosityFilter()
-{
-    VerbosityFilter lowVerbosityFilter;
-    lowVerbosityFilter.setMaximumVerbosity( 0 );
-    VerbosityFilter mediumVerbosityFilter;
-    mediumVerbosityFilter.setMaximumVerbosity( 1 );
-    VerbosityFilter highVerbosityFilter;
-    highVerbosityFilter.setMaximumVerbosity( 2 );
-
-    static TracePoint lowVerbosityTP( TracePointType::Log, 1, NULL, 0, NULL, 0 );
-    static TracePoint mediumVerbosityTP(TracePointType::Log,  2, NULL, 0, NULL, 0 );
-    static TracePoint highVerbosityTP( TracePointType::Log, 3, NULL, 0, NULL, 0 );
-
-    verify( "lowVerbosityFilter on lowVerbosityTP", false, lowVerbosityFilter.acceptsTracePoint( &lowVerbosityTP ) );
-    verify( "lowVerbosityFilter on mediumVerbosityTP", false, lowVerbosityFilter.acceptsTracePoint( &mediumVerbosityTP ) );
-    verify( "lowVerbosityFilter on highVerbosityTP", false, lowVerbosityFilter.acceptsTracePoint( &highVerbosityTP ) );
-
-    verify( "mediumVerbosityFilter on lowVerbosityTP", true, mediumVerbosityFilter.acceptsTracePoint( &lowVerbosityTP ) );
-    verify( "mediumVerbosityFilter on mediumVerbosityTP", false, mediumVerbosityFilter.acceptsTracePoint( &mediumVerbosityTP ) );
-    verify( "mediumVerbosityFilter on highVerbosityTP", false, mediumVerbosityFilter.acceptsTracePoint( &highVerbosityTP ) );
-
-    verify( "highVerbosityFilter on lowVerbosityTP", true, highVerbosityFilter.acceptsTracePoint( &lowVerbosityTP ) );
-    verify( "highVerbosityFilter on mediumVerbosityTP", true, highVerbosityFilter.acceptsTracePoint( &mediumVerbosityTP ) );
-    verify( "highVerbosityFilter on highVerbosityTP", false, highVerbosityFilter.acceptsTracePoint( &highVerbosityTP ) );
-}
-
 static void testStrictPathFilter()
 {
-    static TracePoint tpLowerCase( TracePointType::Log, 0, "c:\\foo\\bar\\mysrc.cpp", 0, NULL, 0 );
-    static TracePoint tpUpperCase( TracePointType::Log, 0, "C:\\Foo\\Bar\\mysrc.cpp", 0, NULL, 0 );
+    static TracePoint tpLowerCase( TracePointType::Log, "c:\\foo\\bar\\mysrc.cpp", 0, NULL, 0 );
+    static TracePoint tpUpperCase( TracePointType::Log, "C:\\Foo\\Bar\\mysrc.cpp", 0, NULL, 0 );
 
     PathFilter emptyPathFilter;
     emptyPathFilter.setPath( StrictMatch, "" );
@@ -97,8 +71,8 @@ static void testStrictPathFilter()
 
 static void testWildcardPathFilter()
 {
-    static TracePoint tpLowerCase( TracePointType::Log, 0, "c:\\foo\\bar\\mysrc.cpp", 0, NULL, 0 );
-    static TracePoint tpUpperCase( TracePointType::Log, 0, "C:\\Foo\\Bar\\mysrc.cpp", 0, NULL, 0 );
+    static TracePoint tpLowerCase( TracePointType::Log, "c:\\foo\\bar\\mysrc.cpp", 0, NULL, 0 );
+    static TracePoint tpUpperCase( TracePointType::Log, "C:\\Foo\\Bar\\mysrc.cpp", 0, NULL, 0 );
 
     PathFilter emptyPathFilter;
     emptyPathFilter.setPath( WildcardMatch, "" );
@@ -148,9 +122,9 @@ static void testPathFilter()
 
 static void testGroupFilter()
 {
-    static TracePoint consoleIOTP( TracePointType::Log, 0, "S:\\hello\\main.cpp", 13, "main()", "ConsoleIO" );
-    static TracePoint noGroupTP( TracePointType::Log, 0, "S:\\hello\\main.cpp", 13, "main()", NULL );
-    static TracePoint noGroupTP2( TracePointType::Log, 0, "S:\\hello\\main.cpp", 13, "main()", "" );
+    static TracePoint consoleIOTP( TracePointType::Log, "S:\\hello\\main.cpp", 13, "main()", "ConsoleIO" );
+    static TracePoint noGroupTP( TracePointType::Log, "S:\\hello\\main.cpp", 13, "main()", NULL );
+    static TracePoint noGroupTP2( TracePointType::Log, "S:\\hello\\main.cpp", 13, "main()", "" );
 
     GroupFilter f;
     f.setMode( GroupFilter::Blacklist );
@@ -182,7 +156,6 @@ TRACELIB_NAMESPACE_END
 
 int main()
 {
-    TRACELIB_NAMESPACE_IDENT(testVerbosityFilter)();
     TRACELIB_NAMESPACE_IDENT(testPathFilter)();
     TRACELIB_NAMESPACE_IDENT(testGroupFilter)();
     cout << g_verificationCount << " verifications; " << g_failureCount << " failures found." << endl;

@@ -263,18 +263,6 @@ Filter *Configuration::createFilterFromElement( TiXmlElement *e )
         return f;
     }
 
-    if ( e->ValueStr() == "verbosityfilter" ) {
-        int verbosity;
-        if ( e->QueryIntAttribute( "maxVerbosity", &verbosity ) != TIXML_SUCCESS ) {
-            m_errorLog->write( "Tracelib Configuration: while reading %s: <verbosityfilter> element requires maxVerbosity attribute to be an integer value.", m_fileName.c_str() );
-            return 0;
-        }
-
-        VerbosityFilter *f = new VerbosityFilter;
-        f->setMaximumVerbosity( verbosity );
-        return f;
-    }
-
     if ( e->ValueStr() == "pathfilter" ) {
         MatchingMode matchingMode;
         string matchingModeValue = "strict";

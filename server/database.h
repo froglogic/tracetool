@@ -56,7 +56,6 @@ struct TraceEntry
     QString processName;
     unsigned int tid;
     QDateTime timestamp;
-    unsigned int verbosity;
     unsigned int type;
     QString path;
     unsigned long lineno;

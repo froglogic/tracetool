@@ -29,21 +29,6 @@ Filter::~Filter()
 {
 }
 
-VerbosityFilter::VerbosityFilter()
-    : m_maxVerbosity( 1 )
-{
-}
-
-void VerbosityFilter::setMaximumVerbosity( unsigned short verbosity )
-{
-    m_maxVerbosity = verbosity;
-}
-
-bool VerbosityFilter::acceptsTracePoint( const TracePoint *tracePoint )
-{
-    return tracePoint->verbosity <= m_maxVerbosity;
-}
-
 PathFilter::PathFilter()
     : m_rx( 0 )
 {

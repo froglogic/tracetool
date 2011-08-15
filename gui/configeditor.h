@@ -43,16 +43,6 @@ public:
     virtual bool saveFilter(TracePointSet *tp) = 0;
 };
 
-class VerbosityFilterHelper : public FilterHelper
-{
-    Q_OBJECT
-public:
-    VerbosityFilterHelper(const Filter &f);
-    bool saveFilter(TracePointSet *tp);
-private:
-    QLineEdit *m_le;
-};
-
 class ConfigEditor : public QDialog, private Ui::ConfigEditor
 {
     Q_OBJECT

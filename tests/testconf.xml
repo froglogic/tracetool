@@ -8,9 +8,6 @@
         <option name="beautifiedOutput">yes</option>
     </serializer>
     <tracepointset variables="yes">
-        <verbosityfilter maxVerbosity="1"/>
-    </tracepointset>
-    <tracepointset variables="yes">
         <pathfilter matchingmode="regexp">.*main.cpp.*</pathfilter>
     </tracepointset>
     <tracepointset variables="yes">

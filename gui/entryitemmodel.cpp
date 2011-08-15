@@ -24,7 +24,6 @@
 #include <QTimer>
 #include <cassert>
 
-// #define SHOW_VERBOSITY
 // #define DEBUG_MODEL
 
 #ifdef DEBUG_MODEL
@@ -84,9 +83,6 @@ static const struct {
     { "Line", 0 },
     { "Function", 0 },
     { "Type", typeFormatter },
-#ifdef SHOW_VERBOSITY
-    { "Verbosity", 0 },
-#endif
     { "Key", keyFormatter },
     { "Message", 0 },
     { "Stack Position", stackPositionFormatter }
@@ -316,10 +312,6 @@ bool EntryItemModel::queryForEntries(QString *errMsg, int startRow)
                            << "trace_point.function_id = function_name.id";
             } else if (cn == "Type") {
                 fieldsToSelect.append("trace_point.type");
-                tablesToSelectFrom.append("trace_point");
-                predicates << "trace_entry.trace_point_id = trace_point.id";
-            } else if (cn == "Verbosity") {
-                fieldsToSelect.append("trace_point.verbosity");
                 tablesToSelectFrom.append("trace_point");
                 predicates << "trace_entry.trace_point_id = trace_point.id";
             } else if (cn == "Key") {

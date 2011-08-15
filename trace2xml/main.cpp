@@ -136,7 +136,6 @@ static bool toXml(const QSqlDatabase db, FILE *output, QString *errMsg)
                                   " trace_point.line,"
                                   " function_name.name,"
                                   " trace_point.type,"
-                                  //" trace_point.verbosity,"
                                   " message, "
                                   " trace_entry.stack_position "
                                   "FROM"

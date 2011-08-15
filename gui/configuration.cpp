@@ -180,9 +180,7 @@ void Configuration::readTracePointSetElement(ProcessConfiguration *proc)
     tps.m_variables = m_xml.attributes().value("variables") == "yes";
 
     while (m_xml.readNextStartElement()) {
-        if (m_xml.name() == "verbosityfilter")
-            readVerbosityFilter(&tps);
-        else if (m_xml.name() == "pathfilter")
+        if (m_xml.name() == "pathfilter")
             readPathFilter(&tps);
         else if (m_xml.name() == "functionfilter")
             readFunctionFilter(&tps);
@@ -193,17 +191,6 @@ void Configuration::readTracePointSetElement(ProcessConfiguration *proc)
 
     if (!m_xml.hasError())
         proc->m_tracePointSets.append(tps);
-}
-
-void Configuration::readVerbosityFilter(TracePointSet *tps)
-{
-    assert(m_xml.isStartElement() && m_xml.name() == "verbosityfilter");
-
-    Filter f;
-    f.type = Filter::VerbosityFilter;
-    f.term = m_xml.attributes().value("maxVerbosity").toString();
-    tps->m_filters.append(f);
-    m_xml.skipCurrentElement();
 }
 
 MatchingMode Configuration::parseMatchingMode(const QString &s)
@@ -323,11 +310,6 @@ bool Configuration::save(QString *errMsg)
             QList<Filter>::ConstIterator fit, fend = tps.m_filters.end();
             for ( fit = tps.m_filters.begin(); fit != fend; ++fit ) {
                 switch ( fit->type ) {
-                    case Filter::VerbosityFilter:
-                        stream.writeStartElement("verbosityfilter");
-                        stream.writeAttribute("maxVerbosity", fit->term);
-                        stream.writeEndElement();
-                        break;
                     case Filter::FunctionFilter:
                         stream.writeStartElement("functionfilter");
                         stream.writeAttribute("matchingmode", modeToString(fit->matchingMode));

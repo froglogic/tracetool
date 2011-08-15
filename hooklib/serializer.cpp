@@ -179,7 +179,6 @@ vector<char> XMLSerializer::serialize( const TraceEntry &entry )
         str << indent << "</tracekeys>";
     }
     str << indent << "<type>" << entry.tracePoint->type << "</type>";
-    str << indent << "<verbosity>" << entry.tracePoint->verbosity << "</verbosity>";
     str << indent << "<location lineno=\"" << entry.tracePoint->lineno << "\"><![CDATA[" << entry.tracePoint->sourceFile << "]]></location>";
     str << indent << "<function><![CDATA[" << entry.tracePoint->functionName << "]]></function>";
     if ( entry.variables ) {

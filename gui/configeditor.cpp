@@ -58,27 +58,6 @@ void FilterTable::addFilter()
     static_cast<QBoxLayout*>(layout())->addWidget(new FilterTableItem(this, f), 0, Qt::AlignTop);
 }
 
-VerbosityFilterHelper::VerbosityFilterHelper(const Filter &f)
-{
-    QHBoxLayout *layout = new QHBoxLayout;
-    QComboBox *combo = new QComboBox();
-    combo->addItems(QStringList() << tr("Max"));
-    layout->addWidget(combo);
-    m_le = new QLineEdit(f.term);
-    m_le->setValidator(new QIntValidator(this));
-    layout->addWidget(m_le);
-    setLayout(layout);
-}
-
-bool VerbosityFilterHelper::saveFilter(TracePointSet *tp)
-{
-    Filter f;
-    f.type = Filter::VerbosityFilter;
-    f.term = m_le->text().isEmpty() ? "0" : m_le->text();
-    tp->m_filters.append(f);
-    return true;
-}
-
 class PathFilterHelper : public FilterHelper
 {
 public:
@@ -153,22 +132,16 @@ FilterTableItem::FilterTableItem(FilterTable *fTable, const Filter &f)
     setFrameStyle(QFrame::Panel | QFrame::Raised);
     QHBoxLayout *hb = new QHBoxLayout;
     QComboBox *combo = new QComboBox();
-    combo->addItems(QStringList() << tr("Verbosity")
-                                  << tr("Path")
+    combo->addItems(QStringList() << tr("Path")
                                   << tr("Function"));
     connect(combo, SIGNAL(currentIndexChanged(int)),
             this, SLOT(filterComboChanged(int)));
     hb->addWidget(combo);
     m_sw = new QStackedWidget;
-    m_sw->addWidget(new VerbosityFilterHelper(f));
     m_sw->addWidget(new PathFilterHelper(f));
     m_sw->addWidget(new FunctionFilterHelper(f));
 
     switch ( f.type ) {
-        case Filter::VerbosityFilter:
-            m_sw->setCurrentIndex(0);
-            combo->setCurrentIndex(0);
-            break;
         case Filter::PathFilter:
             m_sw->setCurrentIndex(1);
             combo->setCurrentIndex(1);

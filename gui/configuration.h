@@ -18,7 +18,6 @@ enum MatchingMode { StrictMatching, WildcardMatching, RegExpMatching };
 struct Filter
 {
     enum Type {
-        VerbosityFilter,
         PathFilter,
         FunctionFilter
     } type;
@@ -89,7 +88,6 @@ private:
     void readSerializerElement(ProcessConfiguration *proc);
     void readSerializerOption(ProcessConfiguration *proc);
     void readTracePointSetElement(ProcessConfiguration *proc);
-    void readVerbosityFilter(TracePointSet *tps);
     void readPathFilter(TracePointSet *tps);
     void readFunctionFilter(TracePointSet *tps);
 

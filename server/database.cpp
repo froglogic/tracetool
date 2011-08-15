@@ -50,7 +50,7 @@ QVariant Transaction::exec( const QString &statement )
     return QVariant();
 }
 
-const int Database::expectedVersion = 3;
+const int Database::expectedVersion = 4;
 
 static const char * const schemaStatements[] = {
     "CREATE TABLE schema_downgrade (from_version INTEGER,"
@@ -62,13 +62,12 @@ static const char * const schemaStatements[] = {
     " message TEXT,"
     " stack_position INTEGER);",
     "CREATE TABLE trace_point (id INTEGER PRIMARY KEY AUTOINCREMENT,"
-    " verbosity INTEGER,"
     " type INTEGER,"
     " path_id INTEGER,"
     " line INTEGER,"
     " function_id INTEGER,"
     " group_id INTEGER,"
-    " UNIQUE(verbosity, type, path_id, line, function_id, group_id));",
+    " UNIQUE(type, path_id, line, function_id, group_id));",
     "CREATE TABLE function_name (id INTEGER PRIMARY KEY AUTOINCREMENT,"
     " name TEXT,"
     " UNIQUE(name));",
@@ -105,7 +104,8 @@ static const char * const downgradeStatementsInsert[] = {
     0, // can't downgrade further than version 0
     "INSERT INTO schema_downgrade VALUES(1, 'NOT IMPLEMENTED');",
     "INSERT INTO schema_downgrade VALUES(2, 'NOT IMPLEMENTED');",
-    "INSERT INTO schema_downgrade VALUES(3, 'NOT IMPLEMENTED');"
+    "INSERT INTO schema_downgrade VALUES(3, 'NOT IMPLEMENTED');",
+    "INSERT INTO schema_downgrade VALUES(4, 'NOT IMPLEMENTED');"
 };
 
 int Database::currentVersion( QSqlDatabase db, QString *errMsg )
@@ -508,7 +508,6 @@ QDataStream &operator<<( QDataStream &stream, const TraceEntry &entry )
         << entry.processName
         << (quint32)entry.tid
         << entry.timestamp
-        << (quint8)entry.verbosity
         << (quint8)entry.type
         << entry.path
         << (quint32)entry.lineno
@@ -524,7 +523,7 @@ QDataStream &operator<<( QDataStream &stream, const TraceEntry &entry )
 QDataStream &operator>>( QDataStream &stream, TraceEntry &entry )
 {
     quint32 pid, tid, lineno;
-    quint8 verbosity, type;
+    quint8 type;
     quint64 stackPosition;
 
     stream >> pid
@@ -532,7 +531,6 @@ QDataStream &operator>>( QDataStream &stream, TraceEntry &entry )
         >> entry.processName
         >> tid
         >> entry.timestamp
-        >> verbosity
         >> type
         >> entry.path
         >> lineno
@@ -547,7 +545,6 @@ QDataStream &operator>>( QDataStream &stream, TraceEntry &entry )
     entry.pid = pid;
     entry.tid = tid;
     entry.lineno = lineno;
-    entry.verbosity = verbosity;
     entry.type = type;
     entry.stackPosition = stackPosition;
 

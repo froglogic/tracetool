@@ -40,19 +40,6 @@ enum MatchingMode {
     WildcardMatch
 };
 
-class VerbosityFilter : public Filter
-{
-public:
-    VerbosityFilter();
-
-    void setMaximumVerbosity( unsigned short verbosity );
-
-    virtual bool acceptsTracePoint( const TracePoint *tracePoint );
-
-private:
-    unsigned short m_maxVerbosity;
-};
-
 class PathFilter : public Filter
 {
 public:
