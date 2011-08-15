@@ -730,6 +730,22 @@ void MainWindow::updateColumns()
 
 void MainWindow::clearTracePoints()
 {
+    if (QMessageBox::warning(this,
+                             tr("%1 - About To Clear Trace Data")
+                                .arg(windowTitle()),
+                             tr("This will erase all trace data stored in the "
+                                "currently viewed file\n"
+                                "\n"
+                                "%1\n"
+                                "\n"
+                                "This operation cannot be undone. Are you "
+                                "sure you want to continue?" )
+                                 .arg(m_settings->databaseFile()),
+                               QMessageBox::Yes | QMessageBox::No,
+                               QMessageBox::No) == QMessageBox::No) {
+        return;
+    }
+
     if ( m_serverSocket ) {
         tracePointsClear->setEnabled( false );
         m_serverSocket->write( serializeServerDatagram( DatabaseNukeDatagram ) );
