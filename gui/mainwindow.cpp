@@ -3,6 +3,7 @@
 ** All rights reserved.
 **********************************************************************/
 
+#include "config.h"
 #include "mainwindow.h"
 
 #include "configeditor.h"
@@ -463,10 +464,15 @@ void MainWindow::openRecentConfigFile()
 void MainWindow::helpAbout()
 {
     const QString title = tr("About %1").arg(windowTitle());
-    const QString txt = tr("<qt>Copyright %1 froglogic GmbH\n"
+    const QString txt = tr("<qt>tracelib Version %1\n"
                            "<br><br>"
-                           "Built with Qt %2 on %3.")
-        .arg(2010).arg(QT_VERSION_STR).arg(__DATE__);
+                           "Copyright %2 froglogic GmbH\n"
+                           "<br><br>"
+                           "Built with Qt %3 on %4.")
+        .arg(TRACELIB_VERSION_STR)
+        .arg("2010, 2011")
+        .arg(QT_VERSION_STR)
+        .arg(__DATE__);
     QMessageBox::information(this, title, txt);
 }
 
