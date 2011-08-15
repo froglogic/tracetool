@@ -281,11 +281,14 @@ static void storeEntry( QSqlDatabase db, Transaction *transaction, const TraceEn
 
 static QString archiveFileName( const QString &archiveDirName, const QString &currentFileName )
 {
-    const QString archiveFileName = QFileInfo( currentFileName ).completeBaseName() +
-                                    "_" +
-                                    QDateTime::currentDateTime().toString( "yyyy-MM-dd_hh-mm-ss" ) +
-                                    ".trace";
-    return archiveDirName + "/" + archiveFileName;
+    const QDir archiveDir( archiveDirName );
+
+    const QStringList entries = archiveDir.entryList( QStringList()
+                                                      << "*-" + QFileInfo( currentFileName ).fileName() );
+    return QString( "%1/%2-%3" )
+        .arg( archiveDirName )
+        .arg( entries.size() + 1 )
+        .arg( QFileInfo( currentFileName ).fileName() );
 }
 
 static void archiveEntries( QSqlDatabase db, unsigned short percentage, const QString &archiveDir )
