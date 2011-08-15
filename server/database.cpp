@@ -314,12 +314,6 @@ static bool upgradeToVersion1(QSqlDatabase db, QString *errMsg)
     return true;
 }
 
-static bool upgradeToVersion2(QSqlDatabase /*db*/, QString *errMsg)
-{
-    *errMsg = "Automatic upgrade to version 2 is not implemented";
-    return false;
-}
-
 static bool upgradeVersion(QSqlDatabase db, int version,
 			   QString *errMsg)
 {
@@ -327,11 +321,8 @@ static bool upgradeVersion(QSqlDatabase db, int version,
     case 0:
 	return upgradeToVersion1(db, errMsg);
 	break;
-    case 1:
-	return upgradeToVersion2(db, errMsg);
-	break;
     default:
-	*errMsg = QObject::tr("Unhandled upgrade step");
+	*errMsg = QObject::tr("Automatic upgrade to version %1 is not implemented");
 	return false;
     }
 }
