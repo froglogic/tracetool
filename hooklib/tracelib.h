@@ -11,8 +11,10 @@
 #include "tracepoint.h"
 #include "variabledumping.h"
 
+#include <cstddef>
 #include <sstream>
 #include <string>
+#include <vector>
 
 /* Compiler-specific macros for determining the current file name, line number,
  * and function name.
@@ -92,6 +94,14 @@
 
 TRACELIB_NAMESPACE_BEGIN
 
+inline std::string variableValueAsString( const VariableValue &v )
+{
+    const size_t bufsize = VariableValue::convertToString( v, NULL, 0 );
+    std::vector<char> buf( bufsize );
+    VariableValue::convertToString( v, &buf[0], buf.size() );
+    return &buf[0];
+}
+
 class StringBuilder
 {
 public:
@@ -117,7 +127,7 @@ private:
 
 template <>
 inline StringBuilder &StringBuilder::operator<<( const VariableValue &v ) {
-    m_stream << VariableValue::convertToString( v );
+    m_stream << variableValueAsString( v );
     return *this;
 }
 
@@ -145,7 +155,7 @@ private:
 
 template <>
 inline TracePointVisitor &TracePointVisitor::operator<<( const VariableValue &v ) {
-    m_stream << VariableValue::convertToString( v );
+    m_stream << variableValueAsString( v );
     return *this;
 }
 

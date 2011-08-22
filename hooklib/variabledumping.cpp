@@ -6,12 +6,13 @@
 #include "variabledumping.h"
 
 #include <cassert>
+#include <cstring> // for strncpy
 
 using namespace std;
 
 TRACELIB_NAMESPACE_BEGIN
 
-VariableValue VariableValue::stringValue( const string &s )
+VariableValue VariableValue::stringValue( const char *s )
 {
     VariableValue var;
     var.m_type = VariableType::String;
@@ -43,7 +44,7 @@ VariableValue VariableValue::floatValue( long double v )
     return var;
 }
 
-string VariableValue::convertToString( const VariableValue &v )
+static std::string stringRep( const VariableValue &v )
 {
     // XXX The list of variable types is duplicated in variabletypes.def
     ostringstream stream;
@@ -59,10 +60,20 @@ string VariableValue::convertToString( const VariableValue &v )
         case VariableType::Boolean:
             return v.asBoolean() ? "true" : "false";
         case VariableType::Unknown:
-            assert( !"convertToString on Unknown VariableType" );
+            assert( !"stringRep on Unknown VariableType" );
     }
     assert( !"Unreachable" );
     return string();
+}
+
+size_t VariableValue::convertToString( const VariableValue &v, char *buf, size_t bufsize )
+{
+    const std::string s = stringRep( v );
+    if ( bufsize == 0 ) {
+        return s.size() + 1;
+    }
+    strncpy( buf, s.c_str(), bufsize );
+    return bufsize;
 }
 
 VariableType::Value VariableValue::type() const

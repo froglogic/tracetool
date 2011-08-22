@@ -9,6 +9,7 @@
 #include "dlldefs.h"
 #include "tracelib_config.h"
 
+#include <cstddef>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -50,11 +51,11 @@ struct VariableType {
 
 class VariableValue {
 public:
-    TRACELIB_EXPORT static VariableValue stringValue( const std::string &s );
+    TRACELIB_EXPORT static VariableValue stringValue( const char *s );
     TRACELIB_EXPORT static VariableValue numberValue( unsigned long v );
     TRACELIB_EXPORT static VariableValue booleanValue( bool v );
     TRACELIB_EXPORT static VariableValue floatValue( long double v );
-    TRACELIB_EXPORT static std::string convertToString( const VariableValue &v );
+    TRACELIB_EXPORT static size_t convertToString( const VariableValue &v, char *buf, size_t bufsize );
 
     VariableType::Value type() const;
     const std::string &asString() const;
@@ -101,7 +102,7 @@ template <> \
 inline VariableValue convertVariable( T val ) { \
     std::ostringstream str; \
     str << val; \
-    return VariableValue::stringValue( str.str() ); \
+    return VariableValue::stringValue( str.str().c_str() ); \
 }
 
 TRACELIB_SPECIALIZE_CONVERSION_USING_SSTREAM(void *)
