@@ -7,16 +7,11 @@
 
 #include <algorithm>
 
+#include <cstdlib> // for std::atexit
+
 using namespace std;
 
 TRACELIB_NAMESPACE_BEGIN
-
-const struct ShutdownNotifier::GlobalObject {
-    GlobalObject() {}
-    ~GlobalObject() {
-        ShutdownNotifier::self().notifyObservers();
-    }
-} g_globalObject;
 
 ShutdownNotifierObserver::~ShutdownNotifierObserver()
 {
@@ -46,10 +41,16 @@ void ShutdownNotifier::removeObserver( ShutdownNotifierObserver *observer )
 
 ShutdownNotifier::ShutdownNotifier()
 {
+    std::atexit( notifyShutdownObservers );
 }
 
 ShutdownNotifier::~ShutdownNotifier()
 {
+}
+
+void ShutdownNotifier::notifyShutdownObservers()
+{
+    ShutdownNotifier::self().notifyObservers();
 }
 
 void ShutdownNotifier::notifyObservers()

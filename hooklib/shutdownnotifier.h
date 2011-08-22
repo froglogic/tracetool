@@ -38,6 +38,7 @@ private:
     ~ShutdownNotifier();
 
     void notifyObservers();
+    static void notifyShutdownObservers();
 
     std::list<ShutdownNotifierObserver *> m_observers;
 };
