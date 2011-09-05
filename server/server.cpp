@@ -576,8 +576,8 @@ Server::Server( const QString &traceFile,
       m_tcpServer( 0 ),
       m_db( database ),
       m_xmlHandler( 0 ),
-      m_maximumSize( StorageConfiguration::UnlimitedTraceSize ),
-      m_shrinkBy( 0 )
+      m_shrinkBy( 0 ),
+      m_maximumSize( StorageConfiguration::UnlimitedTraceSize )
 {
     QFileInfo fi( traceFile );
     m_traceFile = QDir::toNativeSeparators( fi.canonicalFilePath() );
