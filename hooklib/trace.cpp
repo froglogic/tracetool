@@ -281,6 +281,10 @@ void Trace::visitTracePoint( TracePoint *tracePoint,
 
     if ( tracePoint->variableSnapshotEnabled ) {
         entry.variables = variables;
+    } else if ( variables ) {
+	// otherwise deleted in ~TraceEntry()
+	deleteRange( variables->begin(), variables->end() );
+	delete variables;
     }
 
     addEntry( entry );
