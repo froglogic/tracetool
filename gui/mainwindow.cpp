@@ -826,6 +826,7 @@ void MainWindow::handleNewTraceEntry( const TraceEntry &e )
         firstEntryPassed = true;
     }
 
+    // ### reduce number of database queries
     tracePointsSearchWidget->addTraceKeys( Database::seenGroupIds( m_db ) );
     m_filterForm->addTraceKeys( Database::seenGroupIds( m_db ) );
 
