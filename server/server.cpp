@@ -171,6 +171,35 @@ static bool getGroupId( QSqlDatabase db, Transaction *transaction, const QString
     return ok;
 }
 
+class TraceKeyCache {
+public:
+    void update( QSqlDatabase db, Transaction *transaction,
+                 const TraceEntry &e ) {
+        QList<TraceKey>::ConstIterator it, end = e.traceKeys.end();
+        for ( it = e.traceKeys.begin(); it != end; ++it ) {
+            if ( m_map.find( (*it).name ) == m_map.end() ) {
+                unsigned int id;
+                if ( !getGroupId( db, transaction, (*it).name, &id ) ) {
+                   throw runtime_error( "Read non-numeric trace point group id from database - corrupt database?" );
+		}
+                m_map[(*it).name] = id;
+            }
+        }
+    }
+    void clear() {
+        m_map.clear();
+    }
+    unsigned int fetch( const QString &name ) const {
+        std::map<QString, unsigned int>::const_iterator it = m_map.find( name );
+        if ( it == m_map.end() ) {
+            throw runtime_error( "Failed to find trace point group in cache" );
+        }
+        return (*it).second;
+    }
+private:
+    std::map<QString, unsigned int> m_map;
+} traceKeyCache;
+
 static void storeEntry( QSqlDatabase db, Transaction *transaction, const TraceEntry &e )
 {
     unsigned int pathId;
@@ -226,11 +255,11 @@ static void storeEntry( QSqlDatabase db, Transaction *transaction, const TraceEn
         }
     }
 
+    traceKeyCache.update( db, transaction, e );
+
     unsigned int groupId = 0;
     if ( !e.groupName.isNull() ) {
-        if ( !getGroupId( db, transaction, e.groupName, &groupId ) ) {
-            throw runtime_error( "Failed to store entry in database: read non-numeric trace point group id from database - corrupt database?" );
-        }
+	groupId = traceKeyCache.fetch( e.groupName );
     }
 
     unsigned int tracepointId;
@@ -266,13 +295,6 @@ static void storeEntry( QSqlDatabase db, Transaction *transaction, const TraceEn
         QList<StackFrame>::ConstIterator it, end = e.backtrace.end();
         for ( it = e.backtrace.begin(); it != end; ++it, ++depthCount ) {
             transaction->exec( QString( "INSERT INTO stackframe VALUES(%1, %2, %3, %4, %5, %6, %7);" ).arg( traceentryId ).arg( depthCount ).arg( Database::formatValue( db, it->module ) ).arg( Database::formatValue( db, it->function ) ).arg( it->functionOffset ).arg( Database::formatValue( db, it->sourceFile ) ).arg( it->lineNumber ) );
-        }
-    }
-
-    {
-        QList<TraceKey>::ConstIterator it, end = e.traceKeys.end();
-        for ( it = e.traceKeys.begin(); it != end; ++it ) {
-            getGroupId( db, transaction, ( *it ).name, 0 );
         }
     }
 }
@@ -432,6 +454,7 @@ static void archiveEntries( QSqlDatabase db, unsigned short percentage, const QS
         transaction.exec( QString( "DELETE FROM function_name WHERE id NOT IN (SELECT function_id FROM trace_point);" ) );
         transaction.exec( QString( "DELETE FROM path_name WHERE id NOT IN (SELECT path_id FROM trace_point);" ) );
         transaction.exec( QString( "DELETE FROM trace_point_group WHERE id NOT IN (SELECT group_id FROM trace_point);" ) );
+        traceKeyCache.clear();
 
         transaction.exec( QString( "DELETE FROM traced_thread WHERE id NOT IN (SELECT traced_thread_id FROM trace_entry);" ) );
         transaction.exec( QString( "DELETE FROM process WHERE id NOT IN (SELECT process_id FROM traced_thread);" ) );
