@@ -116,6 +116,7 @@ public:
     ~Transaction();
 
     QVariant exec( const QString &statement );
+    QVariant insert( const QString &statement );
 
 private:
     Transaction( const Transaction &other );

@@ -266,8 +266,7 @@ static void storeEntry( QSqlDatabase db, Transaction *transaction, const TraceEn
     {
         QVariant v = transaction->exec( QString( "SELECT id FROM trace_point WHERE type=%1 AND path_id=%2 AND line=%3 AND function_id=%4 AND group_id=%5;" ).arg( e.type ).arg( pathId ).arg( e.lineno ).arg( functionId ).arg( groupId ) );
         if ( !v.isValid() ) {
-            transaction->exec( QString( "INSERT INTO trace_point VALUES(NULL, %1, %2, %3, %4, %5);" ).arg( e.type ).arg( pathId ).arg( e.lineno ).arg( functionId ).arg( groupId ) );
-            v = transaction->exec( "SELECT last_insert_rowid() FROM trace_point LIMIT 1;" );
+            v = transaction->insert( QString( "INSERT INTO trace_point VALUES(NULL, %1, %2, %3, %4, %5);" ).arg( e.type ).arg( pathId ).arg( e.lineno ).arg( functionId ).arg( groupId ) );
         }
         tracepointId = v.toUInt( &ok );
         if ( !ok ) {
@@ -275,13 +274,12 @@ static void storeEntry( QSqlDatabase db, Transaction *transaction, const TraceEn
         }
     }
 
-    transaction->exec( QString( "INSERT INTO trace_entry VALUES(NULL, %1, %2, %3, %4, %5)" )
+    const unsigned int traceentryId = transaction->insert( QString( "INSERT INTO trace_entry VALUES(NULL, %1, %2, %3, %4, %5)" )
                     .arg( tracedThreadId )
                     .arg( Database::formatValue( db, e.timestamp ) )
                     .arg( tracepointId )
                     .arg( Database::formatValue( db, e.message ) )
-                    .arg( e.stackPosition ) );
-    const unsigned int traceentryId = transaction->exec( "SELECT last_insert_rowid() FROM trace_entry LIMIT 1;" ).toUInt();
+                    .arg( e.stackPosition ) ).toUInt();
 
     {
         QList<Variable>::ConstIterator it, end = e.variables.end();
