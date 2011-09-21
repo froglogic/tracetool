@@ -428,6 +428,7 @@ QStringList Database::seenGroupIds(QSqlDatabase db)
     return l;
 }
 
+#if 0
 void Database::addGroupId(QSqlDatabase db, const QString &id)
 {
     Transaction transaction( db );
@@ -435,6 +436,7 @@ void Database::addGroupId(QSqlDatabase db, const QString &id)
         transaction.exec( QString( "INSERT INTO trace_point_group VALUES(NULL, %1);" ).arg( formatValue( db, id ) ) );
     }
 }
+#endif
 
 void Database::trimTo(QSqlDatabase db, size_t nMostRecent)
 {

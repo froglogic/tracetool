@@ -797,6 +797,7 @@ void MainWindow::traceEntryDoubleClicked(const QModelIndex &index)
                               QString( "<pre>%1</pre>" ).arg( lines.join( "\n" ) ) );
 }
 
+#if 0
 void MainWindow::addNewTraceKey( const QString &id )
 {
     if ( !m_serverSocket || m_serverSocket->state() == QAbstractSocket::ConnectedState ) {
@@ -805,6 +806,7 @@ void MainWindow::addNewTraceKey( const QString &id )
         m_filterForm->setTraceKeys( Database::seenGroupIds( m_db ) );
     }
 }
+#endif
 
 void MainWindow::handleNewTraceEntry( const TraceEntry &e )
 {

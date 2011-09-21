@@ -79,7 +79,9 @@ private slots:
     void filterChange();
     void clearTracePoints();
     void traceEntryDoubleClicked(const QModelIndex &index);
+#if 0
     void addNewTraceKey(const QString &id);
+#endif
     void handleConnectionError(QAbstractSocket::SocketError error);
     void serverSocketDisconnected();
     void automaticServerError(QProcess::ProcessError error);

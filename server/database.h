@@ -148,7 +148,9 @@ public:
     static QList<StackFrame> backtraceForEntry(QSqlDatabase db,
                                                unsigned int entryId);
     static QStringList seenGroupIds(QSqlDatabase db);
+#if 0
     static void addGroupId(QSqlDatabase db, const QString &id);
+#endif
     static void trimTo(QSqlDatabase db, size_t nMostRecent);
     static QList<TracedApplicationInfo> tracedApplications(QSqlDatabase db);
 
