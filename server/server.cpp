@@ -171,8 +171,6 @@ static bool getGroupId( QSqlDatabase db, Transaction *transaction, const QString
     return ok;
 }
 
-void archiveEntries( QSqlDatabase db, unsigned short percentage );
-
 static void storeEntry( QSqlDatabase db, Transaction *transaction, const TraceEntry &e )
 {
     unsigned int pathId;
