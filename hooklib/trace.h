@@ -87,7 +87,8 @@ public:
     ~Trace();
 
     void configureTracePoint( TracePoint *tracePoint ) const;
-    void visitTracePoint( TracePoint *tracePoint,
+    bool advanceVisit( TracePoint *tracePoint ) const;
+    void visitTracePoint( const TracePoint *tracePoint,
                           const char *msg = 0,
                           VariableSnapshot *variables = 0 );
 

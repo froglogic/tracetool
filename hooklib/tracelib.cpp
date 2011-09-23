@@ -3,7 +3,12 @@
 
 TRACELIB_NAMESPACE_BEGIN
 
-void visitTracePoint( TracePoint *tracePoint,
+bool advanceVisit( TracePoint *tracePoint )
+{
+    return getActiveTrace()->advanceVisit( tracePoint );
+}
+
+void visitTracePoint( const TracePoint *tracePoint,
                       const char *msg,
                       VariableSnapshot *variables )
 {

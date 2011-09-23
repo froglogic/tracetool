@@ -42,14 +42,18 @@
 #  define TRACELIB_VISIT_TRACEPOINT_VARS(key, vars, msg) \
 { \
     static TRACELIB_NAMESPACE_IDENT(TracePoint) tracePoint(TRACELIB_NAMESPACE_IDENT(TracePointType)::Watch, TRACELIB_CURRENT_FILE_NAME, TRACELIB_CURRENT_LINE_NUMBER, TRACELIB_CURRENT_FUNCTION_NAME, key); \
-    TRACELIB_NAMESPACE_IDENT(VariableSnapshot) *variableSnapshot = new TRACELIB_NAMESPACE_IDENT(VariableSnapshot); \
-    (*variableSnapshot) << vars; \
-    TRACELIB_NAMESPACE_IDENT(visitTracePoint)( &tracePoint, (msg), variableSnapshot ); \
+    if ( TRACELIB_NAMESPACE_IDENT(advanceVisit)( &tracePoint ) ) { \
+        TRACELIB_NAMESPACE_IDENT(VariableSnapshot) *variableSnapshot = new TRACELIB_NAMESPACE_IDENT(VariableSnapshot); \
+        (*variableSnapshot) << vars; \
+        TRACELIB_NAMESPACE_IDENT(visitTracePoint)( &tracePoint, (msg), variableSnapshot ); \
+    } \
 }
 #  define TRACELIB_VISIT_TRACEPOINT(type, key, msg) \
 { \
     static TRACELIB_NAMESPACE_IDENT(TracePoint) tracePoint(type, TRACELIB_CURRENT_FILE_NAME, TRACELIB_CURRENT_LINE_NUMBER, TRACELIB_CURRENT_FUNCTION_NAME, key); \
-    TRACELIB_NAMESPACE_IDENT(visitTracePoint)( &tracePoint, msg ); \
+    if ( TRACELIB_NAMESPACE_IDENT(advanceVisit)( &tracePoint ) ) { \
+        TRACELIB_NAMESPACE_IDENT(visitTracePoint)( &tracePoint, msg ); \
+    } \
 }
 #  define TRACELIB_VISIT_TRACEPOINT_STREAM(VisitorType, type, key) \
     static TRACELIB_NAMESPACE_IDENT(TracePoint) TRACELIB_TOKEN_GLUE(tracePoint, TRACELIB_CURRENT_LINE_NUMBER)((type), TRACELIB_CURRENT_FILE_NAME, TRACELIB_CURRENT_LINE_NUMBER, TRACELIB_CURRENT_FUNCTION_NAME, (key)); (TRACELIB_NAMESPACE_IDENT(VisitorType)( &TRACELIB_TOKEN_GLUE(tracePoint, TRACELIB_CURRENT_LINE_NUMBER) ))
@@ -131,7 +135,9 @@ inline StringBuilder &StringBuilder::operator<<( const VariableValue &v ) {
     return *this;
 }
 
-TRACELIB_EXPORT void visitTracePoint( TracePoint *tracePoint,
+TRACELIB_EXPORT bool advanceVisit( TracePoint *tracePoint );
+
+TRACELIB_EXPORT void visitTracePoint( const TracePoint *tracePoint,
                       const char *msg = 0,
                       VariableSnapshot *variables = 0 );
 

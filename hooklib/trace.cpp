@@ -255,18 +255,21 @@ void Trace::configureTracePoint( TracePoint *tracePoint ) const
     m_errorLog->write( "Trace::configureTracePoint: trace point at %s:%d is not active", tracePoint->sourceFile, tracePoint->lineno );
 }
 
-void Trace::visitTracePoint( TracePoint *tracePoint,
-                             const char *msg,
-                             VariableSnapshot *variables )
+// configures the trace point if necessary and tells us if it's
+// supposed to be visited.
+bool Trace::advanceVisit( TracePoint *tracePoint ) const
 {
     if ( tracePoint->lastUsedConfiguration != m_configuration ) {
         configureTracePoint( tracePoint );
     }
 
-    if ( !tracePoint->active || !m_serializer || !m_output ) {
-        return;
-    }
+    return tracePoint->active && m_serializer && m_output;
+}
 
+void Trace::visitTracePoint( const TracePoint *tracePoint,
+                             const char *msg,
+                             VariableSnapshot *variables )
+{
     {
         MutexLocker outputLocker( m_outputMutex );
         if ( !m_output || ( !m_output->canWrite() && !m_output->open() ) ) {
