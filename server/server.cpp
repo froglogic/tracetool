@@ -178,12 +178,13 @@ public:
         QList<TraceKey>::ConstIterator it, end = e.traceKeys.end();
         for ( it = e.traceKeys.begin(); it != end; ++it ) {
             if ( m_map.find( (*it).name ) == m_map.end() ) {
-                unsigned int id;
-                if ( !getGroupId( db, transaction, (*it).name, &id ) ) {
-                   throw runtime_error( "Read non-numeric trace point group id from database - corrupt database?" );
-		}
-                m_map[(*it).name] = id;
+                registerGroupName( db, transaction, (*it).name );
             }
+        }
+        // in case the entry comes with a name not listed in the
+        // AUT-side configuration file
+        if ( !e.groupName.isNull() && m_map.find( e.groupName ) == m_map.end() ) {
+            registerGroupName( db, transaction, e.groupName );
         }
     }
     void clear() {
@@ -192,11 +193,20 @@ public:
     unsigned int fetch( const QString &name ) const {
         std::map<QString, unsigned int>::const_iterator it = m_map.find( name );
         if ( it == m_map.end() ) {
-            throw runtime_error( "Failed to find trace point group in cache" );
+            throw runtime_error( QString( "Failed to find trace point group %1 in cache" ).arg( name ).toUtf8().constData() );
         }
         return (*it).second;
     }
 private:
+    void registerGroupName( QSqlDatabase db, Transaction *transaction, const QString &name )
+    {
+        unsigned int id;
+        if ( !getGroupId( db, transaction, name, &id ) ) {
+            throw runtime_error( "Read non-numeric trace point group id from database - corrupt database?" );
+        }
+        m_map[name] = id;
+    }
+
     std::map<QString, unsigned int> m_map;
 } traceKeyCache;
 
