@@ -60,6 +60,7 @@ QVariant Transaction::insert( const QString &statement )
                                        m_query.lastError().number() );
     }
 
+    assert( m_query.driver()->hasFeature( QSqlDriver::LastInsertId ) );
     return m_query.lastInsertId();
 }
 
