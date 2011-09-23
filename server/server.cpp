@@ -156,10 +156,7 @@ static bool getGroupId( QSqlDatabase db, Transaction *transaction, const QString
 {
     QVariant v = transaction->exec( QString( "SELECT id FROM trace_point_group WHERE name=%1;" ).arg( Database::formatValue( db, name ) ) );
     if ( !v.isValid() ) {
-        transaction->exec( QString( "INSERT INTO trace_point_group VALUES(NULL, %1);" ).arg( Database::formatValue( db, name ) ) );
-        if ( id ) {
-            v = transaction->exec( "SELECT last_insert_rowid() FROM trace_point_group LIMIT 1;" );
-        }
+        v = transaction->insert( QString( "INSERT INTO trace_point_group VALUES(NULL, %1);" ).arg( Database::formatValue( db, name ) ) );
     }
 
     if ( !id ) {
@@ -217,8 +214,7 @@ static void storeEntry( QSqlDatabase db, Transaction *transaction, const TraceEn
     {
         QVariant v = transaction->exec( QString( "SELECT id FROM path_name WHERE name=%1;" ).arg( Database::formatValue( db, e.path ) ) );
         if ( !v.isValid() ) {
-            transaction->exec( QString( "INSERT INTO path_name VALUES(NULL, %1);" ).arg( Database::formatValue( db, e.path ) ) );
-            v = transaction->exec( "SELECT last_insert_rowid() FROM path_name LIMIT 1;" );
+            v = transaction->insert( QString( "INSERT INTO path_name VALUES(NULL, %1);" ).arg( Database::formatValue( db, e.path ) ) );
         }
         pathId = v.toUInt( &ok );
         if ( !ok ) {
@@ -230,8 +226,7 @@ static void storeEntry( QSqlDatabase db, Transaction *transaction, const TraceEn
     {
         QVariant v = transaction->exec( QString( "SELECT id FROM function_name WHERE name=%1;" ).arg( Database::formatValue( db, e.function ) ) );
         if ( !v.isValid() ) {
-            transaction->exec( QString( "INSERT INTO function_name VALUES(NULL, %1);" ).arg( Database::formatValue( db, e.function ) ) );
-            v = transaction->exec( "SELECT last_insert_rowid() FROM function_name LIMIT 1;" );
+            v = transaction->insert( QString( "INSERT INTO function_name VALUES(NULL, %1);" ).arg( Database::formatValue( db, e.function ) ) );
         }
         functionId = v.toUInt( &ok );
         if ( !ok ) {
@@ -243,8 +238,7 @@ static void storeEntry( QSqlDatabase db, Transaction *transaction, const TraceEn
     {
         QVariant v = transaction->exec( QString( "SELECT id FROM process WHERE pid=%1 AND start_time=%2;" ).arg( e.pid ).arg( Database::formatValue( db, e.processStartTime ) ) );
         if ( !v.isValid() ) {
-            transaction->exec( QString( "INSERT INTO process VALUES(NULL, %1, %2, %3, 0);" ).arg( Database::formatValue( db, e.processName ) ).arg( e.pid ).arg( Database::formatValue( db, e.processStartTime ) ) );
-            v = transaction->exec( "SELECT last_insert_rowid() FROM process LIMIT 1;" );
+            v = transaction->insert( QString( "INSERT INTO process VALUES(NULL, %1, %2, %3, 0);" ).arg( Database::formatValue( db, e.processName ) ).arg( e.pid ).arg( Database::formatValue( db, e.processStartTime ) ) );
         }
         processId = v.toUInt( &ok );
         if ( !ok ) {
@@ -256,8 +250,7 @@ static void storeEntry( QSqlDatabase db, Transaction *transaction, const TraceEn
     {
         QVariant v = transaction->exec( QString( "SELECT id FROM traced_thread WHERE process_id=%1 AND tid=%2;" ).arg( processId ).arg( e.tid ) );
         if ( !v.isValid() ) {
-            transaction->exec( QString( "INSERT INTO traced_thread VALUES(NULL, %1, %2);" ).arg( processId ).arg( e.tid ) );
-            v = transaction->exec( "SELECT last_insert_rowid() FROM traced_thread LIMIT 1;" );
+            v = transaction->insert( QString( "INSERT INTO traced_thread VALUES(NULL, %1, %2);" ).arg( processId ).arg( e.tid ) );
         }
         tracedThreadId = v.toUInt( &ok );
         if ( !ok ) {
