@@ -826,9 +826,10 @@ void MainWindow::handleNewTraceEntry( const TraceEntry &e )
         firstEntryPassed = true;
     }
 
-    // ### reduce number of database queries
-    tracePointsSearchWidget->addTraceKeys( Database::seenGroupIds( m_db ) );
-    m_filterForm->addTraceKeys( Database::seenGroupIds( m_db ) );
+    // ### reduce number of database queries through caching
+    const QStringList groupIds = Database::seenGroupIds( m_db );
+    tracePointsSearchWidget->addTraceKeys( groupIds );
+    m_filterForm->addTraceKeys( groupIds );
 
     // Function calls below were handled through connection to traceEntryReceived
     // signal, but moved here in order we can have much control on the execution
