@@ -501,6 +501,9 @@ void NetworkingThread::run()
     connect( m_clientSocket, SIGNAL( dataReceived( const QByteArray & ) ),
              this, SIGNAL( dataReceived( const QByteArray & ) ),
              Qt::QueuedConnection );
+    connect( m_clientSocket, SIGNAL( disconnected() ),
+             this, SLOT( quit() ),
+             Qt::QueuedConnection  );
     exec();
     delete m_clientSocket;
 }
