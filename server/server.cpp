@@ -7,6 +7,7 @@
 
 #include "database.h"
 #include "datagramtypes.h"
+#include "lru_cache.h"
 
 #include <QDir>
 #include <QDomDocument>
@@ -208,68 +209,128 @@ private:
     std::map<QString, unsigned int> m_map;
 } traceKeyCache;
 
-static unsigned int storePath( QSqlDatabase db, Transaction *transaction,
-			       const QString &path )
+template <typename KeyType, typename IdType, int CacheSize = 10>
+class StorageCache
 {
-    QVariant v = transaction->exec( QString( "SELECT id FROM path_name WHERE name=%1;" ).arg( Database::formatValue( db, path ) ) );
-    if ( !v.isValid() ) {
-	v = transaction->insert( QString( "INSERT INTO path_name VALUES(NULL, %1);" ).arg( Database::formatValue( db, path ) ) );
+public:
+    StorageCache() : m_lru( CacheSize ) { }
+    void clear()
+    {
+	m_lru.clear();
     }
-    bool ok;
-    unsigned int pathId = v.toUInt( &ok );
-    if ( !ok ) {
-	throw runtime_error( "Failed to store entry in database: read non-numeric path id from database - corrupt database?" );
-    }
-    return pathId;
-}
+protected:
+    typedef KeyType CacheKey;
 
-static unsigned int storeFunction( QSqlDatabase db, Transaction *transaction,
-				   const QString &function )
-{
-    QVariant v = transaction->exec( QString( "SELECT id FROM function_name WHERE name=%1;" ).arg( Database::formatValue( db, function ) ) );
-    if ( !v.isValid() ) {
-	v = transaction->insert( QString( "INSERT INTO function_name VALUES(NULL, %1);" ).arg( Database::formatValue( db, function ) ) );
+    IdType* checkCache( const KeyType &key )
+    {
+	return m_lru.fetch_ptr( key );
     }
-    bool ok;
-    unsigned int functionId = v.toUInt( &ok );
-    if ( !ok ) {
-	throw runtime_error( "Failed to store entry in database: read non-numeric function id from database - corrupt database?" );
+    void cache( const KeyType &key, IdType id )
+    {
+	m_lru.insert( key, id );
     }
-    return functionId;
-}
 
-static unsigned int storeProcess( QSqlDatabase db, Transaction *transaction,
-				  const QString &processName,
-				  unsigned int pid,
-				  const QDateTime &processStartTime )
-{
-    QVariant v = transaction->exec( QString( "SELECT id FROM process WHERE pid=%1 AND start_time=%2;" ).arg( pid ).arg( Database::formatValue( db, processStartTime ) ) );
-    if ( !v.isValid() ) {
-	v = transaction->insert( QString( "INSERT INTO process VALUES(NULL, %1, %2, %3, 0);" ).arg( Database::formatValue( db, processName ) ).arg( pid ).arg( Database::formatValue( db, processStartTime ) ) );
-    }
-    bool ok;
-    unsigned int processId = v.toUInt( &ok );
-    if ( !ok ) {
-	throw runtime_error( "Failed to store entry in database: read non-numeric process id from database - corrupt database?" );
-    }
-    return processId;
-}
+private:
+    LRUCache<KeyType, IdType> m_lru; 
+};
 
-static unsigned int storeThread( QSqlDatabase db, Transaction *transaction,
-				 unsigned int processId,
-				 unsigned int tid )
+class PathCache : public StorageCache<QString, unsigned int> {
+public:
+    unsigned int store( QSqlDatabase db, Transaction *transaction,
+			const QString &path )
+    {
+	unsigned int *cachedId = checkCache( path );
+	if ( cachedId )
+	    return *cachedId;
+	QVariant v = transaction->exec( QString( "SELECT id FROM path_name WHERE name=%1;" ).arg( Database::formatValue( db, path ) ) );
+	if ( !v.isValid() ) {
+	    v = transaction->insert( QString( "INSERT INTO path_name VALUES(NULL, %1);" ).arg( Database::formatValue( db, path ) ) );
+	}
+	bool ok;
+	unsigned int pathId = v.toUInt( &ok );
+	if ( !ok ) {
+	    throw runtime_error( "Failed to store entry in database: read non-numeric path id from database - corrupt database?" );
+	}
+	cache( path, pathId );
+	return pathId;
+    }
+} pathCache;
+
+class FunctionCache : public StorageCache<QString, unsigned int> {
+public:
+    unsigned int store( QSqlDatabase db, Transaction *transaction,
+			const QString &function )
+    {
+	unsigned int *cachedId = checkCache( function );
+	if ( cachedId )
+	    return *cachedId;
+	QVariant v = transaction->exec( QString( "SELECT id FROM function_name WHERE name=%1;" ).arg( Database::formatValue( db, function ) ) );
+	if ( !v.isValid() ) {
+	    v = transaction->insert( QString( "INSERT INTO function_name VALUES(NULL, %1);" ).arg( Database::formatValue( db, function ) ) );
+	}
+	bool ok;
+	unsigned int functionId = v.toUInt( &ok );
+	if ( !ok ) {
+	    throw runtime_error( "Failed to store entry in database: read non-numeric function id from database - corrupt database?" );
+	}
+	cache( function, functionId );
+	return functionId;
+    }
+} functionCache;
+
+class ProcessCache : public StorageCache<std::pair<QString, unsigned int>,
+					 unsigned int>
 {
-    QVariant v = transaction->exec( QString( "SELECT id FROM traced_thread WHERE process_id=%1 AND tid=%2;" ).arg( processId ).arg( tid ) );
-    if ( !v.isValid() ) {
-	v = transaction->insert( QString( "INSERT INTO traced_thread VALUES(NULL, %1, %2);" ).arg( processId ).arg( tid ) );
+public:
+    unsigned int store( QSqlDatabase db, Transaction *transaction,
+			const QString &processName,
+			unsigned int pid,
+			const QDateTime &processStartTime )
+    {
+	CacheKey key( processName, pid );
+	unsigned int *cachedId = checkCache( key );
+	if ( cachedId )
+	    return *cachedId;
+	QVariant v = transaction->exec( QString( "SELECT id FROM process WHERE pid=%1 AND start_time=%2;" ).arg( pid ).arg( Database::formatValue( db, processStartTime ) ) );
+	if ( !v.isValid() ) {
+	    v = transaction->insert( QString( "INSERT INTO process VALUES(NULL, %1, %2, %3, 0);" ).arg( Database::formatValue( db, processName ) ).arg( pid ).arg( Database::formatValue( db, processStartTime ) ) );
+	}
+	bool ok;
+	unsigned int processId = v.toUInt( &ok );
+	if ( !ok ) {
+	    throw runtime_error( "Failed to store entry in database: read non-numeric process id from database - corrupt database?" );
+	}
+	cache( key, processId );
+	return processId;
     }
-    bool ok;
-    unsigned int threadId = v.toUInt( &ok );
-    if ( !ok ) {
-	throw runtime_error( "Failed to store entry in database: read non-numeric traced thread id from database - corrupt database?" );
+} processCache;
+
+class ThreadCache : public StorageCache<std::pair<unsigned int, unsigned int>,
+					unsigned int>
+{
+public:
+    unsigned int store( QSqlDatabase db, Transaction *transaction,
+			unsigned int processId,
+			unsigned int tid )
+    {
+	CacheKey key( processId, tid );
+	unsigned int *cachedId = checkCache( key );
+	if ( cachedId )
+	    return *cachedId;
+
+	QVariant v = transaction->exec( QString( "SELECT id FROM traced_thread WHERE process_id=%1 AND tid=%2;" ).arg( processId ).arg( tid ) );
+	if ( !v.isValid() ) {
+	    v = transaction->insert( QString( "INSERT INTO traced_thread VALUES(NULL, %1, %2);" ).arg( processId ).arg( tid ) );
+	}
+	bool ok;
+	unsigned int threadId = v.toUInt( &ok );
+	if ( !ok ) {
+	    throw runtime_error( "Failed to store entry in database: read non-numeric traced thread id from database - corrupt database?" );
+	}
+	cache( key, threadId );
+	return threadId;
     }
-    return threadId;
-}
+} threadCache;
 
 static unsigned int storeGroup( QSqlDatabase db, Transaction *transaction,
 				const QString &groupName,
@@ -284,24 +345,67 @@ static unsigned int storeGroup( QSqlDatabase db, Transaction *transaction,
     return groupId;
 }
 
-static unsigned int storeTracePoint( QSqlDatabase db, Transaction *transaction,
-				     unsigned int type,
-				     unsigned int pathId,
-				     unsigned long lineno,
-				     unsigned int functionId,
-				     unsigned int groupId )
+// ### some portable, ready-made tuple template type would be nice
+struct TracePointTuple
 {
-    QVariant v = transaction->exec( QString( "SELECT id FROM trace_point WHERE type=%1 AND path_id=%2 AND line=%3 AND function_id=%4 AND group_id=%5;" ).arg( type ).arg( pathId ).arg( lineno ).arg( functionId ).arg( groupId ) );
-    if ( !v.isValid() ) {
-	v = transaction->insert( QString( "INSERT INTO trace_point VALUES(NULL, %1, %2, %3, %4, %5);" ).arg( type ).arg( pathId ).arg( lineno ).arg( functionId ).arg( groupId ) );
+    unsigned int type;
+    unsigned int pathId;
+    unsigned long lineno;
+    unsigned int functionId;
+    unsigned int groupId;
+
+    bool operator<(const TracePointTuple &tp) const
+    {
+	return type < tp.type &&
+	    pathId < tp.pathId &&
+	    lineno < tp.lineno &&
+	    functionId < tp.functionId &&
+	    groupId < tp.groupId;
+    };
+};
+
+class TracePointCache : public StorageCache<TracePointTuple,
+					    unsigned int>
+{
+public:
+    unsigned int store( QSqlDatabase db, Transaction *transaction,
+			unsigned int type,
+			unsigned int pathId,
+			unsigned long lineno,
+			unsigned int functionId,
+			unsigned int groupId )
+    {
+	CacheKey key;
+	key.type = type;
+	key.pathId = pathId;
+	key.lineno = lineno;
+	key.functionId = functionId;
+	key.groupId = groupId;
+	unsigned int *cachedId = checkCache( key );
+	if ( cachedId )
+	    return *cachedId;
+	QVariant v = transaction->exec( QString( "SELECT id FROM trace_point WHERE type=%1 AND path_id=%2 AND line=%3 AND function_id=%4 AND group_id=%5;" ).arg( type ).arg( pathId ).arg( lineno ).arg( functionId ).arg( groupId ) );
+	if ( !v.isValid() ) {
+	    v = transaction->insert( QString( "INSERT INTO trace_point VALUES(NULL, %1, %2, %3, %4, %5);" ).arg( type ).arg( pathId ).arg( lineno ).arg( functionId ).arg( groupId ) );
+	}
+	bool ok;
+	unsigned int tracepointId = v.toUInt( &ok );
+	if ( !ok ) {
+	    throw runtime_error( "Failed to store entry in database: read non-numeric tracepoint id from database - corrupt database?" );
+	}
+	cache( key, tracepointId );
+	return tracepointId;
     }
-    bool ok;
-    unsigned int tracepointId = v.toUInt( &ok );
-    if ( !ok ) {
-	throw runtime_error( "Failed to store entry in database: read non-numeric tracepoint id from database - corrupt database?" );
-    }
-    return tracepointId;
-}
+} tracePointCache;
+
+struct TraceEntryTuple
+{
+    unsigned int threadId;
+    QDateTime timestamp;
+    int pointId;
+    QString message;
+    unsigned long stackPosition;
+};
 
 static unsigned int storeTraceEntry( QSqlDatabase db, Transaction *transaction,
 				     unsigned int threadId,
@@ -343,17 +447,17 @@ static void storeBacktrace( QSqlDatabase db, Transaction *transaction,
 
 static void storeEntry( QSqlDatabase db, Transaction *transaction, const TraceEntry &e )
 {
-    unsigned int pathId = storePath( db, transaction, e.path );
-    unsigned int functionId = storeFunction( db, transaction, e.function );
-    unsigned int processId = storeProcess( db, transaction, e.processName,
-					   e.pid, e.processStartTime );
-    unsigned int threadId = storeThread( db, transaction, processId, e.tid );
+    unsigned int pathId = pathCache.store( db, transaction, e.path );
+    unsigned int functionId = functionCache.store( db, transaction, e.function );
+    unsigned int processId = processCache.store( db, transaction, e.processName,
+						 e.pid, e.processStartTime );
+    unsigned int threadId = threadCache.store( db, transaction, processId, e.tid );
     unsigned int groupId = storeGroup( db, transaction,
 				       e.groupName,
 				       e.traceKeys );
-    unsigned int tracepointId = storeTracePoint( db, transaction,
-						 e.type, pathId, e.lineno,
-						 functionId, groupId );
+    unsigned int tracepointId = tracePointCache.store( db, transaction,
+						       e.type, pathId, e.lineno,
+						       functionId, groupId );
     unsigned int traceentryId = storeTraceEntry( db, transaction,
 						 threadId,
 						 e.timestamp,
@@ -516,13 +620,22 @@ static void archiveEntries( QSqlDatabase db, unsigned short percentage, const QS
         transaction.exec( QString( "DELETE FROM trace_entry WHERE id IN (SELECT id FROM trace_entry ORDER BY id LIMIT %1);" ).arg( numCopy ) );
 
         transaction.exec( QString( "DELETE FROM trace_point WHERE id NOT IN (SELECT trace_point_id FROM trace_entry);" ) );
+        tracePointCache.clear();
+
         transaction.exec( QString( "DELETE FROM function_name WHERE id NOT IN (SELECT function_id FROM trace_point);" ) );
+        functionCache.clear();
+
         transaction.exec( QString( "DELETE FROM path_name WHERE id NOT IN (SELECT path_id FROM trace_point);" ) );
+        pathCache.clear();
+
         transaction.exec( QString( "DELETE FROM trace_point_group WHERE id NOT IN (SELECT group_id FROM trace_point);" ) );
         traceKeyCache.clear();
 
         transaction.exec( QString( "DELETE FROM traced_thread WHERE id NOT IN (SELECT traced_thread_id FROM trace_entry);" ) );
+        threadCache.clear();
+
         transaction.exec( QString( "DELETE FROM process WHERE id NOT IN (SELECT process_id FROM traced_thread);" ) );
+        processCache.clear();
 
         transaction.exec( QString( "DELETE FROM variable WHERE trace_entry_id NOT IN (SELECT id FROM trace_entry);" ) );
         transaction.exec( QString( "DELETE FROM stackframe WHERE trace_entry_id NOT IN (SELECT id FROM trace_entry);" ) );
