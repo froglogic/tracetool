@@ -171,17 +171,18 @@ static bool getGroupId( QSqlDatabase db, Transaction *transaction, const QString
 class TraceKeyCache {
 public:
     void update( QSqlDatabase db, Transaction *transaction,
-                 const TraceEntry &e ) {
-        QList<TraceKey>::ConstIterator it, end = e.traceKeys.end();
-        for ( it = e.traceKeys.begin(); it != end; ++it ) {
+		 const QString &groupName,
+		 const QList<TraceKey> &traceKeys ) {
+        QList<TraceKey>::ConstIterator it, end = traceKeys.end();
+        for ( it = traceKeys.begin(); it != end; ++it ) {
             if ( m_map.find( (*it).name ) == m_map.end() ) {
                 registerGroupName( db, transaction, (*it).name );
             }
         }
         // in case the entry comes with a name not listed in the
         // AUT-side configuration file
-        if ( !e.groupName.isNull() && m_map.find( e.groupName ) == m_map.end() ) {
-            registerGroupName( db, transaction, e.groupName );
+        if ( !groupName.isNull() && m_map.find( groupName ) == m_map.end() ) {
+            registerGroupName( db, transaction, groupName );
         }
     }
     void clear() {
@@ -207,97 +208,160 @@ private:
     std::map<QString, unsigned int> m_map;
 } traceKeyCache;
 
-static void storeEntry( QSqlDatabase db, Transaction *transaction, const TraceEntry &e )
+static unsigned int storePath( QSqlDatabase db, Transaction *transaction,
+			       const QString &path )
 {
-    unsigned int pathId;
+    QVariant v = transaction->exec( QString( "SELECT id FROM path_name WHERE name=%1;" ).arg( Database::formatValue( db, path ) ) );
+    if ( !v.isValid() ) {
+	v = transaction->insert( QString( "INSERT INTO path_name VALUES(NULL, %1);" ).arg( Database::formatValue( db, path ) ) );
+    }
     bool ok;
-    {
-        QVariant v = transaction->exec( QString( "SELECT id FROM path_name WHERE name=%1;" ).arg( Database::formatValue( db, e.path ) ) );
-        if ( !v.isValid() ) {
-            v = transaction->insert( QString( "INSERT INTO path_name VALUES(NULL, %1);" ).arg( Database::formatValue( db, e.path ) ) );
-        }
-        pathId = v.toUInt( &ok );
-        if ( !ok ) {
-            throw runtime_error( "Failed to store entry in database: read non-numeric path id from database - corrupt database?" );
-        }
+    unsigned int pathId = v.toUInt( &ok );
+    if ( !ok ) {
+	throw runtime_error( "Failed to store entry in database: read non-numeric path id from database - corrupt database?" );
     }
+    return pathId;
+}
 
-    unsigned int functionId;
-    {
-        QVariant v = transaction->exec( QString( "SELECT id FROM function_name WHERE name=%1;" ).arg( Database::formatValue( db, e.function ) ) );
-        if ( !v.isValid() ) {
-            v = transaction->insert( QString( "INSERT INTO function_name VALUES(NULL, %1);" ).arg( Database::formatValue( db, e.function ) ) );
-        }
-        functionId = v.toUInt( &ok );
-        if ( !ok ) {
-            throw runtime_error( "Failed to store entry in database: read non-numeric function id from database - corrupt database?" );
-        }
+static unsigned int storeFunction( QSqlDatabase db, Transaction *transaction,
+				   const QString &function )
+{
+    QVariant v = transaction->exec( QString( "SELECT id FROM function_name WHERE name=%1;" ).arg( Database::formatValue( db, function ) ) );
+    if ( !v.isValid() ) {
+	v = transaction->insert( QString( "INSERT INTO function_name VALUES(NULL, %1);" ).arg( Database::formatValue( db, function ) ) );
     }
-
-    unsigned int processId;
-    {
-        QVariant v = transaction->exec( QString( "SELECT id FROM process WHERE pid=%1 AND start_time=%2;" ).arg( e.pid ).arg( Database::formatValue( db, e.processStartTime ) ) );
-        if ( !v.isValid() ) {
-            v = transaction->insert( QString( "INSERT INTO process VALUES(NULL, %1, %2, %3, 0);" ).arg( Database::formatValue( db, e.processName ) ).arg( e.pid ).arg( Database::formatValue( db, e.processStartTime ) ) );
-        }
-        processId = v.toUInt( &ok );
-        if ( !ok ) {
-            throw runtime_error( "Failed to store entry in database: read non-numeric process id from database - corrupt database?" );
-        }
+    bool ok;
+    unsigned int functionId = v.toUInt( &ok );
+    if ( !ok ) {
+	throw runtime_error( "Failed to store entry in database: read non-numeric function id from database - corrupt database?" );
     }
+    return functionId;
+}
 
-    unsigned int tracedThreadId;
-    {
-        QVariant v = transaction->exec( QString( "SELECT id FROM traced_thread WHERE process_id=%1 AND tid=%2;" ).arg( processId ).arg( e.tid ) );
-        if ( !v.isValid() ) {
-            v = transaction->insert( QString( "INSERT INTO traced_thread VALUES(NULL, %1, %2);" ).arg( processId ).arg( e.tid ) );
-        }
-        tracedThreadId = v.toUInt( &ok );
-        if ( !ok ) {
-            throw runtime_error( "Failed to store entry in database: read non-numeric traced thread id from database - corrupt database?" );
-        }
+static unsigned int storeProcess( QSqlDatabase db, Transaction *transaction,
+				  const QString &processName,
+				  unsigned int pid,
+				  const QDateTime &processStartTime )
+{
+    QVariant v = transaction->exec( QString( "SELECT id FROM process WHERE pid=%1 AND start_time=%2;" ).arg( pid ).arg( Database::formatValue( db, processStartTime ) ) );
+    if ( !v.isValid() ) {
+	v = transaction->insert( QString( "INSERT INTO process VALUES(NULL, %1, %2, %3, 0);" ).arg( Database::formatValue( db, processName ) ).arg( pid ).arg( Database::formatValue( db, processStartTime ) ) );
     }
+    bool ok;
+    unsigned int processId = v.toUInt( &ok );
+    if ( !ok ) {
+	throw runtime_error( "Failed to store entry in database: read non-numeric process id from database - corrupt database?" );
+    }
+    return processId;
+}
 
-    traceKeyCache.update( db, transaction, e );
+static unsigned int storeThread( QSqlDatabase db, Transaction *transaction,
+				 unsigned int processId,
+				 unsigned int tid )
+{
+    QVariant v = transaction->exec( QString( "SELECT id FROM traced_thread WHERE process_id=%1 AND tid=%2;" ).arg( processId ).arg( tid ) );
+    if ( !v.isValid() ) {
+	v = transaction->insert( QString( "INSERT INTO traced_thread VALUES(NULL, %1, %2);" ).arg( processId ).arg( tid ) );
+    }
+    bool ok;
+    unsigned int threadId = v.toUInt( &ok );
+    if ( !ok ) {
+	throw runtime_error( "Failed to store entry in database: read non-numeric traced thread id from database - corrupt database?" );
+    }
+    return threadId;
+}
+
+static unsigned int storeGroup( QSqlDatabase db, Transaction *transaction,
+				const QString &groupName,
+				const QList<TraceKey> &traceKeys )
+{
+    traceKeyCache.update( db, transaction, groupName, traceKeys );
 
     unsigned int groupId = 0;
-    if ( !e.groupName.isNull() ) {
-	groupId = traceKeyCache.fetch( e.groupName );
+    if ( !groupName.isNull() ) {
+	groupId = traceKeyCache.fetch( groupName );
     }
+    return groupId;
+}
 
-    unsigned int tracepointId;
-    {
-        QVariant v = transaction->exec( QString( "SELECT id FROM trace_point WHERE type=%1 AND path_id=%2 AND line=%3 AND function_id=%4 AND group_id=%5;" ).arg( e.type ).arg( pathId ).arg( e.lineno ).arg( functionId ).arg( groupId ) );
-        if ( !v.isValid() ) {
-            v = transaction->insert( QString( "INSERT INTO trace_point VALUES(NULL, %1, %2, %3, %4, %5);" ).arg( e.type ).arg( pathId ).arg( e.lineno ).arg( functionId ).arg( groupId ) );
-        }
-        tracepointId = v.toUInt( &ok );
-        if ( !ok ) {
-            throw runtime_error( "Failed to store entry in database: read non-numeric tracepoint id from database - corrupt database?" );
-        }
+static unsigned int storeTracePoint( QSqlDatabase db, Transaction *transaction,
+				     unsigned int type,
+				     unsigned int pathId,
+				     unsigned long lineno,
+				     unsigned int functionId,
+				     unsigned int groupId )
+{
+    QVariant v = transaction->exec( QString( "SELECT id FROM trace_point WHERE type=%1 AND path_id=%2 AND line=%3 AND function_id=%4 AND group_id=%5;" ).arg( type ).arg( pathId ).arg( lineno ).arg( functionId ).arg( groupId ) );
+    if ( !v.isValid() ) {
+	v = transaction->insert( QString( "INSERT INTO trace_point VALUES(NULL, %1, %2, %3, %4, %5);" ).arg( type ).arg( pathId ).arg( lineno ).arg( functionId ).arg( groupId ) );
     }
-
-    const unsigned int traceentryId = transaction->insert( QString( "INSERT INTO trace_entry VALUES(NULL, %1, %2, %3, %4, %5)" )
-                    .arg( tracedThreadId )
-                    .arg( Database::formatValue( db, e.timestamp ) )
-                    .arg( tracepointId )
-                    .arg( Database::formatValue( db, e.message ) )
-                    .arg( e.stackPosition ) ).toUInt();
-
-    {
-        QList<Variable>::ConstIterator it, end = e.variables.end();
-        for ( it = e.variables.begin(); it != end; ++it ) {
-            transaction->exec( QString( "INSERT INTO variable VALUES(%1, %2, %3, %4);" ).arg( traceentryId ).arg( Database::formatValue( db, it->name ) ).arg( Database::formatValue( db, it->value ) ).arg( it->type ) );
-        }
+    bool ok;
+    unsigned int tracepointId = v.toUInt( &ok );
+    if ( !ok ) {
+	throw runtime_error( "Failed to store entry in database: read non-numeric tracepoint id from database - corrupt database?" );
     }
+    return tracepointId;
+}
 
-    {
-        unsigned int depthCount = 0;
-        QList<StackFrame>::ConstIterator it, end = e.backtrace.end();
-        for ( it = e.backtrace.begin(); it != end; ++it, ++depthCount ) {
-            transaction->exec( QString( "INSERT INTO stackframe VALUES(%1, %2, %3, %4, %5, %6, %7);" ).arg( traceentryId ).arg( depthCount ).arg( Database::formatValue( db, it->module ) ).arg( Database::formatValue( db, it->function ) ).arg( it->functionOffset ).arg( Database::formatValue( db, it->sourceFile ) ).arg( it->lineNumber ) );
-        }
+static unsigned int storeTraceEntry( QSqlDatabase db, Transaction *transaction,
+				     unsigned int threadId,
+				     const QDateTime &timestamp,
+				     unsigned int pointId,
+				     const QString &message,
+				     unsigned long stackPosition )
+{
+    return transaction->insert( QString( "INSERT INTO trace_entry VALUES(NULL, %1, %2, %3, %4, %5)" )
+                    .arg( threadId )
+                    .arg( Database::formatValue( db, timestamp ) )
+                    .arg( pointId )
+                    .arg( Database::formatValue( db, message ) )
+                    .arg( stackPosition ) ).toUInt();
+}
+
+
+static void storeVariables( QSqlDatabase db, Transaction *transaction,
+			    unsigned int traceentryId,
+			    const QList<Variable> &variables )
+{
+    QList<Variable>::ConstIterator it, end = variables.end();
+    for ( it = variables.begin(); it != end; ++it ) {
+	transaction->exec( QString( "INSERT INTO variable VALUES(%1, %2, %3, %4);" ).arg( traceentryId ).arg( Database::formatValue( db, it->name ) ).arg( Database::formatValue( db, it->value ) ).arg( it->type ) );
     }
+}
+
+static void storeBacktrace( QSqlDatabase db, Transaction *transaction,
+			    unsigned int traceentryId,
+			    const QList<StackFrame> &backtrace )
+	
+{
+    unsigned int depthCount = 0;
+    QList<StackFrame>::ConstIterator it, end = backtrace.end();
+    for ( it = backtrace.begin(); it != end; ++it, ++depthCount ) {
+	transaction->exec( QString( "INSERT INTO stackframe VALUES(%1, %2, %3, %4, %5, %6, %7);" ).arg( traceentryId ).arg( depthCount ).arg( Database::formatValue( db, it->module ) ).arg( Database::formatValue( db, it->function ) ).arg( it->functionOffset ).arg( Database::formatValue( db, it->sourceFile ) ).arg( it->lineNumber ) );
+    }
+}
+
+static void storeEntry( QSqlDatabase db, Transaction *transaction, const TraceEntry &e )
+{
+    unsigned int pathId = storePath( db, transaction, e.path );
+    unsigned int functionId = storeFunction( db, transaction, e.function );
+    unsigned int processId = storeProcess( db, transaction, e.processName,
+					   e.pid, e.processStartTime );
+    unsigned int threadId = storeThread( db, transaction, processId, e.tid );
+    unsigned int groupId = storeGroup( db, transaction,
+				       e.groupName,
+				       e.traceKeys );
+    unsigned int tracepointId = storeTracePoint( db, transaction,
+						 e.type, pathId, e.lineno,
+						 functionId, groupId );
+    unsigned int traceentryId = storeTraceEntry( db, transaction,
+						 threadId,
+						 e.timestamp,
+						 tracepointId,
+						 e.message,
+						 e.stackPosition );
+    storeVariables( db, transaction, traceentryId, e.variables );
+    storeBacktrace( db, transaction, traceentryId, e.backtrace );
 }
 
 static QString archiveFileName( const QString &archiveDirName, const QString &currentFileName )
