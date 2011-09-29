@@ -10,7 +10,6 @@
 #include "lru_cache.h"
 
 #include <QDir>
-#include <QDomDocument>
 #include <QFile>
 #include <QFileInfo>
 #include <QSqlDatabase>
@@ -22,136 +21,6 @@
 #include <stdexcept>
 
 using namespace std;
-
-class XmlContentHandler : public QXmlDefaultHandler
-{
-public:
-    XmlContentHandler( Server *server ) : m_server( server ), m_inFrameElement( false ) { }
-
-    virtual bool startElement( const QString &ns, const QString &lName, const QString &qName, const QXmlAttributes &atts )
-    {
-        if ( lName == "traceentry" ) {
-            m_currentEntry = TraceEntry();
-            m_currentEntry.pid = atts.value( "pid" ).toUInt();
-            m_currentEntry.processStartTime = QDateTime::fromTime_t( atts.value( "process_starttime" ).toUInt() );
-            m_currentEntry.tid = atts.value( "tid" ).toUInt();
-            m_currentEntry.timestamp = QDateTime::fromTime_t( atts.value( "time" ).toUInt() );
-        } else if ( lName == "variable" ) {
-            m_currentVariable = Variable();
-            m_currentVariable.name = atts.value( "name" );
-            const QString typeStr = atts.value( "type" );
-            if ( typeStr == "string" ) {
-                m_currentVariable.type = TRACELIB_NAMESPACE_IDENT(VariableType)::String;
-            } else if ( typeStr == "number" ) {
-                m_currentVariable.type = TRACELIB_NAMESPACE_IDENT(VariableType)::Number;
-            } else if ( typeStr == "float" ) {
-                m_currentVariable.type = TRACELIB_NAMESPACE_IDENT(VariableType)::Float;
-            } else if ( typeStr == "boolean" ) {
-                m_currentVariable.type = TRACELIB_NAMESPACE_IDENT(VariableType)::Boolean;
-            }
-        } else if ( lName == "location" ) {
-            m_currentLineNo = atts.value( "lineno" ).toULong();
-        } else if ( lName == "frame" ) {
-            m_inFrameElement = true;
-            m_currentFrame = StackFrame();
-        } else if ( lName == "function" ) {
-            m_currentFrame.functionOffset = atts.value( "offset" ).toUInt();
-        } else if ( lName == "shutdownevent" ) {
-            m_currentShutdownEvent = ProcessShutdownEvent();
-            m_currentShutdownEvent.pid = atts.value( "pid" ).toUInt();
-            m_currentShutdownEvent.startTime = QDateTime::fromTime_t( atts.value( "starttime" ).toUInt() );
-            m_currentShutdownEvent.stopTime = QDateTime::fromTime_t( atts.value( "endtime" ).toUInt() );
-        } else if ( lName == "storageconfiguration" ) {
-            m_currentStorageConfig = StorageConfiguration();
-            m_currentStorageConfig.maximumSize = atts.value( "maxSize" ).toULong();
-            m_currentStorageConfig.shrinkBy = atts.value( "shrinkBy" ).toUInt();
-        } else if ( lName == "key" ) {
-            m_currentTraceKey = TraceKey();
-            m_currentTraceKey.enabled = atts.value( "enabled" ) == "true";
-        }
-        return true;
-    }
-
-    virtual bool characters( const QString &ch ) {
-        m_s += ch;
-        return true;
-    }
-
-    virtual bool endElement( const QString &ns, const QString &lName, const QString &qName )
-    {
-        if ( lName == "traceentry" ) {
-            m_server->handleTraceEntry( m_currentEntry );
-        } else if ( lName == "variable" ) {
-            m_currentVariable.value = m_s.trimmed();
-            m_currentEntry.variables.append( m_currentVariable );
-            m_s.clear();
-        } else if ( lName == "processname" ) {
-            m_currentEntry.processName = m_s.trimmed();
-            m_s.clear();
-        } else if ( lName == "stackposition" ) {
-            m_currentEntry.stackPosition = m_s.trimmed().toULong();
-            m_s.clear();
-        } else if ( lName == "type" ) {
-            m_currentEntry.type = m_s.trimmed().toUInt();
-            m_s.clear();
-        } else if ( lName == "location" ) {
-            if ( m_inFrameElement ) {
-                m_currentFrame.sourceFile = m_s.trimmed();
-                m_currentFrame.lineNumber = m_currentLineNo;
-            } else {
-                m_currentEntry.path = m_s.trimmed();
-                m_currentEntry.lineno = m_currentLineNo;
-            }
-            m_s.clear();
-        } else if ( lName == "group" ) {
-            m_currentEntry.groupName = m_s.trimmed();
-            m_s.clear();
-        } else if ( lName == "function" ) {
-            m_currentEntry.function = m_s.trimmed();
-            m_s.clear();
-        } else if ( lName == "message" ) {
-            m_currentEntry.message = m_s.trimmed();
-            m_s.clear();
-        } else if ( lName == "module" ) {
-            m_currentFrame.module = m_s.trimmed();
-            m_s.clear();
-        } else if ( lName == "function" ) {
-            m_currentFrame.function = m_s.trimmed();
-            m_s.clear();
-        } else if ( lName == "frame" ) {
-            m_inFrameElement = false;
-            m_currentEntry.backtrace.append( m_currentFrame );
-        } else if ( lName == "shutdownevent" ) {
-            m_currentShutdownEvent.name = m_s.trimmed();
-            m_s.clear();
-            m_server->handleShutdownEvent( m_currentShutdownEvent );
-        } else if ( lName == "key" ) {
-            m_currentTraceKey.name = m_s.trimmed();
-            m_s.clear();
-            m_currentEntry.traceKeys.append( m_currentTraceKey );
-        } else if ( lName == "storageconfiguration" ) {
-            m_currentStorageConfig.archiveDir = m_s.trimmed();
-            m_s.clear();
-            m_server->applyStorageConfiguration( m_currentStorageConfig );
-        }
-        return true;
-    }
-
-private:
-    XmlContentHandler( const XmlContentHandler &other ); // disabled
-    void operator=( const XmlContentHandler &rhs );
-
-    Server *m_server;
-    TraceEntry m_currentEntry;
-    Variable m_currentVariable;
-    QString m_s;
-    unsigned long m_currentLineNo;
-    StackFrame m_currentFrame;
-    bool m_inFrameElement;
-    ProcessShutdownEvent m_currentShutdownEvent;
-    StorageConfiguration m_currentStorageConfig;
-    TraceKey m_currentTraceKey;
-};
 
 static bool getGroupId( QSqlDatabase db, Transaction *transaction, const QString &name, unsigned int *id )
 {
@@ -208,6 +77,140 @@ private:
 
     std::map<QString, unsigned int> m_map;
 } traceKeyCache;
+
+XmlContentHandler::XmlContentHandler( Server *server )
+    : m_server( server ),
+    m_inFrameElement( false )
+{
+}
+
+void XmlContentHandler::addData( const QByteArray &data )
+{
+    m_xmlReader.addData( data );
+}
+
+void XmlContentHandler::continueParsing()
+{
+    while ( !m_xmlReader.atEnd() ) {
+        m_xmlReader.readNext();
+        switch ( m_xmlReader.tokenType( )) {
+            case QXmlStreamReader::StartElement:
+                handleStartElement();
+                break;
+            case QXmlStreamReader::Characters:
+                m_s = m_xmlReader.text().toString();
+                break;
+            case QXmlStreamReader::EndElement:
+                handleEndElement();
+                break;
+            default:
+                break;
+        }
+    }
+}
+
+void XmlContentHandler::handleStartElement()
+{
+    const QXmlStreamAttributes atts = m_xmlReader.attributes();
+    if ( m_xmlReader.name() == QLatin1String( "traceentry" ) ) {
+        m_currentEntry = TraceEntry();
+        m_currentEntry.pid = atts.value( QLatin1String( "pid" ) ).toString().toUInt();
+        m_currentEntry.processStartTime = QDateTime::fromTime_t( atts.value( QLatin1String( "process_starttime" ) ).toString().toUInt() );
+        m_currentEntry.tid = atts.value( QLatin1String( "tid" ) ).toString().toUInt();
+        m_currentEntry.timestamp = QDateTime::fromTime_t( atts.value( QLatin1String( "time" ) ).toString().toUInt() );
+    } else if ( m_xmlReader.name() == QLatin1String( "variable" ) ) {
+        m_currentVariable = Variable();
+        m_currentVariable.name = atts.value( QLatin1String( "name" ) ).toString();
+        const QStringRef typeStr = atts.value( QLatin1String( "type" ) );
+        if ( typeStr == QLatin1String( "string" ) ) {
+            m_currentVariable.type = TRACELIB_NAMESPACE_IDENT(VariableType)::String;
+        } else if ( typeStr == QLatin1String( "number" ) ) {
+            m_currentVariable.type = TRACELIB_NAMESPACE_IDENT(VariableType)::Number;
+        } else if ( typeStr == QLatin1String( "float" ) ) {
+            m_currentVariable.type = TRACELIB_NAMESPACE_IDENT(VariableType)::Float;
+        } else if ( typeStr == QLatin1String( "boolean" ) ) {
+            m_currentVariable.type = TRACELIB_NAMESPACE_IDENT(VariableType)::Boolean;
+        }
+    } else if ( m_xmlReader.name() == QLatin1String( "location" ) ) {
+        m_currentLineNo = atts.value( QLatin1String( "lineno" ) ).toString().toULong();
+    } else if ( m_xmlReader.name() == QLatin1String( "frame" ) ) {
+        m_inFrameElement = true;
+        m_currentFrame = StackFrame();
+    } else if ( m_xmlReader.name() == QLatin1String( "function" ) ) {
+        m_currentFrame.functionOffset = atts.value( QLatin1String( "offset" ) ).toString().toUInt();
+    } else if ( m_xmlReader.name() == QLatin1String( "shutdownevent" ) ) {
+        m_currentShutdownEvent = ProcessShutdownEvent();
+        m_currentShutdownEvent.pid = atts.value( QLatin1String( "pid" ) ).toString().toUInt();
+        m_currentShutdownEvent.startTime = QDateTime::fromTime_t( atts.value( QLatin1String( "starttime" ) ).toString().toUInt() );
+        m_currentShutdownEvent.stopTime = QDateTime::fromTime_t( atts.value( QLatin1String( "endtime" ) ).toString().toUInt() );
+    } else if ( m_xmlReader.name() == QLatin1String( "storageconfiguration" ) ) {
+        m_currentStorageConfig = StorageConfiguration();
+        m_currentStorageConfig.maximumSize = atts.value( QLatin1String( "maxSize" ) ).toString().toULong();
+        m_currentStorageConfig.shrinkBy = atts.value( QLatin1String( "shrinkBy" ) ).toString().toUInt();
+    } else if ( m_xmlReader.name() == QLatin1String( "key" ) ) {
+        m_currentTraceKey = TraceKey();
+        m_currentTraceKey.enabled = atts.value( QLatin1String( "enabled" ) ) == QLatin1String( "true" );
+    }
+}
+
+void XmlContentHandler::handleEndElement()
+{
+    if ( m_xmlReader.name() == QLatin1String( "traceentry" ) ) {
+        m_server->handleTraceEntry( m_currentEntry );
+    } else if ( m_xmlReader.name() == QLatin1String( "variable" ) ) {
+        m_currentVariable.value = m_s.trimmed();
+        m_currentEntry.variables.append( m_currentVariable );
+        m_s.clear();
+    } else if ( m_xmlReader.name() == QLatin1String( "processname" ) ) {
+        m_currentEntry.processName = m_s.trimmed();
+        m_s.clear();
+    } else if ( m_xmlReader.name() == QLatin1String( "stackposition" ) ) {
+        m_currentEntry.stackPosition = m_s.trimmed().toULong();
+        m_s.clear();
+    } else if ( m_xmlReader.name() == QLatin1String( "type" ) ) {
+        m_currentEntry.type = m_s.trimmed().toUInt();
+        m_s.clear();
+    } else if ( m_xmlReader.name() == QLatin1String( "location" ) ) {
+        if ( m_inFrameElement ) {
+            m_currentFrame.sourceFile = m_s.trimmed();
+            m_currentFrame.lineNumber = m_currentLineNo;
+        } else {
+            m_currentEntry.path = m_s.trimmed();
+            m_currentEntry.lineno = m_currentLineNo;
+        }
+        m_s.clear();
+    } else if ( m_xmlReader.name() == QLatin1String( "group" ) ) {
+        m_currentEntry.groupName = m_s.trimmed();
+        m_s.clear();
+    } else if ( m_xmlReader.name() == QLatin1String( "function" ) ) {
+        m_currentEntry.function = m_s.trimmed();
+        m_s.clear();
+    } else if ( m_xmlReader.name() == QLatin1String( "message" ) ) {
+        m_currentEntry.message = m_s.trimmed();
+        m_s.clear();
+    } else if ( m_xmlReader.name() == QLatin1String( "module" ) ) {
+        m_currentFrame.module = m_s.trimmed();
+        m_s.clear();
+    } else if ( m_xmlReader.name() == QLatin1String( "function" ) ) {
+        m_currentFrame.function = m_s.trimmed();
+        m_s.clear();
+    } else if ( m_xmlReader.name() == QLatin1String( "frame" ) ) {
+        m_inFrameElement = false;
+        m_currentEntry.backtrace.append( m_currentFrame );
+    } else if ( m_xmlReader.name() == QLatin1String( "shutdownevent" ) ) {
+        m_currentShutdownEvent.name = m_s.trimmed();
+        m_s.clear();
+        m_server->handleShutdownEvent( m_currentShutdownEvent );
+    } else if ( m_xmlReader.name() == QLatin1String( "key" ) ) {
+        m_currentTraceKey.name = m_s.trimmed();
+        m_s.clear();
+        m_currentEntry.traceKeys.append( m_currentTraceKey );
+    } else if ( m_xmlReader.name() == QLatin1String( "storageconfiguration" ) ) {
+        m_currentStorageConfig.archiveDir = m_s.trimmed();
+        m_s.clear();
+        m_server->applyStorageConfiguration( m_currentStorageConfig );
+    }
+}
 
 template <typename KeyType, typename IdType, int CacheSize = 10>
 class StorageCache
@@ -777,7 +780,7 @@ Server::Server( const QString &traceFile,
     : QObject( parent ),
       m_tcpServer( 0 ),
       m_db( database ),
-      m_xmlHandler( 0 ),
+      m_xmlHandler( this ),
       m_shrinkBy( 0 ),
       m_maximumSize( StorageConfiguration::UnlimitedTraceSize )
 {
@@ -794,12 +797,7 @@ Server::Server( const QString &traceFile,
     connect( m_guiServer, SIGNAL( newConnection() ), SLOT( handleNewGUIConnection() ) );
     m_guiServer->listen( QHostAddress::LocalHost, guiPort );
 
-    m_xmlHandler = new XmlContentHandler( this );
-    m_xmlReader.setContentHandler( m_xmlHandler );
-    m_xmlReader.setErrorHandler( m_xmlHandler );
-
-    m_xmlInput.setData( QString::fromUtf8( "<toplevel_trace_element>" ) );
-    m_xmlReader.parse( &m_xmlInput, true );
+    m_xmlHandler.addData( "<toplevel_trace_element>" );
 }
 
 // duplicated in gui/mainwindow.cpp
@@ -836,11 +834,6 @@ QByteArray serializeGUIClientData( ServerDatagramType type ) {
 template <typename T>
 QByteArray serializeGUIClientData( ServerDatagramType type, const T &v ) {
     return serializeDatagram( type, &v );
-}
-
-Server::~Server()
-{
-    delete m_xmlHandler;
 }
 
 void Server::handleTraceEntry( const TraceEntry &entry )
@@ -943,12 +936,11 @@ void Server::applyStorageConfiguration( const StorageConfiguration &cfg )
     m_archiveDir = cfg.archiveDir;
 }
 
-
 void Server::handleIncomingData( const QByteArray &xmlData )
 {
     try {
-        m_xmlInput.setData( xmlData );
-        m_xmlReader.parseContinue();
+        m_xmlHandler.addData( xmlData );
+        m_xmlHandler.continueParsing();
     } catch ( const runtime_error &e ) {
         qWarning() << e.what();
     }

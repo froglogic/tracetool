@@ -13,8 +13,7 @@
 #include <QTcpServer>
 #include <QTcpSocket>
 #include <QThread>
-#include <QXmlInputSource>
-#include <QXmlSimpleReader>
+#include <QXmlStreamReader>
 
 #include "database.h"
 
@@ -101,7 +100,31 @@ private:
     QTcpSocket *m_sock;
 };
 
-class XmlContentHandler;
+class XmlContentHandler
+{
+public:
+    XmlContentHandler( Server *server );
+
+    void addData( const QByteArray &data );
+
+    void continueParsing();
+
+private:
+    void handleStartElement();
+    void handleEndElement();
+
+    QXmlStreamReader m_xmlReader;
+    Server *m_server;
+    TraceEntry m_currentEntry;
+    Variable m_currentVariable;
+    QString m_s;
+    unsigned long m_currentLineNo;
+    StackFrame m_currentFrame;
+    bool m_inFrameElement;
+    ProcessShutdownEvent m_currentShutdownEvent;
+    StorageConfiguration m_currentStorageConfig;
+    TraceKey m_currentTraceKey;
+};
 
 class Server : public QObject
 {
@@ -112,7 +135,6 @@ public:
     Server( const QString &traceFile,
             QSqlDatabase database, unsigned short port, unsigned short guiPort,
             QObject *parent = 0 );
-    virtual ~Server();
 
 public slots:
     void handleIncomingData(const QByteArray &data);
@@ -137,9 +159,7 @@ private:
     QTcpServer *m_guiServer;
     ServerSocket *m_tcpServer;
     QSqlDatabase m_db;
-    XmlContentHandler *m_xmlHandler;
-    QXmlSimpleReader m_xmlReader;
-    QXmlInputSource m_xmlInput;
+    XmlContentHandler m_xmlHandler;
     bool m_receivedData;
     QString m_traceFile;
     QList<GUIConnection *> m_guiConnections;
