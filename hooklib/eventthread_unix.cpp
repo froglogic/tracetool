@@ -478,7 +478,7 @@ void EventThreadUnix::stop()
 
 ThreadId EventThreadUnix::threadId() const
 {
-    return d->event_list_thread;
+    return reinterpret_cast<ThreadId>( d->event_list_thread );
 }
 
 int EventThreadUnix::processEvents( EventContext *ctx )
