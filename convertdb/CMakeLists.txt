@@ -12,3 +12,5 @@ INSTALL(TARGETS convertdb RUNTIME DESTINATION bin
                           LIBRARY DESTINATION lib
                           ARCHIVE DESTINATION lib COMPONENT devel)
 
+# Make convertdb self-contained wrt. Qt
+INSTALL_QT4_EXECUTABLE("bin/convertdb" "qsqlite" "" "" "" TRUE devel)

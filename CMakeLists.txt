@@ -10,6 +10,7 @@ SET(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" ${PROJECT_SOURCE_DIR}/cmake/modules
 
 FIND_PACKAGE(Qt4 4.6 COMPONENTS QtCore QtNetwork QtXml QtSql REQUIRED)
 INCLUDE(${QT_USE_FILE})
+INCLUDE(DeployQt4)
 # Used in the cmake-config.h.in file
 set(HAVE_QT 1)
 
@@ -60,32 +61,6 @@ INSTALL(EXPORT tracelibTargets
               DESTINATION lib/cmake/tracelib COMPONENT devel
               NAMESPACE tracelibImport__
               FILE tracelibTargets.cmake)
-
-if(WIN32)
-    IF(CMAKE_BUILD_TYPE MATCHES "Rel")
-    INSTALL(FILES
-            ${QT_BINARY_DIR}/QtCore4.dll
-            ${QT_BINARY_DIR}/QtGui4.dll
-            ${QT_BINARY_DIR}/QtNetwork4.dll
-            ${QT_BINARY_DIR}/QtSql4.dll
-            ${QT_BINARY_DIR}/QtXml4.dll
-            DESTINATION bin)
-    INSTALL(FILES
-            ${QT_PLUGINS_DIR}/sqldrivers/qsqlite4.dll
-            DESTINATION bin/sqldrivers)
-    ELSE(CMAKE_BUILD_TYPE MATCHES "Rel")
-    INSTALL(FILES
-            ${QT_BINARY_DIR}/QtCored4.dll
-            ${QT_BINARY_DIR}/QtGuid4.dll
-            ${QT_BINARY_DIR}/QtNetworkd4.dll
-            ${QT_BINARY_DIR}/QtSqld4.dll
-            ${QT_BINARY_DIR}/QtXmld4.dll
-            DESTINATION bin)
-    INSTALL(FILES
-            ${QT_PLUGINS_DIR}/sqldrivers/qsqlited4.dll
-            DESTINATION bin/sqldrivers)
-    ENDIF(CMAKE_BUILD_TYPE MATCHES "Rel")
-ENDIF()
 
 ## Package Creation Setup
 # See http://www.paraview.org/Wiki/CMake:CPackConfiguration for documentation of variables

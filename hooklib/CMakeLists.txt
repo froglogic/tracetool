@@ -137,4 +137,3 @@ INSTALL(FILES ${TRACELIB_PUBLIC_HEADERS}
         variabletypes.def
         tracepointtypes.def
         DESTINATION include/tracelib COMPONENT devel)
-
