@@ -13,6 +13,9 @@ INCLUDE(${QT_USE_FILE})
 INCLUDE(DeployQt4)
 # Used in the cmake-config.h.in file
 set(HAVE_QT 1)
+IF(WIN32)
+    SET(execext ".exe")
+ENDIF()
 
 INCLUDE_DIRECTORIES(${PROJECT_BINARY_DIR})
 
