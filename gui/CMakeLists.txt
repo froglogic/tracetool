@@ -72,4 +72,4 @@ INSTALL(TARGETS tracegui RUNTIME DESTINATION bin
                          LIBRARY DESTINATION lib
                          ARCHIVE DESTINATION lib COMPONENT devel)
 # Make tracegui self-contained wrt. Qt
-INSTALL_QT4_EXECUTABLE("bin/tracegui${execext}" "qsqlite" "" "" "plugins" TRUE devel)
+INSTALL_QT4_EXECUTABLE("bin/tracegui${execext}" "qsqlite" "" "${QT_BINARY_DIR}" "plugins" TRUE devel)

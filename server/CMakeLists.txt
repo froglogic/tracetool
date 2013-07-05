@@ -21,4 +21,4 @@ INSTALL(TARGETS traced RUNTIME DESTINATION bin
                        LIBRARY DESTINATION lib COMPONENT devel)
 
 # Make traced self-contained wrt. Qt
-INSTALL_QT4_EXECUTABLE("bin/traced${execext}" "qsqlite" "" "" "plugins" TRUE devel)
+INSTALL_QT4_EXECUTABLE("bin/traced${execext}" "qsqlite" "" "${QT_BINARY_DIR}" "plugins" TRUE devel)
