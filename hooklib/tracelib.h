@@ -100,6 +100,12 @@
 
 TRACELIB_NAMESPACE_BEGIN
 
+template <class Iterator>
+void deleteRange( Iterator begin, Iterator end )
+{
+    while ( begin != end ) delete *begin++;
+}
+
 inline std::string variableValueAsString( const VariableValue &v )
 {
     const size_t bufsize = VariableValue::convertToString( v, NULL, 0 );

@@ -5,6 +5,7 @@
 
 #include "filter.h"
 #include "tracepoint.h"
+#include "tracelib.h" // for deleteRange
 
 #include "3rdparty/wildcmp/wildcmp.h"
 #include "3rdparty/pcre-8.10/pcrecpp.h"
@@ -12,12 +13,6 @@
 #include <assert.h>
 
 using namespace std;
-
-template <class Iterator>
-void deleteRange( Iterator begin, Iterator end )
-{
-    while ( begin != end ) delete *begin++;
-}
 
 TRACELIB_NAMESPACE_BEGIN
 

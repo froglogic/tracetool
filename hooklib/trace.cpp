@@ -11,18 +11,13 @@
 #include "serializer.h"
 #include "tracepoint.h"
 #include "errorlog.h"
+#include "tracelib.h" // for deleteRange
 
 #include <cstdlib>
 #include <ctime>
 #include <fstream>
 
 using namespace std;
-
-template <class Iterator>
-void deleteRange( Iterator begin, Iterator end )
-{
-    while ( begin != end ) delete *begin++;
-}
 
 TRACELIB_NAMESPACE_BEGIN
 
