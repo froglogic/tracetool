@@ -133,20 +133,11 @@ IF(WIN32)
     SET_TARGET_PROPERTIES(tracelib PROPERTIES DEBUG_POSTFIX d)
 ENDIF(WIN32)
 
-# Static version
-ADD_LIBRARY(tracelib_s ${TRACELIB_SOURCES})
-TARGET_LINK_LIBRARIES(tracelib_s ${TRACELIB_LIBRARIES})
-# tracelib does not re-expose anything in its ABI from the libs it links against
-TARGET_LINK_LIBRARIES(tracelib_s LINK_INTERFACE_LIBRARIES "")
-IF(WIN32)
-    SET_TARGET_PROPERTIES(tracelib_s PROPERTIES DEBUG_POSTFIX d)
-ENDIF(WIN32)
-
 # Installation
-INSTALL(TARGETS tracelib tracelib_s EXPORT tracelibTargets
-                                    RUNTIME DESTINATION bin
-                                    LIBRARY DESTINATION lib
-                                    ARCHIVE DESTINATION lib COMPONENT devel)
+INSTALL(TARGETS tracelib EXPORT tracelibTargets
+                         RUNTIME DESTINATION bin
+                         LIBRARY DESTINATION lib
+                         ARCHIVE DESTINATION lib COMPONENT devel)
 
 INSTALL(FILES ${TRACELIB_PUBLIC_HEADERS}
         variabletypes.def
