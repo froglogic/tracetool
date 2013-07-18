@@ -44,6 +44,13 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.4.6)
 
 SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake) # for FindReadline.cmake
 
+IF(MSVC)
+    #on windows we link the C runtime statically so that our trace library
+    #does not interfere with the users c runtime
+    string(TOUPPER ${CMAKE_BUILD_TYPE} UC_BUILD_TYPE)
+    string(REPLACE "/MD" "/MT" "CMAKE_C_FLAGS_${UC_BUILD_TYPE}" "${CMAKE_C_FLAGS_${UC_BUILD_TYPE}}")
+    string(REPLACE "/MD" "/MT" "CMAKE_CXX_FLAGS_${UC_BUILD_TYPE}" "${CMAKE_CXX_FLAGS_${UC_BUILD_TYPE}}")
+ENDIF(MSVC)
 # external packages
 FIND_PACKAGE( BZip2 )
 FIND_PACKAGE( ZLIB )

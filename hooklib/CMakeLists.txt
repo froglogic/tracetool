@@ -4,6 +4,11 @@ INCLUDE(CheckIncludeFile)
 IF(MSVC)
     ADD_DEFINITIONS(-D_CRT_SECURE_NO_DEPRECATE)
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc")
+    #on windows we link the C runtime statically so that our trace library
+    #does not interfere with the users c runtime
+    string(TOUPPER ${CMAKE_BUILD_TYPE} UC_BUILD_TYPE)
+    string(REPLACE "/MD" "/MT" CMAKE_CXX_FLAGS_${UC_BUILD_TYPE} ${CMAKE_CXX_FLAGS_${UC_BUILD_TYPE}})
+    string(REPLACE "/MD" "/MT" "CMAKE_C_FLAGS_${UC_BUILD_TYPE}" "${CMAKE_C_FLAGS_${UC_BUILD_TYPE}}")
 ENDIF(MSVC)
 
 IF(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD")
