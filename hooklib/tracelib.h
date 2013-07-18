@@ -46,6 +46,8 @@
         TRACELIB_NAMESPACE_IDENT(VariableSnapshot) *variableSnapshot = new TRACELIB_NAMESPACE_IDENT(VariableSnapshot); \
         (*variableSnapshot) << vars; \
         TRACELIB_NAMESPACE_IDENT(visitTracePoint)( &tracePoint, (msg), variableSnapshot ); \
+	deleteRange( variableSnapshot->begin(), variableSnapshot->end() ); \
+	delete variableSnapshot; \
     } \
 }
 #  define TRACELIB_VISIT_TRACEPOINT(type, key, msg) \

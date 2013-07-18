@@ -97,10 +97,8 @@ TraceEntry::TraceEntry( const TracePoint *tracePoint_, const char *msg )
 
 TraceEntry::~TraceEntry()
 {
-    if ( variables ) {
-        deleteRange( variables->begin(), variables->end() );
-    }
-    delete variables;
+    // variables are deleted on the caller side of the macros so the delete happens with the
+    // same C runtime as the allocation
     delete backtrace;
 }
 
@@ -284,10 +282,6 @@ void Trace::visitTracePoint( const TracePoint *tracePoint,
 
     if ( tracePoint->variableSnapshotEnabled ) {
         entry.variables = variables;
-    } else if ( variables ) {
-	// otherwise deleted in ~TraceEntry()
-	deleteRange( variables->begin(), variables->end() );
-	delete variables;
     }
 
     addEntry( entry );
