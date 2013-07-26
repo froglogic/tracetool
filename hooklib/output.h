@@ -39,6 +39,19 @@ public:
     virtual void write( const std::vector<char> &data );
 };
 
+class FileOutput : public Output
+{
+    std::string m_filename;
+    FILE* m_file;
+    ErrorLog *m_errorLog;
+public:
+    FileOutput( ErrorLog *erroLog, const std::string& filename );
+    virtual ~FileOutput();
+    virtual void write( const std::vector<char> &data );
+    virtual bool open();
+    virtual bool canWrite() const;
+};
+
 class MultiplexingOutput : public Output
 {
 public:

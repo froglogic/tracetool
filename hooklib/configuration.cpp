@@ -463,6 +463,37 @@ Output *Configuration::createOutputFromElement( TiXmlElement *e )
         return new StdoutOutput;
     }
 
+    if ( outputType == "file" ) {
+        std::string filename;
+        for ( TiXmlElement *optionElement = e->FirstChildElement(); optionElement; optionElement = optionElement->NextSiblingElement() ) {
+            if ( optionElement->ValueStr() != "option" ) {
+                m_errorLog->write( "Tracelib Configuration: while reading %s: Unexpected element '%s' in <output> element of type file found.", m_fileName.c_str(), optionElement->Value() );
+                return 0;
+            }
+
+            string optionName;
+            if ( optionElement->QueryStringAttribute( "name", &optionName ) != TIXML_SUCCESS ) {
+                m_errorLog->write( "Tracelib Configuration: while reading %s: Failed to read name property of <option> element; ignoring this.", m_fileName.c_str() );
+                continue;
+            }
+
+            if ( optionName == "filename" ) {
+                filename = getText( optionElement ); // XXX Consider encoding issues
+            } else {
+                m_errorLog->write( "Tracelib Configuration: while reading %s: Unknown <option> element with name '%s' found in file output; ignoring this.", m_fileName.c_str(), optionName.c_str() );
+                continue;
+            }
+        }
+
+        if ( filename.empty() ) {
+            m_errorLog->write( "Tracelib Configuration: while reading %s: No 'filename' option specified for <output> element of type filename.", m_fileName.c_str() );
+            return 0;
+        }
+
+        m_errorLog->write( "Tracelib Configuration: using file output to %s", filename.c_str() );
+        return new FileOutput( m_errorLog, filename );
+    }
+
     if ( outputType == "tcp" ) {
         string hostname;
         unsigned short port = TRACELIB_DEFAULT_PORT;
