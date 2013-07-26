@@ -47,14 +47,9 @@ SET(TRACELIB_PUBLIC_HEADERS
         tracelib.h
         tracepoint.h
         tracelib_config.h
-        variabledumping.h)
-
-IF(QT4_FOUND)
-    SET(TRACELIB_PUBLIC_HEADERS
-            ${TRACELIB_PUBLIC_HEADERS}
-            tracelib_qt.h
-            variabledumping_qt.h)
-ENDIF(QT4_FOUND)
+        variabledumping.h
+        tracelib_qt.h
+        variabledumping_qt.h)
 
 SET(TRACELIB_SOURCES
         trace.cpp
