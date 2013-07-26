@@ -76,6 +76,10 @@ size_t VariableValue::convertToString( const VariableValue &v, char *buf, size_t
     return bufsize;
 }
 
+VariableValue::~VariableValue()
+{
+}
+
 VariableType::Value VariableValue::type() const
 {
     return m_type;
