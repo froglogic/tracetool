@@ -93,6 +93,25 @@ set(CPACK_SYSTEM_NAME "${CMAKE_SYSTEM_NAME}${PACKAGE_BITNESS}")
 SET(CPACK_PACKAGE_VERSION_PATCH ${TRACELIB_VERSION_PATCH})
 SET(CPACK_PACKAGE_VENDOR "froglogic GmbH")
 SET(CPACK_SOURCE_IGNORE_FILES "/build/;/.git/;.gitignore")
+# Setup components stuff
+# Enable all archive-package-generators to use componentized install
+# the default is to do all-in-one install packages since thats the backwards-compatible behaviour
+# TODO: Enabling the componentized install here currently breaks the build because for some reason
+# the COMPONENT keyword in the install rules is ignored by cmake for some of the targets.
+#set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
+set(CPACK_COMPONENTS_ALL applications library examples documentation)
+set(CPACK_COMPONENT_LIBRARY_GROUP "Development")
+set(CPACK_COMPONENT_EXAMPLES_GROUP "Development")
+set(CPACK_COMPONENT_GROUP_DEVELOPMENT_DESCRIPTION "Components needed to use trace library in an application and examples")
+set(CPACK_COMPONENT_APPLICATIONS_GROUP "Runtime")
+set(CPACK_COMPONENT_APPLICATIONS_DISPLAY_NAME "Applications")
+set(CPACK_COMPONENT_APPLICATIONS_DESCRIPTION "Applications to receive trace output, analyze it and convert between formats")
+set(CPACK_COMPONENT_EXAMPLES_DISPLAY_NAME "Examples")
+set(CPACK_COMPONENT_EXAMPLES_DESCRIPTION "Example applications showing the usage of the Trace library")
+set(CPACK_COMPONENT_LIBRARY_DISPLAY_NAME "Hook Library")
+set(CPACK_COMPONENT_LIBRARY_DESCRIPTION "Trace library and headers to link into the application")
+set(CPACK_COMPONENT_DOCUMENTATION_DISPLAY_NAME "Documentation")
+set(CPACK_COMPONENT_DOCUMENTATION_DESCRIPTION "Documentation for the Trace library")
 IF(WIN32)
     SET(CPACK_GENERATOR "ZIP")
     SET(CPACK_SOURCE_GENERATOR "ZIP")
