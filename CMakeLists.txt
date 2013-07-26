@@ -89,9 +89,11 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     set(PACKAGE_BITNESS "64")
   endif()
 endif()
+
 set(CPACK_SYSTEM_NAME "${CMAKE_SYSTEM_NAME}${PACKAGE_BITNESS}")
 SET(CPACK_PACKAGE_VERSION_PATCH ${TRACELIB_VERSION_PATCH})
 SET(CPACK_PACKAGE_VENDOR "froglogic GmbH")
+SET(CPACK_PACKAGE_DESCRIPTION "Trace library, documentation and runtime applications")
 SET(CPACK_SOURCE_IGNORE_FILES "/build/;/.git/;.gitignore")
 # Setup components stuff
 # Enable all archive-package-generators to use componentized install
