@@ -10,7 +10,7 @@ TARGET_LINK_LIBRARIES(convertdb ${QT_LIBRARIES})
 
 INSTALL(TARGETS convertdb RUNTIME DESTINATION bin
                           LIBRARY DESTINATION lib
-                          ARCHIVE DESTINATION lib COMPONENT devel)
+                          ARCHIVE DESTINATION lib COMPONENT applications)
 
 # Make convertdb self-contained wrt. Qt
-INSTALL_QT4_EXECUTABLE("bin/convertdb${execext}" "qsqlite" "" "${QT_BINARY_DIR}" "plugins" TRUE devel)
+INSTALL_QT4_EXECUTABLE("bin/convertdb${execext}" "qsqlite" "" "${QT_BINARY_DIR}" "plugins" TRUE applications)

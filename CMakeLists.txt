@@ -57,7 +57,7 @@ IF(DOXYGEN_FOUND)
     ADD_CUSTOM_TARGET(api-docs ALL ${DOXYGEN_EXECUTABLE} \"${PROJECT_BINARY_DIR}/Doxyfile\" COMMENT "Generating API documentation")
 
     # Installation of api docs
-    INSTALL(DIRECTORY ${PROJECT_BINARY_DIR}/doc/html DESTINATION share/doc/tracelib COMPONENT devel)
+    INSTALL(DIRECTORY ${PROJECT_BINARY_DIR}/doc/html DESTINATION share/doc/tracelib COMPONENT documentation)
 ENDIF(DOXYGEN_FOUND)
 
 # Generate CMake config-Module
@@ -66,9 +66,9 @@ CONFIGURE_FILE(${PROJECT_SOURCE_DIR}/tracelibConfigVersion.cmake.in ${PROJECT_BI
 CONFIGURE_FILE(${PROJECT_SOURCE_DIR}/tracelibConfig.cmake.in ${PROJECT_BINARY_DIR}/tracelibConfig.cmake @ONLY)
 INSTALL(FILES ${PROJECT_BINARY_DIR}/tracelibConfig.cmake
               ${PROJECT_BINARY_DIR}/tracelibConfigVersion.cmake
-              DESTINATION lib/cmake/tracelib COMPONENT devel)
+              DESTINATION lib/cmake/tracelib COMPONENT library)
 INSTALL(EXPORT tracelibTargets
-              DESTINATION lib/cmake/tracelib COMPONENT devel
+              DESTINATION lib/cmake/tracelib COMPONENT library
               NAMESPACE tracelibImport__
               FILE tracelibTargets.cmake)
 

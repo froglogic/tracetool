@@ -18,7 +18,8 @@ TARGET_LINK_LIBRARIES(traced ${QT_LIBRARIES})
 # Installation
 INSTALL(TARGETS traced RUNTIME DESTINATION bin
                        ARCHIVE DESTINATION lib
-                       LIBRARY DESTINATION lib COMPONENT devel)
+                       LIBRARY DESTINATION lib
+                       COMPONENT applications)
 
 # Make traced self-contained wrt. Qt
-INSTALL_QT4_EXECUTABLE("bin/traced${execext}" "qsqlite" "" "${QT_BINARY_DIR}" "plugins" TRUE devel)
+INSTALL_QT4_EXECUTABLE("bin/traced${execext}" "qsqlite" "" "${QT_BINARY_DIR}" "plugins" TRUE applications)
