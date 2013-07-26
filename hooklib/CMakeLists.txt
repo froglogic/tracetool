@@ -40,6 +40,10 @@ IF(NOT WIN32)
     IF(NOT HAVE_BFD_H OR NOT HAVE_DEMANGLE_H OR NOT LIB_BFD)
         MESSAGE(WARNING "Without the bfd.h, demangle.h or libbfd backtraces will not contain source file name information. Install the missing SDK (e.g. binutils-dev) to enable this feature.")
     ENDIF(NOT HAVE_BFD_H OR NOT HAVE_DEMANGLE_H OR NOT LIB_BFD)
+    find_package(Threads)
+    if(NOT CMAKE_USE_PTHREADS_INIT )
+        message(WARNING "No pthreads found, linking will likely fail.")
+    endif()
 ENDIF(NOT WIN32)
 
 SET(TRACELIB_PUBLIC_HEADERS
@@ -110,7 +114,7 @@ ELSE(WIN32)
     IF(LIB_EXECINFO)
         SET(TRACELIB_LIBRARIES ${TRACELIB_LIBRARIES} ${LIB_EXECINFO})
     ENDIF(LIB_EXECINFO)
-    SET(TRACELIB_LIBRARIES ${TRACELIB_LIBRARIES} pthread )
+    SET(TRACELIB_LIBRARIES ${TRACELIB_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} )
 ENDIF(WIN32)
 
 # # Export whitelist-separated string with public headers which is used by

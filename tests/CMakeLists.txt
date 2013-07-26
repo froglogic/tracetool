@@ -35,8 +35,11 @@ ELSE(WIN32)
 ENDIF(WIN32)
 
 IF(NOT WIN32)
-    ADD_EXECUTABLE(test_eventthreadunix test_eventthreadunix.cpp)
-    TARGET_LINK_LIBRARIES(test_eventthreadunix tracelib)
+    find_package(Threads REQUIRED)
+    if( ${CMAKE_USE_PTHREADS_INIT} )
+        ADD_EXECUTABLE(test_eventthreadunix test_eventthreadunix.cpp)
+        TARGET_LINK_LIBRARIES(test_eventthreadunix tracelib ${CMAKE_THREAD_LIBS_INIT})
+    endif()
 ENDIF(NOT WIN32)
 
 FIND_PACKAGE(Qt4 4.6 COMPONENTS QtGui QtCore QtSql QtNetwork QtXml QtSql REQUIRED)
