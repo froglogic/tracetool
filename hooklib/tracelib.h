@@ -119,7 +119,7 @@ class StringBuilder
 public:
     StringBuilder() { }
 
-    inline operator const char * const() {
+    inline operator const char *() {
         m_s = m_stream.str();
         return m_s.c_str();
     }
