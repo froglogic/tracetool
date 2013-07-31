@@ -98,9 +98,7 @@ SET(CPACK_SOURCE_IGNORE_FILES "/build/;/.git/;.gitignore")
 # Setup components stuff
 # Enable all archive-package-generators to use componentized install
 # the default is to do all-in-one install packages since thats the backwards-compatible behaviour
-# TODO: Enabling the componentized install here currently breaks the build because for some reason
-# the COMPONENT keyword in the install rules is ignored by cmake for some of the targets.
-#set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
+set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
 set(CPACK_COMPONENTS_ALL applications library examples documentation)
 set(CPACK_COMPONENT_LIBRARY_GROUP "Development")
 set(CPACK_COMPONENT_EXAMPLES_GROUP "Development")

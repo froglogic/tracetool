@@ -134,8 +134,8 @@ ENDIF(WIN32)
 
 # Installation
 INSTALL(TARGETS tracelib EXPORT tracelibTargets
-                         RUNTIME DESTINATION bin
-                         LIBRARY DESTINATION lib
+                         RUNTIME DESTINATION bin COMPONENT library
+                         LIBRARY DESTINATION lib COMPONENT library
                          ARCHIVE DESTINATION lib COMPONENT library)
 
 INSTALL(FILES ${TRACELIB_PUBLIC_HEADERS}

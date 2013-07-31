@@ -68,8 +68,8 @@ ADD_EXECUTABLE(tracegui ${GUI_SOURCES} ${GUI_MOC_SOURCES} ${GUI_UI_HDRS} ${GUI_R
 TARGET_LINK_LIBRARIES(tracegui ${QT_LIBRARIES})
 
 # Installation
-INSTALL(TARGETS tracegui RUNTIME DESTINATION bin
-                         LIBRARY DESTINATION lib
+INSTALL(TARGETS tracegui RUNTIME DESTINATION bin COMPONENT applications
+                         LIBRARY DESTINATION lib COMPONENT applications
                          ARCHIVE DESTINATION lib COMPONENT applications)
 # Make tracegui self-contained wrt. Qt
 INSTALL_QT4_EXECUTABLE("bin/tracegui${execext}" "qsqlite" "" "${QT_BINARY_DIR}" "plugins" TRUE applications)

@@ -8,8 +8,8 @@ TARGET_LINK_LIBRARIES(convertdb ${QT_LIBRARIES})
 
 # Installation
 
-INSTALL(TARGETS convertdb RUNTIME DESTINATION bin
-                          LIBRARY DESTINATION lib
+INSTALL(TARGETS convertdb RUNTIME DESTINATION bin COMPONENT applications
+                          LIBRARY DESTINATION lib COMPONENT applications
                           ARCHIVE DESTINATION lib COMPONENT applications)
 
 # Make convertdb self-contained wrt. Qt
