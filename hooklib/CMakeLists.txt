@@ -36,7 +36,14 @@ IF(NOT WIN32)
     CHECK_INCLUDE_FILE(sys/inotify.h HAVE_INOTIFY_H)
     CHECK_INCLUDE_FILE(bfd.h HAVE_BFD_H)
     CHECK_INCLUDE_FILE(demangle.h HAVE_DEMANGLE_H)
+    # Switch preference of library suffixes to ensure we look for the static bfd
+    # first and prefer that. Unfortunately the bfd library is installed with its
+    # version in the filename so linking it means having to have the same bfd version
+    # on all target systems
+    set(origSuffixes "${CMAKE_FIND_LIBRARY_SUFFIXES}")
+    set(CMAKE_FIND_LIBRARY_SUFFIXES ".a" ".so")
     FIND_LIBRARY(LIB_BFD bfd)
+    set(CMAKE_FIND_LIBRARY_SUFFIXES "${origSuffixes}")
     IF(NOT HAVE_BFD_H OR NOT HAVE_DEMANGLE_H OR NOT LIB_BFD)
         MESSAGE(WARNING "Without the bfd.h, demangle.h or libbfd backtraces will not contain source file name information. Install the missing SDK (e.g. binutils-dev) to enable this feature.")
     ENDIF(NOT HAVE_BFD_H OR NOT HAVE_DEMANGLE_H OR NOT LIB_BFD)
