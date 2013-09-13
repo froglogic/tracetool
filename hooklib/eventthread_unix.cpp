@@ -478,7 +478,10 @@ void EventThreadUnix::stop()
 
 ThreadId EventThreadUnix::threadId() const
 {
-    return reinterpret_cast<ThreadId>( d->event_list_thread );
+    // pthread_t should be considered an opaque type, so this may
+    // not compile at all if it is a plain struct. Unfortunately
+    // supporting that would require extensive changes to the codebase
+    return (ThreadId)d->event_list_thread;
 }
 
 int EventThreadUnix::processEvents( EventContext *ctx )
