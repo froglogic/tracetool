@@ -90,6 +90,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   endif()
 endif()
 
+set(CPACK_COMPONENT_INCLUDE_TOPLEVEL_DIRECTORY 1) # Make sure to get top-level directory even when using component packages
 set(CPACK_SYSTEM_NAME "${CMAKE_SYSTEM_NAME}${PACKAGE_BITNESS}")
 SET(CPACK_PACKAGE_VERSION_PATCH ${TRACELIB_VERSION_PATCH})
 SET(CPACK_PACKAGE_VENDOR "froglogic GmbH")
