@@ -55,6 +55,9 @@ IF (FALSE)
     ADD_DEFINITIONS(-DHAVE_MODELTEST)
 ENDIF()
 
+# Make sure QtGui is available by finding Qt again
+FIND_PACKAGE(Qt4 4.6 COMPONENTS QtCore QtNetwork QtXml QtSql QtGui REQUIRED)
+
 QT4_WRAP_CPP(GUI_MOC_SOURCES ${GUI_MOCABLES})
 QT4_WRAP_UI(GUI_UI_HDRS ${GUI_UIS} )
 QT4_ADD_RESOURCES(GUI_RCC_SRCS ${GUI_RCCS})
@@ -62,14 +65,16 @@ QT4_CREATE_TRANSLATION( GUI_QM ${GUI_SOURCES} ${GUI_RCCS} ${GUI_UIS} ${GUI_TS} )
 
 # Locate generated ui_*.f files in build directory
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}
-                    ${CMAKE_CURRENT_SOURCE_DIR})
+                    ${CMAKE_CURRENT_SOURCE_DIR}
+                    ${QT_QTGUI_INCLUDE_DIR})
 
-ADD_EXECUTABLE(tracegui ${GUI_SOURCES} ${GUI_MOC_SOURCES} ${GUI_UI_HDRS} ${GUI_RCC_SRCS} ${GUI_QM})
-TARGET_LINK_LIBRARIES(tracegui ${QT_LIBRARIES})
+ADD_EXECUTABLE(tracegui WIN32 MACOSX_BUNDLE ${GUI_SOURCES} ${GUI_MOC_SOURCES} ${GUI_UI_HDRS} ${GUI_RCC_SRCS} ${GUI_QM})
+TARGET_LINK_LIBRARIES(tracegui ${QT_LIBRARIES} ${QT_QTGUI_LIBRARY})
 
 # Installation
 INSTALL(TARGETS tracegui RUNTIME DESTINATION bin COMPONENT applications
                          LIBRARY DESTINATION lib COMPONENT applications
+                         BUNDLE  DESTINATION bin COMPONENT applications
                          ARCHIVE DESTINATION lib COMPONENT applications)
 # Make tracegui self-contained wrt. Qt
 INSTALL_QT4_EXECUTABLE("bin/tracegui${execext}" "qsqlite" "" "${QT_BINARY_DIR}" "plugins" TRUE applications)

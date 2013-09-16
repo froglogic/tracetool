@@ -10,7 +10,7 @@ SET(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" ${PROJECT_SOURCE_DIR}/cmake/modules
 OPTION(HOOKLIB_ONLY "Build only the hook library" OFF)
 
 if(NOT HOOKLIB_ONLY)
-    FIND_PACKAGE(Qt4 4.6 COMPONENTS QtCore QtNetwork QtXml QtSql QtGui REQUIRED)
+    FIND_PACKAGE(Qt4 4.6 COMPONENTS QtCore QtNetwork QtXml QtSql REQUIRED)
     INCLUDE(${QT_USE_FILE})
     INCLUDE(DeployQt4)
     # Used in the cmake-config.h.in file
