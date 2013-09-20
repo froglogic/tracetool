@@ -20,6 +20,8 @@ else()
 endif()
 IF(WIN32)
     SET(execext ".exe")
+elseif(APPLE)
+    set(execext ".app")
 ENDIF()
 
 INCLUDE_DIRECTORIES(${PROJECT_BINARY_DIR})
