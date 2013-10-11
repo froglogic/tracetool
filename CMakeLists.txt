@@ -84,11 +84,11 @@ endif()
 set(PACKAGE_BITNESS "")
 # At least on my linux system CMake does not append -i686 to system name and even if it would
 # the value would be wrong. So use sizeof(void*) to add 32/64 to the package name
-if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux" OR CMAKE_SYSTEM_NAME STREQUAL "Windows")
   if(CMAKE_SIZEOF_VOID_P EQUAL 4)
-    set(PACKAGE_BITNESS "32")
+    set(PACKAGE_BITNESS "-x86")
   else()
-    set(PACKAGE_BITNESS "64")
+    set(PACKAGE_BITNESS "-x64")
   endif()
 endif()
 
