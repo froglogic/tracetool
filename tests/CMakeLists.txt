@@ -6,6 +6,14 @@ INCLUDE_DIRECTORIES(
 
 ADD_DEFINITIONS(-DTRACELIB_EXPORT= -DPCRE_STATIC -D_CRT_SECURE_NO_WARNINGS)
 
+# PCRE is linked with /MT so all executables linking to directly also need to use MT so do this for the whole dir for now.
+IF(MSVC)
+    #on windows we link the C runtime statically so that our trace library
+    #does not interfere with the users c runtime
+    string(TOUPPER ${CMAKE_BUILD_TYPE} UC_BUILD_TYPE)
+    string(REPLACE "/MD" "/MT" "CMAKE_C_FLAGS_${UC_BUILD_TYPE}" "${CMAKE_C_FLAGS_${UC_BUILD_TYPE}}")
+    string(REPLACE "/MD" "/MT" "CMAKE_CXX_FLAGS_${UC_BUILD_TYPE}" "${CMAKE_CXX_FLAGS_${UC_BUILD_TYPE}}")
+ENDIF(MSVC)
 ADD_EXECUTABLE(test_filter
         test_filter.cpp
         ../hooklib/filter.cpp
