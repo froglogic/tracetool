@@ -128,9 +128,9 @@ public:
         return m_s.c_str();
     }
 
-    template <class T>
-    StringBuilder &operator<<( const T &v ) {
-        return *this << convertVariable( v );
+    StringBuilder &operator<<( const VariableValue &v ) {
+        m_stream << variableValueAsString( v );
+        return *this;
     }
 
 private:
@@ -141,10 +141,9 @@ private:
     std::ostringstream m_stream;
 };
 
-template <>
-inline StringBuilder &StringBuilder::operator<<( const VariableValue &v ) {
-    m_stream << variableValueAsString( v );
-    return *this;
+template <class T>
+inline StringBuilder &operator<<( StringBuilder &lhs, const T &v ) {
+    return lhs << convertVariable( rhs );
 }
 
 TRACELIB_EXPORT bool advanceVisit( TracePoint *tracePoint );
@@ -158,9 +157,9 @@ public:
     inline TracePointVisitor( TracePoint *tracePoint ) : m_tracePoint( tracePoint ) { }
     inline ~TracePointVisitor() { visitTracePoint( m_tracePoint, m_stream.str().c_str(), 0 ); }
 
-    template <class T>
-    inline TracePointVisitor &operator<<( const T &v ) {
-        return *this << convertVariable( v );
+    inline TracePointVisitor &operator<<( const VariableValue &v ) {
+        m_stream << variableValueAsString( v );
+        return *this;
     }
 
 private:
@@ -171,10 +170,9 @@ private:
     std::ostringstream m_stream;
 };
 
-template <>
-inline TracePointVisitor &TracePointVisitor::operator<<( const VariableValue &v ) {
-    m_stream << variableValueAsString( v );
-    return *this;
+template <class T>
+inline TracePointVisitor &operator<<( TracePointVisitor &lhs, const T &rhs ) {
+    return lhs << convertVariable( rhs );
 }
 
 class WatchPointVisitor {
