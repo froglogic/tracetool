@@ -142,7 +142,7 @@ private:
 };
 
 template <class T>
-inline StringBuilder &operator<<( StringBuilder &lhs, const T &v ) {
+inline StringBuilder &operator<<( StringBuilder &lhs, const T &rhs ) {
     return lhs << convertVariable( rhs );
 }
 
