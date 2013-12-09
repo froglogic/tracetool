@@ -108,7 +108,7 @@
  *
  * \sa TRACELIB_NAMESPACE_BEGIN TRACELIB_NAMESPACE_END
  */
-#define TRACELIB_NAMESPACE_IDENT(x) ea::trace::x
+#define TRACELIB_NAMESPACE_IDENT(x) froglogic::tracelib::x
 
 /**
  * @brief Opens the namespace which contains all the tracelib symbols.
