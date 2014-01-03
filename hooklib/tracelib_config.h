@@ -137,7 +137,7 @@
  *
  * \sa TRACELIB_NAMESPACE_END TRACELIB_NAMESPACE_IDENT
  */
-#define TRACELIB_NAMESPACE_BEGIN namespace ea { namespace trace {
+#define TRACELIB_NAMESPACE_BEGIN namespace froglogic { namespace tracelib {
 
 /**
  * @brief Closes the namespace which contains all the tracelib symbols.
