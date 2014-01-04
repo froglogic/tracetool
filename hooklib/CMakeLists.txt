@@ -36,6 +36,12 @@ IF(NOT WIN32)
     CHECK_INCLUDE_FILE(sys/inotify.h HAVE_INOTIFY_H)
     CHECK_INCLUDE_FILE(bfd.h HAVE_BFD_H)
     CHECK_INCLUDE_FILE(demangle.h HAVE_DEMANGLE_H)
+    # In newer Debian's demangle.h and the libiberty library are separated into
+    # their own package and have a dedicated include dir
+    if(NOT HAVE_DEMANGLE_H)
+        find_path(LIBIBERTY_INCLUDE_DIR NAMES demangle.h PATH_SUFFIXES libiberty)
+        find_library(LIBIBERTY_LIBRARIES iberty)
+    endif()
     # Switch preference of library suffixes to ensure we look for the static bfd
     # first and prefer that. Unfortunately the bfd library is installed with its
     # version in the filename so linking it means having to have the same bfd version
@@ -44,9 +50,9 @@ IF(NOT WIN32)
     set(CMAKE_FIND_LIBRARY_SUFFIXES ".a" ".so")
     FIND_LIBRARY(LIB_BFD bfd)
     set(CMAKE_FIND_LIBRARY_SUFFIXES "${origSuffixes}")
-    IF(NOT HAVE_BFD_H OR NOT HAVE_DEMANGLE_H OR NOT LIB_BFD)
+    IF(NOT HAVE_BFD_H OR NOT (HAVE_DEMANGLE_H OR (LIBIBERTY_INCLUDE_DIR AND LIBIBERTY_LIBRARIES) ) OR NOT LIB_BFD)
         MESSAGE(WARNING "Without the bfd.h, demangle.h or libbfd backtraces will not contain source file name information. Install the missing SDK (e.g. binutils-dev) to enable this feature.")
-    ENDIF(NOT HAVE_BFD_H OR NOT HAVE_DEMANGLE_H OR NOT LIB_BFD)
+    ENDIF()
     find_package(Threads)
     if(NOT CMAKE_USE_PTHREADS_INIT )
         message(WARNING "No pthreads found, linking will likely fail.")
@@ -118,12 +124,18 @@ ELSE(WIN32)
     IF(LIB_BFD)
         SET(TRACELIB_LIBRARIES ${TRACELIB_LIBRARIES} ${LIB_BFD})
     ENDIF(LIB_BFD)
+    if(LIBIBERTY_LIBRARIES)
+        set(TRACELIB_LIBRARIES ${TRACELIB_LIBRARIES} ${LIBIBERTY_LIBRARIES})
+    endif()
     IF(LIB_EXECINFO)
         SET(TRACELIB_LIBRARIES ${TRACELIB_LIBRARIES} ${LIB_EXECINFO})
     ENDIF(LIB_EXECINFO)
     SET(TRACELIB_LIBRARIES ${TRACELIB_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} )
 ENDIF(WIN32)
 
+if(LIBIBERTY_INCLUDE_DIR)
+    include_directories(${LIBIBERTY_INCLUDE_DIR})
+endif()
 # # Export whitelist-separated string with public headers which is used by
 # # Doxygen
 # FOREACH(ARG ${TRACELIB_PUBLIC_HEADERS})
