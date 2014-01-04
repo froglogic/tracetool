@@ -136,6 +136,7 @@ ENDIF(WIN32)
 if(LIBIBERTY_INCLUDE_DIR)
     include_directories(${LIBIBERTY_INCLUDE_DIR})
 endif()
+
 # # Export whitelist-separated string with public headers which is used by
 # # Doxygen
 # FOREACH(ARG ${TRACELIB_PUBLIC_HEADERS})
@@ -144,9 +145,7 @@ endif()
 # SET(TRACELIB_PUBLIC_HEADERS_WS "${TRACELIB_PUBLIC_HEADERS_WS}" PARENT_SCOPE)
 
 ADD_LIBRARY(tracelib SHARED ${TRACELIB_SOURCES})
-TARGET_LINK_LIBRARIES(tracelib ${TRACELIB_LIBRARIES})
-# tracelib does not re-expose anything in its ABI from the libs it links against
-TARGET_LINK_LIBRARIES(tracelib LINK_INTERFACE_LIBRARIES "")
+TARGET_LINK_LIBRARIES(tracelib LINK_PRIVATE ${TRACELIB_LIBRARIES})
 IF(WIN32)
     SET_TARGET_PROPERTIES(tracelib PROPERTIES DEBUG_POSTFIX d)
 ENDIF(WIN32)

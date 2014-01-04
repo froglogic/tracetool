@@ -1,4 +1,4 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8.9)
 PROJECT(tracelib)
 
 # call in tests/CMakeFiles.txt should suffice but the tests target is
