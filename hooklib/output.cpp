@@ -27,6 +27,7 @@ void StdoutOutput::write( const vector<char> &data )
     vector<char> nullTerminatedData = data;
     nullTerminatedData.push_back( '\0' );
     fprintf(stdout, "%s\n", &nullTerminatedData[0]);
+    fflush(stdout);
 }
 
 FileOutput::FileOutput( ErrorLog *errorLog, const string& filename )
@@ -65,6 +66,7 @@ void FileOutput::write( const vector<char> &data )
         vector<char> nullTerminatedData = data;
         nullTerminatedData.push_back( '\0' );
         fprintf( m_file, "%s\n", &nullTerminatedData[0] );
+        fflush( m_file );
     }
 }
 
