@@ -38,35 +38,66 @@
 #define TRACELIB_TOKEN_GLUE_(x, y) x ## y
 #define TRACELIB_TOKEN_GLUE(x, y) TRACELIB_TOKEN_GLUE_(x, y)
 
+
 /* The three core macros which actually expand to C++ code; all other macros
  * simply call these. They are no-ops in case TRACELIB_DISABLE_TRACE_CODE is
  * defined.
  */
 #ifndef TRACELIB_DISABLE_TRACE_CODE
-#  define TRACELIB_VISIT_TRACEPOINT_VARS(key, vars, msg) \
-{ \
+#  define TRACELIB_CREATE_MESSAGE_VAR(msg) \
+        TRACELIB_NAMESPACE_IDENT(StringBuilder) msgBuilder; \
+        msgBuilder << msg; \
+
+// Helper to avoid duplicated code in TRACEPOINT_VARS_MSG and TRACEPOINT_VARS_NOMSG
+#  define TRACELIB_VISIT_TRACEPOINT_VARS_BEGIN(key, vars) \
     static TRACELIB_NAMESPACE_IDENT(TracePoint) tracePoint(TRACELIB_NAMESPACE_IDENT(TracePointType)::Watch, TRACELIB_CURRENT_FILE_NAME, TRACELIB_CURRENT_LINE_NUMBER, TRACELIB_CURRENT_FUNCTION_NAME, key); \
     if ( TRACELIB_NAMESPACE_IDENT(advanceVisit)( &tracePoint ) ) { \
         TRACELIB_NAMESPACE_IDENT(VariableSnapshot) *variableSnapshot = new TRACELIB_NAMESPACE_IDENT(VariableSnapshot); \
-        (*variableSnapshot) << vars; \
+        (*variableSnapshot) << vars;
+#  define TRACELIB_VISIT_TRACEPOINT_VARS_END(msg) \
         TRACELIB_NAMESPACE_IDENT(visitTracePoint)( &tracePoint, (msg), variableSnapshot ); \
-	deleteRange( variableSnapshot->begin(), variableSnapshot->end() ); \
-	delete variableSnapshot; \
+        deleteRange( variableSnapshot->begin(), variableSnapshot->end() ); \
+        delete variableSnapshot; \
     } \
-}
-#  define TRACELIB_VISIT_TRACEPOINT(type, key, msg) \
+
+#  define TRACELIB_VISIT_TRACEPOINT_VARS_MSG(key, vars, msg) \
 { \
+    TRACELIB_VISIT_TRACEPOINT_VARS_BEGIN(key, vars) \
+    TRACELIB_CREATE_MESSAGE_VAR(msg) \
+    TRACELIB_VISIT_TRACEPOINT_VARS_END(msgBuilder) \
+}
+#  define TRACELIB_VISIT_TRACEPOINT_VARS_NOMSG(key, vars) \
+{ \
+    TRACELIB_VISIT_TRACEPOINT_VARS_BEGIN(key, vars) \
+    TRACELIB_VISIT_TRACEPOINT_VARS_END(0) \
+}
+
+// Helper to avoid duplicated code in TRACEPOINT_MSG and TRACEPOINT_NOMSG
+#  define TRACELIB_VISIT_TRACEPOINT_BEGIN(type, key) \
     static TRACELIB_NAMESPACE_IDENT(TracePoint) tracePoint(type, TRACELIB_CURRENT_FILE_NAME, TRACELIB_CURRENT_LINE_NUMBER, TRACELIB_CURRENT_FUNCTION_NAME, key); \
-    if ( TRACELIB_NAMESPACE_IDENT(advanceVisit)( &tracePoint ) ) { \
+    if ( TRACELIB_NAMESPACE_IDENT(advanceVisit)( &tracePoint ) ) {
+#  define TRACELIB_VISIT_TRACEPOINT_END(msg) \
         TRACELIB_NAMESPACE_IDENT(visitTracePoint)( &tracePoint, msg ); \
-    } \
+    }
+#  define TRACELIB_VISIT_TRACEPOINT_MSG(type, key, msg) \
+{ \
+    TRACELIB_VISIT_TRACEPOINT_BEGIN(type, key) \
+    TRACELIB_CREATE_MESSAGE_VAR(msg) \
+    TRACELIB_VISIT_TRACEPOINT_END(msgBuilder) \
+}
+#  define TRACELIB_VISIT_TRACEPOINT_NOMSG(type, key) \
+{ \
+    TRACELIB_VISIT_TRACEPOINT_BEGIN(type, key) \
+    TRACELIB_VISIT_TRACEPOINT_END(0) \
 }
 #  define TRACELIB_VISIT_TRACEPOINT_STREAM(VisitorType, type, key) \
     static TRACELIB_NAMESPACE_IDENT(TracePoint) TRACELIB_TOKEN_GLUE(tracePoint, TRACELIB_CURRENT_LINE_NUMBER)( (type), TRACELIB_CURRENT_FILE_NAME, TRACELIB_CURRENT_LINE_NUMBER, TRACELIB_CURRENT_FUNCTION_NAME, (key) ); TRACELIB_NAMESPACE_IDENT(VisitorType) TRACELIB_TOKEN_GLUE(tracePointVisitor, TRACELIB_CURRENT_LINE_NUMBER)( &TRACELIB_TOKEN_GLUE(tracePoint, TRACELIB_CURRENT_LINE_NUMBER) ); if ( TRACELIB_NAMESPACE_IDENT(advanceVisit)( &TRACELIB_TOKEN_GLUE(tracePoint, TRACELIB_CURRENT_LINE_NUMBER) ) ) (TRACELIB_TOKEN_GLUE(tracePointVisitor, TRACELIB_CURRENT_LINE_NUMBER))
 #  define TRACELIB_VAR_IMPL(v) TRACELIB_NAMESPACE_IDENT(makeConverter)(#v, v)
 #else
-#  define TRACELIB_VISIT_TRACEPOINT_VARS(key, vars, msg) (void)0;
-#  define TRACELIB_VISIT_TRACEPOINT(type, key, msg) (void)0;
+#  define TRACELIB_VISIT_TRACEPOINT_VARS_MSG(key, vars, msg) (void)0;
+#  define TRACELIB_VISIT_TRACEPOINT_VARS_NOMSG(key, vars) (void)0;
+#  define TRACELIB_VISIT_TRACEPOINT_NOMSG(type, key) (void)0;
+#  define TRACELIB_VISIT_TRACEPOINT_MSG(type, key, msg) (void)0;
 #  define TRACELIB_VISIT_TRACEPOINT_STREAM(VisitorType, type, key) if (false) (TRACELIB_NAMESPACE_IDENT(VisitorType)( NULL ))
 #  define TRACELIB_VAR_IMPL(v) NULL
 #endif
@@ -75,25 +106,25 @@
  * in tracelib_config.h; these macros are just convenience wrappers around
  * the above core macros.
  */
-#define TRACELIB_DEBUG_IMPL                   TRACELIB_VISIT_TRACEPOINT(TRACELIB_NAMESPACE_IDENT(TracePointType)::Debug, 0, 0)
-#define TRACELIB_DEBUG_MSG_IMPL(msg)          TRACELIB_VISIT_TRACEPOINT(TRACELIB_NAMESPACE_IDENT(TracePointType)::Debug, 0, TRACELIB_NAMESPACE_IDENT(StringBuilder)() << msg)
-#define TRACELIB_DEBUG_KEY_IMPL(key)          TRACELIB_VISIT_TRACEPOINT(TRACELIB_NAMESPACE_IDENT(TracePointType)::Debug, key, 0)
-#define TRACELIB_DEBUG_KEY_MSG_IMPL(key, msg) TRACELIB_VISIT_TRACEPOINT(TRACELIB_NAMESPACE_IDENT(TracePointType)::Debug, key, TRACELIB_NAMESPACE_IDENT(StringBuilder)() << msg)
+#define TRACELIB_DEBUG_IMPL                   TRACELIB_VISIT_TRACEPOINT_NOMSG(TRACELIB_NAMESPACE_IDENT(TracePointType)::Debug, 0)
+#define TRACELIB_DEBUG_MSG_IMPL(msg)          TRACELIB_VISIT_TRACEPOINT_MSG(TRACELIB_NAMESPACE_IDENT(TracePointType)::Debug, 0, msg)
+#define TRACELIB_DEBUG_KEY_IMPL(key)          TRACELIB_VISIT_TRACEPOINT_NOMSG(TRACELIB_NAMESPACE_IDENT(TracePointType)::Debug, key)
+#define TRACELIB_DEBUG_KEY_MSG_IMPL(key, msg) TRACELIB_VISIT_TRACEPOINT_MSG(TRACELIB_NAMESPACE_IDENT(TracePointType)::Debug, key, msg)
 
-#define TRACELIB_ERROR_IMPL                   TRACELIB_VISIT_TRACEPOINT(TRACELIB_NAMESPACE_IDENT(TracePointType)::Error, 0, 0)
-#define TRACELIB_ERROR_MSG_IMPL(msg)          TRACELIB_VISIT_TRACEPOINT(TRACELIB_NAMESPACE_IDENT(TracePointType)::Error, 0, TRACELIB_NAMESPACE_IDENT(StringBuilder)() << msg)
-#define TRACELIB_ERROR_KEY_IMPL(key)          TRACELIB_VISIT_TRACEPOINT(TRACELIB_NAMESPACE_IDENT(TracePointType)::Error, key, 0)
-#define TRACELIB_ERROR_KEY_MSG_IMPL(key, msg) TRACELIB_VISIT_TRACEPOINT(TRACELIB_NAMESPACE_IDENT(TracePointType)::Error, key, TRACELIB_NAMESPACE_IDENT(StringBuilder)() << msg)
+#define TRACELIB_ERROR_IMPL                   TRACELIB_VISIT_TRACEPOINT_NOMSG(TRACELIB_NAMESPACE_IDENT(TracePointType)::Error, 0)
+#define TRACELIB_ERROR_MSG_IMPL(msg)          TRACELIB_VISIT_TRACEPOINT_MSG(TRACELIB_NAMESPACE_IDENT(TracePointType)::Error, 0, msg)
+#define TRACELIB_ERROR_KEY_IMPL(key)          TRACELIB_VISIT_TRACEPOINT_NOMSG(TRACELIB_NAMESPACE_IDENT(TracePointType)::Error, key)
+#define TRACELIB_ERROR_KEY_MSG_IMPL(key, msg) TRACELIB_VISIT_TRACEPOINT_MSG(TRACELIB_NAMESPACE_IDENT(TracePointType)::Error, key, msg)
 
-#define TRACELIB_TRACE_IMPL                   TRACELIB_VISIT_TRACEPOINT(TRACELIB_NAMESPACE_IDENT(TracePointType)::Log, 0, 0)
-#define TRACELIB_TRACE_MSG_IMPL(msg)          TRACELIB_VISIT_TRACEPOINT(TRACELIB_NAMESPACE_IDENT(TracePointType)::Log, 0, TRACELIB_NAMESPACE_IDENT(StringBuilder)() << msg)
-#define TRACELIB_TRACE_KEY_IMPL(key)          TRACELIB_VISIT_TRACEPOINT(TRACELIB_NAMESPACE_IDENT(TracePointType)::Log, key, 0)
-#define TRACELIB_TRACE_KEY_MSG_IMPL(key, msg) TRACELIB_VISIT_TRACEPOINT(TRACELIB_NAMESPACE_IDENT(TracePointType)::Log, key, TRACELIB_NAMESPACE_IDENT(StringBuilder)() << msg)
+#define TRACELIB_TRACE_IMPL                   TRACELIB_VISIT_TRACEPOINT_NOMSG(TRACELIB_NAMESPACE_IDENT(TracePointType)::Log, 0)
+#define TRACELIB_TRACE_MSG_IMPL(msg)          TRACELIB_VISIT_TRACEPOINT_MSG(TRACELIB_NAMESPACE_IDENT(TracePointType)::Log, 0, msg)
+#define TRACELIB_TRACE_KEY_IMPL(key)          TRACELIB_VISIT_TRACEPOINT_NOMSG(TRACELIB_NAMESPACE_IDENT(TracePointType)::Log, key)
+#define TRACELIB_TRACE_KEY_MSG_IMPL(key, msg) TRACELIB_VISIT_TRACEPOINT_MSG(TRACELIB_NAMESPACE_IDENT(TracePointType)::Log, key, msg)
 
-#define TRACELIB_WATCH_IMPL(vars)                   TRACELIB_VISIT_TRACEPOINT_VARS(0, vars, 0)
-#define TRACELIB_WATCH_MSG_IMPL(msg, vars)          TRACELIB_VISIT_TRACEPOINT_VARS(0, vars, TRACELIB_NAMESPACE_IDENT(StringBuilder)() << msg)
-#define TRACELIB_WATCH_KEY_IMPL(key, vars)          TRACELIB_VISIT_TRACEPOINT_VARS(key, vars, 0)
-#define TRACELIB_WATCH_KEY_MSG_IMPL(key, msg, vars) TRACELIB_VISIT_TRACEPOINT_VARS(key, vars, TRACELIB_NAMESPACE_IDENT(StringBuilder)() << msg)
+#define TRACELIB_WATCH_IMPL(vars)                   TRACELIB_VISIT_TRACEPOINT_VARS_NOMSG(0, vars)
+#define TRACELIB_WATCH_MSG_IMPL(msg, vars)          TRACELIB_VISIT_TRACEPOINT_VARS_MSG(0, vars, msg)
+#define TRACELIB_WATCH_KEY_IMPL(key, vars)          TRACELIB_VISIT_TRACEPOINT_VARS_NOMSG(key, vars)
+#define TRACELIB_WATCH_KEY_MSG_IMPL(key, msg, vars) TRACELIB_VISIT_TRACEPOINT_VARS_MSG(key, vars, msg)
 
 #define TRACELIB_VALUE_IMPL(v) #v << "=" << v
 
