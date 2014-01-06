@@ -91,9 +91,9 @@
 #define TRACELIB_TRACE_KEY_MSG_IMPL(key, msg) TRACELIB_VISIT_TRACEPOINT(TRACELIB_NAMESPACE_IDENT(TracePointType)::Log, key, TRACELIB_NAMESPACE_IDENT(StringBuilder)() << msg)
 
 #define TRACELIB_WATCH_IMPL(vars)                   TRACELIB_VISIT_TRACEPOINT_VARS(0, vars, 0)
-#define TRACELIB_WATCH_MSG_IMPL(msg, vars)          TRACELIB_VISIT_TRACEPOINT_VARS(0, vars, TRACELIB_NAMESPACE_IDENT(StringBuilder)() << TRACELIB_NAMESPACE_IDENT(convertVariable)(msg))
+#define TRACELIB_WATCH_MSG_IMPL(msg, vars)          TRACELIB_VISIT_TRACEPOINT_VARS(0, vars, TRACELIB_NAMESPACE_IDENT(StringBuilder)() << msg)
 #define TRACELIB_WATCH_KEY_IMPL(key, vars)          TRACELIB_VISIT_TRACEPOINT_VARS(key, vars, 0)
-#define TRACELIB_WATCH_KEY_MSG_IMPL(key, msg, vars) TRACELIB_VISIT_TRACEPOINT_VARS(key, vars, TRACELIB_NAMESPACE_IDENT(StringBuilder)() << TRACELIB_NAMESPACE_IDENT(convertVariable)(msg))
+#define TRACELIB_WATCH_KEY_MSG_IMPL(key, msg, vars) TRACELIB_VISIT_TRACEPOINT_VARS(key, vars, TRACELIB_NAMESPACE_IDENT(StringBuilder)() << msg)
 
 #define TRACELIB_VALUE_IMPL(v) #v << "=" << v
 
