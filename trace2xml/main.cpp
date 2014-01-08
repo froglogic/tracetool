@@ -198,7 +198,7 @@ static bool toXml(const QSqlDatabase db, FILE *output, QString *errMsg)
             getVariablesQuery.finish();
         }
 
-        fprintf(output, traceentryTpl1);
+        fprintf(output, "%s", traceentryTpl1);
     }
     resultSet.finish();
 
