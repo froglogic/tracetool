@@ -95,16 +95,10 @@ static void test_getCurrentProcessStartTime()
 {
     {
         sleepMilliSeconds(1000);
-        time_t t = getCurrentProcessStartTime();
-        assertTrue("Non-zero after some time", t > 0);
-    }
-
-    {
         time_t t0 = getCurrentProcessStartTime();
         sleepMilliSeconds(1000);
         time_t t1 = getCurrentProcessStartTime();
-        assertTrue("Start time grows", t1 > t0);
-        assertTrue("Time not growing too fast", t1 < t0 + 2);
+        assertTrue("Start Time should not change", t0 == t1);
     }
 }
 
