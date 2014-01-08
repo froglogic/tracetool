@@ -43,6 +43,7 @@ if(NOT HOOKLIB_ONLY)
     ADD_SUBDIRECTORY(examples/addressbook)
     ADD_SUBDIRECTORY(examples)
 endif()
+set(PCRE_BUILD_TESTS FALSE)
 ADD_SUBDIRECTORY(3rdparty/pcre-8.10)
 
 SET(TRACELIB_VERSION_MAJOR 1)
