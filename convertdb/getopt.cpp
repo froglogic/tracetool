@@ -205,7 +205,7 @@ static void parseLine( const QString &line, QStringList *l )
             arg = "";
             continue;
         }
-        if ( c == '"' || c == '\"' ) {
+        if ( c == '"' || c == '\'' ) {
             quotes = c;
             continue;
         }
