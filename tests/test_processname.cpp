@@ -28,7 +28,11 @@ TRACELIB_NAMESPACE_BEGIN
 static void testProcessName()
 {
     verify( "Configuration::currentProcessName",
+#ifdef _WIN32
+            string( "test_processname.exe" ),
+#else
             string( "test_processname" ),
+#endif
             Configuration::currentProcessName() );
     verify( "Configuration::defaultFileName",
             true,
