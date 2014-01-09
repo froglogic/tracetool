@@ -95,9 +95,9 @@ static void test_getCurrentProcessStartTime()
 {
     {
         sleepMilliSeconds(1000);
-        time_t t0 = getCurrentProcessStartTime();
+        uint64t t0 = getCurrentProcessStartTime();
         sleepMilliSeconds(1000);
-        time_t t1 = getCurrentProcessStartTime();
+        uint64t t1 = getCurrentProcessStartTime();
         assertTrue("Start Time should not change", t0 == t1);
     }
 }
