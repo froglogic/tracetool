@@ -4,6 +4,7 @@
 **********************************************************************/
 
 #include "errorlog.h"
+#include "timehelper.h" // for now and timeToString
 
 #ifdef _WIN32
 #  include <windows.h>
@@ -37,14 +38,6 @@ void DebugViewErrorLog::write( const string &msg )
 #endif
 }
 
-// XXX duplicated in serializer.cpp
-static string timeToString( time_t t )
-{
-    char timestamp[64] = { '\0' };
-    strftime(timestamp, sizeof(timestamp), "%d.%m.%Y %H:%M:%S", localtime(&t));
-    return string( (const char *)&timestamp );
-}
-
 StreamErrorLog::StreamErrorLog( ostream *stream )
     : m_stream( stream )
 {
@@ -57,7 +50,7 @@ StreamErrorLog::~StreamErrorLog()
 
 void StreamErrorLog::write( const std::string &msg )
 {
-    ( *m_stream ) << "[" << timeToString( std::time( NULL ) ) << "] " << msg << endl;
+    ( *m_stream ) << "[" << timeToString( *m_stream, now() ) << "] " << msg << endl;
 }
 
 TRACELIB_NAMESPACE_END

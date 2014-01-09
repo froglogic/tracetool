@@ -8,6 +8,8 @@
 
 #include "tracelib_config.h"
 
+#include "timehelper.h"
+
 #include <cstdarg>
 #include <cstdio>
 #include <iosfwd>

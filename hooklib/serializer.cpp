@@ -7,8 +7,8 @@
 #include "trace.h"
 #include "tracepoint.h"
 #include "configuration.h"
+#include "timehelper.h" // for timeToString
 
-#include <ctime>
 #include <sstream>
 
 #include <assert.h>
@@ -23,14 +23,6 @@ Serializer::Serializer()
 
 Serializer::~Serializer()
 {
-}
-
-// XXX duplicated in errorlog.cpp
-static string timeToString( time_t t )
-{
-    char timestamp[64] = { '\0' };
-    strftime(timestamp, sizeof(timestamp), "%d.%m.%Y %H:%M:%S", localtime(&t));
-    return string( (const char *)&timestamp );
 }
 
 PlaintextSerializer::PlaintextSerializer()
@@ -48,11 +40,10 @@ vector<char> PlaintextSerializer::serialize( const TraceEntry &entry )
     ostringstream str;
 
     if ( m_showTimestamp ) {
-        str << timeToString( entry.timeStamp );
-        str << ": ";
+        str << timeToString( str, entry.timeStamp ) << ": ";
     }
 
-    str << "Process " << entry.process.id << " [started at " << timeToString( entry.process.startTime ) << "] (Thread " << entry.threadId << "): ";
+    str << "Process " << entry.process.id << " [started at " << timeToString( str, entry.process.startTime ) << "] (Thread " << entry.threadId << "): ";
 
     switch ( entry.tracePoint->type ) {
         case TracePointType::Error:
@@ -105,8 +96,8 @@ vector<char> PlaintextSerializer::serialize( const TraceEntry &entry )
 vector<char> PlaintextSerializer::serialize( const ProcessShutdownEvent &ev )
 {
     ostringstream str;
-    str << timeToString( ev.shutdownTime ) << ": Process " << ev.process->id
-        << " [started at " << timeToString( ev.process->startTime ) << "]"
+    str << timeToString( str, ev.shutdownTime ) << ": Process " << ev.process->id
+        << " [started at " << timeToString( str, ev.process->startTime ) << "]"
         << " finished";
 
     const string result = str.str();

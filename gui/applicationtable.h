@@ -14,6 +14,8 @@
 #include <QString>
 #include <QTableWidget>
 
+QString formatDateTimeForDisplay( const QDateTime & );
+
 class ApplicationTable : public QTableWidget
 {
     Q_OBJECT

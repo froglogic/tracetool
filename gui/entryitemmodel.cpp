@@ -34,7 +34,7 @@ typedef QVariant (*DataFormatter)(QSqlDatabase db, const EntryItemModel *model, 
 
 static QVariant timeFormatter(QSqlDatabase, const EntryItemModel *model, int row, int column)
 {
-    return QDateTime::fromString(model->getValue(row, column).toString(), Qt::ISODate);
+    return QDateTime::fromMSecsSinceEpoch( model->getValue(row, column).toLongLong() );
 }
 
 static QString tracePointTypeAsString(int i)

@@ -14,6 +14,7 @@
 #include "mutex.h"
 #include "shutdownnotifier.h"
 #include "variabledumping.h"
+#include "config.h" // for uint64_t
 
 #include <vector>
 
@@ -52,7 +53,8 @@ private:
 struct TracedProcess
 {
     ProcessId id;
-    time_t startTime;
+    //TODO: Make this milliseconds too, but how?
+    uint64_t startTime;
     std::vector<TraceKey> availableTraceKeys;
 };
 
@@ -63,7 +65,7 @@ struct TraceEntry
 
     static TracedProcess process;
     const ThreadId threadId;
-    const time_t timeStamp;
+    const uint64_t timeStamp;
     const TracePoint *tracePoint;
     VariableSnapshot *variables;
     Backtrace *backtrace;
@@ -76,7 +78,7 @@ struct ProcessShutdownEvent
     ProcessShutdownEvent();
 
     const TracedProcess * const process;
-    const time_t shutdownTime;
+    const uint64_t shutdownTime;
 };
 
 

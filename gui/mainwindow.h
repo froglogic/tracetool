@@ -10,6 +10,7 @@
 #include <QProcess>
 #include <QSqlDatabase>
 #include <QTcpSocket>
+#include <QStyledItemDelegate>
 #include "ui_mainwindow.h"
 #include "settings.h"
 
@@ -39,6 +40,14 @@ signals:
 
 private slots:
     void handleIncomingData();
+};
+
+class CustomDateTimeFormattingDelegate : public QStyledItemDelegate
+{
+    Q_OBJECT
+public:
+    CustomDateTimeFormattingDelegate( QObject *obj ): QStyledItemDelegate( obj ) {}
+    virtual QString	displayText ( const QVariant &value, const QLocale &locale ) const;
 };
 
 class MainWindow : public QMainWindow, private Ui::MainWindow,

@@ -132,6 +132,12 @@ void ServerSocket::handleIncomingData()
     }
 }
 
+QString CustomDateTimeFormattingDelegate::displayText(const QVariant &value, const QLocale &locale) const
+{
+    return value.type() == QVariant::DateTime ? formatDateTimeForDisplay( value.toDateTime() )
+                                              : QStyledItemDelegate::displayText( value, locale );
+}
+
 MainWindow::MainWindow(Settings *settings,
 #ifdef Q_OS_WIN
                        JobObject *job,
@@ -150,6 +156,7 @@ MainWindow::MainWindow(Settings *settings,
 #endif
 {
     setupUi(this);
+    tracePointsView->setItemDelegate( new CustomDateTimeFormattingDelegate( tracePointsView ) );
     m_settings->registerRestorable("MainWindow", this);
 
     m_connectionStatusLabel = new QLabel(tr("Not connected"));

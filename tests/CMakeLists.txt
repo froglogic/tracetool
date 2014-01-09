@@ -23,22 +23,26 @@ TARGET_LINK_LIBRARIES(test_filter pcre pcrecpp)
 IF(WIN32)
     ADD_EXECUTABLE(test_info
             test_info.cpp
-            ../hooklib/getcurrentthreadid_win.cpp)
+            ../hooklib/getcurrentthreadid_win.cpp
+            ../hooklib/timehelper.cpp)
 ELSE(WIN32)
     ADD_EXECUTABLE(test_info
             test_info.cpp
-            ../hooklib/getcurrentthreadid_unix.cpp)
+            ../hooklib/getcurrentthreadid_unix.cpp
+            ../hooklib/timehelper.cpp)
 ENDIF(WIN32)
 
 IF(WIN32)
     ADD_EXECUTABLE(test_processname
             test_processname.cpp
             ../hooklib/getcurrentthreadid_win.cpp
+            ../hooklib/timehelper.cpp
             ../hooklib/configuration_win.cpp)
 ELSE(WIN32)
     ADD_EXECUTABLE(test_processname
             test_processname.cpp
             ../hooklib/getcurrentthreadid_unix.cpp
+            ../hooklib/timehelper.cpp
             ../hooklib/configuration_unix.cpp)
 ENDIF(WIN32)
 

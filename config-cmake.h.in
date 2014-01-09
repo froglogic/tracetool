@@ -5,3 +5,9 @@
 #cmakedefine HAVE_QT 1
 #define TRACELIB_VERSION_STR "@TRACELIB_VERSION_MAJOR@.@TRACELIB_VERSION_MINOR@.@TRACELIB_VERSION_PATCH@"
 
+// Unified uint64_t
+#ifdef _MSC_VER
+typedef unsigned __int64 uint64_t;
+#else
+#include <stdint.h>
+#endif

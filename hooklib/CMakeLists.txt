@@ -80,6 +80,7 @@ SET(TRACELIB_SOURCES
         filemodificationmonitor.cpp
         shutdownnotifier.cpp
         tracelib.cpp
+        timehelper.cpp
         ${PROJECT_SOURCE_DIR}/3rdparty/wildcmp/wildcmp.c
         ${PROJECT_SOURCE_DIR}/3rdparty/tinyxml/tinyxml.cpp
         ${PROJECT_SOURCE_DIR}/3rdparty/tinyxml/tinyxmlerror.cpp

@@ -9,6 +9,11 @@
 
 #include <assert.h>
 
+QString formatDateTimeForDisplay(const QDateTime &dt )
+{
+    return dt.toString( "yyyy-MM-dd hh:mm:ss.zzz" );
+}
+
 ApplicationTable::ApplicationTable()
     : QTableWidget( 0, 4 )
 {
@@ -100,10 +105,10 @@ void ApplicationTable::setTimesForApplication( QTableWidgetItem *nameItem,
 {
     const int row = nameItem->row();
     if ( !startTime.isNull() ) {
-        setItem( row, 0, new QTableWidgetItem( startTime.toString() ) );
+        setItem( row, 0, new QTableWidgetItem( formatDateTimeForDisplay( startTime ) ) );
     }
     if ( !endTime.isNull() ) {
-        setItem( row, 1, new QTableWidgetItem( endTime.toString() ) );
+        setItem( row, 1, new QTableWidgetItem( formatDateTimeForDisplay( endTime ) ) );
     }
 }
 

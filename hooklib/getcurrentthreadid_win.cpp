@@ -7,22 +7,26 @@
 
 #include <windows.h>
 
-static time_t filetimeToTimeT( const FILETIME &ft )
+static uint64_t filetimeToUInt64( const FILETIME &ft )
 {
-   ULARGE_INTEGER ull;
-   ull.LowPart = ft.dwLowDateTime;
-   ull.HighPart = ft.dwHighDateTime;
+    // windows epoch starts at 1601-01-01T00:00:00Z
+    static const uint64_t MSEC_TO_UNIX_EPOCH = 11644473600000ULL;
+    // windows ticks are in 100ns
+    static const uint64_t WINDOWS_TICK_MS = 10000ULL;
+    ULARGE_INTEGER ull;
+    ull.LowPart = ft.dwLowDateTime;
+    ull.HighPart = ft.dwHighDateTime;
 
-   return ull.QuadPart / 10000000ULL - 11644473600ULL;
+    return ull.QuadPart / WINDOWS_TICK_MS - MSEC_TO_UNIX_EPOCH;
 }
 
 TRACELIB_NAMESPACE_BEGIN
 
-time_t getCurrentProcessStartTime()
+uint64_t getCurrentProcessStartTime()
 {
     FILETIME creationTime, dummyTime;
     ::GetProcessTimes( ::GetCurrentProcess(), &creationTime, &dummyTime, &dummyTime, &dummyTime );
-    return filetimeToTimeT( creationTime );
+    return filetimeToUInt64( creationTime );
 }
 
 ProcessId getCurrentProcessId()

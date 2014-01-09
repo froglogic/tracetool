@@ -64,7 +64,7 @@ QVariant Transaction::insert( const QString &statement )
     return m_query.lastInsertId();
 }
 
-const int Database::expectedVersion = 4;
+const int Database::expectedVersion = 5;
 
 static const char * const schemaStatements[] = {
     "CREATE TABLE schema_downgrade (from_version INTEGER,"
@@ -119,7 +119,9 @@ static const char * const downgradeStatementsInsert[] = {
     "INSERT INTO schema_downgrade VALUES(1, 'NOT IMPLEMENTED');",
     "INSERT INTO schema_downgrade VALUES(2, 'NOT IMPLEMENTED');",
     "INSERT INTO schema_downgrade VALUES(3, 'NOT IMPLEMENTED');",
-    "INSERT INTO schema_downgrade VALUES(4, 'NOT IMPLEMENTED');"
+    "INSERT INTO schema_downgrade VALUES(4, 'NOT IMPLEMENTED');",
+    "INSERT INTO schema_downgrade VALUES(5, 'NOT IMPLEMENTED');"
+
 };
 
 int Database::currentVersion( QSqlDatabase db, QString *errMsg )
@@ -328,12 +330,42 @@ static bool upgradeToVersion1(QSqlDatabase db, QString *errMsg)
     return true;
 }
 
+static bool upgradeToVersion5(QSqlDatabase db, QString *errMsg)
+{
+    const char* const statements[] = {
+	"BEGIN TRANSACTION;",
+	"CREATE TEMPORARY TABLE process_backup (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, pid INTEGER, start_time INTEGER, end_time INTEGER);",
+	"INSERT INTO process_backup SELECT id, name, pid, strftime('%s',start_time) * 1000, strftime('%s',end_time) * 1000 FROM process;",
+	"DROP TABLE process;",
+	"CREATE TABLE process (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, pid INTEGER, start_time INTEGER, end_time INTEGER, UNIQUE(name, pid));",
+	"INSERT INTO process SELECT id, name, pid, start_time, end_time FROM process_backup;",
+	"DROP TABLE process_backup;",
+    "CREATE TEMPORARY TABLE trace_entry_backup (id INTEGER PRIMARY KEY AUTOINCREMENT, traced_thread_id INTEGER, timestamp INTEGER, trace_point_id INTEGER, message TEXT, stack_position INTEGER);",
+    "INSERT INTO trace_entry_backup SELECT id, traced_thread_id, strftime('%s',timestamp) * 1000, trace_point_id, message, stack_position FROM trace_entry;",
+    "DROP TABLE trace_entry;",
+    "CREATE TABLE trace_entry (id INTEGER PRIMARY KEY AUTOINCREMENT, traced_thread_id INTEGER, timestamp INTEGER, trace_point_id INTEGER, message TEXT, stack_position INTEGER);",
+    "INSERT INTO trace_entry SELECT id, traced_thread_id, timestamp, trace_point_id, message, stack_position FROM trace_entry_backup;",
+    "DROP TABLE trace_entry_backup;",
+	downgradeStatementsInsert[5],
+	"COMMIT;" };
+    QSqlQuery query(db);
+    for (unsigned i = 0; i < sizeof(statements)/sizeof(char*); ++i) {
+	if (!query.exec(statements[i])) {
+	    *errMsg = query.lastError().text();
+	    return false;
+	}
+    }
+    return true;
+}
+
 static bool upgradeVersion(QSqlDatabase db, int version,
 			   QString *errMsg)
 {
     switch (version) {
     case 0:
 	return upgradeToVersion1(db, errMsg);
+    case 4:
+    return upgradeToVersion5(db, errMsg);
 	break;
     default:
 	*errMsg = QObject::tr("Automatic upgrade to version %1 is not implemented");
@@ -508,8 +540,8 @@ QList<TracedApplicationInfo> Database::tracedApplications(QSqlDatabase db)
         bool ok;
         info.pid = q.value( 1 ).toUInt( &ok );
         assert( ok );
-        info.startTime = QDateTime::fromString( q.value( 2 ).toString(), Qt::ISODate );
-        info.stopTime = QDateTime::fromString( q.value( 3 ).toString(), Qt::ISODate );
+        info.startTime = QDateTime::fromMSecsSinceEpoch( q.value( 2 ).toLongLong() );
+        info.stopTime = QDateTime::fromMSecsSinceEpoch( q.value( 3 ).toLongLong() );
         info.name = q.value( 0 ).toString();
 
         l.append( info );

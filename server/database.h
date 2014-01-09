@@ -155,6 +155,16 @@ public:
     static void trimTo(QSqlDatabase db, size_t nMostRecent);
     static QList<TracedApplicationInfo> tracedApplications(QSqlDatabase db);
 
+    // Special cased since QSql* will loose the milliseconds of a QDateTime value
+    static inline QString formatValue(QSqlDatabase db, const QDateTime &v)
+    {
+        qint64 msecs = v.toMSecsSinceEpoch();
+        const QVariant variant = QVariant::fromValue(msecs);
+        QSqlField field(QString(), variant.type());
+        field.setValue(variant);
+        return db.driver()->formatValue(field);
+    }
+
     template <typename T>
     static inline QString formatValue(QSqlDatabase db, const T &v )
     {

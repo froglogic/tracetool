@@ -12,6 +12,7 @@
 #include "tracepoint.h"
 #include "errorlog.h"
 #include "tracelib.h" // for deleteRange
+#include "timehelper.h" // for now
 
 #include <cstdlib>
 #include <ctime>
@@ -75,13 +76,13 @@ TracedProcess TraceEntry::process = {
 
 ProcessShutdownEvent::ProcessShutdownEvent()
     : process( &TraceEntry::process ),
-    shutdownTime( std::time( NULL ) )
+    shutdownTime( now() )
 {
 }
 
 TraceEntry::TraceEntry( const TracePoint *tracePoint_, const char *msg )
     : threadId( getCurrentThreadId() ),
-    timeStamp( std::time( NULL ) ),
+    timeStamp( now() ),
     tracePoint( tracePoint_ ),
     variables( 0 ),
     backtrace( 0 ),

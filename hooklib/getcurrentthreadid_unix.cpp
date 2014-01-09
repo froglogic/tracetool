@@ -4,6 +4,7 @@
 **********************************************************************/
 
 #include "getcurrentthreadid.h"
+#include "timehelper.h" // for now()
 
 #include <sys/time.h>
 #include <sys/types.h>
@@ -14,17 +15,10 @@
 
 TRACELIB_NAMESPACE_BEGIN
 
-static time_t secondsSinceEpoch()
-{
-    timeval tv;
-    gettimeofday(&tv, NULL);
-    return tv.tv_sec;
-}
-
-time_t getCurrentProcessStartTime()
+uint64_t getCurrentProcessStartTime()
 {
     // ### BUG: starts counting as of first call only
-    static time_t t0 = secondsSinceEpoch();
+    static uint64_t t0 = now();
     return t0;
 }
 

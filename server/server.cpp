@@ -115,9 +115,15 @@ void XmlContentHandler::handleStartElement()
     if ( m_xmlReader.name() == QLatin1String( "traceentry" ) ) {
         m_currentEntry = TraceEntry();
         m_currentEntry.pid = atts.value( QLatin1String( "pid" ) ).toString().toUInt();
-        m_currentEntry.processStartTime = QDateTime::fromTime_t( atts.value( QLatin1String( "process_starttime" ) ).toString().toUInt() );
+        qulonglong datetime = atts.value( QLatin1String( "process_starttime" ) ).toString().toULongLong();
+        qint64 signedDt = datetime;
+        QDateTime dt = QDateTime::fromMSecsSinceEpoch( signedDt );
+        std::stringstream sstr;
+        sstr << "msecs from xml:" << datetime << " signed: " << signedDt << " QDateTime:" << dt.date().year() << " " << dt.date().month() << " " << dt.date().day() << " " << dt.time().hour() << " " << dt.time().minute() << " " << dt.time().second() << " " << dt.time().msec();
+        fprintf(stderr, "%s\n", sstr.str().c_str());
+        m_currentEntry.processStartTime = dt;
         m_currentEntry.tid = atts.value( QLatin1String( "tid" ) ).toString().toUInt();
-        m_currentEntry.timestamp = QDateTime::fromTime_t( atts.value( QLatin1String( "time" ) ).toString().toUInt() );
+        m_currentEntry.timestamp = QDateTime::fromMSecsSinceEpoch( atts.value( QLatin1String( "time" ) ).toString().toULongLong() );
     } else if ( m_xmlReader.name() == QLatin1String( "variable" ) ) {
         m_currentVariable = Variable();
         m_currentVariable.name = atts.value( QLatin1String( "name" ) ).toString();
@@ -141,8 +147,8 @@ void XmlContentHandler::handleStartElement()
     } else if ( m_xmlReader.name() == QLatin1String( "shutdownevent" ) ) {
         m_currentShutdownEvent = ProcessShutdownEvent();
         m_currentShutdownEvent.pid = atts.value( QLatin1String( "pid" ) ).toString().toUInt();
-        m_currentShutdownEvent.startTime = QDateTime::fromTime_t( atts.value( QLatin1String( "starttime" ) ).toString().toUInt() );
-        m_currentShutdownEvent.stopTime = QDateTime::fromTime_t( atts.value( QLatin1String( "endtime" ) ).toString().toUInt() );
+        m_currentShutdownEvent.startTime = QDateTime::fromMSecsSinceEpoch( atts.value( QLatin1String( "starttime" ) ).toString().toULongLong() );
+        m_currentShutdownEvent.stopTime = QDateTime::fromMSecsSinceEpoch( atts.value( QLatin1String( "endtime" ) ).toString().toULongLong() );
     } else if ( m_xmlReader.name() == QLatin1String( "storageconfiguration" ) ) {
         m_currentStorageConfig = StorageConfiguration();
         m_currentStorageConfig.maximumSize = atts.value( QLatin1String( "maxSize" ) ).toString().toULong();
@@ -570,10 +576,10 @@ static void archiveEntries( QSqlDatabase db, unsigned short percentage, const QS
 
                 TraceEntry e;
                 e.pid = q.value( 1 ).toUInt();
-                e.processStartTime = q.value( 2 ).toDateTime();
+                e.processStartTime = QDateTime::fromMSecsSinceEpoch( q.value( 2 ).toLongLong() );
                 e.processName = q.value( 3 ).toString();
                 e.tid = q.value( 4 ).toUInt();
-                e.timestamp = q.value( 5 ).toDateTime();
+                e.timestamp = QDateTime::fromMSecsSinceEpoch( q.value( 5 ).toLongLong() );
                 e.type = q.value( 6 ).toUInt();
                 e.path = q.value( 7 ).toString();
                 e.lineno = q.value( 8 ).toULongLong();
