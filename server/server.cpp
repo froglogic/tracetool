@@ -118,9 +118,6 @@ void XmlContentHandler::handleStartElement()
         qulonglong datetime = atts.value( QLatin1String( "process_starttime" ) ).toString().toULongLong();
         qint64 signedDt = datetime;
         QDateTime dt = QDateTime::fromMSecsSinceEpoch( signedDt );
-        std::stringstream sstr;
-        sstr << "msecs from xml:" << datetime << " signed: " << signedDt << " QDateTime:" << dt.date().year() << " " << dt.date().month() << " " << dt.date().day() << " " << dt.time().hour() << " " << dt.time().minute() << " " << dt.time().second() << " " << dt.time().msec();
-        fprintf(stderr, "%s\n", sstr.str().c_str());
         m_currentEntry.processStartTime = dt;
         m_currentEntry.tid = atts.value( QLatin1String( "tid" ) ).toString().toUInt();
         m_currentEntry.timestamp = QDateTime::fromMSecsSinceEpoch( atts.value( QLatin1String( "time" ) ).toString().toULongLong() );
