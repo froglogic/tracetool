@@ -60,7 +60,7 @@
         (*variableSnapshot) << vars; \
         msg \
         TRACELIB_NAMESPACE_IDENT(visitTracePoint)( &tracePoint, msgBuilder, variableSnapshot ); \
-        deleteRange( variableSnapshot->begin(), variableSnapshot->end() ); \
+        for ( size_t i = 0; i < variableSnapshot->size(); ++i ) delete (*variableSnapshot)[i]; \
         delete variableSnapshot; \
     } \
 }

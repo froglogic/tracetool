@@ -110,10 +110,19 @@ VariableValue::VariableValue()
 {
 }
 
-VariableSnapshot &operator<<( VariableSnapshot &snapshot, AbstractVariable *v )
+VariableSnapshot::VariableSnapshot()
 {
-    snapshot.push_back( v );
-    return snapshot;
+}
+
+VariableSnapshot::~VariableSnapshot()
+{
+}
+
+
+VariableSnapshot &VariableSnapshot::operator<<( AbstractVariable *v )
+{
+    m_variables.push_back( v );
+    return *this;
 }
 
 TRACELIB_NAMESPACE_END

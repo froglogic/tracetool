@@ -151,9 +151,20 @@ AbstractVariable *makeConverter( const char *name, const T &o ) {
     return new Variable<T>( name, o );
 }
 
-typedef std::vector<AbstractVariable *> VariableSnapshot;
+class VariableSnapshot
+{
+public:
+    TRACELIB_EXPORT VariableSnapshot();
+    TRACELIB_EXPORT ~VariableSnapshot();
 
-TRACELIB_EXPORT VariableSnapshot &operator<<( VariableSnapshot &snapshot, AbstractVariable *v );
+    TRACELIB_EXPORT VariableSnapshot &operator<<( AbstractVariable *v );
+
+    inline size_t size() const { return m_variables.size(); }
+    AbstractVariable *&operator[]( size_t idx ) { return m_variables[idx]; }
+
+private:
+    std::vector<AbstractVariable *> m_variables;
+};
 
 TRACELIB_NAMESPACE_END
 

@@ -68,11 +68,11 @@ vector<char> PlaintextSerializer::serialize( const TraceEntry &entry )
 
     str << " " << entry.tracePoint->sourceFile << ":" << entry.tracePoint->lineno << ": " << entry.tracePoint->functionName;
 
-    if ( entry.variables && !entry.variables->empty() ) {
+    if ( entry.variables && entry.variables->size() > 0 ) {
         str << "; Variables: { ";
-        VariableSnapshot::const_iterator it, end = entry.variables->end();
-        for ( it = entry.variables->begin(); it != end; ++it ) {
-            str << ( *it )->name() << "=" << convertVariableValue( ( *it )->value() ) << " ";
+        for ( size_t i = 0; i < entry.variables->size(); ++i ) {
+            AbstractVariable *v = (*entry.variables)[i];
+            str << v->name() << "=" << convertVariableValue( v->value() ) << " ";
         }
         str << "}";
     }
@@ -177,9 +177,9 @@ vector<char> XMLSerializer::serialize( const TraceEntry &entry )
         if ( m_beautifiedOutput ) {
             indent = "\n    ";
         }
-        VariableSnapshot::const_iterator it, end = entry.variables->end();
-        for ( it = entry.variables->begin(); it != end; ++it ) {
-            str << indent << convertVariable( ( *it )->name(), ( *it )->value() );
+        for ( size_t i = 0; i < entry.variables->size(); ++i ) {
+            AbstractVariable *v = (*entry.variables)[i];
+            str << indent << convertVariable( v->name(), v->value() );
         }
         if ( m_beautifiedOutput ) {
             indent = "\n  ";
