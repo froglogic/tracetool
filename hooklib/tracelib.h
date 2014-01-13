@@ -165,14 +165,32 @@ TRACELIB_EXPORT void visitTracePoint( const TracePoint *tracePoint,
                       const char *msg = 0,
                       VariableSnapshot *variables = 0 );
 
+class TracePointVisitor;
+class TracePointVisitorProxy
+{
+public:
+    inline ~TracePointVisitorProxy();
+
+    inline TracePointVisitorProxy operator<<( const VariableValue &v );
+private:
+    friend class TracePointVisitor;
+    inline TracePointVisitorProxy( TracePointVisitor &tpVisitor );
+    TracePointVisitor &realVisitor;
+    bool streamedTo;
+};
+
 class TracePointVisitor {
 public:
     inline TracePointVisitor( TracePoint *tracePoint ) : m_tracePoint( tracePoint ) { }
-    inline ~TracePointVisitor() { visitTracePoint( m_tracePoint, m_stream.str().c_str(), 0 ); }
+    inline ~TracePointVisitor() {}
 
-    inline TracePointVisitor &operator<<( const VariableValue &v ) {
+    inline TracePointVisitorProxy operator<<( const VariableValue &v ) {
         m_stream << variableValueAsString( v );
-        return *this;
+        return TracePointVisitorProxy( *this );
+    }
+
+    void flush() {
+        visitTracePoint( m_tracePoint, m_stream.str().c_str(), 0 );
     }
 
 private:
@@ -183,8 +201,31 @@ private:
     std::ostringstream m_stream;
 };
 
+TracePointVisitorProxy TracePointVisitorProxy::operator<<( const VariableValue &v )
+{
+   streamedTo = true;
+   return realVisitor << v;
+}
+
+TracePointVisitorProxy::~TracePointVisitorProxy()
+{
+   if( !streamedTo ) {
+       realVisitor.flush();
+   }
+}
+
+TracePointVisitorProxy::TracePointVisitorProxy( TracePointVisitor& tpVisitor )
+    : realVisitor( tpVisitor )
+    , streamedTo( false )
+{}
+
 template <class T>
-inline TracePointVisitor &operator<<( TracePointVisitor &lhs, const T &rhs ) {
+inline TracePointVisitorProxy operator<<( TracePointVisitorProxy lhs, const T &rhs ) {
+    return lhs << convertVariable( rhs );
+}
+
+template <class T>
+inline TracePointVisitorProxy operator<<( TracePointVisitor &lhs, const T &rhs ) {
     return lhs << convertVariable( rhs );
 }
 
