@@ -21,14 +21,14 @@ using namespace std;
 
 TRACELIB_NAMESPACE_BEGIN
 
-std::ostream &timeToString( std::ostream &str, uint64_t t )
+std::string timeToString( uint64_t t )
 {
     time_t secondsSinceEpoch = t / 1000;
     int mseconds = t % 1000;
-    char timestamp[64] = { '\0' };
+    char timestamp[23] = { '\0' };
     strftime(timestamp, sizeof(timestamp), "%d.%m.%Y %H:%M:%S", localtime(&secondsSinceEpoch));
-    str << timestamp << ":" << setfill('0') << setw(3) << mseconds;
-    return str;
+    snprintf(&timestamp[18], 5, ":%03d", mseconds);
+    return std::string( timestamp );
 }
 
 uint64_t now()

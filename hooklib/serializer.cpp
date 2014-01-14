@@ -40,10 +40,10 @@ vector<char> PlaintextSerializer::serialize( const TraceEntry &entry )
     ostringstream str;
 
     if ( m_showTimestamp ) {
-        str << timeToString( str, entry.timeStamp ) << ": ";
+        str << timeToString( entry.timeStamp ) << ": ";
     }
 
-    str << "Process " << entry.process.id << " [started at " << timeToString( str, entry.process.startTime ) << "] (Thread " << entry.threadId << "): ";
+    str << "Process " << entry.process.id << " [started at " << timeToString( entry.process.startTime ) << "] (Thread " << entry.threadId << "): ";
 
     switch ( entry.tracePoint->type ) {
         case TracePointType::Error:
@@ -96,8 +96,8 @@ vector<char> PlaintextSerializer::serialize( const TraceEntry &entry )
 vector<char> PlaintextSerializer::serialize( const ProcessShutdownEvent &ev )
 {
     ostringstream str;
-    str << timeToString( str, ev.shutdownTime ) << ": Process " << ev.process->id
-        << " [started at " << timeToString( str, ev.process->startTime ) << "]"
+    str << timeToString( ev.shutdownTime ) << ": Process " << ev.process->id
+        << " [started at " << timeToString( ev.process->startTime ) << "]"
         << " finished";
 
     const string result = str.str();

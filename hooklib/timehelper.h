@@ -10,6 +10,6 @@
 TRACELIB_NAMESPACE_BEGIN
 
 uint64_t now();
-std::ostream &timeToString( std::ostream&, uint64_t );
+std::string timeToString( uint64_t );
 
 TRACELIB_NAMESPACE_END

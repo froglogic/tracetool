@@ -50,7 +50,7 @@ StreamErrorLog::~StreamErrorLog()
 
 void StreamErrorLog::write( const std::string &msg )
 {
-    ( *m_stream ) << "[" << timeToString( *m_stream, now() ) << "] " << msg << endl;
+    ( *m_stream ) << "[" << timeToString( now() ) << "] " << msg << endl;
 }
 
 TRACELIB_NAMESPACE_END
