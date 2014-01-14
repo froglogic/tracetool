@@ -264,7 +264,7 @@ string XMLSerializer::convertVariable( const char *n, const VariableValue &v ) c
     str << "<variable name=\"" << n << "\" ";
     switch ( v.type() ) {
         case VariableType::String:
-            str << "type=\"string\"><![CDATA[" << v.asString() + "]]>";
+            str << "type=\"string\"><![CDATA[" << v.asString() << "]]>";
             break;
         case VariableType::Number:
             str << "type=\"number\">" << v.asNumber();
