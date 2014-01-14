@@ -6,7 +6,8 @@
 #include "variabledumping.h"
 
 #include <cassert>
-#include <cstring> // for strncpy
+#include <cstdlib> // for free
+#include <cstring> // for strncpy, strdup
 
 using namespace std;
 
@@ -16,7 +17,7 @@ VariableValue VariableValue::stringValue( const char *s )
 {
     VariableValue var;
     var.m_type = VariableType::String;
-    var.m_string = s;
+    var.m_primitiveValue.string = strdup( s );
     return var;
 }
 
@@ -76,8 +77,20 @@ size_t VariableValue::convertToString( const VariableValue &v, char *buf, size_t
     return bufsize;
 }
 
+VariableValue::VariableValue( const VariableValue &other )
+    : m_type( other.m_type ),
+    m_primitiveValue( other.m_primitiveValue )
+{
+    if ( m_type == VariableType::String ) {
+        m_primitiveValue.string = strdup( other.asString() );
+    }
+}
+
 VariableValue::~VariableValue()
 {
+    if ( m_type == VariableType::String ) {
+        free( m_primitiveValue.string );
+    }
 }
 
 VariableType::Value VariableValue::type() const
@@ -85,9 +98,9 @@ VariableType::Value VariableValue::type() const
     return m_type;
 }
 
-const string &VariableValue::asString() const
+const char *VariableValue::asString() const
 {
-    return m_string;
+    return m_primitiveValue.string;
 }
 
 unsigned long VariableValue::asNumber() const

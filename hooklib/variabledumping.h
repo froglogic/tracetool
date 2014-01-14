@@ -57,10 +57,11 @@ public:
     TRACELIB_EXPORT static VariableValue floatValue( long double v );
     TRACELIB_EXPORT static size_t convertToString( const VariableValue &v, char *buf, size_t bufsize );
 
+    TRACELIB_EXPORT VariableValue( const VariableValue &other );
     TRACELIB_EXPORT ~VariableValue();
 
     VariableType::Value type() const;
-    const std::string &asString() const;
+    const char *asString() const;
     unsigned long asNumber() const;
     bool asBoolean() const;
     long double asFloat() const;
@@ -69,11 +70,11 @@ private:
     VariableValue();
 
     VariableType::Value m_type;
-    std::string m_string;
     union {
         unsigned long number;
         bool boolean;
         long double float_;
+        char *string;
     } m_primitiveValue;
 };
 
