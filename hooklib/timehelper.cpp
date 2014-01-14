@@ -11,6 +11,7 @@
 #include <iomanip>
 
 #ifdef _WIN32
+#define snprintf _snprintf
 #  include <sys/types.h> // for _ftime
 #  include <sys/timeb.h> // for struct timeb
 #else
