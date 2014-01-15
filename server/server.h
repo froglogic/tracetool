@@ -17,6 +17,7 @@
 
 #include "database.h"
 #include "xmlcontenthandler.h"
+#include "databasefeeder.h"
 
 class ClientSocket : public QTcpSocket
 {
@@ -87,10 +88,8 @@ private:
     QTcpSocket *m_sock;
 };
 
-class Server : public QObject, public XmlParseEventsHandler
+class Server : public QObject, public DatabaseFeeder
 {
-    friend class XmlContentHandler;
-
     Q_OBJECT
 public:
     Server( const QString &traceFile,
@@ -110,23 +109,17 @@ private slots:
     void guiDisconnected( GUIConnection *c );
 
 private:
-    void storeEntry( const TraceEntry &e );
-    void storeShutdownEvent( const ProcessShutdownEvent &ev );
     void handleDatagram( const QByteArray &datagram );
     void handleTraceEntry( const TraceEntry &e );
     void handleShutdownEvent( const ProcessShutdownEvent &ev );
-    void applyStorageConfiguration( const StorageConfiguration &cfg );
+    void archivedEntries();
 
     QTcpServer *m_guiServer;
     ServerSocket *m_tcpServer;
-    QSqlDatabase m_db;
     XmlContentHandler m_xmlHandler;
     bool m_receivedData;
     QString m_traceFile;
     QList<GUIConnection *> m_guiConnections;
-    QString m_archiveDir;
-    unsigned short m_shrinkBy;
-    unsigned long m_maximumSize;
 };
 
 #endif // !defined(TRACE_SERVER_H)

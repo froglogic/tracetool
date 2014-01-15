@@ -2,6 +2,7 @@ SET(SERVER_SOURCES
         main.cpp
         database.cpp
         server.cpp
+        databasefeeder.cpp
         xmlcontenthandler.cpp
         ../convertdb/getopt.cpp)
 
