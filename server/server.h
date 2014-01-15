@@ -16,20 +16,7 @@
 #include <QXmlStreamReader>
 
 #include "database.h"
-
-struct StorageConfiguration
-{
-    static const unsigned long UnlimitedTraceSize = 0;
-
-    StorageConfiguration()
-        : maximumSize( UnlimitedTraceSize ),
-          shrinkBy( 10 )
-    { }
-
-    unsigned long maximumSize;
-    unsigned short shrinkBy;
-    QString archiveDir;
-};
+#include "xmlcontenthandler.h"
 
 class ClientSocket : public QTcpSocket
 {
@@ -100,33 +87,7 @@ private:
     QTcpSocket *m_sock;
 };
 
-class XmlContentHandler
-{
-public:
-    XmlContentHandler( Server *server );
-
-    void addData( const QByteArray &data );
-
-    void continueParsing();
-
-private:
-    void handleStartElement();
-    void handleEndElement();
-
-    QXmlStreamReader m_xmlReader;
-    Server *m_server;
-    TraceEntry m_currentEntry;
-    Variable m_currentVariable;
-    QString m_s;
-    unsigned long m_currentLineNo;
-    StackFrame m_currentFrame;
-    bool m_inFrameElement;
-    ProcessShutdownEvent m_currentShutdownEvent;
-    StorageConfiguration m_currentStorageConfig;
-    TraceKey m_currentTraceKey;
-};
-
-class Server : public QObject
+class Server : public QObject, public XmlParseEventsHandler
 {
     friend class XmlContentHandler;
 
