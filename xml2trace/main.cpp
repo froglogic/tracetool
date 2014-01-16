@@ -39,7 +39,7 @@ static bool fromXml( QSqlDatabase &db, QFile &input, QString *errMsg )
     xmlparser.addData( "<toplevel_trace_element>" );
     while( !input.atEnd() ) {
         try {
-            xmlparser.addData( input.read( 2^18 ) );
+            xmlparser.addData( input.read( 1 << 16 ) );
             xmlparser.continueParsing();
         } catch( const SQLTransactionException &ex ) {
             *errMsg = "Database error: " + QString::fromLatin1( ex.what() ) + ", driver message: " + ex.driverMessage() + "(" + QString::number(ex.driverCode()) + ")";
