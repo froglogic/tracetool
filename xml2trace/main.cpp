@@ -36,6 +36,7 @@ static bool fromXml( QSqlDatabase &db, QFile &input, QString *errMsg )
 {
     DatabaseFeeder feeder( db );
     XmlContentHandler xmlparser(&feeder );
+    xmlparser.addData( "<toplevel_trace_element>" );
     while( !input.atEnd() ) {
         try {
             xmlparser.addData( input.read( 2^18 ) );
