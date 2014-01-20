@@ -22,9 +22,7 @@ IF( NOT TARGET tracelibImport__tracelib )
 ENDIF( NOT TARGET tracelibImport__tracelib )
 
 SET(TRACELIB_LIBRARIES tracelibImport__tracelib)
-SET(TRACELIB_QTSUPPORT_LIBRARIES tracelibImport__tracelib_qtsupport)
 
 MARK_AS_ADVANCED(
     TRACELIB_LIBRARIES
-    TRACELIB_QTSUPPORT_LIBRARIES
 )
