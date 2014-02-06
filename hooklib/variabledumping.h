@@ -14,6 +14,19 @@
 #include <string>
 #include <vector>
 
+#if defined(_WIN32) || defined(WIN32) && !defined(__GNUC__)
+typedef __int64 int64_t
+typedef __int32 int32_t
+typedef __int16 int16_t
+typedef __int8 int8_t
+typedef unsigned __int64 uint64_t
+typedef unsigned __int32 uint32_t
+typedef unsigned __int16 uint16_t
+typedef unsigned __int8 uint8_t
+#else
+#include <stdint.h>
+#endif
+
 TRACELIB_NAMESPACE_BEGIN
 
 struct VariableType {
@@ -52,7 +65,14 @@ struct VariableType {
 class VariableValue {
 public:
     TRACELIB_EXPORT static VariableValue stringValue( const char *s );
-    TRACELIB_EXPORT static VariableValue numberValue( unsigned long v );
+    TRACELIB_EXPORT static VariableValue numberValue( uint8_t v ) { return numberValue( (uint64_t)v ); }
+    TRACELIB_EXPORT static VariableValue numberValue( uint16_t v ) { return numberValue( (uint64_t)v ); }
+    TRACELIB_EXPORT static VariableValue numberValue( uint32_t v ) { return numberValue( (uint64_t)v ); }
+    TRACELIB_EXPORT static VariableValue numberValue( uint64_t v );
+    TRACELIB_EXPORT static VariableValue numberValue( int8_t v ) { return numberValue( (int64_t)v ); }
+    TRACELIB_EXPORT static VariableValue numberValue( int16_t v ) { return numberValue( (int64_t)v ); }
+    TRACELIB_EXPORT static VariableValue numberValue( int32_t v ) { return numberValue( (int64_t)v ); }
+    TRACELIB_EXPORT static VariableValue numberValue( int64_t v );
     TRACELIB_EXPORT static VariableValue booleanValue( bool v );
     TRACELIB_EXPORT static VariableValue floatValue( long double v );
     TRACELIB_EXPORT static size_t convertToString( const VariableValue &v, char *buf, size_t bufsize );
@@ -62,20 +82,22 @@ public:
 
     VariableType::Value type() const;
     const char *asString() const;
-    unsigned long asNumber() const;
+    uint64_t asNumber() const;
     bool asBoolean() const;
     long double asFloat() const;
+    bool isSignedNumber() const;
 
 private:
     VariableValue();
 
     VariableType::Value m_type;
     union {
-        unsigned long number;
+        uint64_t number;
         bool boolean;
         long double float_;
         char *string;
     } m_primitiveValue;
+    bool m_isSignedNumber;
 };
 
 template <typename T>
@@ -88,12 +110,14 @@ inline VariableValue convertVariable( T val ) { \
 }
 
 TRACELIB_SPECIALIZE_CONVERSION(bool, booleanValue)
-TRACELIB_SPECIALIZE_CONVERSION(short, numberValue)
-TRACELIB_SPECIALIZE_CONVERSION(unsigned short, numberValue)
-TRACELIB_SPECIALIZE_CONVERSION(int, numberValue)
-TRACELIB_SPECIALIZE_CONVERSION(unsigned int, numberValue)
-TRACELIB_SPECIALIZE_CONVERSION(long, numberValue)
-TRACELIB_SPECIALIZE_CONVERSION(unsigned long, numberValue)
+TRACELIB_SPECIALIZE_CONVERSION(int8_t, numberValue)
+TRACELIB_SPECIALIZE_CONVERSION(uint8_t, numberValue)
+TRACELIB_SPECIALIZE_CONVERSION(int16_t, numberValue)
+TRACELIB_SPECIALIZE_CONVERSION(uint16_t, numberValue)
+TRACELIB_SPECIALIZE_CONVERSION(int32_t, numberValue)
+TRACELIB_SPECIALIZE_CONVERSION(uint32_t, numberValue)
+TRACELIB_SPECIALIZE_CONVERSION(int64_t, numberValue)
+TRACELIB_SPECIALIZE_CONVERSION(uint64_t, numberValue)
 TRACELIB_SPECIALIZE_CONVERSION(float, floatValue)
 TRACELIB_SPECIALIZE_CONVERSION(double, floatValue)
 TRACELIB_SPECIALIZE_CONVERSION(long double, floatValue)
@@ -111,8 +135,6 @@ inline VariableValue convertVariable( T val ) { \
 TRACELIB_SPECIALIZE_CONVERSION_USING_SSTREAM(void *)
 TRACELIB_SPECIALIZE_CONVERSION_USING_SSTREAM(const void *)
 TRACELIB_SPECIALIZE_CONVERSION_USING_SSTREAM(char)
-TRACELIB_SPECIALIZE_CONVERSION_USING_SSTREAM(signed char)
-TRACELIB_SPECIALIZE_CONVERSION_USING_SSTREAM(unsigned char)
 TRACELIB_SPECIALIZE_CONVERSION_USING_SSTREAM(char *)
 TRACELIB_SPECIALIZE_CONVERSION_USING_SSTREAM(signed char *)
 TRACELIB_SPECIALIZE_CONVERSION_USING_SSTREAM(unsigned char *)

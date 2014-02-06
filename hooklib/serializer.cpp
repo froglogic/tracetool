@@ -113,7 +113,11 @@ string PlaintextSerializer::convertVariableValue( const VariableValue &v ) const
             str << v.asString();
             break;
         case VariableType::Number:
-            str << v.asNumber();
+            if( v.isSignedNumber() ) {
+                str << (int64_t)v.asNumber();
+            } else {
+                str << v.asNumber();
+            }
             break;
         case VariableType::Float:
             str << v.asFloat();
@@ -267,7 +271,12 @@ string XMLSerializer::convertVariable( const char *n, const VariableValue &v ) c
             str << "type=\"string\"><![CDATA[" << v.asString() << "]]>";
             break;
         case VariableType::Number:
-            str << "type=\"number\">" << v.asNumber();
+            str << "type=\"number\">";
+            if( v.isSignedNumber() ) {
+                str << (int64_t)v.asNumber();
+            } else {
+                str << v.asNumber();
+            }
             break;
         case VariableType::Float:
             str << "type=\"float\">" << v.asFloat();

@@ -21,11 +21,21 @@ VariableValue VariableValue::stringValue( const char *s )
     return var;
 }
 
-VariableValue VariableValue::numberValue( unsigned long v )
+VariableValue VariableValue::numberValue( int64_t v )
 {
     VariableValue var;
     var.m_type = VariableType::Number;
     var.m_primitiveValue.number = v;
+    var.m_isSignedNumber = true;
+    return var;
+}
+
+VariableValue VariableValue::numberValue( uint64_t v )
+{
+    VariableValue var;
+    var.m_type = VariableType::Number;
+    var.m_primitiveValue.number = v;
+    var.m_isSignedNumber = false;
     return var;
 }
 
@@ -103,7 +113,7 @@ const char *VariableValue::asString() const
     return m_primitiveValue.string;
 }
 
-unsigned long VariableValue::asNumber() const
+uint64_t VariableValue::asNumber() const
 {
     return m_primitiveValue.number;
 }
@@ -116,6 +126,11 @@ bool VariableValue::asBoolean() const
 long double VariableValue::asFloat() const
 {
     return m_primitiveValue.float_;
+}
+
+bool VariableValue::isSignedNumber() const
+{
+    return m_isSignedNumber;
 }
 
 VariableValue::VariableValue()

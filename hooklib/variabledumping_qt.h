@@ -31,19 +31,6 @@
 
 TRACELIB_NAMESPACE_BEGIN
 
-#define TRACELIB_SPECIALIZE_CONVERSION(T, factoryFn) \
-template <> \
-inline VariableValue convertVariable( T val ) { \
-    return VariableValue::factoryFn( val ); \
-}
-
-#if QT_VERSION >= 0x040000
-TRACELIB_SPECIALIZE_CONVERSION(qlonglong, numberValue)
-TRACELIB_SPECIALIZE_CONVERSION(qulonglong, numberValue)
-#endif
-
-#undef TRACELIB_SPECIALIZE_CONVERSION
-
 #if QT_VERSION < 0x040000
 #  define qtTypeToUtf8Char( value ) QVariant( value ).toString().utf8()
 #else
