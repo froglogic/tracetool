@@ -46,7 +46,7 @@ ELSE(WIN32)
             ../hooklib/configuration_unix.cpp)
 ENDIF(WIN32)
 
-IF(NOT WIN32)
+IF(NOT WIN32 AND NOT APPLE)
     find_package(Threads REQUIRED)
     if( ${CMAKE_USE_PTHREADS_INIT} )
         ADD_EXECUTABLE(test_eventthreadunix test_eventthreadunix.cpp)
