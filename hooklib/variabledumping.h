@@ -65,13 +65,13 @@ struct VariableType {
 class VariableValue {
 public:
     TRACELIB_EXPORT static VariableValue stringValue( const char *s );
-    TRACELIB_EXPORT static VariableValue numberValue( uint8_t v ) { return numberValue( (uint64_t)v ); }
-    TRACELIB_EXPORT static VariableValue numberValue( uint16_t v ) { return numberValue( (uint64_t)v ); }
-    TRACELIB_EXPORT static VariableValue numberValue( uint32_t v ) { return numberValue( (uint64_t)v ); }
+    TRACELIB_EXPORT static VariableValue numberValue( uint8_t v ) { return numberValue( static_cast<uint64_t>( v ) ); }
+    TRACELIB_EXPORT static VariableValue numberValue( uint16_t v ) { return numberValue( static_cast<uint64_t>( v ) ); }
+    TRACELIB_EXPORT static VariableValue numberValue( uint32_t v ) { return numberValue( static_cast<uint64_t>( v ) ); }
     TRACELIB_EXPORT static VariableValue numberValue( uint64_t v );
-    TRACELIB_EXPORT static VariableValue numberValue( int8_t v ) { return numberValue( (int64_t)v ); }
-    TRACELIB_EXPORT static VariableValue numberValue( int16_t v ) { return numberValue( (int64_t)v ); }
-    TRACELIB_EXPORT static VariableValue numberValue( int32_t v ) { return numberValue( (int64_t)v ); }
+    TRACELIB_EXPORT static VariableValue numberValue( int8_t v ) { return numberValue( static_cast<int64_t>( v ) ); }
+    TRACELIB_EXPORT static VariableValue numberValue( int16_t v ) { return numberValue( static_cast<int64_t>( v ) ); }
+    TRACELIB_EXPORT static VariableValue numberValue( int32_t v ) { return numberValue( static_cast<int64_t>( v ) ); }
     TRACELIB_EXPORT static VariableValue numberValue( int64_t v );
     TRACELIB_EXPORT static VariableValue booleanValue( bool v );
     TRACELIB_EXPORT static VariableValue floatValue( long double v );
