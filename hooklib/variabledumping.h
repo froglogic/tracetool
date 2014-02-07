@@ -126,6 +126,7 @@ TRACELIB_SPECIALIZE_CONVERSION_USING_SSTREAM(std::string)
 class AbstractVariable
 {
 public:
+    virtual ~AbstractVariable() {}
     virtual const char *name() const = 0;
     virtual VariableValue value() const = 0;
 };
