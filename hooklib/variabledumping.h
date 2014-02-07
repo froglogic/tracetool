@@ -14,7 +14,17 @@
 #include <string>
 #include <vector>
 
-#if defined(_WIN32) || defined(WIN32) && !defined(__GNUC__)
+#ifdef __STDC_VERSION__
+#  if __STDC_VERSION >= 199901L
+#    define HAVE_C99
+#  endif
+#else
+#  if defined(_MSC_VER) && _MSC_VER >= 1800
+#    define HAVE_C99
+#  endif
+#endif
+
+#if !defined(HAVE_C99) && defined(_MSC_VER)
 typedef __int64 int64_t;
 typedef __int32 int32_t;
 typedef __int16 int16_t;
@@ -23,8 +33,10 @@ typedef unsigned __int64 uint64_t;
 typedef unsigned __int32 uint32_t;
 typedef unsigned __int16 uint16_t;
 typedef unsigned __int8 uint8_t;
+#elif defined(HAVE_C99)
+#  include <stdint.h>
 #else
-#include <stdint.h>
+#  error "Compiler not supported, cannot provide integer typedefs"
 #endif
 
 TRACELIB_NAMESPACE_BEGIN
