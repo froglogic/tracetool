@@ -149,7 +149,7 @@ def main():
         return 1
 
     arch = parseArchitecture(sys.argv[1])
-    do_package = len(sys.argv) > 1 and sys.argv[1] == 'package'
+    do_package = len(sys.argv) > 2 and sys.argv[2] == 'package'
 
     buildtype = "ci" if not do_package else "pkg"
     builddir = os.path.realpath(os.path.join(srcdir, "%sbuild_%s_%s_%s" % (buildtype, compiler, arch, qtver)))
