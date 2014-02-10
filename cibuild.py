@@ -200,7 +200,7 @@ def build(do_package):
 
 def main():
     global arch
-    do_package = True if len(sys.argv) > 2 and sys.argv[2] == 'package' else False
+    do_package = len(sys.argv) > 1 and sys.argv[1] == 'package'
 
     if is_windows:
         arch = "x86"
