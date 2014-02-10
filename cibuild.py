@@ -187,14 +187,17 @@ def build(do_package):
     print("\nCalling %s\n" % "\n ".join(cmake_args))
     subprocess.check_call(cmake_args, env=run_env, cwd=builddir)
 
-    make_args = [bin_name("nmake") if is_windows else bin_name("make") ]
+    make_args = [bin_name("cmake"), "--build", builddir]
 
     if do_package:
+        make_args.append("--target")
         make_args.append("package")
     else:
+        make_args.append("--")
         make_args.append("all")
         make_args.append("test")
 
+    print "env:", run_env
     print("\nCalling %s\n" % "\n ".join(make_args))
     subprocess.check_call(make_args, env=run_env, cwd=builddir)
 
