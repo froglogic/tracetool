@@ -122,7 +122,7 @@ def qt_version():
         return "4.8.0"
     elif is_mac:
         # does not matter at the moment, see qt_path
-        return ""
+        return "4.8.0"
     else:
         return "4.8.0"
 
