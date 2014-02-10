@@ -197,7 +197,6 @@ def build(do_package):
         make_args.append("all")
         make_args.append("test")
 
-    print "env:", run_env
     print("\nCalling %s\n" % "\n ".join(make_args))
     subprocess.check_call(make_args, env=run_env, cwd=builddir)
 
