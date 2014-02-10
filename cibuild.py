@@ -142,7 +142,7 @@ def build(do_package):
     compiler = compiler()
     qtver = qt_version()
 
-    buildtype = "ci" if not do_package else "package"
+    buildtype = "ci" if not do_package else "pkg"
     builddir = os.path.realpath(os.path.join(srcdir, "%sbuild_%s_%s_%s" % (buildtype, compiler, arch,qtver)))
 
     print("Compiler        : %s" % compiler)

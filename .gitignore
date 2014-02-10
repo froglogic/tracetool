@@ -3,3 +3,4 @@ build*
 CMakeLists.txt.user
 *.kdev4
 cibuild_*/
+pkgbuild_*/
