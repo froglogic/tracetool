@@ -5,6 +5,7 @@
 # knowledge into the CI system.
 
 import os
+import shutil
 import subprocess
 import sys
 
@@ -150,6 +151,10 @@ def build(do_package):
     print("Qt Version      : %s" % qtver)
     print("Source directory: %s" % srcdir)
     print("Build directory : %s" % builddir)
+
+    if do_package and os.path.exists(builddir):
+        print("Removing build directory to get a clean package build")
+        shutil.rmtree(builddir)
 
     if not os.path.exists(builddir):
         print("Creating missing build directory")
