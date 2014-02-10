@@ -196,8 +196,6 @@ def main():
     if is_windows:
         run_env["PATH"] = run_env["PATH"] + os.pathsep + os.path.split(qmake_exe)[0]
 
-    print run_env["PATH"]
-
     cmake_args.append(srcdir)
 
     print("\nCalling %s\n" % "\n ".join(cmake_args))
