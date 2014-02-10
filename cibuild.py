@@ -203,7 +203,8 @@ def main():
     print("\nCalling %s\n" % "\n ".join(cmake_args))
     subprocess.check_call(cmake_args, env=run_env, cwd=builddir)
 
-    make_args = [find_exe_in_path("nmake" if is_windows else "make", env=run_env)]
+    env_to_search = run_env if is_windows else os.environ
+    make_args = [find_exe_in_path("nmake" if is_windows else "make", env_to_search)]
 
     if do_package:
         make_args.append("package")
