@@ -106,11 +106,9 @@ def qmake_path(qtver):
         return os.path.join(qt_base_path(), arch, qtver, "bin", "qmake")
 
 def parseArchitecture(arch):
-    if arch in ["x86", "x64"]:
+    if arch in ["x86", "x64", "universal"]:
         return arch
-    if arch == "native":
-        return "x64" if sys.maxsize > 2**32 else "x86"
-    raise Exception("Unknown architecture %s (supported: x86, x64, native)" % arch)
+    raise Exception("Unknown architecture %s (supported: x86, x64, universal)" % arch)
 
 def compiler():
     if is_windows:
@@ -127,14 +125,7 @@ def qt_version():
     else:
         return "4.8.0"
 
-def gcc_arch():
-    triplet = subprocess.check_output(["gcc", "-dumpmachine"])
-    if "x86_64" in triplet:
-        return "x64"
-    else:
-        return "x86"
-
-def build(do_package):
+def main():
     global arch, compiler
 
     progpath = os.path.dirname(os.path.realpath(__file__))
@@ -143,8 +134,15 @@ def build(do_package):
     compiler = compiler()
     qtver = qt_version()
 
+    if len(sys.argv) < 2:
+        print "Usage: %s arch" % sys.argv[0]
+        return 1
+
+    arch = parseArchitecture(sys.argv[1])
+    do_package = len(sys.argv) > 1 and sys.argv[1] == 'package'
+
     buildtype = "ci" if not do_package else "pkg"
-    builddir = os.path.realpath(os.path.join(srcdir, "%sbuild_%s_%s_%s" % (buildtype, compiler, arch,qtver)))
+    builddir = os.path.realpath(os.path.join(srcdir, "%sbuild_%s_%s_%s" % (buildtype, compiler, arch, qtver)))
 
     print("Compiler        : %s" % compiler)
     print("Architecture    : %s" % arch)
@@ -181,7 +179,7 @@ def build(do_package):
         cmake_args.append("-DCMAKE_BUILD_TYPE=RelWithDebInfo")
 
     # Do a multi-arch binary on MacOSX
-    if do_package and is_mac:
+    if do_package and arch=='universal':
         cmake_args.append("-DCMAKE_OSX_ARCHITECTURES=i386;x86_64")
 
     cmake_args.append("-DDOXYGEN_EXECUTABLE=%s" % verify_path(doxygen_path()))
@@ -205,24 +203,6 @@ def build(do_package):
     print("\nCalling %s\n" % "\n ".join(make_args))
     subprocess.check_call(make_args, env=run_env, cwd=builddir)
 
-def main():
-    global arch
-    do_package = len(sys.argv) > 1 and sys.argv[1] == 'package'
-
-    if is_windows:
-        arch = "x86"
-        build(do_package)
-        if do_package:
-            arch = "x64"
-            build(do_package)
-    elif is_mac:
-        arch = "x86"
-        build(do_package)
-    else:
-        arch = gcc_arch()
-        build(do_package)
-
-
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
 
