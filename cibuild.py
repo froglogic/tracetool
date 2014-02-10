@@ -16,6 +16,14 @@ binpkg = os.path.expanduser(os.path.join("S:\\" if is_windows else "~", "binPack
 arch = None
 compiler = None
 
+def find_exe_in_path(exeBaseName):
+    for path in os.getenv("PATH").split(os.pathsep):
+        abspath = os.path.join(path, bin_name(exeBaseName))
+        if os.path.exists(abspath) and os.access(abspath, os.X_OK):
+            return abspath
+    return None
+
+
 # Taken from buildsquish
 def compileEnvFromBatchFile(batchDict):
     def dictKeysToUpper(d):
@@ -161,9 +169,8 @@ def main():
 
     verify_path(binpkg)
 
-    cmake_args = [bin_name("cmake")]
+    cmake_args = [find_exe_in_path("cmake"), "-G"]
 
-    cmake_args.append("-G")
     if is_windows:
         cmake_args.append("NMake Makefiles")
     else:
@@ -190,13 +197,11 @@ def main():
     print("\nCalling %s\n" % "\n ".join(cmake_args))
     subprocess.check_call(cmake_args, env=run_env, cwd=builddir)
 
-    make_args = [bin_name("cmake"), "--build", builddir]
+    make_args = [find_exe_in_path("nmake" if is_windows else "make")]
 
     if do_package:
-        make_args.append("--target")
         make_args.append("package")
     else:
-        make_args.append("--")
         make_args.append("all")
         make_args.append("test")
 
