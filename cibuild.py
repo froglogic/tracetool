@@ -16,8 +16,8 @@ binpkg = os.path.expanduser(os.path.join("S:\\" if is_windows else "~", "binPack
 arch = None
 compiler = None
 
-def find_exe_in_path(exeBaseName):
-    for path in os.getenv("PATH").split(os.pathsep):
+def find_exe_in_path(exeBaseName, env=os.environ):
+    for path in env["PATH"].split(os.pathsep):
         abspath = os.path.join(path, bin_name(exeBaseName))
         if os.path.exists(abspath) and os.access(abspath, os.X_OK):
             return abspath
@@ -197,7 +197,7 @@ def main():
     print("\nCalling %s\n" % "\n ".join(cmake_args))
     subprocess.check_call(cmake_args, env=run_env, cwd=builddir)
 
-    make_args = [find_exe_in_path("nmake" if is_windows else "make")]
+    make_args = [find_exe_in_path("nmake" if is_windows else "make", env=run_env)]
 
     if do_package:
         make_args.append("package")
