@@ -17,10 +17,12 @@ arch = None
 compiler = None
 
 def find_exe_in_path(exeBaseName, env=os.environ):
+    binary = bin_name(exeBaseName)
     for path in env["PATH"].split(os.pathsep):
-        abspath = os.path.join(path, bin_name(exeBaseName))
+        abspath = os.path.join(path, binary)
         if os.path.exists(abspath) and os.access(abspath, os.X_OK):
             return abspath
+    print("%s not found in paths: %s" %(binary, env["PATH"]))
     return None
 
 
