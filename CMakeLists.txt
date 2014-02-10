@@ -1,4 +1,5 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.9)
+message(STATUS "Using CMake ${CMAKE_VERSION}")
 PROJECT(tracelib)
 
 # call in tests/CMakeFiles.txt should suffice but the tests target is
@@ -44,8 +45,10 @@ if(NOT HOOKLIB_ONLY)
     ADD_SUBDIRECTORY(examples/addressbook)
     ADD_SUBDIRECTORY(examples)
 endif()
-set(PCRE_BUILD_TESTS FALSE)
+set(PCRE_BUILD_TESTS OFF)
+message(STATUS "enabled pcre tests? ${PCRE_BUILD_TESTS}")
 ADD_SUBDIRECTORY(3rdparty/pcre-8.10)
+message(STATUS "enabled pcre tests? ${PCRE_BUILD_TESTS}")
 
 SET(TRACELIB_VERSION_MAJOR 1)
 SET(TRACELIB_VERSION_MINOR 9)
