@@ -189,8 +189,14 @@ def main():
     if do_package and arch=='universal':
         cmake_args.append("-DCMAKE_OSX_ARCHITECTURES=i386;x86_64")
 
+    qmake_exe = verify_path(qmake_path(qtver))
     cmake_args.append("-DDOXYGEN_EXECUTABLE=%s" % verify_path(doxygen_path()))
-    cmake_args.append("-DQT_QMAKE_EXECUTABLE=%s" % verify_path(qmake_path(qtver)))
+    cmake_args.append("-DQT_QMAKE_EXECUTABLE=%s" % qmake_exe)
+
+    if is_windows:
+        run_env["PATH"] = run_env["PATH"] + os.pathsep + os.path.split(qmake_exe)[0]
+
+    print run_env["PATH"]
 
     cmake_args.append(srcdir)
 
