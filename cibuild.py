@@ -201,7 +201,7 @@ def main():
     cmake_args.append("-DQT_QMAKE_EXECUTABLE=%s" % qmake_exe)
 
     if is_windows:
-        run_env["PATH"] = run_env["PATH"] + os.pathsep + os.path.split(qmake_exe)[0]
+        run_env["PATH"] = os.path.split(qmake_exe)[0] + os.pathsep + run_env["PATH"]
         print("Path for running tests: %s" % run_env["PATH"])
 
     cmake_args.append(srcdir)
