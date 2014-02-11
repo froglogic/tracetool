@@ -197,7 +197,7 @@ def main():
 
     if is_windows:
         run_env["PATH"] = run_env["PATH"] + os.pathsep + os.path.split(qmake_exe)[0]
-        print("Path for running tests: %s" % run_evn["PATH"])
+        print("Path for running tests: %s" % run_env["PATH"])
 
     cmake_args.append(srcdir)
 
