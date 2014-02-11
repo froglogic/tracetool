@@ -16,6 +16,11 @@ binpkg = os.path.expanduser(os.path.join("S:\\" if is_windows else "~", "binPack
 arch = None
 compiler = None
 
+# Make stdout line-buffered so any print()'s end up in the
+# output directly and no buffering occurs
+# stderr is line-buffered by default already so no reason to do that there
+sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 1)
+
 def find_exe_in_path(exeBaseName, env=os.environ):
     binary = bin_name(exeBaseName)
     for path in env["PATH"].split(os.pathsep):
