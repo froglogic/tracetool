@@ -100,7 +100,7 @@ endif()
 # Needed to run packaging inside jenkins, which otherwise has too long paths
 # for the various subdirs used by cpack.
 if(WIN32)
-    set(CPACK_PACKAGE_DIRECTORY "C:\\Windows\\temp")
+    set(CPACK_PACKAGE_DIRECTORY "C:\\\\Windows\\\\temp")
 endif()
 set(CPACK_COMPONENT_INCLUDE_TOPLEVEL_DIRECTORY 1) # Make sure to get top-level directory even when using component packages
 set(CPACK_SYSTEM_NAME "${CMAKE_SYSTEM_NAME}${PACKAGE_BITNESS}")
