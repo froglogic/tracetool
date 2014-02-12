@@ -227,13 +227,18 @@ def main():
     make_args = [find_exe_in_path("nmake" if is_windows else "make", env_to_search)]
 
     if do_package:
-        make_args.append("package")
+        make_args.append("preinstall")
     else:
         make_args.append("all")
         make_args.append("test")
 
     print("\nCalling %s\n" % "\n ".join(make_args))
     subprocess.check_call(make_args, env=run_env, cwd=builddir)
+
+    if do_package:
+        cpack_args = [find_exe_in_path("cpack"), "-V", "--config", "CPackConfig.cmake"]
+        print("\nCalling %s\n" % "\n ".join(cpack_args))
+        subprocess.check_call(cpack_args, env=run_env, cwd=builddir)
 
     if packageInWindowsTemp:
         # Now move the generated artefacts to our builddir so jenkins can pick them up
