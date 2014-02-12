@@ -157,7 +157,7 @@ def main():
     do_package = len(sys.argv) > 2 and sys.argv[2] == 'package'
 
     buildtype = "ci" if not do_package else "pkg"
-    builddir = os.path.realpath(os.path.join(srcdir, "%sbuild_%s_%s_%s" % (buildtype, compiler, arch, qtver)))
+    builddir = os.path.realpath(os.path.join(srcdir, "%sbuild_%s" % (buildtype, arch)))
 
     print("Compiler        : %s" % compiler)
     print("Architecture    : %s" % arch)
