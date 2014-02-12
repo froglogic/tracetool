@@ -5,8 +5,10 @@
 # knowledge into the CI system.
 
 import os
+import re
 import shutil
 import subprocess
+import tempfile
 import sys
 
 is_windows = sys.platform.startswith("win")
@@ -157,7 +159,8 @@ def main():
     do_package = len(sys.argv) > 2 and sys.argv[2] == 'package'
 
     buildtype = "ci" if not do_package else "pkg"
-    builddir = os.path.realpath(os.path.join(srcdir, "%sbuild_%s" % (buildtype, arch)))
+    builddir_name = "%sbuild_%s" % (buildtype, arch)
+    builddir = os.path.realpath(os.path.join(srcdir, builddir_name))
 
     print("Compiler        : %s" % compiler)
     print("Architecture    : %s" % arch)
@@ -196,6 +199,17 @@ def main():
     if do_package and arch=='universal':
         cmake_args.append("-DCMAKE_OSX_ARCHITECTURES=i386;x86_64")
 
+    packageInWindowsTemp = do_package and is_windows
+    packagingDir = ""
+    if packageInWindowsTemp:
+        # Make sure to use a short path on Windows for CPack so it does not run into
+        # the maximum path length. Can happen especially with jenkins nested paths
+        packagingDir = os.path.join(tempfile.gettempdir(), "tracelib-%s" % builddir_name)
+        if os.path.exists(packagingDir):
+            shutil.rmtree(packagingDir)
+        os.makedirs(packagingDir)
+        cmake_args.append("-DCPACK_PACKAGE_DIRECTORY=%s" % packagingDir.replace("\\", "\\\\"))
+
     qmake_exe = verify_path(qmake_path(qtver))
     cmake_args.append("-DDOXYGEN_EXECUTABLE=%s" % verify_path(doxygen_path()))
     cmake_args.append("-DQT_QMAKE_EXECUTABLE=%s" % qmake_exe)
@@ -220,6 +234,14 @@ def main():
 
     print("\nCalling %s\n" % "\n ".join(make_args))
     subprocess.check_call(make_args, env=run_env, cwd=builddir)
+
+    if packageInWindowsTemp:
+        # Now move the generated artefacts to our builddir so jenkins can pick them up
+        pkgnamere = re.compile("tracelib-.*Windows.*zip")
+        for fn in filter(lambda x: pkgnamere.match(x) is not None, os.listdir(packagingDir)):
+            shutil.move(os.path.join(packagingDir, fn), os.path.join(builddir, fn))
+        shutil.rmtree(packagingDir)
+
 
 if __name__ == "__main__":
     sys.exit(main())
