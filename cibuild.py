@@ -106,7 +106,7 @@ def doxygen_path():
 
 def qt_base_path():
     if is_windows:
-        return "Q:\\"
+        return "F:\\"
     else:
         return os.path.expanduser(os.path.join("~", "Qt"))
 
