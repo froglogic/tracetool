@@ -10,6 +10,7 @@ import shutil
 import subprocess
 import tempfile
 import sys
+import ctypes
 
 is_windows = sys.platform.startswith("win")
 is_mac = sys.platform.startswith("darwin")
@@ -29,6 +30,15 @@ def myprint(*args):
         # On Windows line-buffering is the same as full buffering, so need to override
         # print and explicitly flush there
         sys.stdout.flush()
+
+def long_path_name(path):
+    if is_windows:
+        buf = ctypes.create_unicode_buffer(260)
+        GetLongPathName = ctypes.windll.kernel32.GetLongPathNameW
+        rv = GetLongPathName(unicode(path), buf, 260)
+        if rv != 0 and rv <= 260:
+            return buf.value
+    return path
 
 def find_exe_in_path(exeBaseName, env=os.environ):
     binary = bin_name(exeBaseName)
@@ -212,6 +222,10 @@ def main():
         # Make sure to use a short path on Windows for CPack so it does not run into
         # the maximum path length. Can happen especially with jenkins nested paths
         packagingDir = os.path.join(tempfile.gettempdir(), "tracelib-%s" % builddir_name)
+	# On Windows gettempdir() may return a path with 8.3 directory names
+	# but cmake will eventually compare that (using strequal) against a
+	# long pathname, so convert the directory to long pathname as well
+	packagingDir = long_path_name(packagingDir)
         if os.path.exists(packagingDir):
             shutil.rmtree(packagingDir)
         os.makedirs(packagingDir)
