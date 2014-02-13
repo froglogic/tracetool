@@ -222,11 +222,10 @@ def main():
     if packageInWindowsTemp:
         # Make sure to use a short path on Windows for CPack so it does not run into
         # the maximum path length. Can happen especially with jenkins nested paths
-        packagingDir = os.path.join(tempfile.gettempdir(), "tracelib-%s" % builddir_name)
 	# On Windows gettempdir() may return a path with 8.3 directory names
 	# but cmake will eventually compare that (using strequal) against a
 	# long pathname, so convert the directory to long pathname as well
-	packagingDir = long_path_name(packagingDir)
+        packagingDir = os.path.join(long_path_name(tempfile.gettempdir()), "tracelib-%s" % builddir_name)
         if os.path.exists(packagingDir):
             shutil.rmtree(packagingDir)
         os.makedirs(packagingDir)
