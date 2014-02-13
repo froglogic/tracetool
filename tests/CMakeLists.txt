@@ -52,7 +52,7 @@ IF(NOT WIN32 AND NOT APPLE)
         ADD_EXECUTABLE(test_eventthreadunix test_eventthreadunix.cpp)
         TARGET_LINK_LIBRARIES(test_eventthreadunix tracelib ${CMAKE_THREAD_LIBS_INIT})
     endif()
-ENDIF(NOT WIN32)
+ENDIF()
 
 FIND_PACKAGE(Qt4 4.6 COMPONENTS QtGui QtCore QtSql QtNetwork QtXml QtSql REQUIRED)
 INCLUDE(${QT_USE_FILE})
