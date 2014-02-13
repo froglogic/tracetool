@@ -21,7 +21,14 @@ compiler = None
 # Make stdout line-buffered so any print()'s end up in the
 # output directly and no buffering occurs
 # stderr is line-buffered by default already so no reason to do that there
-sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 1)
+if not is_windows:
+    sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 1)
+def myprint(*args):
+    print(args)
+    if is_windows:
+        # On Windows line-buffering is the same as full buffering, so need to override
+        # print and explicitly flush there
+        sys.stdout.flush()
 
 def find_exe_in_path(exeBaseName, env=os.environ):
     binary = bin_name(exeBaseName)
@@ -29,7 +36,7 @@ def find_exe_in_path(exeBaseName, env=os.environ):
         abspath = os.path.join(path, binary)
         if os.path.exists(abspath) and os.access(abspath, os.X_OK):
             return abspath
-    print("%s not found in paths: %s" %(binary, env["PATH"]))
+    myprint("%s not found in paths: %s" %(binary, env["PATH"]))
     return None
 
 
@@ -152,7 +159,7 @@ def main():
     qtver = qt_version()
 
     if len(sys.argv) < 2:
-        print "Usage: %s arch" % sys.argv[0]
+        myprint("Usage: %s arch" % sys.argv[0])
         return 1
 
     arch = parseArchitecture(sys.argv[1])
@@ -162,18 +169,18 @@ def main():
     builddir_name = "%sbuild_%s" % (buildtype, arch)
     builddir = os.path.realpath(os.path.join(srcdir, builddir_name))
 
-    print("Compiler        : %s" % compiler)
-    print("Architecture    : %s" % arch)
-    print("Qt Version      : %s" % qtver)
-    print("Source directory: %s" % srcdir)
-    print("Build directory : %s" % builddir)
+    myprint("Compiler        : %s" % compiler)
+    myprint("Architecture    : %s" % arch)
+    myprint("Qt Version      : %s" % qtver)
+    myprint("Source directory: %s" % srcdir)
+    myprint("Build directory : %s" % builddir)
 
     if do_package and os.path.exists(builddir):
-        print("Removing build directory to get a clean package build")
+        myprint("Removing build directory to get a clean package build")
         shutil.rmtree(builddir)
 
     if not os.path.exists(builddir):
-        print("Creating missing build directory")
+        myprint("Creating missing build directory")
         os.mkdir(builddir)
     os.chdir(builddir)
 
@@ -216,11 +223,11 @@ def main():
 
     if is_windows:
         run_env["PATH"] = os.path.split(qmake_exe)[0] + os.pathsep + run_env["PATH"]
-        print("Path for running tests: %s" % run_env["PATH"])
+        myprint("Path for running tests: %s" % run_env["PATH"])
 
     cmake_args.append(srcdir)
 
-    print("\nCalling %s\n" % "\n ".join(cmake_args))
+    myprint("\nCalling %s\n" % "\n ".join(cmake_args))
     subprocess.check_call(cmake_args, env=run_env, cwd=builddir)
 
     env_to_search = run_env if is_windows else os.environ
@@ -232,12 +239,12 @@ def main():
         make_args.append("all")
         make_args.append("test")
 
-    print("\nCalling %s\n" % "\n ".join(make_args))
+    myprint("\nCalling %s\n" % "\n ".join(make_args))
     subprocess.check_call(make_args, env=run_env, cwd=builddir)
 
     if do_package:
         cpack_args = [find_exe_in_path("cpack"), "-V", "--config", "CPackConfig.cmake"]
-        print("\nCalling %s\n" % "\n ".join(cpack_args))
+        myprint("\nCalling %s\n" % "\n ".join(cpack_args))
         subprocess.check_call(cpack_args, env=run_env, cwd=builddir)
 
     if packageInWindowsTemp:
