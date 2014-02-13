@@ -181,10 +181,15 @@ private:
 
 class TracePointVisitor {
 public:
-    inline TracePointVisitor( TracePoint *tracePoint ) : m_tracePoint( tracePoint ) { }
-    inline ~TracePointVisitor() {}
+    inline TracePointVisitor( TracePoint *tracePoint ) : m_tracePoint( tracePoint ), streamedTo( false ) { }
+    inline ~TracePointVisitor() {
+        if( !streamedTo ) {
+            flush();
+        }
+    }
 
     inline TracePointVisitorProxy operator<<( const VariableValue &v ) {
+        streamedTo = true;
         m_stream << variableValueAsString( v );
         return TracePointVisitorProxy( *this );
     }
@@ -199,6 +204,7 @@ private:
 
     TracePoint *m_tracePoint;
     std::ostringstream m_stream;
+    bool streamedTo;
 };
 
 TracePointVisitorProxy TracePointVisitorProxy::operator<<( const VariableValue &v )
