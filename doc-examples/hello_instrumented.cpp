@@ -5,7 +5,7 @@
 
 int main()
 {
-    TRACELIB_TRACE_MSG( "main() entered" );
+    fTrace(0) << "main() entered";
 
     using namespace std;
 
@@ -13,10 +13,10 @@ int main()
     cout << "Please enter your name: ";
     cin >> name;
 
-    TRACELIB_WATCH(TRACELIB_VAR(name));
+    fWatch(0) << fVar(name);
 
     cout << "Hello, " << name << "!" << endl;
 
-    TRACELIB_TRACE_MSG( "main() finished" );
+    fTrace(0) << "main() finished";
 }
 
