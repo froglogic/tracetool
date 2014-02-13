@@ -116,9 +116,7 @@ void MainWindow::timerTriggered()
 {
     static int row = 0;
     static int column = 0;
-    TRACELIB_WATCH_KEY_MSG( "Timer Messages",
-                        "Qt eventloop still running",
-                        TRACELIB_VAR(row) << TRACELIB_VAR(column) );
+    fWatch("Timer Messages") <<  "Qt eventloop still running" << fVar(row) << fVar(column);
     if ( ++row == 10 ) {
         ++column;
         row = 0;
@@ -176,13 +174,13 @@ void MainWindow::fileNew()
     clear();
     setWindowTitle(tr("Address Book - Unnamed"));
     updateUi();
-    TRACELIB_WATCH_KEY("FileNew", TRACELIB_VAR(dirty) << TRACELIB_VAR(windowTitle()) << TRACELIB_VAR(filename) );
+    fWatch("FileNew" ) << fVar(dirty) << fVar(windowTitle()) << fVar(filename);
 }
 
 
 void MainWindow::clear()
 {
-    TRACELIB_TRACE;
+    fTrace(0);
     tableWidget->clear();
     tableWidget->setColumnCount(COLUMNS);
     tableWidget->setRowCount(0);
@@ -212,7 +210,7 @@ void MainWindow::load(const QString &name)
 {
     QFile file(name);
     if (!file.open(QIODevice::ReadOnly|QIODevice::Text)) {
-        TRACELIB_ERROR_MSG( QString( "Failed to load input file '%1'" ).arg( name ).toUtf8().data() );
+        fError(0) << QString( "Failed to load input file '%1'" ).arg( name ).toUtf8().data();
         QMessageBox::warning(this, tr("Address Book - Error"),
                 tr("Failed to read file: %1").arg(file.errorString()));
         return;
@@ -297,11 +295,11 @@ void MainWindow::editAdd()
 {
     Dialog dialog(this);
     if (dialog.exec()) {
-        TRACELIB_WATCH_MSG("Values returned by Add Entry dialog",
-                           TRACELIB_VAR(dialog.forename())
-                           << TRACELIB_VAR(dialog.surname())
-                           << TRACELIB_VAR(dialog.email())
-                           << TRACELIB_VAR(dialog.phone()));
+        fWatch(0) << "Values returned by Add Entry dialog"
+                           << fVar(dialog.forename())
+                           << fVar(dialog.surname())
+                           << fVar(dialog.email())
+                           << fVar(dialog.phone());
         int row = tableWidget->rowCount() == 0
                 ? 0 :tableWidget->currentRow();
         tableWidget->insertRow(row);

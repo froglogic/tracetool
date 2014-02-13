@@ -17,8 +17,8 @@ namespace ACME
     
 inline std::string f(int v1, int v2)
 {
-    TRACELIB_DEBUG;
-    TRACELIB_WATCH_MSG("f() arguments", TRACELIB_VAR(v1) << TRACELIB_VAR(v2));
+    fDebug(0);
+    fWatch(0) << "f() arguments" << fVar(v1) << fVar(v2);
     Person p("John", "Doe");
     return p.toString();
 }

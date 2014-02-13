@@ -12,8 +12,9 @@ namespace GUI
 {
 
     void Widget::repaint(bool onlyVisible) {
-        if (!onlyVisible)
-            TRACELIB_ERROR;
+        if (!onlyVisible) {
+            fError(0);
+        }
         f(1313, -2);
     }
 
