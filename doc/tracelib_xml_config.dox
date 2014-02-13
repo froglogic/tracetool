@@ -1,0 +1,260 @@
+/*!
+
+\page tracelib_xml_config Configuration File Format
+
+\section General Structure
+
+The configuration file starts with the <tracelibConfiguration> element which
+can contain any number of <process>, <tracekeys> and <storage> elements. See
+the corresponding sections \ref process_section, \ref tracekeys_section and
+\ref storage_section for more details.
+
+\code {.xml}
+<tracelibConfiguration>
+  <process>...</process>
+  <process>...</process>
+  <tracekeys>...</tracekeys>
+  <storage>...</storage>
+</tracelibConfiguration>
+\endcode
+
+See \ref example_config for a quick example.
+
+\section process_section Process configuration
+
+Each <process> element configures the behaviour of tracelib for all processes
+of a given name. That way a single configuration can be used to setup tracing
+of multiple different applications.
+
+The <name> child element specifies the executable name (without path) of the
+process to configure trace output for. Using the <serializer>, <output> and
+<tracepointset> child elements the specific output configuration can be set.
+
+\code {.xml}
+<process>
+  <name>tracegui.exe</name>
+  <output>...</output>
+  <serializer>...</serializer>
+  <tracepointset>...</tracepointset>
+</process>
+\endcode
+
+\subsection output_config Output configuration
+
+The <output> element specifies where the trace output should go to. It has a
+mandatory type attribute that specifies one of three output types: tcp, file or
+stdout.
+
+Each output type has its own set of options specified as <option> elements with
+a name attribute and the value as content. The following sections discuss the
+different options for each of the output types.
+
+\code {.xml}
+<output type="...">
+  <option name="...">...</option>
+</output>
+\endcode
+
+\subsubsection tcp_config TCP output
+
+The TCP output supports specifying the host name or ip address and the TCP port
+on which the traced daemon listens. The option names are 'host' for the host
+name or ip address and 'port' for the port.
+
+\note This output implies usage of the XML serializer since traced only
+understands that format.
+
+\code {.xml}
+<output type="tcp">
+  <option name="host">127.0.0.1</option>
+  <option name="port">1234</option>
+</output>
+\endcode
+
+\subsubsection file_config File output
+
+The file output generates a file on the local disk of the machine running the
+application. It has a mandatory 'filename' option that specifies the filename
+to use. The filename can be either an absolute path to a file or a relative
+one. Specifying a relative path will let the operating system decide where the
+file is generated, on many platforms this will use the current working
+directory of the process when the first trace point is generating an entry.
+
+\code {.xml}
+<output type="file">
+  <option name="filename">/tmp/trace.log</option>
+</output>
+\endcode
+
+\subsubsection stdout_config Standard output stream output
+
+The stdout output type generates the trace information on the stdout stream of
+the process. There is no further configuration possible. This output type will
+flush the stdout stream after each trace entry to make sure that the entry is
+not mixed with other output from the application.
+
+\code {.xml}
+<output type="stdout" />
+\endcode
+
+\subsection serializer_config Serializer configuration
+
+The serializer determines in what format the trace entries are written. You can
+choose between an xml format or plaintext. The xml format is the same that the
+xml2trace tool understands so that you can let users generate xml files as that
+is easier for them to set up and then still convert that to a trace database
+and use the tracegui for analyzing it.
+
+\subsubsection xml_serializer XML Serializer
+
+The xml serializer uses a fixed XML format for the trace entries and several
+other information about the process itself. You can however configure wether
+the XML should be indented and spread across multiple lines or use a more
+condensed formatting. The beauitifedOutput option can be set to yes to enable
+the indented formatting and to anything else to avoid it.
+
+\code {.xml}
+<serializer type="xml">
+  <option name="beautifiedOutput">true</option>
+</serializer>
+\endcode
+
+\subsubsection plaintext_serializer Plaintext Serializer
+
+The plaintext serializer generates one line of output for each trace entry, the
+line includes almost all information that the xml has as well. In particular
+the message, the process name and more. You can specify wether the output
+should also include timestamps or not using the 'timestamps' option.
+
+\code {.xml}
+<serializer type="plaintext">
+  <option name="timestamps">yes</option>
+</serializer>
+\endcode
+
+\subsection tracepointsets_config Trace Point Sets
+
+The tracepointset configuration can be used to setup filtering rules for the
+trace entries that should be generated. It also allows to specify wether the
+traces should contain variables and backtraces. See the \ref filter_section
+section for more details on the filtering.
+
+Enabling and disabling the production of backtraces for trace entries can be
+done by setting the backtraces attribute to yes or no.
+
+Enabling and disabling the production of variables for trace entries can be
+done by setting the variables attribute to
+yes or no.
+
+\code {.xml}
+<tracepointset backtraces="yes" variables="no">
+...
+</tracepointset>
+\endcode
+
+\section tracekeys_section Specifying Trace keys
+
+The <tracekeys> element allows to enable or disable the generation of trace
+entries based on the corresponding trace key that was used for them. For each
+trace key that should be explicitly enabled or disabled there needs to be a
+<key> sub element with the trace key as its text value. Using the 'enabled'
+attribute its possible to either enable or disable the trace entries matching
+the key by setting the attribute falue to true or false respectively
+
+\note If the 'enabled' attribute is missing the key is considered to be enabled.
+
+\code {.xml}
+<tracekeys>
+  <!-- generate all trace entries specifying the IPC trace key -->
+  <key enabled="true">IPC</key>
+  <!-- disable generating of trace entries for anything related to the Script trace key -->
+  <key enabled="false">Script</key>
+  <!-- No enabled attribute means the key is enabled -->
+  <key>Config</key>
+</tracekeys>
+\endcode
+
+\section storage_section Changing Storage options
+
+The <storage> element allows to specify how big the database may grow and how
+much it should be shrinked if the limit is reached. The shrinking moves data
+out of the database into an archive directory that has to be specified.
+
+\note The settings configured here only have an effect if the trace entries are
+added to a trace database, either by transporting the \ref xml_serializer format
+using the \ref tcp_config to a traced process or by converting the \ref
+file_config into a trace database using xml2trace.
+
+\subsection maximumsize_config Maximum Storage size
+
+The element's value should specify the maximum size the database may grow to
+before the database feeding process starts archiving the oldest entries.
+
+\code {.xml}
+<storage>
+  <maximumSize>12313121</maximumSize>
+  ...
+</storage>
+\endcode
+
+\subsection shrinkby_config Shrinking factor
+
+The element's value should specify the number of trace entries that should be
+removed from the database if it grows beyond the \ref maximumsize_config.
+
+\code {.xml}
+<storage>
+  <shrinkBy>2000</shrinkBy>
+  ...
+</storage>
+\endcode
+
+\subsection archivedirectory_config Directory to archive old trace entries
+
+The element's value should specify a directory on the system where the trace
+database is stored. The directory will be used to create database files
+containing the entries removed from the database when the \ref
+maximumsize_config is reached. The archive database name is generated based on
+the trace database name and an always increasing number.
+
+\code {.xml}
+<storage>
+  <archiveDirectory>/var/backups/tracelib</archiveDirectory>
+  ...
+</storage>
+\endcode
+
+\section filter_section Specifying filters for trace entries
+
+//TODO, see hooklib/configuration.cpp
+
+\section example_config Example tracelib.xml file
+
+\code {.xml}
+<tracelibConfiguration>
+  <process>
+    <name>addressbook.exe</name>
+    <output type="tcp">
+      <option name="host">192.168.1.23</option>
+      <option name="port">71481</option>
+    </output>
+    <serializer type="xml" />
+    <tracekeys>
+      <key enabled="false">Config</key>
+      <key>IPC</key>
+    </tracekeys>
+  </process>
+  <process>
+    <name>tracegui.exe</name>
+    <output type="file">
+      <option name="filename">trace.log</option>
+    </output>
+    <serializer type="plaintext">
+      <option name="timestamps">yes</option>
+    </serializer>
+  </process>
+</tracelibConfiguration>
+\endcode
+
+*/
+

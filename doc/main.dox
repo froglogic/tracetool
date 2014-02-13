@@ -89,5 +89,11 @@ Hello, Max!
  *
  * The software package ships with two example applications. See
  * the \subpage examples_page page for more details.
+ *
+ * \section tracelib_xml_doc tracelib.xml Configuration format
+ * 
+ * There are various options usable in the tracelib.xml configuration file to
+ * specify the place and format of the output as well as doing some basic
+ * filtering. See the \subpage tracelib_xml_config page for more details.
  */
 
