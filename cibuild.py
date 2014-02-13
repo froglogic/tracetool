@@ -36,6 +36,7 @@ def long_path_name(path):
         buf = ctypes.create_unicode_buffer(260)
         GetLongPathName = ctypes.windll.kernel32.GetLongPathNameW
         rv = GetLongPathName(unicode(path), buf, 260)
+        myprint("retrieved long pathname for %s? %s -> %s" % (path, rv, buf.value))
         if rv != 0 and rv <= 260:
             return buf.value
     return path
