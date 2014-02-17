@@ -251,7 +251,6 @@ def main():
         make_args.append("preinstall")
     else:
         make_args.append("all")
-        make_args.append("test")
 
     myprint("\nCalling %s\n" % "\n ".join(make_args))
     subprocess.check_call(make_args, env=run_env, cwd=builddir)
@@ -260,6 +259,10 @@ def main():
         cpack_args = [find_exe_in_path("cpack"), "-V", "--config", "CPackConfig.cmake"]
         myprint("\nCalling %s\n" % "\n ".join(cpack_args))
         subprocess.check_call(cpack_args, env=run_env, cwd=builddir)
+    else:
+        ctest_args = [find_exe_in_path("ctest"), "--no-compress-output", "-T", "Test"]
+        myprint("\nCalling %s\n" % "\n ".join(ctest_args))
+        subprocess.call(ctest_args, env=run_env, cwd=builddir)
 
     if packageInWindowsTemp:
         # Now move the generated artefacts to our builddir so jenkins can pick them up
