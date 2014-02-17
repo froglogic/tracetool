@@ -76,3 +76,11 @@ ADD_TEST(NAME test_starttime COMMAND test_info --starttime)
 ADD_TEST(NAME test_processname COMMAND test_processname)
 ADD_TEST(NAME test_columninfo COMMAND test_session --columns)
 ADD_TEST(NAME test_guiconf COMMAND test_guiconf ${CMAKE_CURRENT_SOURCE_DIR})
+set_tests_properties(test_filter
+    test_processid
+    test_threadid
+    test_starttime
+    test_processname
+    test_columninfo
+    test_guiconf 
+    PROPERTIES TIMEOUT 60)
