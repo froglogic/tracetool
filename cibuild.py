@@ -260,6 +260,10 @@ def main():
         myprint("\nCalling %s\n" % "\n ".join(cpack_args))
         subprocess.check_call(cpack_args, env=run_env, cwd=builddir)
     else:
+        # cleanup existing Testing/ directory since otherwise the ci-tools may pick up
+        # old test files
+        if os.path.exists(os.path.join(builddir, "Testing")):
+            shutil.rmtree(os.path.join(builddir, "Testing"))
         ctest_args = [find_exe_in_path("ctest"), "--no-compress-output", "-T", "Test"]
         myprint("\nCalling %s\n" % "\n ".join(ctest_args))
         subprocess.call(ctest_args, env=run_env, cwd=builddir)
