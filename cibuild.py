@@ -4,6 +4,8 @@
 # on different platforms and avoid putting the platform-specific
 # knowledge into the CI system.
 
+from __future__ import print_function
+
 import os
 import re
 import shutil
@@ -25,7 +27,7 @@ compiler = None
 if not is_windows:
     sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 1)
 def myprint(*args):
-    print(args)
+    print(*args)
     if is_windows:
         # On Windows line-buffering is the same as full buffering, so need to override
         # print and explicitly flush there
