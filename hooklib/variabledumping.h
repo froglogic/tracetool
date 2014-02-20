@@ -14,19 +14,20 @@
 #include <string>
 #include <vector>
 
-#if defined(_MSC_VER) && _MSC_VER < 1600
+#if defined(_MSC_VER) && _MSC_VER <= 1600
+// MSVC10 aka _MSC_VER == 1600 has stdint.h but no 64bit types in it
 typedef __int64 int64_t;
+typedef unsigned __int64 uint64_t;
+#  if _MSC_VER < 1600
 typedef __int32 int32_t;
 typedef __int16 int16_t;
 typedef __int8 int8_t;
-typedef unsigned __int64 uint64_t;
 typedef unsigned __int32 uint32_t;
 typedef unsigned __int16 uint16_t;
 typedef unsigned __int8 uint8_t;
-#elif defined(_MSC_VER) && _MSC_VER == 1600
-#include <stdint.h>
-typedef __int64 int64_t;
-typedef unsigned __int64 uint64_t;
+#  else
+#    include <stdint.h>
+#  endif
 #else
 #include <stdint.h>
 #endif
@@ -125,6 +126,24 @@ TRACELIB_SPECIALIZE_CONVERSION(uint64_t, numberValue)
 TRACELIB_SPECIALIZE_CONVERSION(float, floatValue)
 TRACELIB_SPECIALIZE_CONVERSION(double, floatValue)
 TRACELIB_SPECIALIZE_CONVERSION(long double, floatValue)
+#if defined(_MSC_VER)
+#  if _MSC_VER <= 1600
+#    if _MSC_VER == 1600
+// MSCC10 has int8_t typedef'ed to signed char, so need an explicit char
+// version since those two types are not the same
+TRACELIB_SPECIALIZE_CONVERSION(char, numberValue)
+#    endif
+//  This seems to be necessary for msvc, looks like long != int32_t (or int64_t)
+template <>
+inline VariableValue convertVariable( unsigned long val ) {
+    return VariableValue::numberValue( (uint64_t)val );
+}
+template <>
+inline VariableValue convertVariable( long val ) {
+    return VariableValue::numberValue( (int64_t)val );
+}
+#  endif
+#endif
 
 #undef TRACELIB_SPECIALIZE_CONVERSION
 
