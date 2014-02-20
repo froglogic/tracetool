@@ -127,12 +127,12 @@ TRACELIB_SPECIALIZE_CONVERSION(float, floatValue)
 TRACELIB_SPECIALIZE_CONVERSION(double, floatValue)
 TRACELIB_SPECIALIZE_CONVERSION(long double, floatValue)
 #if defined(_MSC_VER)
-#  if _MSC_VER <= 1600
-#    if _MSC_VER == 1600
-// MSCC10 has int8_t typedef'ed to signed char, so need an explicit char
-// version since those two types are not the same
+#    if _MSC_VER >= 1600
+// MSVC10 and later has stdint.h int8_t typedef'ed to signed char, so need an
+// explicit char version since those two types are not the same
 TRACELIB_SPECIALIZE_CONVERSION(char, numberValue)
 #    endif
+
 //  This seems to be necessary for msvc, looks like long != int32_t (or int64_t)
 template <>
 inline VariableValue convertVariable( unsigned long val ) {
@@ -142,7 +142,6 @@ template <>
 inline VariableValue convertVariable( long val ) {
     return VariableValue::numberValue( (int64_t)val );
 }
-#  endif
 #endif
 
 #undef TRACELIB_SPECIALIZE_CONVERSION
