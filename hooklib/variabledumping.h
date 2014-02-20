@@ -115,6 +115,10 @@ inline VariableValue convertVariable( T val ) { \
 }
 
 TRACELIB_SPECIALIZE_CONVERSION(bool, booleanValue)
+TRACELIB_SPECIALIZE_CONVERSION(float, floatValue)
+TRACELIB_SPECIALIZE_CONVERSION(double, floatValue)
+TRACELIB_SPECIALIZE_CONVERSION(long double, floatValue)
+// integral number types, also covering the more commonly used char, short, long long (with signed/unsigned)
 TRACELIB_SPECIALIZE_CONVERSION(int8_t, numberValue)
 TRACELIB_SPECIALIZE_CONVERSION(uint8_t, numberValue)
 TRACELIB_SPECIALIZE_CONVERSION(int16_t, numberValue)
@@ -123,17 +127,12 @@ TRACELIB_SPECIALIZE_CONVERSION(int32_t, numberValue)
 TRACELIB_SPECIALIZE_CONVERSION(uint32_t, numberValue)
 TRACELIB_SPECIALIZE_CONVERSION(int64_t, numberValue)
 TRACELIB_SPECIALIZE_CONVERSION(uint64_t, numberValue)
-TRACELIB_SPECIALIZE_CONVERSION(float, floatValue)
-TRACELIB_SPECIALIZE_CONVERSION(double, floatValue)
-TRACELIB_SPECIALIZE_CONVERSION(long double, floatValue)
-#if defined(_MSC_VER)
-#    if _MSC_VER >= 1600
-// MSVC10 and later has stdint.h int8_t typedef'ed to signed char, so need an
-// explicit char version since those two types are not the same
-TRACELIB_SPECIALIZE_CONVERSION(char, numberValue)
-#    endif
-
-//  This seems to be necessary for msvc, looks like long != int32_t (or int64_t)
+#if defined(_MSC_VER) && _MSC_VER < 1600
+// int8_t is the same type as 'char' hence need an overload for signed char for these compilers
+TRACELIB_SPECIALIZE_CONVERSION(signed char, numberValue)
+#endif
+// In all supported compilers long is a different type than int32_t or int64_t and thus needs
+// an explicit overload
 template <>
 inline VariableValue convertVariable( unsigned long val ) {
     return VariableValue::numberValue( (uint64_t)val );
@@ -142,7 +141,6 @@ template <>
 inline VariableValue convertVariable( long val ) {
     return VariableValue::numberValue( (int64_t)val );
 }
-#endif
 
 #undef TRACELIB_SPECIALIZE_CONVERSION
 
@@ -154,6 +152,12 @@ inline VariableValue convertVariable( T val ) { \
     return VariableValue::stringValue( str.str().c_str() ); \
 }
 
+#if !defined(_MSC_VER) || _MSC_VER > 1500
+// Compilers using stdint.h define int8_t to be a signed char, which is different from
+// just 'char', hence we need a dedicated overload for that case and can use a string overload
+// which is a bit nicer in the output
+TRACELIB_SPECIALIZE_CONVERSION_USING_SSTREAM(char)
+#endif
 TRACELIB_SPECIALIZE_CONVERSION_USING_SSTREAM(void *)
 TRACELIB_SPECIALIZE_CONVERSION_USING_SSTREAM(const void *)
 TRACELIB_SPECIALIZE_CONVERSION_USING_SSTREAM(char *)
