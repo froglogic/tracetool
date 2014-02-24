@@ -114,9 +114,11 @@ Trace::Trace()
         }
     }
 
+#ifdef _WIN32
     if ( !m_errorLog ) {
         m_errorLog = new DebugViewErrorLog;
     }
+#endif
 
     const string cfgFileName = Configuration::defaultFileName();
     reloadConfiguration( cfgFileName );

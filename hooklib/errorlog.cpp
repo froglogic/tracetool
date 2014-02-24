@@ -8,8 +8,6 @@
 
 #ifdef _WIN32
 #  include <windows.h>
-#else
-#  include <stdio.h>
 #endif
 
 #include <ostream>
@@ -28,15 +26,13 @@ ErrorLog::~ErrorLog()
 {
 }
 
+#ifdef _WIN32
 void DebugViewErrorLog::write( const string &msg )
 {
     // XXX Consider encoding issues (msg is UTF-8).
-#ifdef _WIN32
     OutputDebugStringA( msg.c_str() );
-#else
-    fprintf( stderr, "%s\n", msg.c_str() );
-#endif
 }
+#endif
 
 StreamErrorLog::StreamErrorLog( ostream *stream )
     : m_stream( stream )

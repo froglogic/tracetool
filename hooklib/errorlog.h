@@ -47,11 +47,13 @@ private:
     void operator=( const ErrorLog &other );
 };
 
+#ifdef _WIN32
 class DebugViewErrorLog : public ErrorLog
 {
 public:
     virtual void write( const std::string &msg );
 };
+#endif
 
 class StreamErrorLog : public ErrorLog
 {
