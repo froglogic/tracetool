@@ -133,7 +133,7 @@ TRACELIB_SPECIALIZE_CONVERSION(signed char, numberValue)
 #endif
 // In all supported compilers long is a different type than int32_t or int64_t and thus needs
 // an explicit overload, except for 64bit gcc targets of course
-#if not( defined(__GNUC__) && defined(__x86_64__) )
+#if !( defined(__GNUC__) && defined(__x86_64__) )
 template <>
 inline VariableValue convertVariable( unsigned long val ) {
     return VariableValue::numberValue( (uint64_t)val );
