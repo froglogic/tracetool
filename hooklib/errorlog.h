@@ -55,6 +55,12 @@ public:
 };
 #endif
 
+class NullErrorLog : public ErrorLog
+{
+public:
+    virtual void write( const std::string &msg );
+};
+
 class StreamErrorLog : public ErrorLog
 {
 public:

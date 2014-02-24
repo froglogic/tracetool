@@ -34,6 +34,11 @@ void DebugViewErrorLog::write( const string &msg )
 }
 #endif
 
+void NullErrorLog::write( const string & /*msg*/ )
+{
+    // Intentionally left blank.
+}
+
 StreamErrorLog::StreamErrorLog( ostream *stream )
     : m_stream( stream )
 {
