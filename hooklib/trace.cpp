@@ -219,7 +219,11 @@ void Trace::reloadConfiguration( const string &fileName )
         }
         TraceEntry::process.availableTraceKeys.clear();
     }
-    m_errorLog->write( "Trace::reloadConfiguration: cfg = %p, m_serializer = %p, m_output = %p, m_configuration = %p", cfg, m_serializer, m_output, m_configuration );
+    if( m_configuration ) {
+        m_errorLog->write( "Trace::reloadConfiguration: configuration updated with serializer: %s and output: %s",
+                           (m_serializer ? "yes" : "no"),
+                           (m_output ? "yes" : "no") );
+    }
 }
 
 void Trace::configureTracePoint( TracePoint *tracePoint ) const
