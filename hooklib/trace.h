@@ -25,6 +25,7 @@ class Output;
 class Serializer;
 struct TracePoint;
 class Log;
+class LogOutput;
 
 class TracePointSet
 {
@@ -119,6 +120,8 @@ private:
     BacktraceGenerator m_backtraceGenerator;
     FileModificationMonitor *m_configFileMonitor;
     Log *m_log;
+    LogOutput *m_errorOutput;
+    LogOutput *m_statusOutput;
 };
 
 Trace *getActiveTrace();

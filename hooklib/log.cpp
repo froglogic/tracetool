@@ -18,8 +18,28 @@ using namespace std;
 
 TRACELIB_NAMESPACE_BEGIN
 
-Log::Log()
+LogOutput::LogOutput()
 {
+}
+
+LogOutput::~LogOutput()
+{
+}
+
+Log::Log( LogOutput* statusOutput, LogOutput *errorOutput )
+    : m_statusOutput( statusOutput )
+    , m_errorOutput( errorOutput )
+{
+}
+
+void Log::writeStatus( const string &msg )
+{
+    m_statusOutput->write( msg );
+}
+
+void Log::writeError( const string &msg )
+{
+    m_errorOutput->write( msg );
 }
 
 Log::~Log()
@@ -27,29 +47,29 @@ Log::~Log()
 }
 
 #ifdef _WIN32
-void DebugViewLog::write( const string &msg )
+void DebugViewLogOutput::write( const string &msg )
 {
     // XXX Consider encoding issues (msg is UTF-8).
     OutputDebugStringA( msg.c_str() );
 }
 #endif
 
-void NullLog::write( const string & /*msg*/ )
+void NullLogOutput::write( const string & /*msg*/ )
 {
     // Intentionally left blank.
 }
 
-StreamLog::StreamLog( ostream *stream )
+StreamLogOutput::StreamLogOutput( ostream *stream )
     : m_stream( stream )
 {
 }
 
-StreamLog::~StreamLog()
+StreamLogOutput::~StreamLogOutput()
 {
     delete m_stream;
 }
 
-void StreamLog::write( const std::string &msg )
+void StreamLogOutput::write( const std::string &msg )
 {
     ( *m_stream ) << "[" << timeToString( now() ) << "] " << msg << endl;
 }

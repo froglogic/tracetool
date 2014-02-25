@@ -122,7 +122,7 @@ void NetworkOutputPrivate::connect()
 
     struct hostent *he = gethostbyname( host.c_str() );
     if ( !he ) {
-        log->write( "connect: host '%s' not found\n", host.c_str() );
+        log->writeError( "connect: host '%s' not found\n", host.c_str() );
         return;
     }
 
@@ -142,7 +142,7 @@ void NetworkOutputPrivate::connect()
 
         state = Connecting;
     } else {
-        log->write( "connect to %s: %s", host.c_str(), strerror( errno ) );
+        log->writeError( "connect to %s: %s", host.c_str(), strerror( errno ) );
         ::close( m_socket );
         m_socket = -1;
     }
@@ -200,13 +200,13 @@ void NetworkOutputPrivate::handleEvent( EventContext *ctx, Event *event )
                 }
             }
         } else if ( FileEvent::FileRead == fe->watch ) {
-            log->write( "Connect error to %s %d %d",
+            log->writeError( "Connect error to %s %d %d",
                     host.c_str(), fe->fd, m_socket );
             removeObserver( ctx, FileEvent::FileReadWrite );
             clear();
             state = Error;
         } else if ( FileEvent::Error == fe->watch ) {
-            log->write( "Network error to %s: %s %d",
+            log->writeError( "Network error to %s: %s %d",
                     host.c_str(), strerror( fe->err ), fe->fd );
             if ( Connecting == state )
                 removeObserver( ctx, FileEvent::FileWrite );

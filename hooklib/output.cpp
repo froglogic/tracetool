@@ -54,7 +54,7 @@ bool FileOutput::open()
 {
     m_file = fopen( m_filename.c_str(), "w" );
     if( !m_file ) {
-        m_log->write( "Failed to open file!: %s", strerror( errno ) );
+        m_log->writeError( "Failed to open file!: %s", strerror( errno ) );
         return false;
     }
     return true;

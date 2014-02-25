@@ -181,7 +181,8 @@ static void testCommunication()
     // as single fd in event thread
     testFileNotification();
 
-    NullLog error_log;
+    NullLogOutput log_output;
+    Log error_log( &log_output, &log_output );
     std::string quick_fox = "The quick brown fox jumps over the lazy dog";
     NetworkOutput *net = new NetworkOutput( &error_log, "127.0.0.1", TRACELIB_DEFAULT_PORT );
     verify( "Initial NetworkOutput::canWrite()",
