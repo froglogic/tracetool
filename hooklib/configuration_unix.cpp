@@ -13,6 +13,12 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#if defined(__APPLE__)
+#  include <mach-o/dyld.h>
+#  include <sys/param.h>
+#  include <vector>
+#endif
+
 using namespace std;
 
 TRACELIB_NAMESPACE_BEGIN
@@ -41,11 +47,33 @@ static const char *processName()
 #endif
 }
 
+#if defined(__APPLE__)
+string macProcessPath()
+{
+    uint32_t size = MAXPATHLEN;
+    std::vector<char> buf( size );
+    int retVal = _NSGetExecutablePath( &buf[0], &size );
+    if( retVal == -1 ) {
+        buf.resize( size );
+        retVal = _NSGetExecutablePath( &buf[0], &size );
+    }
+    if( retVal == 0 ) {
+        char *tmp = realpath( &buf[0], 0 );
+        std::string abspath( tmp );
+        free( tmp );
+        return abspath;
+    }
+    // Fallback in case the above fails
+    return processName();
+}
+#endif
 string processFullName()
 {
     string pn =
 #if defined(__GLIBC__)
         program_invocation_name;
+#elif defined(__APPLE__)
+        macProcessPath();
 #else
         processName();
 #endif
