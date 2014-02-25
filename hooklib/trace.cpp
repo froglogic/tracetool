@@ -97,6 +97,18 @@ TraceEntry::~TraceEntry()
     delete backtrace;
 }
 
+static LogOutput* checkForLogFileEnvVar( const char* envVar )
+{
+    if ( getenv( envVar ) ) {
+        FileLogOutput *logOutput = new FileLogOutput( getenv( envVar ) );
+        if( logOutput->isOpen() ) {
+            return logOutput;
+        }
+        delete logOutput;
+    }
+    return 0;
+}
+
 Trace::Trace()
     : m_serializer( 0 ),
     m_output( 0 ),
@@ -106,15 +118,8 @@ Trace::Trace()
     m_errorOutput( 0 ),
     m_statusOutput( 0 )
 {
-    if ( getenv( "TRACELIB_DEBUG_LOG" ) ) {
-        FileLogOutput *logOutput = new FileLogOutput( getenv( "TRACELIB_DEBUG_LOG" ) );
-        if( logOutput->isOpen() ) {
-            m_statusOutput = logOutput;
-            m_errorOutput = new StreamLogOutput( logOutput->stream() );
-        } else {
-            delete logOutput;
-        }
-    }
+    m_statusOutput = checkForLogFileEnvVar( "TRACELIB_DEBUG_LOG" );
+    m_errorOutput = checkForLogFileEnvVar( "TRACELIB_ERROR_LOG" );
 
     if ( !m_statusOutput ) {
 #ifdef _WIN32
