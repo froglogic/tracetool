@@ -16,7 +16,6 @@
 
 #include <cstdlib>
 #include <ctime>
-#include <fstream>
 
 using namespace std;
 
@@ -108,12 +107,12 @@ Trace::Trace()
     m_statusOutput( 0 )
 {
     if ( getenv( "TRACELIB_DEBUG_LOG" ) ) {
-        ofstream *stream = new ofstream( getenv( "TRACELIB_DEBUG_LOG" ), ios_base::out | ios_base::trunc );
-        if ( stream->is_open() ) {
-            m_errorOutput = new StreamLogOutput( stream );
-            m_statusOutput = new StreamLogOutput( stream );
+        FileLogOutput *logOutput = new FileLogOutput( getenv( "TRACELIB_DEBUG_LOG" ) );
+        if( logOutput->isOpen() ) {
+            m_statusOutput = logOutput;
+            m_errorOutput = new StreamLogOutput( logOutput->stream() );
         } else {
-            delete stream;
+            delete logOutput;
         }
     }
 

@@ -90,13 +90,26 @@ public:
 class StreamLogOutput : public LogOutput
 {
 public:
-    explicit StreamLogOutput( std::ostream *stream );
+    explicit StreamLogOutput( std::ostream &stream );
     virtual ~StreamLogOutput();
 
     virtual void write( const std::string &msg );
 
 private:
-    std::ostream *m_stream;
+    std::ostream &m_stream;
+};
+
+class FileLogOutput : public LogOutput
+{
+public:
+    FileLogOutput( const std::string &filename );
+    ~FileLogOutput();
+    bool isOpen() const;
+    virtual void write( const std::string &msg );
+    std::ostream &stream() const;
+private:
+    std::ofstream *m_fileStream;
+    StreamLogOutput *m_internalOutput;
 };
 
 TRACELIB_NAMESPACE_END

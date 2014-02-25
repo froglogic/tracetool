@@ -11,6 +11,7 @@
 #endif
 
 #include <ostream>
+#include <fstream>
 
 #include <ctime>
 
@@ -59,19 +60,45 @@ void NullLogOutput::write( const string & /*msg*/ )
     // Intentionally left blank.
 }
 
-StreamLogOutput::StreamLogOutput( ostream *stream )
+StreamLogOutput::StreamLogOutput( ostream &stream )
     : m_stream( stream )
 {
 }
 
 StreamLogOutput::~StreamLogOutput()
 {
-    delete m_stream;
 }
 
 void StreamLogOutput::write( const std::string &msg )
 {
-    ( *m_stream ) << "[" << timeToString( now() ) << "] " << msg << endl;
+    m_stream << "[" << timeToString( now() ) << "] " << msg << endl;
+}
+
+FileLogOutput::FileLogOutput( const string &filename )
+    : m_fileStream( new std::ofstream( filename.c_str(), ios_base::out | ios_base::trunc ) )
+    , m_internalOutput( new StreamLogOutput( *m_fileStream ) )
+{
+}
+
+FileLogOutput::~FileLogOutput()
+{
+    delete m_internalOutput;
+    delete m_fileStream;
+}
+
+bool FileLogOutput::isOpen() const
+{
+    return m_fileStream->is_open();
+}
+
+void FileLogOutput::write( const string &msg )
+{
+    m_internalOutput->write( msg );
+}
+
+std::ostream &FileLogOutput::stream() const
+{
+    return *m_fileStream;
 }
 
 TRACELIB_NAMESPACE_END
