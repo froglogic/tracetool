@@ -8,6 +8,8 @@
 #include <cassert>
 
 #include <signal.h>
+#include <stdlib.h>
+#include <string.h>
 
 using namespace std;
 
@@ -41,6 +43,11 @@ TRACELIB_NAMESPACE_BEGIN
 void installCrashHandler( CrashHandler handler )
 {
     static bool crashHandlerInstalled = false;
+
+    const char* value = getenv( "SQUISH_NO_CRASHHANDLER" );
+    if ( value && strcmp( value, "0" ) )
+        return;
+
     if ( !crashHandlerInstalled ) {
         crashHandlerInstalled = true;
         g_handler = handler;
