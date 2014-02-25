@@ -112,6 +112,17 @@ private:
     StreamLogOutput *m_internalOutput;
 };
 
+class MultiplexLogOutput : public LogOutput
+{
+public:
+    virtual ~MultiplexLogOutput();
+    void addOutput( LogOutput * );
+    virtual void write( const std::string &msg );
+
+private:
+    std::set<LogOutput*> m_multiplexedOutputs;
+};
+
 TRACELIB_NAMESPACE_END
 
 #endif // !defined(TRACELIB_ERRORLOG_H)

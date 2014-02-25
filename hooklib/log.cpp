@@ -101,5 +101,25 @@ std::ostream &FileLogOutput::stream() const
     return *m_fileStream;
 }
 
+MultiplexLogOutput::~MultiplexLogOutput()
+{
+    for( std::set<LogOutput*>::const_iterator it = m_multiplexedOutputs.begin(); it != m_multiplexedOutputs.end(); ++it ) {
+        delete *it;
+    }
+    m_multiplexedOutputs.clear();
+}
+
+void MultiplexLogOutput::addOutput( LogOutput *output )
+{
+    m_multiplexedOutputs.insert( output );
+}
+
+void MultiplexLogOutput::write( const std::string &msg )
+{
+    for( std::set<LogOutput*>::const_iterator it = m_multiplexedOutputs.begin(); it != m_multiplexedOutputs.end(); ++it ) {
+        (*it)->write( msg );
+    }
+}
+
 TRACELIB_NAMESPACE_END
 

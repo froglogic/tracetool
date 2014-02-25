@@ -16,6 +16,7 @@
 
 #include <cstdlib>
 #include <ctime>
+#include <iostream>
 
 using namespace std;
 
@@ -130,9 +131,12 @@ Trace::Trace()
     }
     if ( !m_errorOutput ) {
 #ifdef _WIN32
-        m_errorOutput = new DebugViewLogOutput;
+        MultiplexingLogOutput* multiPlexingOutput = new MultiplexLog;
+        multiPlexingOutput->addOutput( new DebugViewLogOutput );
+        multiPlexingOutput->addOutput( new StreamLogOutput( std::cerr ) );
+        m_errorOutput = multiPlexingOutput;
 #else
-        m_errorOutput = new NullLogOutput;
+        m_errorOutput = new StreamLogOutput( std::cerr );
 #endif
     }
     m_log = new Log( m_statusOutput, m_errorOutput );
