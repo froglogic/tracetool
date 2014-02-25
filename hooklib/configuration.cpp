@@ -4,7 +4,7 @@
 **********************************************************************/
 
 #include "configuration.h"
-#include "errorlog.h"
+#include "log.h"
 #include "filter.h"
 #include "output.h"
 #include "serializer.h"
@@ -32,9 +32,9 @@ static std::string getText( const TiXmlElement *e )
 
 TRACELIB_NAMESPACE_BEGIN
 
-Configuration *Configuration::fromFile( const string &fileName, ErrorLog *errorLog )
+Configuration *Configuration::fromFile( const string &fileName, Log *log )
 {
-    Configuration *cfg = new Configuration( errorLog );
+    Configuration *cfg = new Configuration( log );
     if ( !cfg->loadFromFile( fileName ) ) {
         delete cfg;
         return 0;
@@ -42,9 +42,9 @@ Configuration *Configuration::fromFile( const string &fileName, ErrorLog *errorL
     return cfg;
 }
 
-Configuration *Configuration::fromMarkup( const string &markup, ErrorLog *errorLog )
+Configuration *Configuration::fromMarkup( const string &markup, Log *log )
 {
-    Configuration *cfg = new Configuration( errorLog );
+    Configuration *cfg = new Configuration( log );
     if ( !cfg->loadFromMarkup( markup ) ) {
         delete cfg;
         return 0;
@@ -52,11 +52,11 @@ Configuration *Configuration::fromMarkup( const string &markup, ErrorLog *errorL
     return cfg;
 }
 
-Configuration::Configuration( ErrorLog *errorLog )
+Configuration::Configuration( Log *log )
     : m_fileName( "<null>"),
     m_configuredSerializer( 0 ),
     m_configuredOutput( 0 ),
-    m_errorLog( errorLog )
+    m_log( log )
 {
 }
 
@@ -70,7 +70,7 @@ bool Configuration::loadFromFile( const string &fileName )
 
     TiXmlDocument xmlDoc;
     if ( !xmlDoc.LoadFile( m_fileName.c_str() ) ) {
-        m_errorLog->write( "Tracelib Configuration: Failed to load XML file from %s", m_fileName.c_str() );
+        m_log->write( "Tracelib Configuration: Failed to load XML file from %s", m_fileName.c_str() );
         return false;
     }
 
@@ -88,7 +88,7 @@ bool Configuration::loadFrom( TiXmlDocument *xmlDoc )
 {
     TiXmlElement *rootElement = xmlDoc->RootElement();
     if ( rootElement->ValueStr() != "tracelibConfiguration" ) {
-        m_errorLog->write( "Tracelib Configuration: while reading %s: unexpected root element '%s' found", m_fileName.c_str(), rootElement->Value() );
+        m_log->write( "Tracelib Configuration: while reading %s: unexpected root element '%s' found", m_fileName.c_str(), rootElement->Value() );
         return false;
     }
 
@@ -98,7 +98,7 @@ bool Configuration::loadFrom( TiXmlDocument *xmlDoc )
         if ( e->ValueStr() == "process" ) {
             TiXmlElement *nameElement = e->FirstChildElement( "name" );
             if ( !nameElement ) {
-                m_errorLog->write( "Tracelib Configuration: while reading %s: found <process> element without <name> child element.", m_fileName.c_str() );
+                m_log->write( "Tracelib Configuration: while reading %s: found <process> element without <name> child element.", m_fileName.c_str() );
                 return false;
             }
 
@@ -111,7 +111,7 @@ bool Configuration::loadFrom( TiXmlDocument *xmlDoc )
             const bool isMyProcessElement = getText( nameElement ) == myProcessName;
 #endif
             if ( isMyProcessElement ) {
-                m_errorLog->write( "Tracelib Configuration: found configuration for process %s", myProcessName.c_str() );
+                m_log->write( "Tracelib Configuration: found configuration for process %s", myProcessName.c_str() );
                 return readProcessElement( e );
             }
             continue;
@@ -131,10 +131,10 @@ bool Configuration::loadFrom( TiXmlDocument *xmlDoc )
             continue;
         }
 
-        m_errorLog->write( "Tracelib Configuration: while reading %s: unexpected child element '%s' found inside <tracelibConfiguration>.", m_fileName.c_str(), e->Value() );
+        m_log->write( "Tracelib Configuration: while reading %s: unexpected child element '%s' found inside <tracelibConfiguration>.", m_fileName.c_str(), e->Value() );
         return false;
     }
-    m_errorLog->write( "Tracelib Configuration: no configuration found for process %s", myProcessName.c_str() );
+    m_log->write( "Tracelib Configuration: no configuration found for process %s", myProcessName.c_str() );
     return true;
 }
 
@@ -147,7 +147,7 @@ bool Configuration::readProcessElement( TiXmlElement *processElement )
 
         if ( e->ValueStr() == "serializer" ) {
             if ( m_configuredSerializer ) {
-                m_errorLog->write( "Tracelib Configuration: while reading %s: found multiple <serializer> elements in <process> element.", m_fileName.c_str() );
+                m_log->write( "Tracelib Configuration: while reading %s: found multiple <serializer> elements in <process> element.", m_fileName.c_str() );
                 return false;
             }
 
@@ -171,7 +171,7 @@ bool Configuration::readProcessElement( TiXmlElement *processElement )
 
         if ( e->ValueStr() == "output" ) {
             if ( m_configuredOutput ) {
-                m_errorLog->write( "Tracelib Configuration: while reading %s: found multiple <output> elements in <process> element.", m_fileName.c_str() );
+                m_log->write( "Tracelib Configuration: while reading %s: found multiple <output> elements in <process> element.", m_fileName.c_str() );
                 return false;
             }
             Output *output = createOutputFromElement( e );
@@ -182,7 +182,7 @@ bool Configuration::readProcessElement( TiXmlElement *processElement )
             continue;
         }
 
-        m_errorLog->write( "Tracelib Configuration: while reading %s: unexpected child element '%s' found inside <process>.", m_fileName.c_str(), processElement->Value() );
+        m_log->write( "Tracelib Configuration: while reading %s: unexpected child element '%s' found inside <process>.", m_fileName.c_str(), processElement->Value() );
     }
     return true;
 }
@@ -202,7 +202,7 @@ bool Configuration::readTraceKeysElement( TiXmlElement *traceKeysElem )
             continue;
         }
 
-        m_errorLog->write( "Tracelib Configuration: while reading %s: unexpected child element '%s' found inside <tracekeys>.", m_fileName.c_str(), e->Value() );
+        m_log->write( "Tracelib Configuration: while reading %s: unexpected child element '%s' found inside <tracekeys>.", m_fileName.c_str(), e->Value() );
         return false;
     }
     return true;
@@ -274,7 +274,7 @@ Filter *Configuration::createFilterFromElement( TiXmlElement *e )
             } else if ( matchingModeValue == "wildcard" ) {
                 matchingMode = WildcardMatch;
             } else {
-                m_errorLog->write( "Tracelib Configuration: while reading %s: unsupported matching mode '%s' specified for <pathfilter> element.", m_fileName.c_str(), matchingModeValue.c_str() );
+                m_log->write( "Tracelib Configuration: while reading %s: unsupported matching mode '%s' specified for <pathfilter> element.", m_fileName.c_str(), matchingModeValue.c_str() );
                 return 0;
             }
         }
@@ -296,7 +296,7 @@ Filter *Configuration::createFilterFromElement( TiXmlElement *e )
             } else if ( matchingModeValue == "wildcard" ) {
                 matchingMode = WildcardMatch;
             } else {
-                m_errorLog->write( "Tracelib Configuration: while reading %s: unsupported matching mode '%s' specified for <functionfilter> element.", m_fileName.c_str(), matchingModeValue.c_str() );
+                m_log->write( "Tracelib Configuration: while reading %s: unsupported matching mode '%s' specified for <functionfilter> element.", m_fileName.c_str(), matchingModeValue.c_str() );
                 return 0;
             }
         }
@@ -317,7 +317,7 @@ Filter *Configuration::createFilterFromElement( TiXmlElement *e )
             } else if ( modeValue == "blacklist" ) {
                 mode = GroupFilter::Blacklist;
             } else {
-                m_errorLog->write( "Tracelib Configuration: while reading %s: unsupported mode '%s' specified for <tracekeyfilter> element.", m_fileName.c_str(), modeValue.c_str() );
+                m_log->write( "Tracelib Configuration: while reading %s: unsupported mode '%s' specified for <tracekeyfilter> element.", m_fileName.c_str(), modeValue.c_str() );
                 return 0;
             }
         }
@@ -329,7 +329,7 @@ Filter *Configuration::createFilterFromElement( TiXmlElement *e )
                 f->addGroupName( getText( childElement ) ); // XXX Consider encoding issues
             } else {
                 delete f;
-                m_errorLog->write( "Tracelib Configuration: while reading %s: unsupported child element '%s' specified for <tracekeyfilter> element.", m_fileName.c_str(), childElement->ValueStr().c_str() );
+                m_log->write( "Tracelib Configuration: while reading %s: unsupported child element '%s' specified for <tracekeyfilter> element.", m_fileName.c_str(), childElement->ValueStr().c_str() );
                 return 0;
             }
         }
@@ -337,7 +337,7 @@ Filter *Configuration::createFilterFromElement( TiXmlElement *e )
         return f;
     }
 
-    m_errorLog->write( "Tracelib Configuration: while reading %s: Unexpected filter element '%s' found.", m_fileName.c_str(), e->Value() );
+    m_log->write( "Tracelib Configuration: while reading %s: Unexpected filter element '%s' found.", m_fileName.c_str(), e->Value() );
     return 0;
 }
 
@@ -345,7 +345,7 @@ Serializer *Configuration::createSerializerFromElement( TiXmlElement *e )
 {
     string serializerType;
     if ( e->QueryStringAttribute( "type", &serializerType ) != TIXML_SUCCESS ) {
-        m_errorLog->write( "Tracelib Configuration: while reading %s: Failed to read type property of <serializer> element.", m_fileName.c_str() );
+        m_log->write( "Tracelib Configuration: while reading %s: Failed to read type property of <serializer> element.", m_fileName.c_str() );
         return 0;
     }
 
@@ -353,25 +353,25 @@ Serializer *Configuration::createSerializerFromElement( TiXmlElement *e )
         PlaintextSerializer *serializer = new PlaintextSerializer;
         for ( TiXmlElement *optionElement = e->FirstChildElement(); optionElement; optionElement = optionElement->NextSiblingElement() ) {
             if ( optionElement->ValueStr() != "option" ) {
-                m_errorLog->write( "Tracelib Configuration: while reading %s: Unexpected element '%s' in <serializer> element of type plaintext found.", m_fileName.c_str(), optionElement->Value() );
+                m_log->write( "Tracelib Configuration: while reading %s: Unexpected element '%s' in <serializer> element of type plaintext found.", m_fileName.c_str(), optionElement->Value() );
                 delete serializer;
                 return 0;
             }
 
             string optionName;
             if ( optionElement->QueryStringAttribute( "name", &optionName ) != TIXML_SUCCESS ) {
-                m_errorLog->write( "Tracelib Configuration: while reading %s: Failed to read name property of <option> element; ignoring this.", m_fileName.c_str() );
+                m_log->write( "Tracelib Configuration: while reading %s: Failed to read name property of <option> element; ignoring this.", m_fileName.c_str() );
                 continue;
             }
 
             if ( optionName == "timestamps" ) {
                 serializer->setTimestampsShown( getText( optionElement ) == "yes" );
             } else {
-                m_errorLog->write( "Tracelib Configuration: while reading %s: Unknown <option> element with name '%s' found in plaintext serializer; ignoring this.", m_fileName.c_str(), optionName.c_str() );
+                m_log->write( "Tracelib Configuration: while reading %s: Unknown <option> element with name '%s' found in plaintext serializer; ignoring this.", m_fileName.c_str(), optionName.c_str() );
                 continue;
             }
         }
-        m_errorLog->write( "Tracelib Configuration: using plaintext serializer" );
+        m_log->write( "Tracelib Configuration: using plaintext serializer" );
         return serializer;
     }
 
@@ -379,30 +379,30 @@ Serializer *Configuration::createSerializerFromElement( TiXmlElement *e )
         bool beautifiedOutput = false;
         for ( TiXmlElement *optionElement = e->FirstChildElement(); optionElement; optionElement = optionElement->NextSiblingElement() ) {
             if ( optionElement->ValueStr() != "option" ) {
-                m_errorLog->write( "Tracelib Configuration: while reading %s: Unexpected element '%s' in <serializer> element of type xml found.", m_fileName.c_str(), optionElement->Value() );
+                m_log->write( "Tracelib Configuration: while reading %s: Unexpected element '%s' in <serializer> element of type xml found.", m_fileName.c_str(), optionElement->Value() );
                 return 0;
             }
 
             string optionName;
             if ( optionElement->QueryStringAttribute( "name", &optionName ) != TIXML_SUCCESS ) {
-                m_errorLog->write( "Tracelib Configuration: while reading %s: Failed to read name property of <serializer> element; ignoring this.", m_fileName.c_str() );
+                m_log->write( "Tracelib Configuration: while reading %s: Failed to read name property of <serializer> element; ignoring this.", m_fileName.c_str() );
                 continue;
             }
 
             if ( optionName == "beautifiedOutput" ) {
                 beautifiedOutput = getText( optionElement ) == "yes";
             } else {
-                m_errorLog->write( "Tracelib Configuration: while reading %s: Unknown <option> element with name '%s' found in xml serializer; ignoring this.", m_fileName.c_str(), optionName.c_str() );
+                m_log->write( "Tracelib Configuration: while reading %s: Unknown <option> element with name '%s' found in xml serializer; ignoring this.", m_fileName.c_str(), optionName.c_str() );
                 continue;
             }
         }
         XMLSerializer *serializer = new XMLSerializer;
         serializer->setBeautifiedOutput( beautifiedOutput );
-        m_errorLog->write( "Tracelib Configuration: using XML serializer (beautified output=%d)", beautifiedOutput );
+        m_log->write( "Tracelib Configuration: using XML serializer (beautified output=%d)", beautifiedOutput );
         return serializer;
     }
 
-    m_errorLog->write( "Tracelib Configuration: while reading %s: <serializer> element with unknown type '%s' found.", m_fileName.c_str(), serializerType.c_str() );
+    m_log->write( "Tracelib Configuration: while reading %s: <serializer> element with unknown type '%s' found.", m_fileName.c_str(), serializerType.c_str() );
     return 0;
 }
 
@@ -411,20 +411,20 @@ TracePointSet *Configuration::createTracePointSetFromElement( TiXmlElement *e )
     string backtracesAttr = "no";
     e->QueryStringAttribute( "backtraces", &backtracesAttr );
     if ( backtracesAttr != "yes" && backtracesAttr != "no" ) {
-        m_errorLog->write( "Tracelib Configuration: while reading %s: Invalid value '%s' for backtraces= attribute of <tracepointset> element", m_fileName.c_str(), backtracesAttr.c_str() );
+        m_log->write( "Tracelib Configuration: while reading %s: Invalid value '%s' for backtraces= attribute of <tracepointset> element", m_fileName.c_str(), backtracesAttr.c_str() );
         return 0;
     }
 
     string variablesAttr = "no";
     e->QueryStringAttribute( "variables", &variablesAttr );
     if ( variablesAttr != "yes" && variablesAttr != "no" ) {
-        m_errorLog->write( "Tracelib Configuration: while reading %s: Invalid value '%s' for variables= attribute of <tracepointset> element", m_fileName.c_str(), variablesAttr.c_str() );
+        m_log->write( "Tracelib Configuration: while reading %s: Invalid value '%s' for variables= attribute of <tracepointset> element", m_fileName.c_str(), variablesAttr.c_str() );
         return 0;
     }
 
     TiXmlElement *filterElement = e->FirstChildElement();
     if ( !filterElement ) {
-        m_errorLog->write( "Tracelib Configuration: while reading %s: No filter element specified for <tracepointset> element", m_fileName.c_str() );
+        m_log->write( "Tracelib Configuration: while reading %s: No filter element specified for <tracepointset> element", m_fileName.c_str() );
         return 0;
     }
 
@@ -454,12 +454,12 @@ Output *Configuration::createOutputFromElement( TiXmlElement *e )
 {
     string outputType;
     if ( e->QueryStringAttribute( "type", &outputType ) == TIXML_NO_ATTRIBUTE ) {
-        m_errorLog->write( "Tracelib Configuration: while reading %s: No type= attribute specified for <output> element", m_fileName.c_str() );
+        m_log->write( "Tracelib Configuration: while reading %s: No type= attribute specified for <output> element", m_fileName.c_str() );
         return 0;
     }
 
     if ( outputType == "stdout" ) {
-        m_errorLog->write( "Tracelib Configuration: using stdout output" );
+        m_log->write( "Tracelib Configuration: using stdout output" );
         return new StdoutOutput;
     }
 
@@ -467,31 +467,31 @@ Output *Configuration::createOutputFromElement( TiXmlElement *e )
         std::string filename;
         for ( TiXmlElement *optionElement = e->FirstChildElement(); optionElement; optionElement = optionElement->NextSiblingElement() ) {
             if ( optionElement->ValueStr() != "option" ) {
-                m_errorLog->write( "Tracelib Configuration: while reading %s: Unexpected element '%s' in <output> element of type file found.", m_fileName.c_str(), optionElement->Value() );
+                m_log->write( "Tracelib Configuration: while reading %s: Unexpected element '%s' in <output> element of type file found.", m_fileName.c_str(), optionElement->Value() );
                 return 0;
             }
 
             string optionName;
             if ( optionElement->QueryStringAttribute( "name", &optionName ) != TIXML_SUCCESS ) {
-                m_errorLog->write( "Tracelib Configuration: while reading %s: Failed to read name property of <option> element; ignoring this.", m_fileName.c_str() );
+                m_log->write( "Tracelib Configuration: while reading %s: Failed to read name property of <option> element; ignoring this.", m_fileName.c_str() );
                 continue;
             }
 
             if ( optionName == "filename" ) {
                 filename = getText( optionElement ); // XXX Consider encoding issues
             } else {
-                m_errorLog->write( "Tracelib Configuration: while reading %s: Unknown <option> element with name '%s' found in file output; ignoring this.", m_fileName.c_str(), optionName.c_str() );
+                m_log->write( "Tracelib Configuration: while reading %s: Unknown <option> element with name '%s' found in file output; ignoring this.", m_fileName.c_str(), optionName.c_str() );
                 continue;
             }
         }
 
         if ( filename.empty() ) {
-            m_errorLog->write( "Tracelib Configuration: while reading %s: No 'filename' option specified for <output> element of type filename.", m_fileName.c_str() );
+            m_log->write( "Tracelib Configuration: while reading %s: No 'filename' option specified for <output> element of type filename.", m_fileName.c_str() );
             return 0;
         }
 
-        m_errorLog->write( "Tracelib Configuration: using file output to %s", filename.c_str() );
-        return new FileOutput( m_errorLog, filename );
+        m_log->write( "Tracelib Configuration: using file output to %s", filename.c_str() );
+        return new FileOutput( m_log, filename );
     }
 
     if ( outputType == "tcp" ) {
@@ -499,13 +499,13 @@ Output *Configuration::createOutputFromElement( TiXmlElement *e )
         unsigned short port = TRACELIB_DEFAULT_PORT;
         for ( TiXmlElement *optionElement = e->FirstChildElement(); optionElement; optionElement = optionElement->NextSiblingElement() ) {
             if ( optionElement->ValueStr() != "option" ) {
-                m_errorLog->write( "Tracelib Configuration: while reading %s: Unexpected element '%s' in <output> element of type tcp found.", m_fileName.c_str(), optionElement->Value() );
+                m_log->write( "Tracelib Configuration: while reading %s: Unexpected element '%s' in <output> element of type tcp found.", m_fileName.c_str(), optionElement->Value() );
                 return 0;
             }
 
             string optionName;
             if ( optionElement->QueryStringAttribute( "name", &optionName ) != TIXML_SUCCESS ) {
-                m_errorLog->write( "Tracelib Configuration: while reading %s: Failed to read name property of <option> element; ignoring this.", m_fileName.c_str() );
+                m_log->write( "Tracelib Configuration: while reading %s: Failed to read name property of <option> element; ignoring this.", m_fileName.c_str() );
                 continue;
             }
 
@@ -515,26 +515,26 @@ Output *Configuration::createOutputFromElement( TiXmlElement *e )
                 istringstream str( getText( optionElement ) );
                 str >> port; // XXX Error handling for non-numeric port numbers
             } else {
-                m_errorLog->write( "Tracelib Configuration: while reading %s: Unknown <option> element with name '%s' found in tcp output; ignoring this.", m_fileName.c_str(), optionName.c_str() );
+                m_log->write( "Tracelib Configuration: while reading %s: Unknown <option> element with name '%s' found in tcp output; ignoring this.", m_fileName.c_str(), optionName.c_str() );
                 continue;
             }
         }
 
         if ( hostname.empty() ) {
-            m_errorLog->write( "Tracelib Configuration: while reading %s: No 'host' option specified for <output> element of type tcp.", m_fileName.c_str() );
+            m_log->write( "Tracelib Configuration: while reading %s: No 'host' option specified for <output> element of type tcp.", m_fileName.c_str() );
             return 0;
         }
 
         if ( port == 0 ) {
-            m_errorLog->write( "Tracelib Configuration: while reading %s: No 'port' option specified for <output> element of type tcp.", m_fileName.c_str() );
+            m_log->write( "Tracelib Configuration: while reading %s: No 'port' option specified for <output> element of type tcp.", m_fileName.c_str() );
             return 0;
         }
 
-        m_errorLog->write( "Tracelib Configuration: using TCP/IP output, remote = %s:%d", hostname.c_str(), port );
-        return new NetworkOutput( m_errorLog, hostname.c_str(), port );
+        m_log->write( "Tracelib Configuration: using TCP/IP output, remote = %s:%d", hostname.c_str(), port );
+        return new NetworkOutput( m_log, hostname.c_str(), port );
     }
 
-    m_errorLog->write( "Tracelib Configuration: while reading %s: Unknown type '%s' specified for <output> element", m_fileName.c_str(), outputType.c_str() );
+    m_log->write( "Tracelib Configuration: while reading %s: Unknown type '%s' specified for <output> element", m_fileName.c_str(), outputType.c_str() );
     return 0;
 }
 
@@ -546,13 +546,13 @@ bool Configuration::readStorageElement( TiXmlElement *storageElem )
     for ( TiXmlElement *e = storageElem->FirstChildElement(); e; e = e->NextSiblingElement() ) {
         if ( e->ValueStr() == "maximumSize" ) {
             if ( haveMaximumSize ) {
-                m_errorLog->write( "Tracelib Configuration: while reading %s: duplicated <maximumSize> specified in <storage>", m_fileName.c_str() );
+                m_log->write( "Tracelib Configuration: while reading %s: duplicated <maximumSize> specified in <storage>", m_fileName.c_str() );
                 return false;
             }
 
             const std::string txt = getText( e );
             if ( txt.empty() ) {
-                m_errorLog->write( "Tracelib Configuration: while reading %s: empty <maximumSize> specified in <storage>", m_fileName.c_str() );
+                m_log->write( "Tracelib Configuration: while reading %s: empty <maximumSize> specified in <storage>", m_fileName.c_str() );
                 return false;
             }
 
@@ -564,13 +564,13 @@ bool Configuration::readStorageElement( TiXmlElement *storageElem )
 
         if ( e->ValueStr() == "shrinkBy" ) {
             if ( haveShrinkBy ) {
-                m_errorLog->write( "Tracelib Configuration: while reading %s: duplicate <shrinkBy> specified in <storage>", m_fileName.c_str() );
+                m_log->write( "Tracelib Configuration: while reading %s: duplicate <shrinkBy> specified in <storage>", m_fileName.c_str() );
                 return false;
             }
 
             const std::string txt = getText( e );
             if ( txt.empty() ) {
-                m_errorLog->write( "Tracelib Configuration: while reading %s: empty <shrinkBy> specified in <storage>", m_fileName.c_str() );
+                m_log->write( "Tracelib Configuration: while reading %s: empty <shrinkBy> specified in <storage>", m_fileName.c_str() );
                 return false;
             }
 
@@ -582,13 +582,13 @@ bool Configuration::readStorageElement( TiXmlElement *storageElem )
 
         if ( e->ValueStr() == "archiveDirectory" ) {
             if ( haveArchiveDirectory ) {
-                m_errorLog->write( "Tracelib Configuration: while reading %s: duplicate <archiveDirectory> specified in <storage>", m_fileName.c_str() );
+                m_log->write( "Tracelib Configuration: while reading %s: duplicate <archiveDirectory> specified in <storage>", m_fileName.c_str() );
                 return false;
             }
 
             const std::string txt = getText( e );
             if ( txt.empty() ) {
-                m_errorLog->write( "Tracelib Configuration: while reading %s: empty <archiveDirectory> specified in <storage>", m_fileName.c_str() );
+                m_log->write( "Tracelib Configuration: while reading %s: empty <archiveDirectory> specified in <storage>", m_fileName.c_str() );
                 return false;
             }
             m_storageConfiguration.archiveDirectoryName = txt;
@@ -596,22 +596,22 @@ bool Configuration::readStorageElement( TiXmlElement *storageElem )
             continue;
         }
 
-        m_errorLog->write( "Tracelib Configuration: while reading %s: unexpected element <%s> specified in <storage>", e->ValueStr().c_str(), m_fileName.c_str() );
+        m_log->write( "Tracelib Configuration: while reading %s: unexpected element <%s> specified in <storage>", e->ValueStr().c_str(), m_fileName.c_str() );
         return false;
     }
 
     if ( !haveMaximumSize ) {
-        m_errorLog->write( "Tracelib Configuration: while reading %s: <maximumSize> element missing in <storage>", m_fileName.c_str() );
+        m_log->write( "Tracelib Configuration: while reading %s: <maximumSize> element missing in <storage>", m_fileName.c_str() );
         return false;
     }
 
     if ( !haveShrinkBy ) {
-        m_errorLog->write( "Tracelib Configuration: while reading %s: <shrinkBy> element missing in <storage>", m_fileName.c_str() );
+        m_log->write( "Tracelib Configuration: while reading %s: <shrinkBy> element missing in <storage>", m_fileName.c_str() );
         return false;
     }
 
     if ( !haveArchiveDirectory ) {
-        m_errorLog->write( "Tracelib Configuration: while reading %s: <archiveDirectory> element missing in <storage>", m_fileName.c_str() );
+        m_log->write( "Tracelib Configuration: while reading %s: <archiveDirectory> element missing in <storage>", m_fileName.c_str() );
         return false;
     }
 

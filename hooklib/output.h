@@ -13,7 +13,7 @@
 
 TRACELIB_NAMESPACE_BEGIN
 
-class ErrorLog;
+class Log;
 class NetworkOutputPrivate;
 
 class Output
@@ -43,9 +43,9 @@ class FileOutput : public Output
 {
     std::string m_filename;
     FILE* m_file;
-    ErrorLog *m_errorLog;
+    Log *m_log;
 public:
-    FileOutput( ErrorLog *erroLog, const std::string& filename );
+    FileOutput( Log *erroLog, const std::string& filename );
     virtual ~FileOutput();
     virtual void write( const std::vector<char> &data );
     virtual bool open();
@@ -70,14 +70,14 @@ class NetworkOutput : public Output
     std::string m_host;
     unsigned short m_port;
     int m_socket;
-    ErrorLog *m_error_log;
+    Log *m_log;
     NetworkOutputPrivate *d;
     bool m_lastConnectionAttemptFailed;
 
     void close();
 
 public:
-    NetworkOutput( ErrorLog *errorLog, const std::string &remoteHost, unsigned short remotePort );
+    NetworkOutput( Log *log, const std::string &remoteHost, unsigned short remotePort );
     virtual ~NetworkOutput();
 
     virtual bool open();

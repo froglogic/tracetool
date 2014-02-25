@@ -4,7 +4,7 @@
 **********************************************************************/
 
 #include "output.h"
-#include "errorlog.h"
+#include "log.h"
 #include "eventthread_unix.h"
 
 #include <string.h>
@@ -37,7 +37,7 @@ public:
     bool notify_on_close;
     bool dummy;
     int m_socket;
-    ErrorLog *error_log;
+    Log *log;
     ssize_t buf_pos;
     int watching;
 
@@ -58,7 +58,7 @@ public:
     };
     NetworkOutputState network_state;
 
-    NetworkOutputPrivate( const string h, unsigned short p, ErrorLog *log );
+    NetworkOutputPrivate( const string h, unsigned short p, Log *log );
     ~NetworkOutputPrivate();
 
     // Only used in NetworkOutput calling thread
@@ -97,12 +97,12 @@ public:
 };
 
 
-NetworkOutputPrivate::NetworkOutputPrivate( const string h, unsigned short p, ErrorLog *log )
+NetworkOutputPrivate::NetworkOutputPrivate( const string h, unsigned short p, Log *_log )
  : host( h ),
    port( p ),
    notify_on_close( true ),
    m_socket( -1 ),
-   error_log( log ),
+   log( _log ),
    buf_pos( 0),
    watching( FileEvent::Error ),
    state( NotConnected ),
@@ -122,7 +122,7 @@ void NetworkOutputPrivate::connect()
 
     struct hostent *he = gethostbyname( host.c_str() );
     if ( !he ) {
-        error_log->write( "connect: host '%s' not found\n", host.c_str() );
+        log->write( "connect: host '%s' not found\n", host.c_str() );
         return;
     }
 
@@ -142,7 +142,7 @@ void NetworkOutputPrivate::connect()
 
         state = Connecting;
     } else {
-        error_log->write( "connect to %s: %s", host.c_str(), strerror( errno ) );
+        log->write( "connect to %s: %s", host.c_str(), strerror( errno ) );
         ::close( m_socket );
         m_socket = -1;
     }
@@ -200,13 +200,13 @@ void NetworkOutputPrivate::handleEvent( EventContext *ctx, Event *event )
                 }
             }
         } else if ( FileEvent::FileRead == fe->watch ) {
-            error_log->write( "Connect error to %s %d %d",
+            log->write( "Connect error to %s %d %d",
                     host.c_str(), fe->fd, m_socket );
             removeObserver( ctx, FileEvent::FileReadWrite );
             clear();
             state = Error;
         } else if ( FileEvent::Error == fe->watch ) {
-            error_log->write( "Network error to %s: %s %d",
+            log->write( "Network error to %s: %s %d",
                     host.c_str(), strerror( fe->err ), fe->fd );
             if ( Connecting == state )
                 removeObserver( ctx, FileEvent::FileWrite );
@@ -312,8 +312,8 @@ void *SocketClosingTask::exec( EventContext *ctx )
 }
 
 
-NetworkOutput::NetworkOutput( ErrorLog *log, const string &host, unsigned short port )
-    : m_host( host ), m_port( port ), m_socket( -1 ), m_error_log( log ),
+NetworkOutput::NetworkOutput( Log *log, const string &host, unsigned short port )
+    : m_host( host ), m_port( port ), m_socket( -1 ), m_log( log ),
     d( new NetworkOutputPrivate( host, port, log ) )
 {
 }

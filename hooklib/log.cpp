@@ -3,7 +3,7 @@
 ** All rights reserved.
 **********************************************************************/
 
-#include "errorlog.h"
+#include "log.h"
 #include "timehelper.h" // for now and timeToString
 
 #ifdef _WIN32
@@ -18,38 +18,38 @@ using namespace std;
 
 TRACELIB_NAMESPACE_BEGIN
 
-ErrorLog::ErrorLog()
+Log::Log()
 {
 }
 
-ErrorLog::~ErrorLog()
+Log::~Log()
 {
 }
 
 #ifdef _WIN32
-void DebugViewErrorLog::write( const string &msg )
+void DebugViewLog::write( const string &msg )
 {
     // XXX Consider encoding issues (msg is UTF-8).
     OutputDebugStringA( msg.c_str() );
 }
 #endif
 
-void NullErrorLog::write( const string & /*msg*/ )
+void NullLog::write( const string & /*msg*/ )
 {
     // Intentionally left blank.
 }
 
-StreamErrorLog::StreamErrorLog( ostream *stream )
+StreamLog::StreamLog( ostream *stream )
     : m_stream( stream )
 {
 }
 
-StreamErrorLog::~StreamErrorLog()
+StreamLog::~StreamLog()
 {
     delete m_stream;
 }
 
-void StreamErrorLog::write( const std::string &msg )
+void StreamLog::write( const std::string &msg )
 {
     ( *m_stream ) << "[" << timeToString( now() ) << "] " << msg << endl;
 }

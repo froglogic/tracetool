@@ -16,7 +16,7 @@ class TiXmlElement;
 
 TRACELIB_NAMESPACE_BEGIN
 
-class ErrorLog;
+class Log;
 class Filter;
 class Output;
 class Serializer;
@@ -48,8 +48,8 @@ public:
     static std::string defaultFileName();
     static std::string currentProcessName();
 
-    static Configuration *fromFile( const std::string &fileName, ErrorLog *errorLog );
-    static Configuration *fromMarkup( const std::string &markup, ErrorLog *errorLog );
+    static Configuration *fromFile( const std::string &fileName, Log *log );
+    static Configuration *fromMarkup( const std::string &markup, Log *log );
 
     const StorageConfiguration &storageConfiguration() const;
     const std::vector<TracePointSet *> &configuredTracePointSets() const;
@@ -58,7 +58,7 @@ public:
     const std::vector<TraceKey> &configuredTraceKeys() const;
 
 private:
-    explicit Configuration( ErrorLog *errorLog );
+    explicit Configuration( Log *log );
     bool loadFromFile( const std::string &fileName );
     bool loadFromMarkup( const std::string &markup );
     bool loadFrom( TiXmlDocument *xmlDoc );
@@ -76,7 +76,7 @@ private:
     std::vector<TracePointSet *> m_configuredTracePointSets;
     Serializer *m_configuredSerializer;
     Output *m_configuredOutput;
-    ErrorLog *m_errorLog;
+    Log *m_log;
     std::vector<TraceKey> m_configuredTraceKeys;
     StorageConfiguration m_storageConfiguration;
 };

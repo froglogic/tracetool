@@ -10,7 +10,7 @@
 #include "output.h"
 #include "serializer.h"
 #include "tracepoint.h"
-#include "errorlog.h"
+#include "log.h"
 #include "tracelib.h" // for deleteRange
 #include "timehelper.h" // for now
 
@@ -103,22 +103,22 @@ Trace::Trace()
     m_output( 0 ),
     m_configuration( 0 ),
     m_configFileMonitor( 0 ),
-    m_errorLog( 0 )
+    m_log( 0 )
 {
     if ( getenv( "TRACELIB_DEBUG_LOG" ) ) {
         ofstream *stream = new ofstream( getenv( "TRACELIB_DEBUG_LOG" ), ios_base::out | ios_base::trunc );
         if ( stream->is_open() ) {
-            m_errorLog = new StreamErrorLog( stream );
+            m_log = new StreamLog( stream );
         } else {
             delete stream;
         }
     }
 
-    if ( !m_errorLog ) {
+    if ( !m_log ) {
 #ifdef _WIN32
-        m_errorLog = new DebugViewErrorLog;
+        m_log = new DebugViewLog;
 #else
-        m_errorLog = new NullErrorLog;
+        m_log = new NullLog;
 #endif
     }
 
@@ -127,14 +127,10 @@ Trace::Trace()
     m_configFileMonitor = FileModificationMonitor::create( cfgFileName, this );
     m_configFileMonitor->start();
     ShutdownNotifier::self().addObserver( this );
-
-    m_errorLog->write( "Trace object constructed" );
 }
 
 Trace::~Trace()
 {
-    m_errorLog->write( "Trace object destructing" );
-
     ShutdownNotifier::self().removeObserver( this );
 
     {
@@ -154,13 +150,13 @@ Trace::~Trace()
     }
 
     delete m_configFileMonitor;
-    delete m_errorLog;
+    delete m_log;
 }
 
 void Trace::reloadConfiguration( const string &fileName )
 {
-    m_errorLog->write( "Trace::reloadConfiguration: reading configuration file from '%s'", fileName.c_str() );
-    Configuration *cfg = Configuration::fromFile( fileName, m_errorLog );
+    m_log->write( "Trace::reloadConfiguration: reading configuration file from '%s'", fileName.c_str() );
+    Configuration *cfg = Configuration::fromFile( fileName, m_log );
     if ( cfg ) {
         setSerializer( cfg->configuredSerializer() );
         setOutput( cfg->configuredOutput() );
@@ -220,7 +216,7 @@ void Trace::reloadConfiguration( const string &fileName )
         TraceEntry::process.availableTraceKeys.clear();
     }
     if( m_configuration ) {
-        m_errorLog->write( "Trace::reloadConfiguration: configuration updated with serializer: %s and output: %s",
+        m_log->write( "Trace::reloadConfiguration: configuration updated with serializer: %s and output: %s",
                            (m_serializer ? "yes" : "no"),
                            (m_output ? "yes" : "no") );
     }
@@ -249,12 +245,12 @@ void Trace::configureTracePoint( TracePoint *tracePoint ) const
         tracePoint->backtracesEnabled = ( action & TracePointSet::YieldBacktrace ) == TracePointSet::YieldBacktrace;
         tracePoint->variableSnapshotEnabled = ( action & TracePointSet::YieldVariables ) == TracePointSet::YieldVariables;
 
-        m_errorLog->write( "Trace::configureTracePoint: activating trace point at %s:%d (backtraces=%d, variables=%d)", tracePoint->sourceFile, tracePoint->lineno, tracePoint->backtracesEnabled, tracePoint->variableSnapshotEnabled );
+        m_log->write( "Trace::configureTracePoint: activating trace point at %s:%d (backtraces=%d, variables=%d)", tracePoint->sourceFile, tracePoint->lineno, tracePoint->backtracesEnabled, tracePoint->variableSnapshotEnabled );
 
         return;
     }
 
-    m_errorLog->write( "Trace::configureTracePoint: trace point at %s:%d is not active", tracePoint->sourceFile, tracePoint->lineno );
+    m_log->write( "Trace::configureTracePoint: trace point at %s:%d is not active", tracePoint->sourceFile, tracePoint->lineno );
 }
 
 // configures the trace point if necessary and tells us if it's
@@ -332,7 +328,7 @@ void Trace::handleFileModification( const std::string &fileName, NotificationRea
 
 void Trace::handleProcessShutdown()
 {
-    m_errorLog->write( "Trace::handleProcessShutdown: detected process shutdown" );
+    m_log->write( "Trace::handleProcessShutdown: detected process shutdown" );
 
     ProcessShutdownEvent ev;
 

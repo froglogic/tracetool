@@ -13,7 +13,7 @@
 #endif
 
 #include "output.h"
-#include "errorlog.h"
+#include "log.h"
 
 #include <string.h>
 #include <assert.h>
@@ -37,7 +37,7 @@ using namespace std;
 
 TRACELIB_NAMESPACE_BEGIN
 
-static int connectTo( const string host, unsigned short port, ErrorLog *log )
+static int connectTo( const string host, unsigned short port, Log *log )
 {
     struct hostent *he = gethostbyname( host.c_str() );
     if ( !he ) {
@@ -57,7 +57,7 @@ static int connectTo( const string host, unsigned short port, ErrorLog *log )
     return -1;
 }
 
-static size_t writeTo( int fd, const char *data, const int length, ErrorLog *log )
+static size_t writeTo( int fd, const char *data, const int length, Log *log )
 {
     int written = 0;
     do {
@@ -78,8 +78,8 @@ static size_t writeTo( int fd, const char *data, const int length, ErrorLog *log
     return (size_t)written;
 }
 
-NetworkOutput::NetworkOutput( ErrorLog *log, const string &host, unsigned short port )
-    : m_host( host ), m_port( port ), m_socket( -1 ), m_error_log( log ),
+NetworkOutput::NetworkOutput( Log *log, const string &host, unsigned short port )
+    : m_host( host ), m_port( port ), m_socket( -1 ), m_log( log ),
     m_lastConnectionAttemptFailed( false )
 {
 #ifdef _WIN32
@@ -108,7 +108,7 @@ NetworkOutput::~NetworkOutput()
 bool NetworkOutput::open()
 {
     if ( m_socket == -1 && !m_lastConnectionAttemptFailed ) {
-        m_socket = connectTo( m_host, m_port, m_error_log );
+        m_socket = connectTo( m_host, m_port, m_log );
         if ( m_socket == -1 ) {
             m_lastConnectionAttemptFailed = true;
         }
@@ -124,7 +124,7 @@ bool NetworkOutput::canWrite() const
 void NetworkOutput::write( const vector<char> &data )
 {
     if ( m_socket != -1 ) {
-        if ( writeTo( m_socket, &data[0], data.size(), m_error_log ) < data.size() ) {
+        if ( writeTo( m_socket, &data[0], data.size(), m_log ) < data.size() ) {
             close();
         }
     }

@@ -23,10 +23,10 @@
 
 TRACELIB_NAMESPACE_BEGIN
 
-class ErrorLog
+class Log
 {
 public:
-    virtual ~ErrorLog();
+    virtual ~Log();
 
     virtual void write( const std::string &msg ) = 0;
     inline void write( const char *format, ... ) {
@@ -40,32 +40,32 @@ public:
     }
 
 protected:
-    ErrorLog();
+    Log();
 
 private:
-    ErrorLog( const ErrorLog &other );
-    void operator=( const ErrorLog &other );
+    Log( const Log &other );
+    void operator=( const Log &other );
 };
 
 #ifdef _WIN32
-class DebugViewErrorLog : public ErrorLog
+class DebugViewLog : public Log
 {
 public:
     virtual void write( const std::string &msg );
 };
 #endif
 
-class NullErrorLog : public ErrorLog
+class NullLog : public Log
 {
 public:
     virtual void write( const std::string &msg );
 };
 
-class StreamErrorLog : public ErrorLog
+class StreamLog : public Log
 {
 public:
-    explicit StreamErrorLog( std::ostream *stream );
-    virtual ~StreamErrorLog();
+    explicit StreamLog( std::ostream *stream );
+    virtual ~StreamLog();
 
     virtual void write( const std::string &msg );
 

@@ -90,7 +90,7 @@ SET(TRACELIB_SOURCES
         filter.cpp
         configuration.cpp
         backtrace.cpp
-        errorlog.cpp
+        log.cpp
         variabledumping.cpp
         filemodificationmonitor.cpp
         shutdownnotifier.cpp

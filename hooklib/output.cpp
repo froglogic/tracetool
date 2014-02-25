@@ -4,7 +4,7 @@
 **********************************************************************/
 
 #include "output.h"
-#include "errorlog.h"
+#include "log.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -30,8 +30,8 @@ void StdoutOutput::write( const vector<char> &data )
     fflush(stdout);
 }
 
-FileOutput::FileOutput( ErrorLog *errorLog, const string& filename )
-    : m_filename( filename ), m_file( 0 ), m_errorLog( errorLog )
+FileOutput::FileOutput( Log *log, const string& filename )
+    : m_filename( filename ), m_file( 0 ), m_log( log )
 {
 }
 
@@ -42,7 +42,7 @@ FileOutput::~FileOutput()
     }
     m_file = 0;
     m_filename = "";
-    m_errorLog = 0;
+    m_log = 0;
 }
 
 bool FileOutput::canWrite() const
@@ -54,7 +54,7 @@ bool FileOutput::open()
 {
     m_file = fopen( m_filename.c_str(), "w" );
     if( !m_file ) {
-        m_errorLog->write( "Failed to open file!: %s", strerror( errno ) );
+        m_log->write( "Failed to open file!: %s", strerror( errno ) );
         return false;
     }
     return true;
