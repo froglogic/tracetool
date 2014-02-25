@@ -131,7 +131,7 @@ Trace::Trace()
     }
     if ( !m_errorOutput ) {
 #ifdef _WIN32
-        MultiplexingLogOutput* multiPlexingOutput = new MultiplexLog;
+        MultiplexLogOutput* multiPlexingOutput = new MultiplexLogOutput;
         multiPlexingOutput->addOutput( new DebugViewLogOutput );
         multiPlexingOutput->addOutput( new StreamLogOutput( std::cerr ) );
         m_errorOutput = multiPlexingOutput;

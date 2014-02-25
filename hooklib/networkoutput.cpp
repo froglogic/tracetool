@@ -41,7 +41,7 @@ static int connectTo( const string host, unsigned short port, Log *log )
 {
     struct hostent *he = gethostbyname( host.c_str() );
     if ( !he ) {
-        log->write( "connect: host '%s' not found\n", host.c_str() );
+        log->writeError( "connect: host '%s' not found\n", host.c_str() );
         return -1;
     }
 
@@ -53,7 +53,7 @@ static int connectTo( const string host, unsigned short port, Log *log )
     if ( !connect( sock, (const sockaddr *)&server, sizeof ( server ) ) )
         return sock;
 
-    log->write( "connect: %s\n", strerror( errno ) );
+    log->writeError( "connect: %s\n", strerror( errno ) );
     return -1;
 }
 
@@ -73,7 +73,7 @@ static size_t writeTo( int fd, const char *data, const int length, Log *log )
     } while ( length > written );
 
     if ( length != written )
-        log->write( "write: %s\n", strerror( errno ) );
+        log->writeError( "write: %s\n", strerror( errno ) );
     assert( written >= 0 );
     return (size_t)written;
 }
@@ -86,12 +86,12 @@ NetworkOutput::NetworkOutput( Log *log, const string &host, unsigned short port 
     WSADATA wsaData;
     int err = ::WSAStartup( MAKEWORD( 2, 2 ), &wsaData );
     if ( err != 0 ) {
-        log->write( "WSAStartup failed!" );
+        log->writeError( "WSAStartup failed!" );
         return;
     }
 
     if ( LOBYTE( wsaData.wVersion ) != 2 || HIBYTE( wsaData.wVersion ) != 2 ) {
-        log->write( "Failed to get proper WinSock version!" );
+        log->writeError( "Failed to get proper WinSock version!" );
         return;
     }
 #endif
