@@ -72,16 +72,24 @@ def compileEnvFromBatchFile(batchDict):
 
 
 def fetch_run_environment(arch, compiler):
-    if not is_windows:
+    if is_windows:
+        return compileEnvFromBatchFile( {
+                "x86": {
+                    "msvc9" : "%VS90COMNTOOLS%\\..\\..\\VC\\bin\\vcvars32.bat",
+                    },
+                "x64": {
+                    "msvc9" : "%VS90COMNTOOLS%\\..\\..\\VC\\bin\\amd64\\vcvarsamd64.bat",
+                    },
+                })(arch, compiler)
+    elif not is_mac:
+        # Linux
+        for path in os.environ["PATH"].split(":"):
+            if os.path.exists(os.path.join(path, "gcc-4.1")) and os.path.exists(os.path.join(path, "g++-4.1")):
+                return {"CXX":"g++-4.1", "CC":"gcc-4.1"}
+        # No gcc 4.1, so lets use whatever is in path as fallback to run ci-builds locally and test the script
         return None
-    return compileEnvFromBatchFile( {
-            "x86": {
-                "msvc9" : "%VS90COMNTOOLS%\\..\\..\\VC\\bin\\vcvars32.bat",
-                },
-            "x64": {
-                "msvc9" : "%VS90COMNTOOLS%\\..\\..\\VC\\bin\\amd64\\vcvarsamd64.bat",
-                },
-            })(arch, compiler)
+    else:
+        return None
 
 
 def verify_path(path):
