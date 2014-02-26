@@ -85,7 +85,10 @@ def fetch_run_environment(arch, compiler):
         # Linux
         for path in os.environ["PATH"].split(":"):
             if os.path.exists(os.path.join(path, "gcc-4.1")) and os.path.exists(os.path.join(path, "g++-4.1")):
-                return {"CXX":"g++-4.1", "CC":"gcc-4.1"}
+                newenv = dict(os.environ)
+                newenv['CXX'] = 'g++-4.1'
+                newenv['CC'] = 'gcc-4.1'
+                return newenv
         # No gcc 4.1, so lets use whatever is in path as fallback to run ci-builds locally and test the script
         return None
     else:
