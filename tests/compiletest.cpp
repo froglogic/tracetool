@@ -380,9 +380,9 @@ static void testWatchMacros()
     uint64_t ui64;
     CustomStruct cs;
 
-    TRACELIB_WATCH_KEY("somekey");
+    TRACELIB_WATCH_KEY("somekey", TRACELIB_VAR(c));
 
-    TRACELIB_WATCH_KEY_MSG("somekey", "somemessage");
+    TRACELIB_WATCH_KEY_MSG("somekey", "somemessage", TRACELIB_VAR(c));
 
     TRACELIB_WATCH_KEY_MSG("somekey", "somemessage, with ",
                            TRACELIB_VAR(c)
