@@ -15,7 +15,7 @@
 #include <vector>
 
 #if defined(_MSC_VER) && _MSC_VER < 1300
-// MSVC10 aka _MSC_VER == 1600 has stdint.h but no 64bit types in it
+// MSVC6 has no long long
 typedef __int64 vlonglong;
 typedef unsigned __int64 vulonglong;
 #else
