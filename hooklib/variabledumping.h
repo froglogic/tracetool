@@ -14,22 +14,13 @@
 #include <string>
 #include <vector>
 
-#if defined(_MSC_VER) && _MSC_VER <= 1600
+#if defined(_MSC_VER) && _MSC_VER < 1300
 // MSVC10 aka _MSC_VER == 1600 has stdint.h but no 64bit types in it
-typedef __int64 int64_t;
-typedef unsigned __int64 uint64_t;
-#  if _MSC_VER < 1600
-typedef __int32 int32_t;
-typedef __int16 int16_t;
-typedef __int8 int8_t;
-typedef unsigned __int32 uint32_t;
-typedef unsigned __int16 uint16_t;
-typedef unsigned __int8 uint8_t;
-#  else
-#    include <stdint.h>
-#  endif
+typedef __int64 vlonglong;
+typedef unsigned __int64 vulonglong;
 #else
-#include <stdint.h>
+typedef long long vlonglong;
+typedef unsigned long long vulonglong;
 #endif
 
 TRACELIB_NAMESPACE_BEGIN
@@ -70,14 +61,8 @@ struct VariableType {
 class VariableValue {
 public:
     TRACELIB_EXPORT static VariableValue stringValue( const char *s );
-    TRACELIB_EXPORT static VariableValue numberValue( uint8_t v ) { return numberValue( static_cast<uint64_t>( v ) ); }
-    TRACELIB_EXPORT static VariableValue numberValue( uint16_t v ) { return numberValue( static_cast<uint64_t>( v ) ); }
-    TRACELIB_EXPORT static VariableValue numberValue( uint32_t v ) { return numberValue( static_cast<uint64_t>( v ) ); }
-    TRACELIB_EXPORT static VariableValue numberValue( uint64_t v );
-    TRACELIB_EXPORT static VariableValue numberValue( int8_t v ) { return numberValue( static_cast<int64_t>( v ) ); }
-    TRACELIB_EXPORT static VariableValue numberValue( int16_t v ) { return numberValue( static_cast<int64_t>( v ) ); }
-    TRACELIB_EXPORT static VariableValue numberValue( int32_t v ) { return numberValue( static_cast<int64_t>( v ) ); }
-    TRACELIB_EXPORT static VariableValue numberValue( int64_t v );
+    TRACELIB_EXPORT static VariableValue numberValue( vlonglong v );
+    TRACELIB_EXPORT static VariableValue numberValue( vulonglong v );
     TRACELIB_EXPORT static VariableValue booleanValue( bool v );
     TRACELIB_EXPORT static VariableValue floatValue( long double v );
     TRACELIB_EXPORT static size_t convertToString( const VariableValue &v, char *buf, size_t bufsize );
@@ -87,7 +72,7 @@ public:
 
     VariableType::Value type() const;
     const char *asString() const;
-    uint64_t asNumber() const;
+    vulonglong asNumber() const;
     bool asBoolean() const;
     long double asFloat() const;
     bool isSignedNumber() const;
@@ -97,7 +82,7 @@ private:
 
     VariableType::Value m_type;
     union {
-        uint64_t number;
+        vulonglong number;
         bool boolean;
         long double float_;
         char *string;
@@ -118,32 +103,26 @@ TRACELIB_SPECIALIZE_CONVERSION(bool, booleanValue)
 TRACELIB_SPECIALIZE_CONVERSION(float, floatValue)
 TRACELIB_SPECIALIZE_CONVERSION(double, floatValue)
 TRACELIB_SPECIALIZE_CONVERSION(long double, floatValue)
-// integral number types, also covering the more commonly used char, short, long long (with signed/unsigned)
-TRACELIB_SPECIALIZE_CONVERSION(int8_t, numberValue)
-TRACELIB_SPECIALIZE_CONVERSION(uint8_t, numberValue)
-TRACELIB_SPECIALIZE_CONVERSION(int16_t, numberValue)
-TRACELIB_SPECIALIZE_CONVERSION(uint16_t, numberValue)
-TRACELIB_SPECIALIZE_CONVERSION(int32_t, numberValue)
-TRACELIB_SPECIALIZE_CONVERSION(uint32_t, numberValue)
-TRACELIB_SPECIALIZE_CONVERSION(int64_t, numberValue)
-TRACELIB_SPECIALIZE_CONVERSION(uint64_t, numberValue)
-#if defined(_MSC_VER) && _MSC_VER < 1600
-// int8_t is the same type as 'char' hence need an overload for signed char for these compilers
-TRACELIB_SPECIALIZE_CONVERSION(signed char, numberValue)
-#endif
-// In all supported compilers long is a different type than int32_t or int64_t and thus needs
-// an explicit overload, except for 64bit gcc targets of course
-#if !( defined(__GNUC__) && defined(__x86_64__) )
-template <>
-inline VariableValue convertVariable( unsigned long val ) {
-    return VariableValue::numberValue( (uint64_t)val );
-}
-template <>
-inline VariableValue convertVariable( long val ) {
-    return VariableValue::numberValue( (int64_t)val );
-}
-#endif
+TRACELIB_SPECIALIZE_CONVERSION(vlonglong, numberValue)
+TRACELIB_SPECIALIZE_CONVERSION(vulonglong, numberValue)
+
 #undef TRACELIB_SPECIALIZE_CONVERSION
+
+#define TRACELIB_SPECIALIZE_CONVERSION_INTEGRAL(T, castType) \
+template <> \
+inline VariableValue convertVariable( T val ) { \
+    return VariableValue::numberValue( static_cast<castType>( val ) ); \
+}
+
+TRACELIB_SPECIALIZE_CONVERSION_INTEGRAL(short, vlonglong)
+TRACELIB_SPECIALIZE_CONVERSION_INTEGRAL(unsigned short, vulonglong)
+TRACELIB_SPECIALIZE_CONVERSION_INTEGRAL(int, vlonglong)
+TRACELIB_SPECIALIZE_CONVERSION_INTEGRAL(unsigned int, vulonglong)
+TRACELIB_SPECIALIZE_CONVERSION_INTEGRAL(long, vlonglong)
+TRACELIB_SPECIALIZE_CONVERSION_INTEGRAL(unsigned long, vulonglong)
+
+#undef TRACELIB_SPECIALIZE_CONVERSION_UNSIGNED_INTEGRAL
+#undef TRACELIB_SPECIALIZE_CONVERSION_SIGNED_INTEGRAL
 
 #define TRACELIB_SPECIALIZE_CONVERSION_USING_SSTREAM(T) \
 template <> \
@@ -153,12 +132,9 @@ inline VariableValue convertVariable( T val ) { \
     return VariableValue::stringValue( str.str().c_str() ); \
 }
 
-#if !defined(_MSC_VER) || _MSC_VER > 1500
-// Compilers using stdint.h define int8_t to be a signed char, which is different from
-// just 'char', hence we need a dedicated overload for that case and can use a string overload
-// which is a bit nicer in the output
 TRACELIB_SPECIALIZE_CONVERSION_USING_SSTREAM(char)
-#endif
+TRACELIB_SPECIALIZE_CONVERSION_USING_SSTREAM(signed char)
+TRACELIB_SPECIALIZE_CONVERSION_USING_SSTREAM(unsigned char)
 TRACELIB_SPECIALIZE_CONVERSION_USING_SSTREAM(void *)
 TRACELIB_SPECIALIZE_CONVERSION_USING_SSTREAM(const void *)
 TRACELIB_SPECIALIZE_CONVERSION_USING_SSTREAM(char *)

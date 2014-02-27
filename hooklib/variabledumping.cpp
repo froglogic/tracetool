@@ -21,7 +21,7 @@ VariableValue VariableValue::stringValue( const char *s )
     return var;
 }
 
-VariableValue VariableValue::numberValue( int64_t v )
+VariableValue VariableValue::numberValue( vlonglong v )
 {
     VariableValue var;
     var.m_type = VariableType::Number;
@@ -30,7 +30,7 @@ VariableValue VariableValue::numberValue( int64_t v )
     return var;
 }
 
-VariableValue VariableValue::numberValue( uint64_t v )
+VariableValue VariableValue::numberValue( vulonglong v )
 {
     VariableValue var;
     var.m_type = VariableType::Number;
@@ -113,7 +113,7 @@ const char *VariableValue::asString() const
     return m_primitiveValue.string;
 }
 
-uint64_t VariableValue::asNumber() const
+vulonglong VariableValue::asNumber() const
 {
     return m_primitiveValue.number;
 }
