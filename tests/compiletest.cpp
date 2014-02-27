@@ -29,7 +29,8 @@ int someRandomIdentifier;
 TRACELIB_NAMESPACE_END
 
 TRACELIB_NAMESPACE_BEGIN
-inline VariableValue convertVariable( const ::CustomStruct &c ) {
+template <>
+inline VariableValue convertVariable( CustomStruct c ) {
     std::stringstream sstr;
     sstr << "CustomStruct(" << c.someNumber << ")";
     return VariableValue::stringValue( sstr.str().c_str() );
