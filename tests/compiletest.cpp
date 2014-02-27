@@ -315,7 +315,6 @@ static void testErrorMacros()
                            << TRACELIB_VALUE(ui32)
                            << TRACELIB_VALUE(ui64)
                            << TRACELIB_VALUE(cs));
->>>>>>> 8cf113f... Test more types with tracelib
 
     fError("somekey") << "this is a message "
                       << c << fValue(c)
