@@ -114,7 +114,7 @@ string PlaintextSerializer::convertVariableValue( const VariableValue &v ) const
             break;
         case VariableType::Number:
             if( v.isSignedNumber() ) {
-                str << static_cast<int64_t>( v.asNumber() );
+                str << static_cast<vlonglong>( v.asNumber() );
             } else {
                 str << v.asNumber();
             }
@@ -273,7 +273,7 @@ string XMLSerializer::convertVariable( const char *n, const VariableValue &v ) c
         case VariableType::Number:
             str << "type=\"number\">";
             if( v.isSignedNumber() ) {
-                str << static_cast<int64_t>( v.asNumber() );
+                str << static_cast<vlonglong>( v.asNumber() );
             } else {
                 str << v.asNumber();
             }
