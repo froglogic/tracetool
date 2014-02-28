@@ -88,7 +88,7 @@ def fetch_run_environment(arch, compiler):
                     "msvc12": "%VS120COMNTOOLS%\\..\\..\\VC\\bin\\amd64\\vcvars64.bat",
                     },
                 }
-        if os.path.exists(compilerBatchFiles[arch][compiler]):
+        if os.path.exists(os.path.expandvars(compilerBatchFiles[arch][compiler])):
             return compileEnvFromBatchFile(compilerBatchFiles)(arch, compiler)
     else:
         # Search compiler in PATH
