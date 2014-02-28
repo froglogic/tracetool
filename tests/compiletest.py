@@ -113,7 +113,7 @@ def compilerForPlatform(env):
 
 def tracelibLinkLibrary(tracelibbasedir, suffix):
     if is_windows:
-        return os.path.join(tracelibbasedir, "bin", "tracelib%s.dll" % suffix)
+        return os.path.join(tracelibbasedir, "lib", "tracelib%s.lib" % suffix)
     elif is_mac:
         return os.path.join(tracelibbasedir, "lib", "libtracelib.dylib")
     else:
@@ -145,6 +145,8 @@ def tryCompile(compiler, arch, tracelibbasedir, srcdir):
         compilerargs = [compilerForPlatform(run_env),
                         "-I", os.path.join(tracelibartifacts, "include"),
                         tracelibLinkLibrary(tracelibartifacts, tracelibsuffix)]
+        if is_windows:
+            compilerargs.append("/EHsc")
         if is_mac:
             if arch == "x86":
                 compilerargs.append("-m32")
