@@ -5,6 +5,7 @@ struct CustomStruct {
 #include <tracelib/tracelib.h>
 
 #include <string.h>
+#include <vector>
 
 #if defined(_MSC_VER) && _MSC_VER <= 1600
 #if _MSC_VER < 1600
@@ -91,6 +92,7 @@ static void testTraceMacros()
     uint32_t ui32;
     uint64_t ui64;
     CustomStruct cs;
+    std::vector<char> v;
     TRACELIB_TRACE_KEY_MSG("somekey", "somemessage, with "
                            << TRACELIB_VALUE(c)
                            << TRACELIB_VALUE(b)
@@ -119,6 +121,7 @@ static void testTraceMacros()
                            << TRACELIB_VALUE(ui16)
                            << TRACELIB_VALUE(ui32)
                            << TRACELIB_VALUE(ui64)
+                           << TRACELIB_VALUE(v.size())
                            << TRACELIB_VALUE(cs));
 
     fTrace("somekey") << "this is a message "
@@ -149,6 +152,7 @@ static void testTraceMacros()
                       << ui16 << fValue(ui16)
                       << ui32 << fValue(ui32)
                       << ui64 << fValue(ui64)
+                      << v.size() << fValue(v.size())
                       << cs << fValue(cs);
 }
 
@@ -182,6 +186,7 @@ static void testDebugMacros()
     uint16_t ui16;
     uint32_t ui32;
     uint64_t ui64;
+    std::vector<char> v;
     CustomStruct cs;
     TRACELIB_DEBUG;
 
@@ -217,6 +222,7 @@ static void testDebugMacros()
                            << TRACELIB_VALUE(ui16)
                            << TRACELIB_VALUE(ui32)
                            << TRACELIB_VALUE(ui64)
+                           << TRACELIB_VALUE(v.size())
                            << TRACELIB_VALUE(cs));
 
     fDebug("somekey") << "this is a message "
@@ -247,6 +253,7 @@ static void testDebugMacros()
                       << ui16 << fValue(ui16)
                       << ui32 << fValue(ui32)
                       << ui64 << fValue(ui64)
+                      << v.size() << fValue(v.size())
                       << cs << fValue(cs);
 }
 
@@ -280,6 +287,7 @@ static void testErrorMacros()
     uint16_t ui16;
     uint32_t ui32;
     uint64_t ui64;
+    std::vector<char> v;
     CustomStruct cs;
     TRACELIB_ERROR;
 
@@ -315,6 +323,7 @@ static void testErrorMacros()
                            << TRACELIB_VALUE(ui16)
                            << TRACELIB_VALUE(ui32)
                            << TRACELIB_VALUE(ui64)
+                           << TRACELIB_VALUE(v.size())
                            << TRACELIB_VALUE(cs));
 
     fError("somekey") << "this is a message "
@@ -345,6 +354,7 @@ static void testErrorMacros()
                       << ui16 << fValue(ui16)
                       << ui32 << fValue(ui32)
                       << ui64 << fValue(ui64)
+                      << v.size() << fValue(v.size())
                       << cs << fValue(cs);
 }
 
@@ -378,6 +388,7 @@ static void testWatchMacros()
     uint16_t ui16;
     uint32_t ui32;
     uint64_t ui64;
+    std::vector<char> v;
     CustomStruct cs;
 
     TRACELIB_WATCH_KEY("somekey", TRACELIB_VAR(c));
@@ -412,6 +423,7 @@ static void testWatchMacros()
                            << TRACELIB_VAR(ui16)
                            << TRACELIB_VAR(ui32)
                            << TRACELIB_VAR(ui64)
+                           << TRACELIB_VAR(v.size())
                            << TRACELIB_VAR(cs));
 
     fWatch("somekey") << "this is a message "
@@ -442,6 +454,7 @@ static void testWatchMacros()
                       << ui16 << fVar(ui16)
                       << ui32 << fVar(ui32)
                       << ui64 << fVar(ui64)
+                      << v.size() << fVar(v.size())
                       << cs << fVar(cs);
 }
 
