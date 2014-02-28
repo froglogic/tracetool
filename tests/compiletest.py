@@ -28,7 +28,7 @@ class CompilerNotFoundException(Exception):
 # stderr is line-buffered by default already so no reason to do that there
 if not is_windows:
     sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 1)
-logfile = open(os.path.join(os.path.dirname(__file__), "..", "compiletest.log"), "w")
+logfile = open(os.path.join(os.path.dirname(__file__), "compiletest.log"), "w")
 def myprint(txt):
     print txt
     logfile.write(txt+"\n")
