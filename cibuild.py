@@ -182,7 +182,7 @@ def main():
     qtver = qt_version()
 
     if len(sys.argv) < 2:
-        myprint("Usage: %s arch" % sys.argv[0])
+        myprint("Usage: %s arch [package]" % sys.argv[0])
         return 1
 
     arch = parseArchitecture(sys.argv[1])
