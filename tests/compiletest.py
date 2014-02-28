@@ -126,7 +126,7 @@ def tracelibArtifactsDir(arch, basedir):
     if is_windows:
         return os.path.join(basedir, "arch=%s,nodelimit=tracelib,os=windows" % arch, "install")
     elif is_mac:
-        return os.path.join(basedir, "arch=%s,nodelimit=tracelib,os=mac" % arch, "install")
+        return os.path.join(basedir, "arch=%s,nodelimit=tracelib,os=macosx" % arch, "install")
     else:
         return os.path.join(basedir, "arch=%s,nodelimit=tracelib,os=linux" % arch, "install")
 
