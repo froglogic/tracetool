@@ -250,6 +250,7 @@ def main():
     qmake_exe = verify_path(qmake_path(qtver))
     cmake_args.append("-DDOXYGEN_EXECUTABLE=%s" % verify_path(doxygen_path()))
     cmake_args.append("-DQT_QMAKE_EXECUTABLE=%s" % qmake_exe)
+    cmake_args.append("-DCMAKE_INSTALL_PREFIX=%s" % os.path.join(builddir, "..", "install"))
 
     if is_windows:
         run_env["PATH"] = os.path.split(qmake_exe)[0] + os.pathsep + run_env["PATH"]
@@ -267,6 +268,8 @@ def main():
         make_args.append("preinstall")
     else:
         make_args.append("all")
+        # Install to make it easier to archive some of the installation for other jenkins jobs
+        make_args.append("install")
 
     myprint("\nCalling %s\n" % "\n ".join(make_args))
     subprocess.check_call(make_args, env=run_env, cwd=builddir)
