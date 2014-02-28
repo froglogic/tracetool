@@ -8,6 +8,7 @@ import os
 import re
 import shutil
 import subprocess
+import platform
 import tempfile
 import sys
 import ctypes
@@ -17,6 +18,10 @@ is_windows = sys.platform.startswith("win")
 is_mac = sys.platform.startswith("darwin")
 arch = None
 compiler = None
+
+class CompilerNotFoundException(Exception):
+    def __init__(self, compiler, arch):
+        Exception.__init__(self, "Could not found compiler: %s for architecture: %s" %(compiler, arch))
 
 # Make stdout line-buffered so any print()'s end up in the
 # output directly and no buffering occurs
@@ -29,16 +34,6 @@ def myprint(txt):
         # On Windows line-buffering is the same as full buffering, so need to override
         # print and explicitly flush there
         sys.stdout.flush()
-
-def long_path_name(path):
-    if is_windows:
-        buf = ctypes.create_unicode_buffer(260)
-        GetLongPathName = ctypes.windll.kernel32.GetLongPathNameW
-        rv = GetLongPathName(unicode(path), buf, 260)
-        myprint("retrieved long pathname for %s? %s -> %s" % (path, rv, buf.value))
-        if rv != 0 and rv <= 260:
-            return buf.value
-    return path
 
 def find_exe_in_path(exeBaseName, env=os.environ):
     binary = bin_name(exeBaseName)
@@ -97,30 +92,73 @@ def fetch_run_environment(arch, compiler):
         for path in os.environ["PATH"].split(":"):
             if os.path.exists(os.path.join(path, compiler)):
                 newenv = dict(os.environ)
-                newenv['CXX'] = 'g++-4.1'
-                newenv['CC'] = 'gcc-4.1'
+                newenv['CXX'] = compiler
+                newenv['CC'] = compiler
                 return newenv
-    raise Exception("Compiler/Arch %s/%s not found" % (compiler, arch))
+    raise CompilerNotFoundException(compiler, arch)
 
 
 
 def bin_name(basename):
     return basename + ".exe" if is_windows else basename
 
+def compilerForPlatform(env):
+    if is_windows:
+        return find_exe_in_path("cl", env)
+    else:
+        return find_exe_in_path(env["CXX"], env)
 
-def tryCompile(compiler):
+def tracelibLinkLibrary(tracelibbasedir, suffix):
+    if is_windows:
+        return os.path.join(tracelibbasedir, "bin", "tracelib%s.dll" % suffix)
+    elif is_mac:
+        return os.path.join(tracelibbasedir, "lib", "libtracelib.dylib")
+    else:
+        return os.path.join(tracelibbasedir, "lib", "libtracelib%s.so" % suffix)
+
+def determineTracelibSuffix(arch):
+    if arch == "native":
+        return "x86" if platform.architecture()[0] == "32bit" else "x64"
+    else:
+        return arch
+
+def tryCompile(compiler, arch, tracelibbasedir, srcdir):
     myprint("Compiler        : %s" % compiler)
     myprint("Architecture    : %s" % arch)
-    run_env = fetch_run_environment(arch, compiler)
+    try:
+        run_env = fetch_run_environment(arch, compiler)
 
-    myprint("\nCalling %s\n" % "\n ".join(cmake_args))
-    subprocess.check_call(cmake_args, env=run_env, cwd=builddir)
+        tracelibsuffix = determineTracelibSuffix(arch)
+
+        compilerargs = [compilerForPlatform(run_env),
+                        "-I", os.path.join(tracelibbasedir, "include"),
+                        tracelibLinkLibrary(tracelibbasedir, tracelibsuffix)]
+        if is_mac:
+            if arch == "x86":
+                compilerargs.append("-m32")
+            else:
+                compilerargs.append("-m64")
+        compilerargs.append("-o")
+        compilerargs.append(os.path.join(srcdir, bin_name("compiletest")))
+        compilerargs.append(os.path.join(srcdir, "compiletest.cpp"))
+        myprint("\nCalling %s\n" % "\n ".join(compilerargs))
+        subprocess.check_call(compilerargs, env=run_env, cwd=srcdir)
+    except CompilerNotFoundException, e:
+        myprint("Could not test: %s" % e)
+    except subprocess.CalledProcessError, e:
+        myprint("Error compiling: %s" % e)
+        return False
+    return True
 
 def main():
     global arch, compiler
 
     progpath = os.path.dirname(os.path.realpath(__file__))
     srcdir = os.path.realpath(progpath)
+
+    if len(sys.argv) < 2:
+        print "Usage: %s <tracelibinstalldir>" % sys.argv[0]
+        return 2
 
     if is_windows:
         # No MinGW since the MSVC-built tracelib is not compatible with mingw
@@ -131,12 +169,15 @@ def main():
         compilers = ["g++-%s" % ver for ver in ["4.1", "4.2", "4.3", "4.4", "4.5", "4.6", "4.7", "4.8"]]
     if is_windows or is_mac:
         architectures = ["x86", "x64"]
-    else
+    else:
         architectures = ["native"]
 
+    compiledSuccessfully = True
     for arch in architectures:
         for compiler in compilers:
-            tryCompile(compiler, arch)
+            if not tryCompile(compiler, arch, sys.argv[1], srcdir):
+                compiledSuccessfully = False
+    return 0 if compiledSuccessfully else 1
 
 if __name__ == "__main__":
     sys.exit(main())
