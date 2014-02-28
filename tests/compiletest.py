@@ -176,8 +176,10 @@ def main():
         compilers = ["g++-4.0", "g++-4.2", "clang"]
     else:
         compilers = ["g++-%s" % ver for ver in ["4.1", "4.2", "4.3", "4.4", "4.5", "4.6", "4.7", "4.8"]]
-    if is_windows or is_mac:
+    if is_windows:
         architectures = ["x86", "x64"]
+    elif is_mac:
+        architectures = ["x86"]
     else:
         architectures = ["native"]
 
