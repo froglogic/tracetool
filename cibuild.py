@@ -235,6 +235,8 @@ def main():
     # Do a multi-arch binary on MacOSX
     if do_package and arch=='universal':
         cmake_args.append("-DCMAKE_OSX_ARCHITECTURES=i386;x86_64")
+    elif is_mac:
+        cmake_args.append("-DCMAKE_OSX_ARCHITECTURES=i386")
 
     packageInWindowsTemp = do_package and is_windows
     packagingDir = ""
