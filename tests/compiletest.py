@@ -189,8 +189,9 @@ def main():
     compiledSuccessfully = True
     for arch in architectures:
         for compiler in compilers:
-            if not tryCompile(compiler, arch, sys.argv[1], srcdir):
-                compiledSuccessfully = False
+            if not is_windows or arch != 'x64' or compiler not in ['msvc6', 'msvc7']:
+                if not tryCompile(compiler, arch, sys.argv[1], srcdir):
+                    compiledSuccessfully = False
     return 0 if compiledSuccessfully else 1
 
 if __name__ == "__main__":
