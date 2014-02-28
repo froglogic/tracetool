@@ -122,6 +122,14 @@ def determineTracelibSuffix(arch):
     else:
         return arch
 
+def tracelibArtifactsDir(arch, basedir):
+    if is_windows:
+        return os.path.join(basedir, "arch=%s,nodelimit=tracelib,os=windows" % arch, "install")
+    elif is_mac:
+        return os.path.join(basedir, "arch=%s,nodelimit=tracelib,os=mac" % arch, "install")
+    else:
+        return os.path.join(basedir, "arch=%s,nodelimit=tracelib,os=linux" % arch, "install")
+
 def tryCompile(compiler, arch, tracelibbasedir, srcdir):
     myprint("Compiler        : %s" % compiler)
     myprint("Architecture    : %s" % arch)
@@ -129,10 +137,11 @@ def tryCompile(compiler, arch, tracelibbasedir, srcdir):
         run_env = fetch_run_environment(arch, compiler)
 
         tracelibsuffix = determineTracelibSuffix(arch)
+        tracelibartifacts = tracelibArtifactsDir(tracelibsuffix, tracelibbasedir)
 
         compilerargs = [compilerForPlatform(run_env),
-                        "-I", os.path.join(tracelibbasedir, "include"),
-                        tracelibLinkLibrary(tracelibbasedir, tracelibsuffix)]
+                        "-I", os.path.join(tracelibartifacts, "include"),
+                        tracelibLinkLibrary(tracelibartifacts, tracelibsuffix)]
         if is_mac:
             if arch == "x86":
                 compilerargs.append("-m32")
