@@ -222,12 +222,15 @@ def main():
     # potential test execution that follows to get useful crash info
     if do_package:
         cmake_args.append("-DCMAKE_BUILD_TYPE=Release")
-        # on Linux and Windows we specify a special bitness suffix
-        # so both architectures can be put into the same directory.
-        if is_windows or not is_mac:
-            cmake_args.append("-DARCH_LIB_SUFFIX=%s" % arch)
     else:
         cmake_args.append("-DCMAKE_BUILD_TYPE=RelWithDebInfo")
+    # on Linux and Windows we specify a special bitness suffix
+    # so both architectures can be put into the same directory.
+    # Used for packaging and ci since the ci-artifacts are
+    # used for a job which tries to compile for multiple archs
+    # on at least windows
+    if is_windows or not is_mac:
+        cmake_args.append("-DARCH_LIB_SUFFIX=%s" % arch)
 
     # Do a multi-arch binary on MacOSX
     if do_package and arch=='universal':
