@@ -178,7 +178,7 @@ def main():
         # No MinGW since the MSVC-built tracelib is not compatible with mingw
         compilers = ["msvc6", "msvc7", "msvc8", "msvc9", "msvc10", "msvc11", "msvc12"]
     elif is_mac:
-        compilers = ["g++-4.0", "g++-4.2", "clang"]
+        compilers = ["g++-4.0", "g++-4.2", "clang++"]
     else:
         compilers = ["g++-%s" % ver for ver in ["4.1", "4.2", "4.3", "4.4", "4.5", "4.6", "4.7", "4.8"]]
     if is_windows:
