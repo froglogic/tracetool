@@ -106,19 +106,6 @@ TRACELIB_SPECIALIZE_CONVERSION(long double, floatValue)
 TRACELIB_SPECIALIZE_CONVERSION(vlonglong, numberValue)
 TRACELIB_SPECIALIZE_CONVERSION(vulonglong, numberValue)
 
-/* A couple of specializations for MSVC6 since the compiler
- * doesn't seem to take the existing ulonglong/longlong
- * specializations.
- */
-#if defined(_MSC_VER) && _MSC_VER <= 1200
-TRACELIB_SPECIALIZE_CONVERSION(__int8, numberValue)
-TRACELIB_SPECIALIZE_CONVERSION(__int16, numberValue)
-TRACELIB_SPECIALIZE_CONVERSION(__int32, numberValue)
-TRACELIB_SPECIALIZE_CONVERSION(unsigned __int8, numberValue)
-TRACELIB_SPECIALIZE_CONVERSION(unsigned __int16, numberValue)
-TRACELIB_SPECIALIZE_CONVERSION(unsigned __int32, numberValue)
-#endif
-
 #undef TRACELIB_SPECIALIZE_CONVERSION
 
 #define TRACELIB_SPECIALIZE_CONVERSION_INTEGRAL(T, castType) \
@@ -133,6 +120,19 @@ TRACELIB_SPECIALIZE_CONVERSION_INTEGRAL(int, vlonglong)
 TRACELIB_SPECIALIZE_CONVERSION_INTEGRAL(unsigned int, vulonglong)
 TRACELIB_SPECIALIZE_CONVERSION_INTEGRAL(long, vlonglong)
 TRACELIB_SPECIALIZE_CONVERSION_INTEGRAL(unsigned long, vulonglong)
+
+/* A couple of specializations for MSVC6 since the compiler
+ * doesn't seem to take the existing ulonglong/longlong
+ * specializations.
+ */
+#if defined(_MSC_VER) && _MSC_VER <= 1200
+TRACELIB_SPECIALIZE_CONVERSION_INTEGRAL(__int8, vlonglong)
+TRACELIB_SPECIALIZE_CONVERSION_INTEGRAL(__int16, vlonglong)
+TRACELIB_SPECIALIZE_CONVERSION_INTEGRAL(__int32, vlonglong)
+TRACELIB_SPECIALIZE_CONVERSION_INTEGRAL(unsigned __int8, vulonglong)
+TRACELIB_SPECIALIZE_CONVERSION_INTEGRAL(unsigned __int16, vulonglong)
+TRACELIB_SPECIALIZE_CONVERSION_INTEGRAL(unsigned __int32, vulonglong)
+#endif
 
 #undef TRACELIB_SPECIALIZE_CONVERSION_UNSIGNED_INTEGRAL
 #undef TRACELIB_SPECIALIZE_CONVERSION_SIGNED_INTEGRAL
