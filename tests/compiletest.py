@@ -150,7 +150,7 @@ def tryCompile(compiler, arch, tracelibbasedir, srcdir):
             else:
                 compilerargs.append("-m64")
         if is_windows:
-            compilerargs.append("/Fo" + os.path.join(srcdir, bin_name("compiletest")))
+            compilerargs.append("/Fe" + os.path.join(srcdir, bin_name("compiletest")))
         else:
             compilerargs.append("-o")
             compilerargs.append(os.path.join(srcdir, bin_name("compiletest")))
