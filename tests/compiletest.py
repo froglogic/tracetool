@@ -149,8 +149,11 @@ def tryCompile(compiler, arch, tracelibbasedir, srcdir):
                 compilerargs.append("-m32")
             else:
                 compilerargs.append("-m64")
-        compilerargs.append("-o")
-        compilerargs.append(os.path.join(srcdir, bin_name("compiletest")))
+        if is_windows:
+            compilerargs.append("/Fo" + os.path.join(srcdir, bin_name("compiletest")))
+        else:
+            compilerargs.append("-o")
+            compilerargs.append(os.path.join(srcdir, bin_name("compiletest")))
         compilerargs.append(os.path.join(srcdir, "compiletest.cpp"))
         myprint("\nCalling %s\n" % "\n ".join(compilerargs))
         subprocess.check_call(compilerargs, env=run_env, cwd=srcdir)
