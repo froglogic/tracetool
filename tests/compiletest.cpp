@@ -467,5 +467,6 @@ int main()
     testDebugMacros();
     testErrorMacros();
     testWatchMacros();
+    return 0;
 }
 
