@@ -215,6 +215,8 @@ def verifyOutput(arch, srcdir, tracelibdir):
         actualXml = repl.sub(r"\1=\"\1\"", actualXml)
     actualXml = re.sub(r"<stackposition>[0-9]+", r"<stackposition>1", actualXml)
     actualXml = re.sub(r"(<location lineno=\"[0-9]+\"><!\[CDATA\[)[^\]]+\]\]>", r"\1compiletest.cpp]]>", actualXml)
+    if is_windows:
+        actualXml = re.sub(r"<processname><!\[CDATA\[compiletest\.exe]", r"<processname><![CDATA[compiletest]", actualXml)
     expectedXml = open(os.path.join(srcdir, "compiletest_expected.log"), "r").read()
     if actualXml == expectedXml:
         return True
