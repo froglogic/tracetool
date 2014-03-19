@@ -122,6 +122,12 @@ def determineTracelibSuffix(arch):
     else:
         return arch
 
+def tracelibInstallDir(arch, basedir):
+    tracelibbasedir = tracelibArtifactsDir(determineTracelibSuffix(arch), basedir)
+    if not os.path.exists(tracelibbasedir):
+        tracelibbasedir = basedir
+    return tracelibbasedir
+
 def tracelibArtifactsDir(arch, basedir):
     if is_windows:
         return os.path.join(basedir, "arch=%s,nodelimit=tracelib,os=windows" % arch, "install")
@@ -140,17 +146,14 @@ def tryCompile(compiler, arch, tracelibbasedir, srcdir):
         run_env = fetch_run_environment(arch, compiler)
 
         tracelibsuffix = determineTracelibSuffix(arch)
-        tracelibartifacts = tracelibArtifactsDir(tracelibsuffix, tracelibbasedir)
-        if not os.path.exists(tracelibartifacts):
-            tracelibartifacts = tracelibbasedir
-        if (not os.path.exists(tracelibLinkLibrary(tracelibartifacts, tracelibsuffix))
-            and os.path.exists(tracelibLinkLibrary(tracelibartifacts, ""))):
+        if (not os.path.exists(tracelibLinkLibrary(tracelibbasedir, tracelibsuffix))
+            and os.path.exists(tracelibLinkLibrary(tracelibbasedir, ""))):
             tracelibsuffix = ""
 
 
         compilerargs = [compilerForPlatform(run_env),
-                        "-I", os.path.join(tracelibartifacts, "include"),
-                        tracelibLinkLibrary(tracelibartifacts, tracelibsuffix)]
+                        "-I", os.path.join(tracelibbasedir, "include"),
+                        tracelibLinkLibrary(tracelibbasedir, tracelibsuffix)]
         if is_windows:
             compilerargs.append("/EHsc")
         if is_mac:
@@ -174,7 +177,7 @@ def tryCompile(compiler, arch, tracelibbasedir, srcdir):
         return (False, False)
     return (True, True)
 
-def verifyOutput(srcdir, tracelibdir):
+def verifyOutput(arch, srcdir, tracelibdir):
     compiletestexe = bin_name("compiletest")
     compiletestlog = os.path.join(srcdir, "compiletest.log")
     if not os.path.exists(os.path.join(srcdir, compiletestexe)):
@@ -244,15 +247,16 @@ def main():
 
     compiledSuccessfully = True
     ranSuccessfully = True
+    tracelibdir = tracelibInstallDir(arch, sys.argv[1])
     for arch in architectures:
         for compiler in compilers:
             if not is_windows or arch != 'x64' or compiler not in ['msvc6', 'msvc7']:
-                compileResult = tryCompile(compiler, arch, sys.argv[1], srcdir)
+                compileResult = tryCompile(compiler, arch, tracelibdir, srcdir)
                 if not compileResult[0]:
                     compiledSuccessfully = False
                 elif compileResult[1]:
                     # Only run this if tryCompile found a compiler and compiled something
-                    if not verifyOutput(srcdir, sys.argv[1]):
+                    if not verifyOutput(arch, srcdir, tracelibdir):
                         ranSuccessfully = False
     return 0 if (compiledSuccessfully and ranSuccessfully) else 1
 
