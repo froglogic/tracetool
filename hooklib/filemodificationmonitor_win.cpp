@@ -53,53 +53,53 @@ bool WinFileModificationMonitor::start()
 DWORD WINAPI WinFileModificationMonitor::FilePollingThreadProc( LPVOID lpParameter )
 {
     WinFileModificationMonitor *monitorObject = (WinFileModificationMonitor *)lpParameter;
-
-    bool fileExists = false;
-    FILETIME lastModificationTime = { 0 };
+    struct FileInfo {
+        FileInfo( const std::string &fileName )
+            : fileExists( false )
+        {
+            HANDLE fileHandle = ::CreateFileA( fileName.c_str(),
+                                               GENERIC_READ,
+                                               FILE_SHARE_READ,
+                                               NULL,
+                                               OPEN_EXISTING,
+                                               FILE_ATTRIBUTE_NORMAL,
+                                               NULL );
+            if ( fileHandle == INVALID_HANDLE_VALUE ) {
+                switch ( ::GetLastError() ) {
+                    case ERROR_FILE_NOT_FOUND:
+                        fileExists = false;
+                        break;
+                    default:
+                        // XXX Handle errors
+                        break;
+                }
+            } else {
+                fileExists = true;
+                ::GetFileTime( fileHandle, NULL, NULL, &modificationTime );
+                ::CloseHandle( fileHandle );
+            }
+        }
+        bool fileExists;
+        FILETIME modificationTime;
+    };
+    FileInfo lastFileInfo( monitorObject->fileName() );
     while ( ::WaitForSingleObject( monitorObject->m_pollingThreadStopEvent, 0 ) == WAIT_TIMEOUT ) {
         ::Sleep( 250 );
 
-        HANDLE fileHandle = ::CreateFileA( monitorObject->fileName().c_str(),
-                                           GENERIC_READ,
-                                           FILE_SHARE_READ,
-                                           NULL,
-                                           OPEN_EXISTING,
-                                           FILE_ATTRIBUTE_NORMAL,
-                                           NULL );
-        if ( fileHandle == INVALID_HANDLE_VALUE ) {
-            switch ( ::GetLastError() ) {
-                case ERROR_FILE_NOT_FOUND:
-                    if ( fileExists ) {
-                        monitorObject->notifyObserver( FileModificationMonitorObserver::FileDisappeared );
-                        fileExists = false;
-                    }
-                    break;
-                default:
-                    // XXX Handle errors
-                    break;
-            }
+        FileInfo newFileInfo( monitorObject->fileName() );
+
+        if( newFileInfo.fileExists != lastFileInfo.fileExists ) {
+            FileModificationMonitorObserver::NotificationReason reason = lastFileInfo.fileExists
+                                            ? FileModificationMonitorObserver::FileDisappeared
+                                            : FileModificationMonitorObserver::FileAppeared;
+            monitorObject->notifyObserver( reason );
+            lastFileInfo = newFileInfo;
             continue;
         }
 
-        if ( !fileExists ) {
-            monitorObject->notifyObserver( FileModificationMonitorObserver::FileAppeared );
-            fileExists = true;
-            ::CloseHandle( fileHandle );
-            continue;
-        }
-
-        FILETIME currentModificationTime;
-        if ( !::GetFileTime( fileHandle, NULL, NULL, &currentModificationTime ) ) {
-            // XXX Handle errors
-            ::CloseHandle( fileHandle );
-            continue;
-        }
-
-        ::CloseHandle( fileHandle );
-
-        if ( ::CompareFileTime( &lastModificationTime, &currentModificationTime ) != 0 ) {
+        if ( ::CompareFileTime( &lastFileInfo.modificationTime, &newFileInfo.modificationTime ) != 0 ) {
             monitorObject->notifyObserver( FileModificationMonitorObserver::FileModified );
-            lastModificationTime = currentModificationTime;
+            lastFileInfo = newFileInfo;
         }
     }
     return 0;
