@@ -200,7 +200,7 @@ def verifyOutput(arch, srcdir, tracelibdir):
 """ % (compiletestexe, compiletestlog))
     env = os.environ
     if is_windows:
-        env["PATH"] = os.path.join(tracelibdir, "bin")
+        env["PATH"] += os.pathsep + os.path.join(tracelibdir, "bin")
     elif is_mac:
         env["DYLD_LIBRARY_PATH"] = os.path.join(tracelibdir, "lib")
     else:
