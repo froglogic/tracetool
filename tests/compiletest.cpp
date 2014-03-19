@@ -38,6 +38,41 @@ inline VariableValue convertVariable( CustomStruct c ) {
 }
 TRACELIB_NAMESPACE_END
 
+char dummystr[] = { 'a', 'b', 'c', '\0' };
+signed char sdummystr[] = { 'a', 'b', 'c', '\0' };
+unsigned char udummystr[] = { 'a', 'b', 'c', '\0' };
+
+// Basic type variables
+char c;
+bool b;
+float f;
+double d;
+long double ld;
+void *vp = 0;
+const void *cvp = 0;
+char *cp = dummystr;
+signed char *scp = sdummystr;
+unsigned char *ucp = udummystr;
+std::string str;
+short ss;
+unsigned short us;
+int si;
+unsigned int ui;
+long sl;
+unsigned long ul;
+vlonglong sll;
+vulonglong ull;
+int8_t si8;
+int16_t si16;
+int32_t si32;
+int64_t si64;
+uint8_t ui8;
+uint16_t ui16;
+uint32_t ui32;
+uint64_t ui64;
+CustomStruct cs;
+std::vector<char> v;
+
 static void testNamespaceMacros()
 {
     TRACELIB_NAMESPACE_IDENT(someRandomIdentifier) = 3;
@@ -63,36 +98,6 @@ static void testTraceMacros()
     TRACELIB_TRACE_KEY("somekey");
 
     TRACELIB_TRACE_KEY_MSG("somekey", "somemessage");
-
-    char c;
-    bool b;
-    float f;
-    double d;
-    long double ld;
-    void *vp;
-    const void *cvp;
-    char *cp;
-    signed char *scp;
-    unsigned char *ucp;
-    std::string str;
-    short ss;
-    unsigned short us;
-    int si;
-    unsigned int ui;
-    long sl;
-    unsigned long ul;
-    vlonglong sll;
-    vulonglong ull;
-    int8_t si8;
-    int16_t si16;
-    int32_t si32;
-    int64_t si64;
-    uint8_t ui8;
-    uint16_t ui16;
-    uint32_t ui32;
-    uint64_t ui64;
-    CustomStruct cs;
-    std::vector<char> v;
     TRACELIB_TRACE_KEY_MSG("somekey", "somemessage, with "
                            << TRACELIB_VALUE(c)
                            << TRACELIB_VALUE(b)
@@ -160,35 +165,6 @@ static void testTraceMacros()
 // Test all 'debug' macros
 static void testDebugMacros()
 {
-    char c;
-    bool b;
-    float f;
-    double d;
-    long double ld;
-    void *vp;
-    const void *cvp;
-    char *cp;
-    signed char *scp;
-    unsigned char *ucp;
-    std::string str;
-    short ss;
-    unsigned short us;
-    int si;
-    unsigned int ui;
-    long sl;
-    unsigned long ul;
-    vlonglong sll;
-    vulonglong ull;
-    int8_t si8;
-    int16_t si16;
-    int32_t si32;
-    int64_t si64;
-    uint8_t ui8;
-    uint16_t ui16;
-    uint32_t ui32;
-    uint64_t ui64;
-    std::vector<char> v;
-    CustomStruct cs;
     TRACELIB_DEBUG;
 
     TRACELIB_DEBUG_KEY("somekey");
@@ -262,35 +238,6 @@ static void testDebugMacros()
 // Test all 'error' macros
 static void testErrorMacros()
 {
-    char c;
-    bool b;
-    float f;
-    double d;
-    long double ld;
-    void *vp;
-    const void *cvp;
-    char *cp;
-    signed char *scp;
-    unsigned char *ucp;
-    std::string str;
-    short ss;
-    unsigned short us;
-    int si;
-    unsigned int ui;
-    long sl;
-    unsigned long ul;
-    vlonglong sll;
-    vulonglong ull;
-    int8_t si8;
-    int16_t si16;
-    int32_t si32;
-    int64_t si64;
-    uint8_t ui8;
-    uint16_t ui16;
-    uint32_t ui32;
-    uint64_t ui64;
-    std::vector<char> v;
-    CustomStruct cs;
     TRACELIB_ERROR;
 
     TRACELIB_ERROR_KEY("somekey");
@@ -364,36 +311,6 @@ static void testErrorMacros()
 // Test all 'watch' macros
 static void testWatchMacros()
 {
-    char c;
-    bool b;
-    float f;
-    double d;
-    long double ld;
-    void *vp;
-    const void *cvp;
-    char *cp;
-    signed char *scp;
-    unsigned char *ucp;
-    std::string str;
-    short ss;
-    unsigned short us;
-    int si;
-    unsigned int ui;
-    long sl;
-    unsigned long ul;
-    vlonglong sll;
-    vulonglong ull;
-    int8_t si8;
-    int16_t si16;
-    int32_t si32;
-    int64_t si64;
-    uint8_t ui8;
-    uint16_t ui16;
-    uint32_t ui32;
-    uint64_t ui64;
-    std::vector<char> v;
-    CustomStruct cs;
-
     TRACELIB_WATCH_KEY("somekey", TRACELIB_VAR(c));
 
     TRACELIB_WATCH_KEY_MSG("somekey", "somemessage", TRACELIB_VAR(c));
