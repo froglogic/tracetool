@@ -208,7 +208,9 @@ public:
     }
 
     void flush() {
-        visitTracePoint( m_tracePoint, m_stream.str().c_str(), m_variables );
+        if( m_tracePoint->active ) {
+            visitTracePoint( m_tracePoint, m_stream.str().c_str(), m_variables );
+        }
     }
 
 private:
