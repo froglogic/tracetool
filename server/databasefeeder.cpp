@@ -241,7 +241,6 @@ public:
             unsigned int functionId,
             unsigned int groupId )
     {
-        printf( "TracePointCache::store: path id %d, function id %d\n", pathId, functionId );
     CacheKey key;
     key.type = type;
     key.pathId = pathId;
@@ -253,7 +252,6 @@ public:
         return *cachedId;
     QVariant v = transaction->exec( QString( "SELECT id FROM trace_point WHERE type=%1 AND path_id=%2 AND line=%3 AND function_id=%4 AND group_id=%5;" ).arg( type ).arg( pathId ).arg( lineno ).arg( functionId ).arg( groupId ) );
     if ( !v.isValid() ) {
-        printf( "inserting new trace point\n" );
         v = transaction->insert( QString( "INSERT INTO trace_point VALUES(NULL, %1, %2, %3, %4, %5);" ).arg( type ).arg( pathId ).arg( lineno ).arg( functionId ).arg( groupId ) );
     }
     bool ok;
