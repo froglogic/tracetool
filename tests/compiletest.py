@@ -133,11 +133,18 @@ def tracelibArtifactsDir(arch, basedir):
 def tryCompile(compiler, arch, tracelibbasedir, srcdir):
     myprint("Compiler        : %s" % compiler)
     myprint("Architecture    : %s" % arch)
+    compiletestexe = bin_name("compiletest")
     try:
         run_env = fetch_run_environment(arch, compiler)
 
         tracelibsuffix = determineTracelibSuffix(arch)
         tracelibartifacts = tracelibArtifactsDir(tracelibsuffix, tracelibbasedir)
+        if not os.path.exists(tracelibartifacts):
+            tracelibartifacts = tracelibbasedir
+        if (not os.path.exists(tracelibLinkLibrary(tracelibartifacts, tracelibsuffix))
+            and os.path.exists(tracelibLinkLibrary(tracelibartifacts, ""))):
+            tracelibsuffix = ""
+
 
         compilerargs = [compilerForPlatform(run_env),
                         "-I", os.path.join(tracelibartifacts, "include"),
