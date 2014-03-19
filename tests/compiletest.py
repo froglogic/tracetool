@@ -12,7 +12,7 @@ import platform
 import tempfile
 import sys
 import ctypes
-
+import difflib
 
 is_windows = sys.platform.startswith("win")
 is_mac = sys.platform.startswith("darwin")
@@ -168,10 +168,55 @@ def tryCompile(compiler, arch, tracelibbasedir, srcdir):
         subprocess.check_call(compilerargs, env=run_env, cwd=srcdir)
     except CompilerNotFoundException, e:
         myprint("Could not test: %s" % e)
+        return (True, False)
     except subprocess.CalledProcessError, e:
         myprint("Error compiling: %s" % e)
+        return (False, False)
+    return (True, True)
+
+def verifyOutput(srcdir, tracelibdir):
+    compiletestexe = bin_name("compiletest")
+    compiletestlog = os.path.join(srcdir, "compiletest.log")
+    if not os.path.exists(os.path.join(srcdir, compiletestexe)):
+        # this is only called for successful compiles, so there should better be an executable
         return False
-    return True
+    if os.path.exists(os.path.join(compiletestlog)):
+        os.remove(compiletestlog)
+    open(os.path.join(srcdir, "tracelib.xml"), "w").write("""
+<tracelibConfiguration>
+<process>
+    <name>%s</name>
+    <output type="file">
+        <option name="filename">%s</option>
+    </output>
+    <serializer type="xml">
+        <option name="beautifiedOutput">yes</option>
+    </serializer>
+</process>
+</tracelibConfiguration>
+""" % (compiletestexe, compiletestlog))
+    env = os.environ
+    if is_windows:
+        env["PATH"] = os.path.join(tracelibdir, "bin")
+    elif is_mac:
+        env["DYLD_LIBRARY_PATH"] = os.path.join(tracelibdir, "lib")
+    else:
+        env["LD_LIBRARY_PATH"] = os.path.join(tracelibdir, "lib")
+    subprocess.check_call([os.path.join(srcdir,compiletestexe)], env=env)
+    actualXml = open(os.path.join(srcdir, "compiletest.log"), "r").read()
+    replacements = [re.compile(r'(pid)="[0-9]+"'),
+                    re.compile(r'(process_starttime)="[0-9]+"'),
+                    re.compile(r'(time)="[0-9]+"'),
+                    re.compile(r'(tid)="[0-9]+"')]
+    for repl in replacements:
+        actualXml = repl.sub(r"\1=\"\1\"", actualXml)
+    actualXml = re.sub(r"<stackposition>[0-9]+", r"<stackposition>1", actualXml)
+    actualXml = re.sub(r"(<location lineno=\"[0-9]+\"><!\[CDATA\[)[^\]]+\]\]>", r"\1compiletest.cpp]]>", actualXml)
+    expectedXml = open(os.path.join(srcdir, "compiletest_expected.log"), "r").read()
+    if actualXml == expectedXml:
+        return True
+    print "Difference in expected log:\n  %s" % ("\n  ".join(difflib.unified_diff(expectedXml.split("\n"), actualXml.split("\n"))), )
+    return False
 
 def main():
     global arch, compiler
@@ -198,12 +243,18 @@ def main():
         architectures = ["native"]
 
     compiledSuccessfully = True
+    ranSuccessfully = True
     for arch in architectures:
         for compiler in compilers:
             if not is_windows or arch != 'x64' or compiler not in ['msvc6', 'msvc7']:
-                if not tryCompile(compiler, arch, sys.argv[1], srcdir):
+                compileResult = tryCompile(compiler, arch, sys.argv[1], srcdir)
+                if not compileResult[0]:
                     compiledSuccessfully = False
-    return 0 if compiledSuccessfully else 1
+                elif compileResult[1]:
+                    # Only run this if tryCompile found a compiler and compiled something
+                    if not verifyOutput(srcdir, sys.argv[1]):
+                        ranSuccessfully = False
+    return 0 if (compiledSuccessfully and ranSuccessfully) else 1
 
 if __name__ == "__main__":
     sys.exit(main())
