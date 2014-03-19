@@ -221,11 +221,12 @@ struct TracePointTuple
 
     bool operator<(const TracePointTuple &tp) const
     {
-    return type < tp.type &&
-        pathId < tp.pathId &&
-        lineno < tp.lineno &&
-        functionId < tp.functionId &&
-        groupId < tp.groupId;
+        if ( type != tp.type ) return type < tp.type;
+        if ( pathId != tp.pathId ) return pathId < tp.pathId;
+        if ( lineno != tp.lineno ) return lineno < tp.lineno;
+        if ( functionId != tp.functionId ) return functionId < tp.functionId;
+        if ( groupId != tp.groupId ) return groupId < tp.groupId;
+        return false;
     };
 };
 
@@ -240,6 +241,7 @@ public:
             unsigned int functionId,
             unsigned int groupId )
     {
+        printf( "TracePointCache::store: path id %d, function id %d\n", pathId, functionId );
     CacheKey key;
     key.type = type;
     key.pathId = pathId;
@@ -251,6 +253,7 @@ public:
         return *cachedId;
     QVariant v = transaction->exec( QString( "SELECT id FROM trace_point WHERE type=%1 AND path_id=%2 AND line=%3 AND function_id=%4 AND group_id=%5;" ).arg( type ).arg( pathId ).arg( lineno ).arg( functionId ).arg( groupId ) );
     if ( !v.isValid() ) {
+        printf( "inserting new trace point\n" );
         v = transaction->insert( QString( "INSERT INTO trace_point VALUES(NULL, %1, %2, %3, %4, %5);" ).arg( type ).arg( pathId ).arg( lineno ).arg( functionId ).arg( groupId ) );
     }
     bool ok;
