@@ -218,6 +218,8 @@ def verifyOutput(compiler, arch, srcdir, tracelibdir):
     if is_windows:
         actualXml = re.sub(r"<processname><!\[CDATA\[compiletest\.exe]", r"<processname><![CDATA[compiletest]", actualXml)
     expectedXml = open(os.path.join(srcdir, "compiletest_expected.log"), "r").read()
+    if compiler == "msvc6":
+        expectedXml = re.sub(r"<function>.*</function>", r"<function><![CDATA[unknown]]></function>", expectedXml)
     if actualXml == expectedXml:
         return True
     print "Difference in expected log:\n  %s" % ("\n  ".join(difflib.unified_diff(expectedXml.split("\n"), actualXml.split("\n"))), )
