@@ -247,10 +247,10 @@ def main():
 
     compiledSuccessfully = True
     ranSuccessfully = True
-    tracelibdir = tracelibInstallDir(arch, sys.argv[1])
     for arch in architectures:
         for compiler in compilers:
             if not is_windows or arch != 'x64' or compiler not in ['msvc6', 'msvc7']:
+                tracelibdir = tracelibInstallDir(arch, sys.argv[1])
                 compileResult = tryCompile(compiler, arch, tracelibdir, srcdir)
                 if not compileResult[0]:
                     compiledSuccessfully = False
