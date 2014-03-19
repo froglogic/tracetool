@@ -153,7 +153,8 @@ static void testTraceMacros()
                       << ui32 << fValue(ui32)
                       << ui64 << fValue(ui64)
                       << v.size() << fValue(v.size())
-                      << cs << fValue(cs);
+                      << cs << fValue(cs)
+                      << fEnd;
 }
 
 // Test all 'debug' macros
@@ -254,7 +255,8 @@ static void testDebugMacros()
                       << ui32 << fValue(ui32)
                       << ui64 << fValue(ui64)
                       << v.size() << fValue(v.size())
-                      << cs << fValue(cs);
+                      << cs << fValue(cs)
+                      << fEnd;
 }
 
 // Test all 'error' macros
@@ -355,7 +357,8 @@ static void testErrorMacros()
                       << ui32 << fValue(ui32)
                       << ui64 << fValue(ui64)
                       << v.size() << fValue(v.size())
-                      << cs << fValue(cs);
+                      << cs << fValue(cs)
+                      << fEnd;
 }
 
 // Test all 'watch' macros
@@ -455,7 +458,8 @@ static void testWatchMacros()
                       << ui32 << fVar(ui32)
                       << ui64 << fVar(ui64)
                       << v.size() << fVar(v.size())
-                      << cs << fVar(cs);
+                      << cs << fVar(cs)
+                      << fEnd;
 }
 
 int main()

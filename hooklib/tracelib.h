@@ -110,6 +110,8 @@
 
 #define TRACELIB_VALUE_IMPL(v) #v << "=" << v
 
+#define TRACELIB_STREAM_END_IMPL TRACELIB_NAMESPACE_IDENT(StreamEnd())
+
 #define TRACELIB_DEBUG_STREAM_IMPL(key) TRACELIB_VISIT_TRACEPOINT_STREAM(TracePointVisitor, TRACELIB_NAMESPACE_IDENT(TracePointType)::Debug, (key))
 #define TRACELIB_ERROR_STREAM_IMPL(key) TRACELIB_VISIT_TRACEPOINT_STREAM(TracePointVisitor, TRACELIB_NAMESPACE_IDENT(TracePointType)::Error, (key))
 #define TRACELIB_TRACE_STREAM_IMPL(key) TRACELIB_VISIT_TRACEPOINT_STREAM(TracePointVisitor, TRACELIB_NAMESPACE_IDENT(TracePointType)::Log, (key))
@@ -165,46 +167,28 @@ TRACELIB_EXPORT void visitTracePoint( const TracePoint *tracePoint,
                       const char *msg = 0,
                       VariableSnapshot *variables = 0 );
 
-class TracePointVisitor;
-class TracePointVisitorProxy
-{
-public:
-    inline ~TracePointVisitorProxy();
-
-    inline TracePointVisitorProxy operator<<( const VariableValue &v );
-    inline TracePointVisitorProxy addVariable( AbstractVariable *v );
-private:
-    friend class TracePointVisitor;
-    inline TracePointVisitorProxy( TracePointVisitor &tpVisitor );
-    TracePointVisitor &realVisitor;
-    bool streamedTo;
+struct StreamEnd {
 };
 
 class TracePointVisitor {
 public:
     inline TracePointVisitor( TracePoint *tracePoint )
         : m_tracePoint( tracePoint )
-        , streamedTo( false )
         , m_variables( 0 )
     { }
     inline ~TracePointVisitor() {
-        if( !streamedTo ) {
-            flush();
-        }
     }
 
-    inline TracePointVisitorProxy operator<<( const VariableValue &v ) {
-        streamedTo = true;
+    inline TracePointVisitor &operator<<( const VariableValue &v ) {
         m_stream << variableValueAsString( v );
-        return TracePointVisitorProxy( *this );
+        return *this;
     }
 
-    inline TracePointVisitorProxy addVariable( AbstractVariable *v ) {
-        streamedTo = true;
+    inline TracePointVisitor &addVariable( AbstractVariable *v ) {
         if ( !m_variables )
             m_variables = new VariableSnapshot;
         (*m_variables) << v;
-        return TracePointVisitorProxy( *this );
+        return *this;
     }
 
     void flush() {
@@ -219,52 +203,22 @@ private:
 
     TracePoint *m_tracePoint;
     std::ostringstream m_stream;
-    bool streamedTo;
     VariableSnapshot *m_variables;
 };
-
-TracePointVisitorProxy TracePointVisitorProxy::operator<<( const VariableValue &v )
-{
-   streamedTo = true;
-   return realVisitor << v;
-}
-
-TracePointVisitorProxy TracePointVisitorProxy::addVariable( AbstractVariable *v )
-{
-   streamedTo = true;
-   return realVisitor.addVariable( v );
-}
-
-TracePointVisitorProxy::~TracePointVisitorProxy()
-{
-   if( !streamedTo ) {
-       realVisitor.flush();
-   }
-}
-
-TracePointVisitorProxy::TracePointVisitorProxy( TracePointVisitor& tpVisitor )
-    : realVisitor( tpVisitor )
-    , streamedTo( false )
-{}
 
 // Keep these before the template functions below otherwise the compiler will try to put 'AbstractVariable *'
 // into the template. I don't understand template logic enough to explain this, so just use the order as a
 // workaround for now.
-inline TracePointVisitorProxy operator<<( TracePointVisitorProxy lhs, AbstractVariable *rhs ) {
+inline TracePointVisitor &operator<<( TracePointVisitor &lhs, AbstractVariable *rhs ) {
     return lhs.addVariable( rhs );
 }
 
-inline TracePointVisitorProxy operator<<( TracePointVisitor &lhs, AbstractVariable *rhs ) {
-    return lhs.addVariable( rhs );
+inline void operator<<( TracePointVisitor &lhs, const StreamEnd &rhs ) {
+    lhs.flush();
 }
 
 template <class T>
-inline TracePointVisitorProxy operator<<( TracePointVisitorProxy lhs, const T &rhs ) {
-    return lhs << convertVariable( rhs );
-}
-
-template <class T>
-inline TracePointVisitorProxy operator<<( TracePointVisitor &lhs, const T &rhs ) {
+inline TracePointVisitor &operator<<( TracePointVisitor &lhs, const T &rhs ) {
     return lhs << convertVariable( rhs );
 }
 

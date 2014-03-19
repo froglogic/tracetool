@@ -455,6 +455,14 @@
 #define TRACELIB_VALUE TRACELIB_VALUE_IMPL
 
 /**
+ * @brief Helper macro that needs to be used to end the streaming syntax.
+ *
+ * This macro ensures the streaming syntax is properly closed and ensures
+ * the flushing of the corresponding tracepoint data.
+ */
+#define TRACELIB_STREAM_END TRACELIB_STREAM_END_IMPL
+
+/**
  * @brief Add a debug entry to the trace in a streaming syntax.
  *
  * This macro can be added to record debug trace entries in a streaming
@@ -462,7 +470,7 @@
  *
  * \code
  * void f( int i, bool j ) {
- *     TRACELIB_DEBUG_STREAM(NULL) << "f() called with " << i << " and " << j;
+ *     TRACELIB_DEBUG_STREAM(NULL) << "f() called with " << i << " and " << j << TRACELIB_TRACE_STREAM_END;
  * }
  * \endcode
  *
@@ -482,9 +490,9 @@
  * void read_file( const char *fn ) {
  *     FILE *f = fopen( fn, "r" );
  *     if ( !f ) {
- *         TRACELIB_ERROR_STREAM(NULL) << "Failed to open file " << fn << " for reading";
+ *         TRACELIB_ERROR_STREAM(NULL) << "Failed to open file " << fn << " for reading" << TRACELIB_TRACE_STREAM_END;
  *     }
- *     TRACELIB_DEBUG_STREAM(NULL) << "Opened file for reading";
+ *     TRACELIB_DEBUG_STREAM(NULL) << "Opened file for reading" << TRACELIB_TRACE_STREAM_END;
  *     ...
  * }
  * \endcode
@@ -503,12 +511,12 @@
  *
  * \code
  * int get_largest_value( int a, int b, int c ) {
- *     TRACELIB_TRACE_STREAM(NULL) << "get_largest_value called";
+ *     TRACELIB_TRACE_STREAM(NULL) << "get_largest_value called" << TRACELIB_TRACE_STREAM_END;
  *     if ( a > b ) {
- *         TRACELIB_TRACE_STREAM(NULL);
+ *         TRACELIB_TRACE_STREAM(NULL) << TRACELIB_TRACE_STREAM_END;
  *         return a > c ? a : c;
  *     }
- *     TRACELIB_TRACE_STREAM(NULL);
+ *     TRACELIB_TRACE_STREAM(NULL) << TRACELIB_TRACE_STREAM_END;
  *     return b > c ? b : c;
  * }
  * \endcode
@@ -527,9 +535,9 @@
  *
  * \code
  * bool is_nonnegative_number( const char *s ) {
- *     TRACELIB_WATCH_STREAM(NULL) << TRACELIB_VAR(s);
+ *     TRACELIB_WATCH_STREAM(NULL) << TRACELIB_VAR(s) << TRACELIB_TRACE_STREAM_END;
  *     while ( *s && *s >= '0' && *s <= '9' ) ++s;
- *     TRACELIB_WATCH_STREAM(NULL) << TRACELIB_VAR(s) << TRACELIB_VAR(*s == '\0');
+ *     TRACELIB_WATCH_STREAM(NULL) << TRACELIB_VAR(s) << TRACELIB_VAR(*s == '\0') << TRACELIB_TRACE_STREAM_END;
  *     return *s == '\0';
  * }
  * \endcode
@@ -567,7 +575,7 @@
  * }
  *
  * void f() {
- *   TRACELIB_WATCH_STREAM(NULL) << TRACELIB_VAR(getName().c_str());
+ *   TRACELIB_WATCH_STREAM(NULL) << TRACELIB_VAR(getName().c_str()) << TRACELIB_TRACE_STREAM_END;
  * }
  * \endcode
  *
@@ -627,6 +635,14 @@
  * This macro is merely a (short) alias for the #TRACELIB_VALUE macro.
  */
 #  define fValue(v) TRACELIB_VALUE(v)
+
+/**
+ * @brief short alias for #TRACELIB_STREAM_END
+ *
+ * This macro is merely a (short) alias for the #TRACELIB_STREAM_END macro.
+ */
+#  define fEnd TRACELIB_STREAM_END
+
 #endif // !defined(TRACELIB_CLEAN_NAMESPACE)
 
 #endif // !defined(TRACELIB_CONFIG_H)
