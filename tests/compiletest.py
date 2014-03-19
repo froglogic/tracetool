@@ -177,7 +177,7 @@ def tryCompile(compiler, arch, tracelibbasedir, srcdir):
         return (False, False)
     return (True, True)
 
-def verifyOutput(arch, srcdir, tracelibdir):
+def verifyOutput(compiler, arch, srcdir, tracelibdir):
     compiletestexe = bin_name("compiletest")
     compiletestlog = os.path.join(srcdir, "compiletest.log")
     if not os.path.exists(os.path.join(srcdir, compiletestexe)):
@@ -258,7 +258,7 @@ def main():
                     compiledSuccessfully = False
                 elif compileResult[1]:
                     # Only run this if tryCompile found a compiler and compiled something
-                    if not verifyOutput(arch, srcdir, tracelibdir):
+                    if not verifyOutput(compiler, arch, srcdir, tracelibdir):
                         ranSuccessfully = False
     return 0 if (compiledSuccessfully and ranSuccessfully) else 1
 
