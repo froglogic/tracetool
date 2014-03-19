@@ -105,29 +105,14 @@ vector<char> PlaintextSerializer::serialize( const ProcessShutdownEvent &ev )
     return vector<char>( result.begin(), result.end() );
 }
 
+// From variabledumping.cpp, cannot easily share through the variabledumping header
+// as that would make STL part of our API which is problematic
+extern std::string stringRep( const VariableValue &v );
+
 string PlaintextSerializer::convertVariableValue( const VariableValue &v ) const
 {
     ostringstream str;
-    switch ( v.type() ) {
-        case VariableType::String:
-            str << v.asString();
-            break;
-        case VariableType::Number:
-            if( v.isSignedNumber() ) {
-                str << static_cast<vlonglong>( v.asNumber() );
-            } else {
-                str << v.asNumber();
-            }
-            break;
-        case VariableType::Float:
-            str << v.asFloat();
-            break;
-        case VariableType::Boolean:
-            str << v.asBoolean();
-            break;
-        default:
-            assert( !"Unreachable" );
-    }
+    str << stringRep ( v );
     str << " <" << VariableType::valueAsString( v.type() ) << ">";
     return str.str();
 }

@@ -55,7 +55,7 @@ VariableValue VariableValue::floatValue( long double v )
     return var;
 }
 
-static std::string stringRep( const VariableValue &v )
+std::string stringRep( const VariableValue &v )
 {
     // XXX The list of variable types is duplicated in variabletypes.def
     ostringstream stream;
@@ -63,7 +63,11 @@ static std::string stringRep( const VariableValue &v )
         case VariableType::String:
             return v.asString();
         case VariableType::Number:
-            stream << v.asNumber();
+            if( v.isSignedNumber() ) {
+                stream << static_cast<vlonglong>( v.asNumber() );
+            } else {
+                stream << v.asNumber();
+            }
             return stream.str();
         case VariableType::Float:
             stream << v.asFloat();
