@@ -220,6 +220,9 @@ def verifyOutput(compiler, arch, srcdir, tracelibdir):
     expectedXml = open(os.path.join(srcdir, "compiletest_expected.log"), "r").read()
     if compiler == "msvc6":
         expectedXml = re.sub(r"<function>.*</function>", r"<function><![CDATA[unknown]]></function>", expectedXml)
+    elif compiler.startswith("msvc"):
+        actualXml = re.sub(r"<function>(.+) __cdecl (.+)</function>", r"<function>\1 \2</function>", actualXml)
+        actualXml = re.sub(r"<function>(.+)\(void\)(.+)</function>", r"<function>\1()\2</function>", actualXml)
     if actualXml == expectedXml:
         return True
     print "Difference in expected log:\n  %s" % ("\n  ".join(difflib.unified_diff(expectedXml.split("\n"), actualXml.split("\n"))), )
