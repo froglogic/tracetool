@@ -140,7 +140,7 @@ def tryCompile(compiler, arch, tracelibbasedir, srcdir):
     myprint("Compiler        : %s" % compiler)
     myprint("Architecture    : %s" % arch)
     compiletestexe = bin_name("compiletest")
-    for name in ["compiletest%s" % suffix for suffix in [".pdb", ".suo", ".obj", "", ".exe"]]:
+    for name in ["compiletest%s" % suffix for suffix in [".pdb", ".suo", ".obj", "", ".exe", ".ilk"]]:
         if os.path.exists(os.path.join(srcdir, name)):
             os.remove(os.path.join(srcdir, name))
     try:
