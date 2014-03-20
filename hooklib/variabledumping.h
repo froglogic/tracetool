@@ -145,8 +145,6 @@ inline VariableValue convertVariable( T val ) { \
 TRACELIB_SPECIALIZE_CONVERSION_USING_SSTREAM(char)
 TRACELIB_SPECIALIZE_CONVERSION_USING_SSTREAM(signed char)
 TRACELIB_SPECIALIZE_CONVERSION_USING_SSTREAM(unsigned char)
-TRACELIB_SPECIALIZE_CONVERSION_USING_SSTREAM(void *)
-TRACELIB_SPECIALIZE_CONVERSION_USING_SSTREAM(const void *)
 TRACELIB_SPECIALIZE_CONVERSION_USING_SSTREAM(char *)
 TRACELIB_SPECIALIZE_CONVERSION_USING_SSTREAM(signed char *)
 TRACELIB_SPECIALIZE_CONVERSION_USING_SSTREAM(unsigned char *)
@@ -156,6 +154,24 @@ TRACELIB_SPECIALIZE_CONVERSION_USING_SSTREAM(const unsigned char *)
 TRACELIB_SPECIALIZE_CONVERSION_USING_SSTREAM(std::string)
 
 #undef TRACELIB_SPECIALIZE_CONVERSION_USING_SSTREAM
+
+#if defined(_MSC_VER)
+#define snprintf _snprintf
+#endif
+// msvc's stringstream does not prepend a 0x to pointers, so do that manually
+template <>
+inline VariableValue convertVariable( const void *val ) {
+    std::vector<char> buf( 11 );
+    snprintf( &buf[0], 11, "0x%08X", val );
+    return convertVariable( &buf[0] );
+}
+#if defined(_MSC_VER)
+#undef snprintf
+#endif
+template<>
+inline VariableValue convertVariable( void *val ) {
+    return convertVariable<const void *>( val );
+}
 
 class AbstractVariable
 {
