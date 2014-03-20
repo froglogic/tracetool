@@ -99,65 +99,65 @@ static void testTraceMacros()
 
     TRACELIB_TRACE_KEY_MSG("somekey", "somemessage");
     TRACELIB_TRACE_KEY_MSG("somekey", "somemessage, with "
-                           << TRACELIB_VALUE(c)
-                           << TRACELIB_VALUE(b)
-                           << TRACELIB_VALUE(f)
-                           << TRACELIB_VALUE(d)
-                           << TRACELIB_VALUE(ld)
-                           << TRACELIB_VALUE(vp)
-                           << TRACELIB_VALUE(cvp)
-                           << TRACELIB_VALUE(cp)
-                           << TRACELIB_VALUE(scp)
-                           << TRACELIB_VALUE(ucp)
-                           << TRACELIB_VALUE(str)
-                           << TRACELIB_VALUE(ss)
-                           << TRACELIB_VALUE(us)
-                           << TRACELIB_VALUE(si)
-                           << TRACELIB_VALUE(ui)
-                           << TRACELIB_VALUE(sl)
-                           << TRACELIB_VALUE(ul)
-                           << TRACELIB_VALUE(sll)
-                           << TRACELIB_VALUE(ull)
-                           << TRACELIB_VALUE(si8)
-                           << TRACELIB_VALUE(si16)
-                           << TRACELIB_VALUE(si32)
-                           << TRACELIB_VALUE(si64)
-                           << TRACELIB_VALUE(ui8)
-                           << TRACELIB_VALUE(ui16)
-                           << TRACELIB_VALUE(ui32)
-                           << TRACELIB_VALUE(ui64)
-                           << TRACELIB_VALUE(v.size())
+                           << TRACELIB_VALUE(c) << "|"
+                           << TRACELIB_VALUE(b) << "|"
+                           << TRACELIB_VALUE(f) << "|"
+                           << TRACELIB_VALUE(d) << "|"
+                           << TRACELIB_VALUE(ld) << "|"
+                           << TRACELIB_VALUE(vp) << "|"
+                           << TRACELIB_VALUE(cvp) << "|"
+                           << TRACELIB_VALUE(cp) << "|"
+                           << TRACELIB_VALUE(scp) << "|"
+                           << TRACELIB_VALUE(ucp) << "|"
+                           << TRACELIB_VALUE(str) << "|"
+                           << TRACELIB_VALUE(ss) << "|"
+                           << TRACELIB_VALUE(us) << "|"
+                           << TRACELIB_VALUE(si) << "|"
+                           << TRACELIB_VALUE(ui) << "|"
+                           << TRACELIB_VALUE(sl) << "|"
+                           << TRACELIB_VALUE(ul) << "|"
+                           << TRACELIB_VALUE(sll) << "|"
+                           << TRACELIB_VALUE(ull) << "|"
+                           << TRACELIB_VALUE(si8) << "|"
+                           << TRACELIB_VALUE(si16) << "|"
+                           << TRACELIB_VALUE(si32) << "|"
+                           << TRACELIB_VALUE(si64) << "|"
+                           << TRACELIB_VALUE(ui8) << "|"
+                           << TRACELIB_VALUE(ui16) << "|"
+                           << TRACELIB_VALUE(ui32) << "|"
+                           << TRACELIB_VALUE(ui64) << "|"
+                           << TRACELIB_VALUE(v.size()) << "|"
                            << TRACELIB_VALUE(cs));
 
     fTrace("somekey") << "this is a message "
-                      << c << fValue(c)
-                      << b << fValue(b)
-                      << f << fValue(f)
-                      << d << fValue(d)
-                      << ld << fValue(ld)
-                      << vp << fValue(vp)
-                      << cvp << fValue(cvp)
-                      << cp << fValue(cp)
-                      << scp << fValue(scp)
-                      << ucp << fValue(ucp)
-                      << str << fValue(str)
-                      << ss << fValue(ss)
-                      << us << fValue(us)
-                      << si << fValue(si)
-                      << ui << fValue(ui)
-                      << sl << fValue(sl)
-                      << ul << fValue(ul)
-                      << sll << fValue(sll)
-                      << ull << fValue(ull)
-                      << si8 << fValue(si8)
-                      << si16 << fValue(si16)
-                      << si32 << fValue(si32)
-                      << si64 << fValue(si64)
-                      << ui8 << fValue(ui8)
-                      << ui16 << fValue(ui16)
-                      << ui32 << fValue(ui32)
-                      << ui64 << fValue(ui64)
-                      << v.size() << fValue(v.size())
+                      << c << fValue(c) << "|"
+                      << b << fValue(b) << "|"
+                      << f << fValue(f) << "|"
+                      << d << fValue(d) << "|"
+                      << ld << fValue(ld) << "|"
+                      << vp << fValue(vp) << "|"
+                      << cvp << fValue(cvp) << "|"
+                      << cp << fValue(cp) << "|"
+                      << scp << fValue(scp) << "|"
+                      << ucp << fValue(ucp) << "|"
+                      << str << fValue(str) << "|"
+                      << ss << fValue(ss) << "|"
+                      << us << fValue(us) << "|"
+                      << si << fValue(si) << "|"
+                      << ui << fValue(ui) << "|"
+                      << sl << fValue(sl) << "|"
+                      << ul << fValue(ul) << "|"
+                      << sll << fValue(sll) << "|"
+                      << ull << fValue(ull) << "|"
+                      << si8 << fValue(si8) << "|"
+                      << si16 << fValue(si16) << "|"
+                      << si32 << fValue(si32) << "|"
+                      << si64 << fValue(si64) << "|"
+                      << ui8 << fValue(ui8) << "|"
+                      << ui16 << fValue(ui16) << "|"
+                      << ui32 << fValue(ui32) << "|"
+                      << ui64 << fValue(ui64) << "|"
+                      << v.size() << fValue(v.size()) << "|"
                       << cs << fValue(cs)
                       << fEnd;
 }
@@ -172,65 +172,65 @@ static void testDebugMacros()
     TRACELIB_DEBUG_KEY_MSG("somekey", "somemessage");
 
     TRACELIB_DEBUG_KEY_MSG("somekey", "somemessage, with "
-                           << TRACELIB_VALUE(c)
-                           << TRACELIB_VALUE(b)
-                           << TRACELIB_VALUE(f)
-                           << TRACELIB_VALUE(d)
-                           << TRACELIB_VALUE(ld)
-                           << TRACELIB_VALUE(vp)
-                           << TRACELIB_VALUE(cvp)
-                           << TRACELIB_VALUE(cp)
-                           << TRACELIB_VALUE(scp)
-                           << TRACELIB_VALUE(ucp)
-                           << TRACELIB_VALUE(str)
-                           << TRACELIB_VALUE(ss)
-                           << TRACELIB_VALUE(us)
-                           << TRACELIB_VALUE(si)
-                           << TRACELIB_VALUE(ui)
-                           << TRACELIB_VALUE(sl)
-                           << TRACELIB_VALUE(ul)
-                           << TRACELIB_VALUE(sll)
-                           << TRACELIB_VALUE(ull)
-                           << TRACELIB_VALUE(si8)
-                           << TRACELIB_VALUE(si16)
-                           << TRACELIB_VALUE(si32)
-                           << TRACELIB_VALUE(si64)
-                           << TRACELIB_VALUE(ui8)
-                           << TRACELIB_VALUE(ui16)
-                           << TRACELIB_VALUE(ui32)
-                           << TRACELIB_VALUE(ui64)
-                           << TRACELIB_VALUE(v.size())
+                           << TRACELIB_VALUE(c) << "|"
+                           << TRACELIB_VALUE(b) << "|"
+                           << TRACELIB_VALUE(f) << "|"
+                           << TRACELIB_VALUE(d) << "|"
+                           << TRACELIB_VALUE(ld) << "|"
+                           << TRACELIB_VALUE(vp) << "|"
+                           << TRACELIB_VALUE(cvp) << "|"
+                           << TRACELIB_VALUE(cp) << "|"
+                           << TRACELIB_VALUE(scp) << "|"
+                           << TRACELIB_VALUE(ucp) << "|"
+                           << TRACELIB_VALUE(str) << "|"
+                           << TRACELIB_VALUE(ss) << "|"
+                           << TRACELIB_VALUE(us) << "|"
+                           << TRACELIB_VALUE(si) << "|"
+                           << TRACELIB_VALUE(ui) << "|"
+                           << TRACELIB_VALUE(sl) << "|"
+                           << TRACELIB_VALUE(ul) << "|"
+                           << TRACELIB_VALUE(sll) << "|"
+                           << TRACELIB_VALUE(ull) << "|"
+                           << TRACELIB_VALUE(si8) << "|"
+                           << TRACELIB_VALUE(si16) << "|"
+                           << TRACELIB_VALUE(si32) << "|"
+                           << TRACELIB_VALUE(si64) << "|"
+                           << TRACELIB_VALUE(ui8) << "|"
+                           << TRACELIB_VALUE(ui16) << "|"
+                           << TRACELIB_VALUE(ui32) << "|"
+                           << TRACELIB_VALUE(ui64) << "|"
+                           << TRACELIB_VALUE(v.size()) << "|"
                            << TRACELIB_VALUE(cs));
 
     fDebug("somekey") << "this is a message "
-                      << c << fValue(c)
-                      << b << fValue(b)
-                      << f << fValue(f)
-                      << d << fValue(d)
-                      << ld << fValue(ld)
-                      << vp << fValue(vp)
-                      << cvp << fValue(cvp)
-                      << cp << fValue(cp)
-                      << scp << fValue(scp)
-                      << ucp << fValue(ucp)
-                      << str << fValue(str)
-                      << ss << fValue(ss)
-                      << us << fValue(us)
-                      << si << fValue(si)
-                      << ui << fValue(ui)
-                      << sl << fValue(sl)
-                      << ul << fValue(ul)
-                      << sll << fValue(sll)
-                      << ull << fValue(ull)
-                      << si8 << fValue(si8)
-                      << si16 << fValue(si16)
-                      << si32 << fValue(si32)
-                      << si64 << fValue(si64)
-                      << ui8 << fValue(ui8)
-                      << ui16 << fValue(ui16)
-                      << ui32 << fValue(ui32)
-                      << ui64 << fValue(ui64)
-                      << v.size() << fValue(v.size())
+                      << c << fValue(c) << "|"
+                      << b << fValue(b) << "|"
+                      << f << fValue(f) << "|"
+                      << d << fValue(d) << "|"
+                      << ld << fValue(ld) << "|"
+                      << vp << fValue(vp) << "|"
+                      << cvp << fValue(cvp) << "|"
+                      << cp << fValue(cp) << "|"
+                      << scp << fValue(scp) << "|"
+                      << ucp << fValue(ucp) << "|"
+                      << str << fValue(str) << "|"
+                      << ss << fValue(ss) << "|"
+                      << us << fValue(us) << "|"
+                      << si << fValue(si) << "|"
+                      << ui << fValue(ui) << "|"
+                      << sl << fValue(sl) << "|"
+                      << ul << fValue(ul) << "|"
+                      << sll << fValue(sll) << "|"
+                      << ull << fValue(ull) << "|"
+                      << si8 << fValue(si8) << "|"
+                      << si16 << fValue(si16) << "|"
+                      << si32 << fValue(si32) << "|"
+                      << si64 << fValue(si64) << "|"
+                      << ui8 << fValue(ui8) << "|"
+                      << ui16 << fValue(ui16) << "|"
+                      << ui32 << fValue(ui32) << "|"
+                      << ui64 << fValue(ui64) << "|"
+                      << v.size() << fValue(v.size()) << "|"
                       << cs << fValue(cs)
                       << fEnd;
 }
@@ -245,65 +245,65 @@ static void testErrorMacros()
     TRACELIB_ERROR_KEY_MSG("somekey", "somemessage");
 
     TRACELIB_ERROR_KEY_MSG("somekey", "somemessage, with "
-                           << TRACELIB_VALUE(c)
-                           << TRACELIB_VALUE(b)
-                           << TRACELIB_VALUE(f)
-                           << TRACELIB_VALUE(d)
-                           << TRACELIB_VALUE(ld)
-                           << TRACELIB_VALUE(vp)
-                           << TRACELIB_VALUE(cvp)
-                           << TRACELIB_VALUE(cp)
-                           << TRACELIB_VALUE(scp)
-                           << TRACELIB_VALUE(ucp)
-                           << TRACELIB_VALUE(str)
-                           << TRACELIB_VALUE(ss)
-                           << TRACELIB_VALUE(us)
-                           << TRACELIB_VALUE(si)
-                           << TRACELIB_VALUE(ui)
-                           << TRACELIB_VALUE(sl)
-                           << TRACELIB_VALUE(ul)
-                           << TRACELIB_VALUE(sll)
-                           << TRACELIB_VALUE(ull)
-                           << TRACELIB_VALUE(si8)
-                           << TRACELIB_VALUE(si16)
-                           << TRACELIB_VALUE(si32)
-                           << TRACELIB_VALUE(si64)
-                           << TRACELIB_VALUE(ui8)
-                           << TRACELIB_VALUE(ui16)
-                           << TRACELIB_VALUE(ui32)
-                           << TRACELIB_VALUE(ui64)
-                           << TRACELIB_VALUE(v.size())
+                           << TRACELIB_VALUE(c) << "|"
+                           << TRACELIB_VALUE(b) << "|"
+                           << TRACELIB_VALUE(f) << "|"
+                           << TRACELIB_VALUE(d) << "|"
+                           << TRACELIB_VALUE(ld) << "|"
+                           << TRACELIB_VALUE(vp) << "|"
+                           << TRACELIB_VALUE(cvp) << "|"
+                           << TRACELIB_VALUE(cp) << "|"
+                           << TRACELIB_VALUE(scp) << "|"
+                           << TRACELIB_VALUE(ucp) << "|"
+                           << TRACELIB_VALUE(str) << "|"
+                           << TRACELIB_VALUE(ss) << "|"
+                           << TRACELIB_VALUE(us) << "|"
+                           << TRACELIB_VALUE(si) << "|"
+                           << TRACELIB_VALUE(ui) << "|"
+                           << TRACELIB_VALUE(sl) << "|"
+                           << TRACELIB_VALUE(ul) << "|"
+                           << TRACELIB_VALUE(sll) << "|"
+                           << TRACELIB_VALUE(ull) << "|"
+                           << TRACELIB_VALUE(si8) << "|"
+                           << TRACELIB_VALUE(si16) << "|"
+                           << TRACELIB_VALUE(si32) << "|"
+                           << TRACELIB_VALUE(si64) << "|"
+                           << TRACELIB_VALUE(ui8) << "|"
+                           << TRACELIB_VALUE(ui16) << "|"
+                           << TRACELIB_VALUE(ui32) << "|"
+                           << TRACELIB_VALUE(ui64) << "|"
+                           << TRACELIB_VALUE(v.size()) << "|"
                            << TRACELIB_VALUE(cs));
 
     fError("somekey") << "this is a message "
-                      << c << fValue(c)
-                      << b << fValue(b)
-                      << f << fValue(f)
-                      << d << fValue(d)
-                      << ld << fValue(ld)
-                      << vp << fValue(vp)
-                      << cvp << fValue(cvp)
-                      << cp << fValue(cp)
-                      << scp << fValue(scp)
-                      << ucp << fValue(ucp)
-                      << str << fValue(str)
-                      << ss << fValue(ss)
-                      << us << fValue(us)
-                      << si << fValue(si)
-                      << ui << fValue(ui)
-                      << sl << fValue(sl)
-                      << ul << fValue(ul)
-                      << sll << fValue(sll)
-                      << ull << fValue(ull)
-                      << si8 << fValue(si8)
-                      << si16 << fValue(si16)
-                      << si32 << fValue(si32)
-                      << si64 << fValue(si64)
-                      << ui8 << fValue(ui8)
-                      << ui16 << fValue(ui16)
-                      << ui32 << fValue(ui32)
-                      << ui64 << fValue(ui64)
-                      << v.size() << fValue(v.size())
+                      << c << fValue(c) << "|"
+                      << b << fValue(b) << "|"
+                      << f << fValue(f) << "|"
+                      << d << fValue(d) << "|"
+                      << ld << fValue(ld) << "|"
+                      << vp << fValue(vp) << "|"
+                      << cvp << fValue(cvp) << "|"
+                      << cp << fValue(cp) << "|"
+                      << scp << fValue(scp) << "|"
+                      << ucp << fValue(ucp) << "|"
+                      << str << fValue(str) << "|"
+                      << ss << fValue(ss) << "|"
+                      << us << fValue(us) << "|"
+                      << si << fValue(si) << "|"
+                      << ui << fValue(ui) << "|"
+                      << sl << fValue(sl) << "|"
+                      << ul << fValue(ul) << "|"
+                      << sll << fValue(sll) << "|"
+                      << ull << fValue(ull) << "|"
+                      << si8 << fValue(si8) << "|"
+                      << si16 << fValue(si16) << "|"
+                      << si32 << fValue(si32) << "|"
+                      << si64 << fValue(si64) << "|"
+                      << ui8 << fValue(ui8) << "|"
+                      << ui16 << fValue(ui16) << "|"
+                      << ui32 << fValue(ui32) << "|"
+                      << ui64 << fValue(ui64) << "|"
+                      << v.size() << fValue(v.size()) << "|"
                       << cs << fValue(cs)
                       << fEnd;
 }
@@ -347,34 +347,34 @@ static void testWatchMacros()
                            << TRACELIB_VAR(cs));
 
     fWatch("somekey") << "this is a message "
-                      << c << fVar(c)
-                      << b << fVar(b)
-                      << f << fVar(f)
-                      << d << fVar(d)
-                      << ld << fVar(ld)
-                      << vp << fVar(vp)
-                      << cvp << fVar(cvp)
-                      << cp << fVar(cp)
-                      << scp << fVar(scp)
-                      << ucp << fVar(ucp)
-                      << str << fVar(str)
-                      << ss << fVar(ss)
-                      << us << fVar(us)
-                      << si << fVar(si)
-                      << ui << fVar(ui)
-                      << sl << fVar(sl)
-                      << ul << fVar(ul)
-                      << sll << fVar(sll)
-                      << ull << fVar(ull)
-                      << si8 << fVar(si8)
-                      << si16 << fVar(si16)
-                      << si32 << fVar(si32)
-                      << si64 << fVar(si64)
-                      << ui8 << fVar(ui8)
-                      << ui16 << fVar(ui16)
-                      << ui32 << fVar(ui32)
-                      << ui64 << fVar(ui64)
-                      << v.size() << fVar(v.size())
+                      << c << fVar(c) << "|"
+                      << b << fVar(b) << "|"
+                      << f << fVar(f) << "|"
+                      << d << fVar(d) << "|"
+                      << ld << fVar(ld) << "|"
+                      << vp << fVar(vp) << "|"
+                      << cvp << fVar(cvp) << "|"
+                      << cp << fVar(cp) << "|"
+                      << scp << fVar(scp) << "|"
+                      << ucp << fVar(ucp) << "|"
+                      << str << fVar(str) << "|"
+                      << ss << fVar(ss) << "|"
+                      << us << fVar(us) << "|"
+                      << si << fVar(si) << "|"
+                      << ui << fVar(ui) << "|"
+                      << sl << fVar(sl) << "|"
+                      << ul << fVar(ul) << "|"
+                      << sll << fVar(sll) << "|"
+                      << ull << fVar(ull) << "|"
+                      << si8 << fVar(si8) << "|"
+                      << si16 << fVar(si16) << "|"
+                      << si32 << fVar(si32) << "|"
+                      << si64 << fVar(si64) << "|"
+                      << ui8 << fVar(ui8) << "|"
+                      << ui16 << fVar(ui16) << "|"
+                      << ui32 << fVar(ui32) << "|"
+                      << ui64 << fVar(ui64) << "|"
+                      << v.size() << fVar(v.size()) << "|"
                       << cs << fVar(cs)
                       << fEnd;
 }
