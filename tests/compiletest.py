@@ -140,8 +140,9 @@ def tryCompile(compiler, arch, tracelibbasedir, srcdir):
     myprint("Compiler        : %s" % compiler)
     myprint("Architecture    : %s" % arch)
     compiletestexe = bin_name("compiletest")
-    if os.path.exists(os.path.join(srcdir, compiletestexe)):
-        os.remove(os.path.join(srcdir, compiletestexe))
+    for name in ["compiletest%s" % suffix for suffix in [".pdb", ".suo", ".obj", "", ".exe"]]:
+        if os.path.exists(os.path.join(srcdir, name)):
+            os.remove(os.path.join(srcdir, name))
     try:
         run_env = fetch_run_environment(arch, compiler)
 
