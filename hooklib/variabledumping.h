@@ -9,6 +9,8 @@
 #include "dlldefs.h"
 #include "tracelib_config.h"
 
+#include <stdio.h> // for snprintf
+
 #include <cstddef>
 #include <sstream>
 #include <string>
