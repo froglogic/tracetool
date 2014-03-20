@@ -220,6 +220,7 @@ def verifyOutput(compiler, arch, srcdir, tracelibdir):
     actualXml = re.sub(r"(<location lineno=\"[0-9]+\"><!\[CDATA\[)[^\]]+\]\]>", r"\1compiletest.cpp]]>", actualXml)
     if is_windows:
         actualXml = re.sub(r"<processname><!\[CDATA\[compiletest\.exe]", r"<processname><![CDATA[compiletest]", actualXml)
+        actualXml = re.sub(r"<shutdownevent([^>]+)><!\[CDATA\[compiletest\.exe]", r"<shutdownevent\1><![CDATA[compiletest]", actualXml)
     expectedXml = open(os.path.join(srcdir, "compiletest_expected.log"), "r").read()
     if compiler == "msvc6":
         expectedXml = re.sub(r"<function>.*</function>", r"<function><![CDATA[unknown]]></function>", expectedXml)
