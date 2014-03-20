@@ -198,6 +198,9 @@ def verifyOutput(compiler, arch, srcdir, tracelibdir):
     <serializer type="xml">
         <option name="beautifiedOutput">yes</option>
     </serializer>
+    <tracepointset variables="yes">
+      <matchallfilter />
+    </tracepointset>
 </process>
 </tracelibConfiguration>
 """ % (compiletestexe, compiletestlog))

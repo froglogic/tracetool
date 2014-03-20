@@ -191,6 +191,9 @@
   <type>4</type>
   <location lineno="314"><![CDATA[compiletest.cpp]]></location>
   <function><![CDATA[void testWatchMacros()]]></function>
+  <variables>
+    <variable name="c" type="string"><![CDATA[A]]></variable>
+  </variables>
   <storageconfiguration maxSize="0" shrinkBy="10">
     <![CDATA[]]>
   </storageconfiguration>
@@ -203,6 +206,9 @@
   <type>4</type>
   <location lineno="316"><![CDATA[compiletest.cpp]]></location>
   <function><![CDATA[void testWatchMacros()]]></function>
+  <variables>
+    <variable name="c" type="string"><![CDATA[A]]></variable>
+  </variables>
   <message><![CDATA[somemessage]]></message>
   <storageconfiguration maxSize="0" shrinkBy="10">
     <![CDATA[]]>
@@ -216,6 +222,37 @@
   <type>4</type>
   <location lineno="347"><![CDATA[compiletest.cpp]]></location>
   <function><![CDATA[void testWatchMacros()]]></function>
+  <variables>
+    <variable name="c" type="string"><![CDATA[A]]></variable>
+    <variable name="b" type="boolean">0</variable>
+    <variable name="f" type="float">0</variable>
+    <variable name="d" type="float">0</variable>
+    <variable name="ld" type="float">0</variable>
+    <variable name="vp" type="string"><![CDATA[0x00000000]]></variable>
+    <variable name="cvp" type="string"><![CDATA[0x00000000]]></variable>
+    <variable name="cp" type="string"><![CDATA[abc]]></variable>
+    <variable name="scp" type="string"><![CDATA[abc]]></variable>
+    <variable name="ucp" type="string"><![CDATA[abc]]></variable>
+    <variable name="str" type="string"><![CDATA[def]]></variable>
+    <variable name="ss" type="number">0</variable>
+    <variable name="us" type="number">0</variable>
+    <variable name="si" type="number">0</variable>
+    <variable name="ui" type="number">0</variable>
+    <variable name="sl" type="number">0</variable>
+    <variable name="ul" type="number">0</variable>
+    <variable name="sll" type="number">0</variable>
+    <variable name="ull" type="number">0</variable>
+    <variable name="si8" type="number">0</variable>
+    <variable name="si16" type="number">0</variable>
+    <variable name="si32" type="number">0</variable>
+    <variable name="si64" type="number">0</variable>
+    <variable name="ui8" type="number">0</variable>
+    <variable name="ui16" type="number">0</variable>
+    <variable name="ui32" type="number">0</variable>
+    <variable name="ui64" type="number">0</variable>
+    <variable name="v.size()" type="number">0</variable>
+    <variable name="cs" type="string"><![CDATA[CustomStruct(0)]]></variable>
+  </variables>
   <message><![CDATA[somemessage, with ]]></message>
   <storageconfiguration maxSize="0" shrinkBy="10">
     <![CDATA[]]>
@@ -229,6 +266,37 @@
   <type>4</type>
   <location lineno="349"><![CDATA[compiletest.cpp]]></location>
   <function><![CDATA[void testWatchMacros()]]></function>
+  <variables>
+    <variable name="c" type="string"><![CDATA[A]]></variable>
+    <variable name="b" type="boolean">0</variable>
+    <variable name="f" type="float">0</variable>
+    <variable name="d" type="float">0</variable>
+    <variable name="ld" type="float">0</variable>
+    <variable name="vp" type="string"><![CDATA[0x00000000]]></variable>
+    <variable name="cvp" type="string"><![CDATA[0x00000000]]></variable>
+    <variable name="cp" type="string"><![CDATA[abc]]></variable>
+    <variable name="scp" type="string"><![CDATA[abc]]></variable>
+    <variable name="ucp" type="string"><![CDATA[abc]]></variable>
+    <variable name="str" type="string"><![CDATA[def]]></variable>
+    <variable name="ss" type="number">0</variable>
+    <variable name="us" type="number">0</variable>
+    <variable name="si" type="number">0</variable>
+    <variable name="ui" type="number">0</variable>
+    <variable name="sl" type="number">0</variable>
+    <variable name="ul" type="number">0</variable>
+    <variable name="sll" type="number">0</variable>
+    <variable name="ull" type="number">0</variable>
+    <variable name="si8" type="number">0</variable>
+    <variable name="si16" type="number">0</variable>
+    <variable name="si32" type="number">0</variable>
+    <variable name="si64" type="number">0</variable>
+    <variable name="ui8" type="number">0</variable>
+    <variable name="ui16" type="number">0</variable>
+    <variable name="ui32" type="number">0</variable>
+    <variable name="ui64" type="number">0</variable>
+    <variable name="v.size()" type="number">0</variable>
+    <variable name="cs" type="string"><![CDATA[CustomStruct(0)]]></variable>
+  </variables>
   <message><![CDATA[this is a message A|false|0|0|0|0x00000000|0x00000000|abc|abc|abc|def|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|CustomStruct(0)]]></message>
   <storageconfiguration maxSize="0" shrinkBy="10">
     <![CDATA[]]>
