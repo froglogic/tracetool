@@ -195,8 +195,8 @@ public:
 
     TRACELIB_EXPORT VariableSnapshot &operator<<( AbstractVariable *v );
 
-    inline size_t size() const { return m_variables.size(); }
-    AbstractVariable *&operator[]( size_t idx ) { return m_variables[idx]; }
+    inline size_t size() const;
+    AbstractVariable *&operator[]( size_t idx );
 
 private:
     std::vector<AbstractVariable *> m_variables;

@@ -157,5 +157,16 @@ VariableSnapshot &VariableSnapshot::operator<<( AbstractVariable *v )
     return *this;
 }
 
+size_t VariableSnapshot::size() const
+{
+    return m_variables.size();
+}
+
+
+AbstractVariable *&VariableSnapshot::operator[]( size_t idx )
+{
+    return m_variables[idx];
+}
+
 TRACELIB_NAMESPACE_END
 
