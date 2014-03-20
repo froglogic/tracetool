@@ -43,7 +43,7 @@ signed char sdummystr[] = { 'a', 'b', 'c', '\0' };
 unsigned char udummystr[] = { 'a', 'b', 'c', '\0' };
 
 // Basic type variables
-char c;
+char c = 'A';
 bool b;
 float f;
 double d;
@@ -53,7 +53,7 @@ const void *cvp = 0;
 char *cp = dummystr;
 signed char *scp = sdummystr;
 unsigned char *ucp = udummystr;
-std::string str;
+std::string str = "def";
 short ss;
 unsigned short us;
 int si;
