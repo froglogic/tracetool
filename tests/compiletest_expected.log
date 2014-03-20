@@ -41,7 +41,7 @@
   <type>3</type>
   <location lineno="130"><![CDATA[compiletest.cpp]]></location>
   <function><![CDATA[void testTraceMacros()]]></function>
-  <message><![CDATA[somemessage, with c=b=falsef=0d=0ld=0vp=0cvp=0cp=abcscp=abcucp=abcstr=ss=0us=0si=0ui=0sl=0ul=0sll=0ull=0si8=si16=0si32=0si64=0ui8=ui16=0ui32=0ui64=0v.size()=0cs=CustomStruct(0)]]></message>
+  <message><![CDATA[somemessage, with c=b=falsef=0d=0ld=0vp=0x00000000cvp=0x00000000cp=abcscp=abcucp=abcstr=ss=0us=0si=0ui=0sl=0ul=0sll=0ull=0si8=si16=0si32=0si64=0ui8=ui16=0ui32=0ui64=0v.size()=0cs=CustomStruct(0)]]></message>
   <storageconfiguration maxSize="0" shrinkBy="10">
     <![CDATA[]]>
   </storageconfiguration>
@@ -54,7 +54,7 @@
   <type>3</type>
   <location lineno="132"><![CDATA[compiletest.cpp]]></location>
   <function><![CDATA[void testTraceMacros()]]></function>
-  <message><![CDATA[this is a message c=falseb=false0f=00d=00ld=00vp=00cvp=0abccp=abcabcscp=abcabcucp=abcstr=0ss=00us=00si=00ui=00sl=00ul=00sll=00ull=0si8=0si16=00si32=00si64=0ui8=0ui16=00ui32=00ui64=00v.size()=0CustomStruct(0)cs=CustomStruct(0)]]></message>
+  <message><![CDATA[this is a message c=falseb=false0f=00d=00ld=00x00000000vp=0x000000000x00000000cvp=0x00000000abccp=abcabcscp=abcabcucp=abcstr=0ss=00us=00si=00ui=00sl=00ul=00sll=00ull=0si8=0si16=00si32=00si64=0ui8=0ui16=00ui32=00ui64=00v.size()=0CustomStruct(0)cs=CustomStruct(0)]]></message>
   <storageconfiguration maxSize="0" shrinkBy="10">
     <![CDATA[]]>
   </storageconfiguration>
@@ -103,7 +103,7 @@
   <type>2</type>
   <location lineno="203"><![CDATA[compiletest.cpp]]></location>
   <function><![CDATA[void testDebugMacros()]]></function>
-  <message><![CDATA[somemessage, with c=b=falsef=0d=0ld=0vp=0cvp=0cp=abcscp=abcucp=abcstr=ss=0us=0si=0ui=0sl=0ul=0sll=0ull=0si8=si16=0si32=0si64=0ui8=ui16=0ui32=0ui64=0v.size()=0cs=CustomStruct(0)]]></message>
+  <message><![CDATA[somemessage, with c=b=falsef=0d=0ld=0vp=0x00000000cvp=0x00000000cp=abcscp=abcucp=abcstr=ss=0us=0si=0ui=0sl=0ul=0sll=0ull=0si8=si16=0si32=0si64=0ui8=ui16=0ui32=0ui64=0v.size()=0cs=CustomStruct(0)]]></message>
   <storageconfiguration maxSize="0" shrinkBy="10">
     <![CDATA[]]>
   </storageconfiguration>
@@ -116,7 +116,7 @@
   <type>2</type>
   <location lineno="205"><![CDATA[compiletest.cpp]]></location>
   <function><![CDATA[void testDebugMacros()]]></function>
-  <message><![CDATA[this is a message c=falseb=false0f=00d=00ld=00vp=00cvp=0abccp=abcabcscp=abcabcucp=abcstr=0ss=00us=00si=00ui=00sl=00ul=00sll=00ull=0si8=0si16=00si32=00si64=0ui8=0ui16=00ui32=00ui64=00v.size()=0CustomStruct(0)cs=CustomStruct(0)]]></message>
+  <message><![CDATA[this is a message c=falseb=false0f=00d=00ld=00x00000000vp=0x000000000x00000000cvp=0x00000000abccp=abcabcscp=abcabcucp=abcstr=0ss=00us=00si=00ui=00sl=00ul=00sll=00ull=0si8=0si16=00si32=00si64=0ui8=0ui16=00ui32=00ui64=00v.size()=0CustomStruct(0)cs=CustomStruct(0)]]></message>
   <storageconfiguration maxSize="0" shrinkBy="10">
     <![CDATA[]]>
   </storageconfiguration>
@@ -165,7 +165,7 @@
   <type>1</type>
   <location lineno="276"><![CDATA[compiletest.cpp]]></location>
   <function><![CDATA[void testErrorMacros()]]></function>
-  <message><![CDATA[somemessage, with c=b=falsef=0d=0ld=0vp=0cvp=0cp=abcscp=abcucp=abcstr=ss=0us=0si=0ui=0sl=0ul=0sll=0ull=0si8=si16=0si32=0si64=0ui8=ui16=0ui32=0ui64=0v.size()=0cs=CustomStruct(0)]]></message>
+  <message><![CDATA[somemessage, with c=b=falsef=0d=0ld=0vp=0x00000000cvp=0x00000000cp=abcscp=abcucp=abcstr=ss=0us=0si=0ui=0sl=0ul=0sll=0ull=0si8=si16=0si32=0si64=0ui8=ui16=0ui32=0ui64=0v.size()=0cs=CustomStruct(0)]]></message>
   <storageconfiguration maxSize="0" shrinkBy="10">
     <![CDATA[]]>
   </storageconfiguration>
@@ -178,7 +178,7 @@
   <type>1</type>
   <location lineno="278"><![CDATA[compiletest.cpp]]></location>
   <function><![CDATA[void testErrorMacros()]]></function>
-  <message><![CDATA[this is a message c=falseb=false0f=00d=00ld=00vp=00cvp=0abccp=abcabcscp=abcabcucp=abcstr=0ss=00us=00si=00ui=00sl=00ul=00sll=00ull=0si8=0si16=00si32=00si64=0ui8=0ui16=00ui32=00ui64=00v.size()=0CustomStruct(0)cs=CustomStruct(0)]]></message>
+  <message><![CDATA[this is a message c=falseb=false0f=00d=00ld=00x00000000vp=0x000000000x00000000cvp=0x00000000abccp=abcabcscp=abcabcucp=abcstr=0ss=00us=00si=00ui=00sl=00ul=00sll=00ull=0si8=0si16=00si32=00si64=0ui8=0ui16=00ui32=00ui64=00v.size()=0CustomStruct(0)cs=CustomStruct(0)]]></message>
   <storageconfiguration maxSize="0" shrinkBy="10">
     <![CDATA[]]>
   </storageconfiguration>
@@ -229,7 +229,7 @@
   <type>4</type>
   <location lineno="349"><![CDATA[compiletest.cpp]]></location>
   <function><![CDATA[void testWatchMacros()]]></function>
-  <message><![CDATA[this is a message false00000abcabcabc000000000000000CustomStruct(0)]]></message>
+  <message><![CDATA[this is a message false0000x000000000x00000000abcabcabc000000000000000CustomStruct(0)]]></message>
   <storageconfiguration maxSize="0" shrinkBy="10">
     <![CDATA[]]>
   </storageconfiguration>
