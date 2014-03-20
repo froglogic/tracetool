@@ -62,11 +62,9 @@ long sl;
 unsigned long ul;
 vlonglong sll;
 vulonglong ull;
-int8_t si8;
 int16_t si16;
 int32_t si32;
 int64_t si64;
-uint8_t ui8;
 uint16_t ui16;
 uint32_t ui32;
 uint64_t ui64;
@@ -118,11 +116,9 @@ static void testTraceMacros()
                            << TRACELIB_VALUE(ul) << "|"
                            << TRACELIB_VALUE(sll) << "|"
                            << TRACELIB_VALUE(ull) << "|"
-                           << TRACELIB_VALUE(si8) << "|"
                            << TRACELIB_VALUE(si16) << "|"
                            << TRACELIB_VALUE(si32) << "|"
                            << TRACELIB_VALUE(si64) << "|"
-                           << TRACELIB_VALUE(ui8) << "|"
                            << TRACELIB_VALUE(ui16) << "|"
                            << TRACELIB_VALUE(ui32) << "|"
                            << TRACELIB_VALUE(ui64) << "|"
@@ -149,11 +145,9 @@ static void testTraceMacros()
                       << ul << fValue(ul) << "|"
                       << sll << fValue(sll) << "|"
                       << ull << fValue(ull) << "|"
-                      << si8 << fValue(si8) << "|"
                       << si16 << fValue(si16) << "|"
                       << si32 << fValue(si32) << "|"
                       << si64 << fValue(si64) << "|"
-                      << ui8 << fValue(ui8) << "|"
                       << ui16 << fValue(ui16) << "|"
                       << ui32 << fValue(ui32) << "|"
                       << ui64 << fValue(ui64) << "|"
@@ -191,11 +185,9 @@ static void testDebugMacros()
                            << TRACELIB_VALUE(ul) << "|"
                            << TRACELIB_VALUE(sll) << "|"
                            << TRACELIB_VALUE(ull) << "|"
-                           << TRACELIB_VALUE(si8) << "|"
                            << TRACELIB_VALUE(si16) << "|"
                            << TRACELIB_VALUE(si32) << "|"
                            << TRACELIB_VALUE(si64) << "|"
-                           << TRACELIB_VALUE(ui8) << "|"
                            << TRACELIB_VALUE(ui16) << "|"
                            << TRACELIB_VALUE(ui32) << "|"
                            << TRACELIB_VALUE(ui64) << "|"
@@ -222,11 +214,9 @@ static void testDebugMacros()
                       << ul << fValue(ul) << "|"
                       << sll << fValue(sll) << "|"
                       << ull << fValue(ull) << "|"
-                      << si8 << fValue(si8) << "|"
                       << si16 << fValue(si16) << "|"
                       << si32 << fValue(si32) << "|"
                       << si64 << fValue(si64) << "|"
-                      << ui8 << fValue(ui8) << "|"
                       << ui16 << fValue(ui16) << "|"
                       << ui32 << fValue(ui32) << "|"
                       << ui64 << fValue(ui64) << "|"
@@ -264,11 +254,9 @@ static void testErrorMacros()
                            << TRACELIB_VALUE(ul) << "|"
                            << TRACELIB_VALUE(sll) << "|"
                            << TRACELIB_VALUE(ull) << "|"
-                           << TRACELIB_VALUE(si8) << "|"
                            << TRACELIB_VALUE(si16) << "|"
                            << TRACELIB_VALUE(si32) << "|"
                            << TRACELIB_VALUE(si64) << "|"
-                           << TRACELIB_VALUE(ui8) << "|"
                            << TRACELIB_VALUE(ui16) << "|"
                            << TRACELIB_VALUE(ui32) << "|"
                            << TRACELIB_VALUE(ui64) << "|"
@@ -295,11 +283,9 @@ static void testErrorMacros()
                       << ul << fValue(ul) << "|"
                       << sll << fValue(sll) << "|"
                       << ull << fValue(ull) << "|"
-                      << si8 << fValue(si8) << "|"
                       << si16 << fValue(si16) << "|"
                       << si32 << fValue(si32) << "|"
                       << si64 << fValue(si64) << "|"
-                      << ui8 << fValue(ui8) << "|"
                       << ui16 << fValue(ui16) << "|"
                       << ui32 << fValue(ui32) << "|"
                       << ui64 << fValue(ui64) << "|"
@@ -335,11 +321,9 @@ static void testWatchMacros()
                            << TRACELIB_VAR(ul)
                            << TRACELIB_VAR(sll)
                            << TRACELIB_VAR(ull)
-                           << TRACELIB_VAR(si8)
                            << TRACELIB_VAR(si16)
                            << TRACELIB_VAR(si32)
                            << TRACELIB_VAR(si64)
-                           << TRACELIB_VAR(ui8)
                            << TRACELIB_VAR(ui16)
                            << TRACELIB_VAR(ui32)
                            << TRACELIB_VAR(ui64)
@@ -366,11 +350,9 @@ static void testWatchMacros()
                       << ul << fVar(ul) << "|"
                       << sll << fVar(sll) << "|"
                       << ull << fVar(ull) << "|"
-                      << si8 << fVar(si8) << "|"
                       << si16 << fVar(si16) << "|"
                       << si32 << fVar(si32) << "|"
                       << si64 << fVar(si64) << "|"
-                      << ui8 << fVar(ui8) << "|"
                       << ui16 << fVar(ui16) << "|"
                       << ui32 << fVar(ui32) << "|"
                       << ui64 << fVar(ui64) << "|"

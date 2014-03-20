@@ -2,6 +2,18 @@
   <processname><![CDATA[compiletest]]></processname>
   <stackposition>1</stackposition>
   <type>3</type>
+  <location lineno="94"><![CDATA[compiletest.cpp]]></location>
+  <function><![CDATA[void testTraceMacros()]]></function>
+  <storageconfiguration maxSize="0" shrinkBy="10">
+    <![CDATA[]]>
+  </storageconfiguration>
+</traceentry>
+
+<traceentry pid=\"pid\" process_starttime=\"process_starttime\" tid=\"tid\" time=\"time\">
+  <processname><![CDATA[compiletest]]></processname>
+  <stackposition>1</stackposition>
+  <group>somekey</group>
+  <type>3</type>
   <location lineno="96"><![CDATA[compiletest.cpp]]></location>
   <function><![CDATA[void testTraceMacros()]]></function>
   <storageconfiguration maxSize="0" shrinkBy="10">
@@ -16,18 +28,6 @@
   <type>3</type>
   <location lineno="98"><![CDATA[compiletest.cpp]]></location>
   <function><![CDATA[void testTraceMacros()]]></function>
-  <storageconfiguration maxSize="0" shrinkBy="10">
-    <![CDATA[]]>
-  </storageconfiguration>
-</traceentry>
-
-<traceentry pid=\"pid\" process_starttime=\"process_starttime\" tid=\"tid\" time=\"time\">
-  <processname><![CDATA[compiletest]]></processname>
-  <stackposition>1</stackposition>
-  <group>somekey</group>
-  <type>3</type>
-  <location lineno="100"><![CDATA[compiletest.cpp]]></location>
-  <function><![CDATA[void testTraceMacros()]]></function>
   <message><![CDATA[somemessage]]></message>
   <storageconfiguration maxSize="0" shrinkBy="10">
     <![CDATA[]]>
@@ -39,9 +39,9 @@
   <stackposition>1</stackposition>
   <group>somekey</group>
   <type>3</type>
-  <location lineno="130"><![CDATA[compiletest.cpp]]></location>
+  <location lineno="126"><![CDATA[compiletest.cpp]]></location>
   <function><![CDATA[void testTraceMacros()]]></function>
-  <message><![CDATA[somemessage, with c=A|b=false|f=0|d=0|ld=0|vp=0x00000000|cvp=0x00000000|cp=abc|scp=abc|ucp=abc|str=def|ss=0|us=0|si=0|ui=0|sl=0|ul=0|sll=0|ull=0|si8=0|si16=0|si32=0|si64=0|ui8=0|ui16=0|ui32=0|ui64=0|v.size()=0|cs=CustomStruct(0)]]></message>
+  <message><![CDATA[somemessage, with c=A|b=false|f=0|d=0|ld=0|vp=0x00000000|cvp=0x00000000|cp=abc|scp=abc|ucp=abc|str=def|ss=0|us=0|si=0|ui=0|sl=0|ul=0|sll=0|ull=0|si16=0|si32=0|si64=0|ui16=0|ui32=0|ui64=0|v.size()=0|cs=CustomStruct(0)]]></message>
   <storageconfiguration maxSize="0" shrinkBy="10">
     <![CDATA[]]>
   </storageconfiguration>
@@ -52,9 +52,9 @@
   <stackposition>1</stackposition>
   <group>somekey</group>
   <type>3</type>
-  <location lineno="132"><![CDATA[compiletest.cpp]]></location>
+  <location lineno="128"><![CDATA[compiletest.cpp]]></location>
   <function><![CDATA[void testTraceMacros()]]></function>
-  <message><![CDATA[this is a message Ac=A|falseb=false|0f=0|0d=0|0ld=0|0x00000000vp=0x00000000|0x00000000cvp=0x00000000|abccp=abc|abcscp=abc|abcucp=abc|defstr=def|0ss=0|0us=0|0si=0|0ui=0|0sl=0|0ul=0|0sll=0|0ull=0|0si8=0|0si16=0|0si32=0|0si64=0|0ui8=0|0ui16=0|0ui32=0|0ui64=0|0v.size()=0|CustomStruct(0)cs=CustomStruct(0)]]></message>
+  <message><![CDATA[this is a message Ac=A|falseb=false|0f=0|0d=0|0ld=0|0x00000000vp=0x00000000|0x00000000cvp=0x00000000|abccp=abc|abcscp=abc|abcucp=abc|defstr=def|0ss=0|0us=0|0si=0|0ui=0|0sl=0|0ul=0|0sll=0|0ull=0|0si16=0|0si32=0|0si64=0|0ui16=0|0ui32=0|0ui64=0|0v.size()=0|CustomStruct(0)cs=CustomStruct(0)]]></message>
   <storageconfiguration maxSize="0" shrinkBy="10">
     <![CDATA[]]>
   </storageconfiguration>
@@ -64,7 +64,7 @@
   <processname><![CDATA[compiletest]]></processname>
   <stackposition>1</stackposition>
   <type>2</type>
-  <location lineno="168"><![CDATA[compiletest.cpp]]></location>
+  <location lineno="162"><![CDATA[compiletest.cpp]]></location>
   <function><![CDATA[void testDebugMacros()]]></function>
   <storageconfiguration maxSize="0" shrinkBy="10">
     <![CDATA[]]>
@@ -76,7 +76,7 @@
   <stackposition>1</stackposition>
   <group>somekey</group>
   <type>2</type>
-  <location lineno="170"><![CDATA[compiletest.cpp]]></location>
+  <location lineno="164"><![CDATA[compiletest.cpp]]></location>
   <function><![CDATA[void testDebugMacros()]]></function>
   <storageconfiguration maxSize="0" shrinkBy="10">
     <![CDATA[]]>
@@ -88,7 +88,7 @@
   <stackposition>1</stackposition>
   <group>somekey</group>
   <type>2</type>
-  <location lineno="172"><![CDATA[compiletest.cpp]]></location>
+  <location lineno="166"><![CDATA[compiletest.cpp]]></location>
   <function><![CDATA[void testDebugMacros()]]></function>
   <message><![CDATA[somemessage]]></message>
   <storageconfiguration maxSize="0" shrinkBy="10">
@@ -101,9 +101,9 @@
   <stackposition>1</stackposition>
   <group>somekey</group>
   <type>2</type>
-  <location lineno="203"><![CDATA[compiletest.cpp]]></location>
+  <location lineno="195"><![CDATA[compiletest.cpp]]></location>
   <function><![CDATA[void testDebugMacros()]]></function>
-  <message><![CDATA[somemessage, with c=A|b=false|f=0|d=0|ld=0|vp=0x00000000|cvp=0x00000000|cp=abc|scp=abc|ucp=abc|str=def|ss=0|us=0|si=0|ui=0|sl=0|ul=0|sll=0|ull=0|si8=0|si16=0|si32=0|si64=0|ui8=0|ui16=0|ui32=0|ui64=0|v.size()=0|cs=CustomStruct(0)]]></message>
+  <message><![CDATA[somemessage, with c=A|b=false|f=0|d=0|ld=0|vp=0x00000000|cvp=0x00000000|cp=abc|scp=abc|ucp=abc|str=def|ss=0|us=0|si=0|ui=0|sl=0|ul=0|sll=0|ull=0|si16=0|si32=0|si64=0|ui16=0|ui32=0|ui64=0|v.size()=0|cs=CustomStruct(0)]]></message>
   <storageconfiguration maxSize="0" shrinkBy="10">
     <![CDATA[]]>
   </storageconfiguration>
@@ -114,9 +114,9 @@
   <stackposition>1</stackposition>
   <group>somekey</group>
   <type>2</type>
-  <location lineno="205"><![CDATA[compiletest.cpp]]></location>
+  <location lineno="197"><![CDATA[compiletest.cpp]]></location>
   <function><![CDATA[void testDebugMacros()]]></function>
-  <message><![CDATA[this is a message Ac=A|falseb=false|0f=0|0d=0|0ld=0|0x00000000vp=0x00000000|0x00000000cvp=0x00000000|abccp=abc|abcscp=abc|abcucp=abc|defstr=def|0ss=0|0us=0|0si=0|0ui=0|0sl=0|0ul=0|0sll=0|0ull=0|0si8=0|0si16=0|0si32=0|0si64=0|0ui8=0|0ui16=0|0ui32=0|0ui64=0|0v.size()=0|CustomStruct(0)cs=CustomStruct(0)]]></message>
+  <message><![CDATA[this is a message Ac=A|falseb=false|0f=0|0d=0|0ld=0|0x00000000vp=0x00000000|0x00000000cvp=0x00000000|abccp=abc|abcscp=abc|abcucp=abc|defstr=def|0ss=0|0us=0|0si=0|0ui=0|0sl=0|0ul=0|0sll=0|0ull=0|0si16=0|0si32=0|0si64=0|0ui16=0|0ui32=0|0ui64=0|0v.size()=0|CustomStruct(0)cs=CustomStruct(0)]]></message>
   <storageconfiguration maxSize="0" shrinkBy="10">
     <![CDATA[]]>
   </storageconfiguration>
@@ -126,7 +126,7 @@
   <processname><![CDATA[compiletest]]></processname>
   <stackposition>1</stackposition>
   <type>1</type>
-  <location lineno="241"><![CDATA[compiletest.cpp]]></location>
+  <location lineno="231"><![CDATA[compiletest.cpp]]></location>
   <function><![CDATA[void testErrorMacros()]]></function>
   <storageconfiguration maxSize="0" shrinkBy="10">
     <![CDATA[]]>
@@ -138,7 +138,7 @@
   <stackposition>1</stackposition>
   <group>somekey</group>
   <type>1</type>
-  <location lineno="243"><![CDATA[compiletest.cpp]]></location>
+  <location lineno="233"><![CDATA[compiletest.cpp]]></location>
   <function><![CDATA[void testErrorMacros()]]></function>
   <storageconfiguration maxSize="0" shrinkBy="10">
     <![CDATA[]]>
@@ -150,7 +150,7 @@
   <stackposition>1</stackposition>
   <group>somekey</group>
   <type>1</type>
-  <location lineno="245"><![CDATA[compiletest.cpp]]></location>
+  <location lineno="235"><![CDATA[compiletest.cpp]]></location>
   <function><![CDATA[void testErrorMacros()]]></function>
   <message><![CDATA[somemessage]]></message>
   <storageconfiguration maxSize="0" shrinkBy="10">
@@ -163,9 +163,9 @@
   <stackposition>1</stackposition>
   <group>somekey</group>
   <type>1</type>
-  <location lineno="276"><![CDATA[compiletest.cpp]]></location>
+  <location lineno="264"><![CDATA[compiletest.cpp]]></location>
   <function><![CDATA[void testErrorMacros()]]></function>
-  <message><![CDATA[somemessage, with c=A|b=false|f=0|d=0|ld=0|vp=0x00000000|cvp=0x00000000|cp=abc|scp=abc|ucp=abc|str=def|ss=0|us=0|si=0|ui=0|sl=0|ul=0|sll=0|ull=0|si8=0|si16=0|si32=0|si64=0|ui8=0|ui16=0|ui32=0|ui64=0|v.size()=0|cs=CustomStruct(0)]]></message>
+  <message><![CDATA[somemessage, with c=A|b=false|f=0|d=0|ld=0|vp=0x00000000|cvp=0x00000000|cp=abc|scp=abc|ucp=abc|str=def|ss=0|us=0|si=0|ui=0|sl=0|ul=0|sll=0|ull=0|si16=0|si32=0|si64=0|ui16=0|ui32=0|ui64=0|v.size()=0|cs=CustomStruct(0)]]></message>
   <storageconfiguration maxSize="0" shrinkBy="10">
     <![CDATA[]]>
   </storageconfiguration>
@@ -176,9 +176,9 @@
   <stackposition>1</stackposition>
   <group>somekey</group>
   <type>1</type>
-  <location lineno="278"><![CDATA[compiletest.cpp]]></location>
+  <location lineno="266"><![CDATA[compiletest.cpp]]></location>
   <function><![CDATA[void testErrorMacros()]]></function>
-  <message><![CDATA[this is a message Ac=A|falseb=false|0f=0|0d=0|0ld=0|0x00000000vp=0x00000000|0x00000000cvp=0x00000000|abccp=abc|abcscp=abc|abcucp=abc|defstr=def|0ss=0|0us=0|0si=0|0ui=0|0sl=0|0ul=0|0sll=0|0ull=0|0si8=0|0si16=0|0si32=0|0si64=0|0ui8=0|0ui16=0|0ui32=0|0ui64=0|0v.size()=0|CustomStruct(0)cs=CustomStruct(0)]]></message>
+  <message><![CDATA[this is a message Ac=A|falseb=false|0f=0|0d=0|0ld=0|0x00000000vp=0x00000000|0x00000000cvp=0x00000000|abccp=abc|abcscp=abc|abcucp=abc|defstr=def|0ss=0|0us=0|0si=0|0ui=0|0sl=0|0ul=0|0sll=0|0ull=0|0si16=0|0si32=0|0si64=0|0ui16=0|0ui32=0|0ui64=0|0v.size()=0|CustomStruct(0)cs=CustomStruct(0)]]></message>
   <storageconfiguration maxSize="0" shrinkBy="10">
     <![CDATA[]]>
   </storageconfiguration>
@@ -189,7 +189,7 @@
   <stackposition>1</stackposition>
   <group>somekey</group>
   <type>4</type>
-  <location lineno="314"><![CDATA[compiletest.cpp]]></location>
+  <location lineno="300"><![CDATA[compiletest.cpp]]></location>
   <function><![CDATA[void testWatchMacros()]]></function>
   <variables>
     <variable name="c" type="string"><![CDATA[A]]></variable>
@@ -204,7 +204,7 @@
   <stackposition>1</stackposition>
   <group>somekey</group>
   <type>4</type>
-  <location lineno="316"><![CDATA[compiletest.cpp]]></location>
+  <location lineno="302"><![CDATA[compiletest.cpp]]></location>
   <function><![CDATA[void testWatchMacros()]]></function>
   <variables>
     <variable name="c" type="string"><![CDATA[A]]></variable>
@@ -220,7 +220,7 @@
   <stackposition>1</stackposition>
   <group>somekey</group>
   <type>4</type>
-  <location lineno="347"><![CDATA[compiletest.cpp]]></location>
+  <location lineno="331"><![CDATA[compiletest.cpp]]></location>
   <function><![CDATA[void testWatchMacros()]]></function>
   <variables>
     <variable name="c" type="string"><![CDATA[A]]></variable>
@@ -242,11 +242,9 @@
     <variable name="ul" type="number">0</variable>
     <variable name="sll" type="number">0</variable>
     <variable name="ull" type="number">0</variable>
-    <variable name="si8" type="number">0</variable>
     <variable name="si16" type="number">0</variable>
     <variable name="si32" type="number">0</variable>
     <variable name="si64" type="number">0</variable>
-    <variable name="ui8" type="number">0</variable>
     <variable name="ui16" type="number">0</variable>
     <variable name="ui32" type="number">0</variable>
     <variable name="ui64" type="number">0</variable>
@@ -264,7 +262,7 @@
   <stackposition>1</stackposition>
   <group>somekey</group>
   <type>4</type>
-  <location lineno="349"><![CDATA[compiletest.cpp]]></location>
+  <location lineno="333"><![CDATA[compiletest.cpp]]></location>
   <function><![CDATA[void testWatchMacros()]]></function>
   <variables>
     <variable name="c" type="string"><![CDATA[A]]></variable>
@@ -286,18 +284,16 @@
     <variable name="ul" type="number">0</variable>
     <variable name="sll" type="number">0</variable>
     <variable name="ull" type="number">0</variable>
-    <variable name="si8" type="number">0</variable>
     <variable name="si16" type="number">0</variable>
     <variable name="si32" type="number">0</variable>
     <variable name="si64" type="number">0</variable>
-    <variable name="ui8" type="number">0</variable>
     <variable name="ui16" type="number">0</variable>
     <variable name="ui32" type="number">0</variable>
     <variable name="ui64" type="number">0</variable>
     <variable name="v.size()" type="number">0</variable>
     <variable name="cs" type="string"><![CDATA[CustomStruct(0)]]></variable>
   </variables>
-  <message><![CDATA[this is a message A|false|0|0|0|0x00000000|0x00000000|abc|abc|abc|def|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|CustomStruct(0)]]></message>
+  <message><![CDATA[this is a message A|false|0|0|0|0x00000000|0x00000000|abc|abc|abc|def|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|CustomStruct(0)]]></message>
   <storageconfiguration maxSize="0" shrinkBy="10">
     <![CDATA[]]>
   </storageconfiguration>
