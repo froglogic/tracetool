@@ -41,7 +41,7 @@
   <type>3</type>
   <location lineno="126"><![CDATA[compiletest.cpp]]></location>
   <function><![CDATA[void testTraceMacros()]]></function>
-  <message><![CDATA[somemessage, with c=A|b=false|f=0|d=0|ld=0|vp=0x00000000|cvp=0x00000000|cp=abc|scp=abc|ucp=abc|str=def|ss=0|us=0|si=0|ui=0|sl=0|ul=0|sll=0|ull=0|si16=0|si32=0|si64=0|ui16=0|ui32=0|ui64=0|v.size()=0|cs=CustomStruct(0)]]></message>
+  <message><![CDATA[somemessage, with c=A|b=false|f=0|d=0|ld=0|vp=0x00000000|cvp=0x00000000|cp=abc|scp=abc|ucp=abc|str=def|ss=-42|us=42|si=-42|ui=42|sl=-42|ul=42|sll=-42|ull=42|si16=-42|si32=-42|si64=-42|ui16=42|ui32=42|ui64=42|v.size()=0|cs=CustomStruct(0)]]></message>
   <storageconfiguration maxSize="0" shrinkBy="10">
     <![CDATA[]]>
   </storageconfiguration>
@@ -54,7 +54,7 @@
   <type>3</type>
   <location lineno="128"><![CDATA[compiletest.cpp]]></location>
   <function><![CDATA[void testTraceMacros()]]></function>
-  <message><![CDATA[this is a message Ac=A|falseb=false|0f=0|0d=0|0ld=0|0x00000000vp=0x00000000|0x00000000cvp=0x00000000|abccp=abc|abcscp=abc|abcucp=abc|defstr=def|0ss=0|0us=0|0si=0|0ui=0|0sl=0|0ul=0|0sll=0|0ull=0|0si16=0|0si32=0|0si64=0|0ui16=0|0ui32=0|0ui64=0|0v.size()=0|CustomStruct(0)cs=CustomStruct(0)]]></message>
+  <message><![CDATA[this is a message Ac=A|falseb=false|0f=0|0d=0|0ld=0|0x00000000vp=0x00000000|0x00000000cvp=0x00000000|abccp=abc|abcscp=abc|abcucp=abc|defstr=def|-42ss=-42|42us=42|-42si=-42|42ui=42|-42sl=-42|42ul=42|-42sll=-42|42ull=42|-42si16=-42|-42si32=-42|-42si64=-42|42ui16=42|42ui32=42|42ui64=42|0v.size()=0|CustomStruct(0)cs=CustomStruct(0)]]></message>
   <storageconfiguration maxSize="0" shrinkBy="10">
     <![CDATA[]]>
   </storageconfiguration>
@@ -103,7 +103,7 @@
   <type>2</type>
   <location lineno="195"><![CDATA[compiletest.cpp]]></location>
   <function><![CDATA[void testDebugMacros()]]></function>
-  <message><![CDATA[somemessage, with c=A|b=false|f=0|d=0|ld=0|vp=0x00000000|cvp=0x00000000|cp=abc|scp=abc|ucp=abc|str=def|ss=0|us=0|si=0|ui=0|sl=0|ul=0|sll=0|ull=0|si16=0|si32=0|si64=0|ui16=0|ui32=0|ui64=0|v.size()=0|cs=CustomStruct(0)]]></message>
+  <message><![CDATA[somemessage, with c=A|b=false|f=0|d=0|ld=0|vp=0x00000000|cvp=0x00000000|cp=abc|scp=abc|ucp=abc|str=def|ss=-42|us=42|si=-42|ui=42|sl=-42|ul=42|sll=-42|ull=42|si16=-42|si32=-42|si64=-42|ui16=42|ui32=42|ui64=42|v.size()=0|cs=CustomStruct(0)]]></message>
   <storageconfiguration maxSize="0" shrinkBy="10">
     <![CDATA[]]>
   </storageconfiguration>
@@ -116,7 +116,7 @@
   <type>2</type>
   <location lineno="197"><![CDATA[compiletest.cpp]]></location>
   <function><![CDATA[void testDebugMacros()]]></function>
-  <message><![CDATA[this is a message Ac=A|falseb=false|0f=0|0d=0|0ld=0|0x00000000vp=0x00000000|0x00000000cvp=0x00000000|abccp=abc|abcscp=abc|abcucp=abc|defstr=def|0ss=0|0us=0|0si=0|0ui=0|0sl=0|0ul=0|0sll=0|0ull=0|0si16=0|0si32=0|0si64=0|0ui16=0|0ui32=0|0ui64=0|0v.size()=0|CustomStruct(0)cs=CustomStruct(0)]]></message>
+  <message><![CDATA[this is a message Ac=A|falseb=false|0f=0|0d=0|0ld=0|0x00000000vp=0x00000000|0x00000000cvp=0x00000000|abccp=abc|abcscp=abc|abcucp=abc|defstr=def|-42ss=-42|42us=42|-42si=-42|42ui=42|-42sl=-42|42ul=42|-42sll=-42|42ull=42|-42si16=-42|-42si32=-42|-42si64=-42|42ui16=42|42ui32=42|42ui64=42|0v.size()=0|CustomStruct(0)cs=CustomStruct(0)]]></message>
   <storageconfiguration maxSize="0" shrinkBy="10">
     <![CDATA[]]>
   </storageconfiguration>
@@ -165,7 +165,7 @@
   <type>1</type>
   <location lineno="264"><![CDATA[compiletest.cpp]]></location>
   <function><![CDATA[void testErrorMacros()]]></function>
-  <message><![CDATA[somemessage, with c=A|b=false|f=0|d=0|ld=0|vp=0x00000000|cvp=0x00000000|cp=abc|scp=abc|ucp=abc|str=def|ss=0|us=0|si=0|ui=0|sl=0|ul=0|sll=0|ull=0|si16=0|si32=0|si64=0|ui16=0|ui32=0|ui64=0|v.size()=0|cs=CustomStruct(0)]]></message>
+  <message><![CDATA[somemessage, with c=A|b=false|f=0|d=0|ld=0|vp=0x00000000|cvp=0x00000000|cp=abc|scp=abc|ucp=abc|str=def|ss=-42|us=42|si=-42|ui=42|sl=-42|ul=42|sll=-42|ull=42|si16=-42|si32=-42|si64=-42|ui16=42|ui32=42|ui64=42|v.size()=0|cs=CustomStruct(0)]]></message>
   <storageconfiguration maxSize="0" shrinkBy="10">
     <![CDATA[]]>
   </storageconfiguration>
@@ -178,7 +178,7 @@
   <type>1</type>
   <location lineno="266"><![CDATA[compiletest.cpp]]></location>
   <function><![CDATA[void testErrorMacros()]]></function>
-  <message><![CDATA[this is a message Ac=A|falseb=false|0f=0|0d=0|0ld=0|0x00000000vp=0x00000000|0x00000000cvp=0x00000000|abccp=abc|abcscp=abc|abcucp=abc|defstr=def|0ss=0|0us=0|0si=0|0ui=0|0sl=0|0ul=0|0sll=0|0ull=0|0si16=0|0si32=0|0si64=0|0ui16=0|0ui32=0|0ui64=0|0v.size()=0|CustomStruct(0)cs=CustomStruct(0)]]></message>
+  <message><![CDATA[this is a message Ac=A|falseb=false|0f=0|0d=0|0ld=0|0x00000000vp=0x00000000|0x00000000cvp=0x00000000|abccp=abc|abcscp=abc|abcucp=abc|defstr=def|-42ss=-42|42us=42|-42si=-42|42ui=42|-42sl=-42|42ul=42|-42sll=-42|42ull=42|-42si16=-42|-42si32=-42|-42si64=-42|42ui16=42|42ui32=42|42ui64=42|0v.size()=0|CustomStruct(0)cs=CustomStruct(0)]]></message>
   <storageconfiguration maxSize="0" shrinkBy="10">
     <![CDATA[]]>
   </storageconfiguration>
@@ -234,20 +234,20 @@
     <variable name="scp" type="string"><![CDATA[abc]]></variable>
     <variable name="ucp" type="string"><![CDATA[abc]]></variable>
     <variable name="str" type="string"><![CDATA[def]]></variable>
-    <variable name="ss" type="number">0</variable>
-    <variable name="us" type="number">0</variable>
-    <variable name="si" type="number">0</variable>
-    <variable name="ui" type="number">0</variable>
-    <variable name="sl" type="number">0</variable>
-    <variable name="ul" type="number">0</variable>
-    <variable name="sll" type="number">0</variable>
-    <variable name="ull" type="number">0</variable>
-    <variable name="si16" type="number">0</variable>
-    <variable name="si32" type="number">0</variable>
-    <variable name="si64" type="number">0</variable>
-    <variable name="ui16" type="number">0</variable>
-    <variable name="ui32" type="number">0</variable>
-    <variable name="ui64" type="number">0</variable>
+    <variable name="ss" type="number">-42</variable>
+    <variable name="us" type="number">42</variable>
+    <variable name="si" type="number">-42</variable>
+    <variable name="ui" type="number">42</variable>
+    <variable name="sl" type="number">-42</variable>
+    <variable name="ul" type="number">42</variable>
+    <variable name="sll" type="number">-42</variable>
+    <variable name="ull" type="number">42</variable>
+    <variable name="si16" type="number">-42</variable>
+    <variable name="si32" type="number">-42</variable>
+    <variable name="si64" type="number">-42</variable>
+    <variable name="ui16" type="number">42</variable>
+    <variable name="ui32" type="number">42</variable>
+    <variable name="ui64" type="number">42</variable>
     <variable name="v.size()" type="number">0</variable>
     <variable name="cs" type="string"><![CDATA[CustomStruct(0)]]></variable>
   </variables>
@@ -276,24 +276,24 @@
     <variable name="scp" type="string"><![CDATA[abc]]></variable>
     <variable name="ucp" type="string"><![CDATA[abc]]></variable>
     <variable name="str" type="string"><![CDATA[def]]></variable>
-    <variable name="ss" type="number">0</variable>
-    <variable name="us" type="number">0</variable>
-    <variable name="si" type="number">0</variable>
-    <variable name="ui" type="number">0</variable>
-    <variable name="sl" type="number">0</variable>
-    <variable name="ul" type="number">0</variable>
-    <variable name="sll" type="number">0</variable>
-    <variable name="ull" type="number">0</variable>
-    <variable name="si16" type="number">0</variable>
-    <variable name="si32" type="number">0</variable>
-    <variable name="si64" type="number">0</variable>
-    <variable name="ui16" type="number">0</variable>
-    <variable name="ui32" type="number">0</variable>
-    <variable name="ui64" type="number">0</variable>
+    <variable name="ss" type="number">-42</variable>
+    <variable name="us" type="number">42</variable>
+    <variable name="si" type="number">-42</variable>
+    <variable name="ui" type="number">42</variable>
+    <variable name="sl" type="number">-42</variable>
+    <variable name="ul" type="number">42</variable>
+    <variable name="sll" type="number">-42</variable>
+    <variable name="ull" type="number">42</variable>
+    <variable name="si16" type="number">-42</variable>
+    <variable name="si32" type="number">-42</variable>
+    <variable name="si64" type="number">-42</variable>
+    <variable name="ui16" type="number">42</variable>
+    <variable name="ui32" type="number">42</variable>
+    <variable name="ui64" type="number">42</variable>
     <variable name="v.size()" type="number">0</variable>
     <variable name="cs" type="string"><![CDATA[CustomStruct(0)]]></variable>
   </variables>
-  <message><![CDATA[this is a message A|false|0|0|0|0x00000000|0x00000000|abc|abc|abc|def|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|CustomStruct(0)]]></message>
+  <message><![CDATA[this is a message A|false|0|0|0|0x00000000|0x00000000|abc|abc|abc|def|-42|42|-42|42|-42|42|-42|42|-42|-42|-42|42|42|42|0|CustomStruct(0)]]></message>
   <storageconfiguration maxSize="0" shrinkBy="10">
     <![CDATA[]]>
   </storageconfiguration>
