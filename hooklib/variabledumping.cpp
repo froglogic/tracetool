@@ -93,7 +93,8 @@ size_t VariableValue::convertToString( const VariableValue &v, char *buf, size_t
 
 VariableValue::VariableValue( const VariableValue &other )
     : m_type( other.m_type ),
-    m_primitiveValue( other.m_primitiveValue )
+    m_primitiveValue( other.m_primitiveValue ),
+	m_isSignedNumber( other.m_isSignedNumber )
 {
     if ( m_type == VariableType::String ) {
         m_primitiveValue.string = strdup( other.asString() );
