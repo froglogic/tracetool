@@ -271,12 +271,12 @@ static unsigned int storeTraceEntry( QSqlDatabase db, Transaction *transaction,
                      const QString &message,
                      unsigned long stackPosition )
 {
-    return transaction->insert( QString( "INSERT INTO trace_entry VALUES(NULL, %1, %2, %3, %4, %5)" )
-                    .arg( threadId )
-                    .arg( Database::formatValue( db, timestamp ) )
-                    .arg( pointId )
-                    .arg( Database::formatValue( db, message ) )
-                    .arg( stackPosition ) ).toUInt();
+    return transaction->insert( QString( "INSERT INTO trace_entry VALUES(NULL, " + QString::number( threadId )
+                                         + ", " + Database::formatValue( db, timestamp )
+                                         + ", " + QString::number( pointId )
+                                         + ", " + Database::formatValue( db, message )
+                                         + ", " + QString::number( stackPosition )
+                                         + ")" ) ).toUInt();
 }
 
 static void storeVariables( QSqlDatabase db, Transaction *transaction,
@@ -285,7 +285,11 @@ static void storeVariables( QSqlDatabase db, Transaction *transaction,
 {
     QList<Variable>::ConstIterator it, end = variables.end();
     for ( it = variables.begin(); it != end; ++it ) {
-        transaction->exec( QString( "INSERT INTO variable VALUES(%1, %2, %3, %4);" ).arg( traceentryId ).arg( Database::formatValue( db, it->name ) ).arg( Database::formatValue( db, it->value ) ).arg( it->type ) );
+        transaction->exec( QString( "INSERT INTO variable VALUES(" + QString::number( traceentryId )
+                                    + ", " + Database::formatValue( db, it->name )
+                                    + ", " + Database::formatValue( db, it->value )
+                                    + ", " + QString::number( it->type )
+                                    + ")" ) );
     }
 }
 
@@ -297,7 +301,14 @@ static void storeBacktrace( QSqlDatabase db, Transaction *transaction,
     unsigned int depthCount = 0;
     QList<StackFrame>::ConstIterator it, end = backtrace.end();
     for ( it = backtrace.begin(); it != end; ++it, ++depthCount ) {
-        transaction->exec( QString( "INSERT INTO stackframe VALUES(%1, %2, %3, %4, %5, %6, %7);" ).arg( traceentryId ).arg( depthCount ).arg( Database::formatValue( db, it->module ) ).arg( Database::formatValue( db, it->function ) ).arg( it->functionOffset ).arg( Database::formatValue( db, it->sourceFile ) ).arg( it->lineNumber ) );
+        transaction->exec( QString( "INSERT INTO stackframe VALUES(" + QString::number( traceentryId )
+                                    + ", " + QString::number( depthCount )
+                                    + ", " + Database::formatValue( db, it->module )
+                                    + ", " + Database::formatValue( db, it->function )
+                                    + ", " + QString::number( it->functionOffset )
+                                    + ", " + Database::formatValue( db, it->sourceFile )
+                                    + ", " + QString::number( it->lineNumber )
+                                    + ")" ) );
     }
 }
 
