@@ -17,8 +17,8 @@ namespace ACME
     
 inline std::string f(int v1, int v2)
 {
-    fDebug(0) << fEnd;
-    fWatch(0) << "f() arguments" << fVar(v1) << fVar(v2) << fEnd;
+    fDebug(0) << fEndTrace;
+    fWatch(0) << "f() arguments" << fVar(v1) << fVar(v2) << fEndTrace;
     Person p("John", "Doe");
     return p.toString();
 }

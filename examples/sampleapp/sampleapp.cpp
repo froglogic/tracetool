@@ -23,7 +23,7 @@ TRACELIB_NAMESPACE_END
 
 int main()
 {
-    fTrace(0) << fEnd;
+    fTrace(0) << fEndTrace;
     ACME::GUI::Widget w;
     w.repaint( false );
 }

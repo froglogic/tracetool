@@ -116,7 +116,7 @@ void MainWindow::timerTriggered()
 {
     static int row = 0;
     static int column = 0;
-    fWatch("Timer Messages") <<  "Qt eventloop still running" << fVar(row) << fVar(column) << fEnd;
+    fWatch("Timer Messages") <<  "Qt eventloop still running" << fVar(row) << fVar(column) << fEndTrace;
     if ( ++row == 10 ) {
         ++column;
         row = 0;
@@ -174,13 +174,13 @@ void MainWindow::fileNew()
     clear();
     setWindowTitle(tr("Address Book - Unnamed"));
     updateUi();
-    fWatch("FileNew" ) << fVar(dirty) << fVar(windowTitle()) << fVar(filename) << fEnd;
+    fWatch("FileNew" ) << fVar(dirty) << fVar(windowTitle()) << fVar(filename) << fEndTrace;
 }
 
 
 void MainWindow::clear()
 {
-    fTrace(0) << fEnd;
+    fTrace(0) << fEndTrace;
     tableWidget->clear();
     tableWidget->setColumnCount(COLUMNS);
     tableWidget->setRowCount(0);
@@ -300,7 +300,7 @@ void MainWindow::editAdd()
                            << fVar(dialog.surname())
                            << fVar(dialog.email())
                            << fVar(dialog.phone())
-                           << fEnd;
+                           << fEndTrace;
         int row = tableWidget->rowCount() == 0
                 ? 0 :tableWidget->currentRow();
         tableWidget->insertRow(row);

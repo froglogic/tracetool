@@ -10,15 +10,15 @@ Person::Person(const std::string &firstName, const std::string &lastName)
     : m_firstName(firstName),
       m_lastName(lastName)
 {
-    fTrace(0) << fEnd;
+    fTrace(0) << fEndTrace;
 }
 
 std::string Person::toString() const {
-    fTrace(0) << "Person -> String conversion" << fEnd;
+    fTrace(0) << "Person -> String conversion" << fEndTrace;
     fWatch(0) << "Person member variables"
                        << fVar(this)
                        << fVar(m_firstName)
                        << fVar(m_lastName)
-                       << fEnd;
+                       << fEndTrace;
     return m_lastName + ", " + m_firstName;
 }

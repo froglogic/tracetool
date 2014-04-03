@@ -641,7 +641,7 @@
  *
  * This macro is merely a (short) alias for the #TRACELIB_STREAM_END macro.
  */
-#  define fEnd TRACELIB_STREAM_END
+#  define fEndTrace TRACELIB_STREAM_END
 
 #endif // !defined(TRACELIB_CLEAN_NAMESPACE)
 
