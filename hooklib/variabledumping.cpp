@@ -144,6 +144,7 @@ VariableValue::VariableValue()
 }
 
 VariableSnapshot::VariableSnapshot()
+    : m_variables( new std::vector<AbstractVariable *> )
 {
 }
 
@@ -154,19 +155,19 @@ VariableSnapshot::~VariableSnapshot()
 
 VariableSnapshot &VariableSnapshot::operator<<( AbstractVariable *v )
 {
-    m_variables.push_back( v );
+    m_variables->push_back( v );
     return *this;
 }
 
 size_t VariableSnapshot::size() const
 {
-    return m_variables.size();
+    return m_variables->size();
 }
 
 
 AbstractVariable *&VariableSnapshot::operator[]( size_t idx )
 {
-    return m_variables[idx];
+    return (*m_variables)[idx];
 }
 
 TRACELIB_NAMESPACE_END

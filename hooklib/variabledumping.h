@@ -12,6 +12,7 @@
 #include <stdio.h> // for snprintf
 
 #include <cstddef>
+#include <memory>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -217,7 +218,7 @@ public:
     TRACELIB_EXPORT AbstractVariable *&operator[]( size_t idx );
 
 private:
-    std::vector<AbstractVariable *> m_variables;
+    std::auto_ptr<std::vector<AbstractVariable *> > m_variables;
 };
 
 TRACELIB_NAMESPACE_END
