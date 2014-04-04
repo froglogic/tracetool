@@ -177,6 +177,10 @@ public:
         , m_variables( 0 )
     { }
     inline ~TracePointVisitor() {
+        if( m_variables ) {
+            for ( size_t i = 0; i < m_variables->size(); ++i ) delete (*m_variables)[i]; \
+            delete m_variables;
+        }
     }
 
     inline TracePointVisitor &operator<<( const VariableValue &v ) {
