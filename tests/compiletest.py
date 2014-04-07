@@ -148,6 +148,7 @@ def tryCompile(compiler, arch, tracelibbasedir, srcdir):
             while cnt < 5:
                 try:
                     os.remove(abspath)
+                    break
                 except:
                     cnt += 1
                     time.sleep(.2)
