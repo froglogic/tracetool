@@ -13,6 +13,7 @@ import tempfile
 import sys
 import ctypes
 import difflib
+import time
 
 is_windows = sys.platform.startswith("win")
 is_mac = sys.platform.startswith("darwin")
@@ -141,12 +142,15 @@ def tryCompile(compiler, arch, tracelibbasedir, srcdir):
     myprint("Architecture    : %s" % arch)
     compiletestexe = bin_name("compiletest")
     for name in ["compiletest%s" % suffix for suffix in [".pdb", ".suo", ".obj", "", ".exe", ".ilk"]]:
-        if os.path.exists(os.path.join(srcdir, name)):
-            abspath = os.path.join(srcdir, name)
+        abspath = os.path.join(srcdir, name)
+        if os.path.exists(abspath):
             cnt = 0
-            while not os.access(abspath, os.W_OK) and cnt < 5:
-                time.sleep(.2)
-            os.remove(abspath)
+            while cnt < 5:
+                try:
+                    os.remove(abspath)
+                except:
+                    cnt += 1
+                    time.sleep(.2)
     try:
         run_env = fetch_run_environment(arch, compiler)
 
