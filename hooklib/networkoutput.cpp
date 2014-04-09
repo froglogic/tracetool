@@ -80,7 +80,7 @@ static size_t writeTo( int fd, const char *data, const int length, Log *log )
 
 NetworkOutput::NetworkOutput( Log *log, const string &host, unsigned short port )
     : m_host( host ), m_port( port ), m_socket( -1 ), m_log( log ),
-    m_lastConnectionAttemptFailed( false )
+    m_lastConnectionAttemptFailed( false ), d( 0 )
 {
 #ifdef _WIN32
     WSADATA wsaData;
