@@ -42,9 +42,9 @@ string Configuration::defaultFileName()
  */
 string Configuration::currentProcessName()
 {
-    static char buf[ 32768 ] = { '\0' };
     static const char *lastSeparator = 0;
     if ( !lastSeparator ) {
+        static char buf[ 32768 ] = { '\0' };
         ::GetModuleFileName( NULL, buf, sizeof( buf ) );
         lastSeparator = strrchr( buf, '\\' );
     }
