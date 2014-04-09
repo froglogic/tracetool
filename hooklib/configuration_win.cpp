@@ -22,7 +22,7 @@ string Configuration::defaultFileName()
      */
     char buf[ 32767 ] = { L'0' };
     if ( ::GetEnvironmentVariable( "TRACELIB_CONFIG_FILE", buf, sizeof( buf ) ) ) {
-        return &buf[0];
+        return std::string( buf );
     }
 
     static string defaultName;
