@@ -59,6 +59,9 @@ public:
     void setFont( const QFont &font ) { m_font = font; }
 
 private:
+    Settings( const Settings &other ); // disabled
+    void operator=( const Settings &rhs ); // disabled
+
     bool load();
 
     QMap<QString, RestorableObject*> m_restorables;
