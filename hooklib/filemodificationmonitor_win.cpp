@@ -52,7 +52,7 @@ bool WinFileModificationMonitor::start()
 
 DWORD WINAPI WinFileModificationMonitor::FilePollingThreadProc( LPVOID lpParameter )
 {
-    WinFileModificationMonitor *monitorObject = (WinFileModificationMonitor *)lpParameter;
+    WinFileModificationMonitor *monitorObject = static_cast<WinFileModificationMonitor *>( lpParameter );
     struct FileInfo {
         FileInfo( const std::string &fileName )
             : fileExists( false )
