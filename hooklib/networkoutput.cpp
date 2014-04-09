@@ -37,7 +37,7 @@ using namespace std;
 
 TRACELIB_NAMESPACE_BEGIN
 
-static int connectTo( const string host, unsigned short port, Log *log )
+static int connectTo( const string &host, unsigned short port, Log *log )
 {
     struct hostent *he = gethostbyname( host.c_str() );
     if ( !he ) {
