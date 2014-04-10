@@ -174,6 +174,7 @@ class TracePointVisitor {
 public:
     inline TracePointVisitor( TracePoint *tracePoint )
         : m_tracePoint( tracePoint )
+        , m_stream( 0 )
         , m_variables( 0 )
     { }
     inline ~TracePointVisitor() {
@@ -181,10 +182,14 @@ public:
             for ( size_t i = 0; i < m_variables->size(); ++i ) delete (*m_variables)[i];
             delete m_variables;
         }
+        delete m_stream;
     }
 
     inline TracePointVisitor &operator<<( const VariableValue &v ) {
-        m_stream << variableValueAsString( v );
+        if( !m_stream ) {
+            m_stream = new std::ostringstream();
+        }
+        (*m_stream) << variableValueAsString( v );
         return *this;
     }
 
@@ -197,7 +202,7 @@ public:
 
     void flush() {
         if( m_tracePoint->active ) {
-            visitTracePoint( m_tracePoint, m_stream.str().c_str(), m_variables );
+            visitTracePoint( m_tracePoint, m_stream ? m_stream->str().c_str() : "", m_variables );
         }
     }
 
@@ -206,7 +211,7 @@ private:
     void operator=( const TracePointVisitor &rhs );
 
     TracePoint *m_tracePoint;
-    std::ostringstream m_stream;
+    std::ostringstream *m_stream;
     VariableSnapshot *m_variables;
 };
 
