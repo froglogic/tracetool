@@ -16,6 +16,7 @@
 #  include <qdatetime.h>
 #  include <qstring.h>
 #  include <qstringlist.h>
+#  include <qmap.h>
 #  include <qvariant.h>
 #else
 #  include <QByteArray>
@@ -25,6 +26,7 @@
 #  include <QString>
 #  include <QStringList>
 #  include <QTime>
+#  include <QMap>
 #  include <QVariant>
 
 #endif
@@ -58,6 +60,21 @@ TRACELIB_SPECIALIZE_CONVERSION_USING_QVARIANT(QByteArray)
 TRACELIB_SPECIALIZE_CONVERSION_USING_QVARIANT(QDate)
 TRACELIB_SPECIALIZE_CONVERSION_USING_QVARIANT(QDateTime)
 TRACELIB_SPECIALIZE_CONVERSION_USING_QVARIANT(QTime)
+
+template <>
+inline VariableValue convertVariable( QMap<QString, QVariant> val ) {
+    return VariableValue::stringValue( qtTypeToUtf8Char( val ) );
+}
+
+template <>
+inline VariableValue convertVariable( QMap<QString, QString> val ) {
+    QMap<QString, QVariant> dummymap;
+    QMap<QString, QString>::const_iterator it;
+    for( it = val.begin(); it != val.end(); ++it ) {
+        dummymap[it.key()] = it.value();
+    }
+    return convertVariable( dummymap );
+}
 
 #undef qtTypeToUtf8Char
 #undef TRACELIB_SPECIALIZE_CONVERSION_USING_QVARIANT
