@@ -25,9 +25,9 @@ namespace Error
 
 static void printHelp( const QString &app )
 {
-    fprintf( stdout, "Usage: %s [options] DATABASE\n"
+    fprintf( stdout, "Usage: %s [options] XMLFILE\n"
             "Options:\n"
-            "  -o, --output FILE   Writes XML to FILE\n"
+            "  -o, --output FILE   Writes trace database to FILE\n"
 	    "  --help              Print this help\n"
         "\n", qPrintable( app ));
 }
