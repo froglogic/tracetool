@@ -163,6 +163,10 @@ the key by setting the attribute falue to true or false respectively
 
 \note If the 'enabled' attribute is missing the key is considered to be enabled.
 
+\note Specifying a key here automatically disables all other keys that are not
+explicitly listed as well. So this configuration acts as a simple way to limit
+the output to a certain set of keys without having to disable all keys.
+
 \code {.xml}
 <tracekeys>
   <!-- generate all trace entries specifying the IPC trace key -->
