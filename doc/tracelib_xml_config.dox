@@ -230,7 +230,99 @@ the trace database name and an always increasing number.
 
 \section filter_section Specifying filters for trace entries
 
-//TODO, see hooklib/configuration.cpp
+There are five different types of filters that can be applied to a
+tracepointset. The <tracepointset> element can contain multiple different
+filters which are being combined into a conjunction, so that if any of the
+filters filters out a given trace point then it won't appear in the resulting
+trace log.
+
+So for example if you have a <tracekeyfilter> enabling the trace key "Gui" and
+a path filter disabling everything from the directory 'ui' then you may end up
+with an empty trace log if all uses of the Gui key are only inside the ui
+directory.
+
+The five types of filters are explained below:
+
+\subsection matchanyfilter_config A disjunction filter
+
+This filter allows to create complex expressions, it can contain any of the
+other filter types again and combines them in a disjunction. That is it accepts
+a given tracepoint if at least one of its child filters accepts the tracepoint.
+It rejects the tracepoint if none of the child filters accepts it or if its
+list of child filters is empty.
+
+\code {.xml}
+<matchanyfilter>
+  <tracekeyfilter>
+    <key>Gui</key>
+  <tracekeyfilter>
+  <pathfilter>server</pathfilter>
+</matchanyfilter>
+\endcode
+
+\subsection matchallfilter_config A conjunction filter
+
+This filter works exactly opposite to the disjunction filter, it contains child
+elements and if any one of them rejects a tracepoint the tracepoint is not
+included into the log. If this filter has no children all tracepoints will be
+accepted.
+
+\code {.xml}
+<matchallfilter>
+  <tracekeyfilter>
+    <key>Gui</key>
+  <tracekeyfilter>
+  <pathfilter>server</pathfilter>
+</matchallfilter>
+\endcode
+
+\subsection pathfilter_config Filtering certain files
+
+This filter allows to filter tracepoints based on a given file path, any trace
+points coming from files matching the filter will be accepted.
+
+The path is specified as the text value of the element and the matching can be
+configured using a 'matchingmode' attribute. Possible values are 'strict',
+'regexp' and 'wildcard'. The strict matching will take the text value and do an
+exact match with the absolute file name of the tracepoint. Using 'wildcard'
+allows to use wildcards as in the commandline and 'regexp' allows to specify
+regular expressions as text value to match.
+
+\code {.xml}
+<pathfilter matchingmode='wildcard'>*ui*</pathfilter>
+\endcode
+
+\subsection functionfilter_config Filtering certain functions
+
+This filter allows to filter tracepoints based on a given function name, any
+trace points triggered from a function matching the filter will be accepted.
+
+The function name is specified as the text value of the element and the
+matching can be configured using a 'matchingmode' attribute. Possible values
+are 'strict', 'regexp' and 'wildcard'. The strict matching will take the text
+value and do an exact match with the function name of the tracepoint. Using
+'wildcard' allows to use wildcard expressions and 'regexp' allows to specify
+regular expressions as text value to match.
+
+\code {.xml}
+<functionfilter matchingmode='regexp'>loadFilter(0|1)</functionfilter>
+\endcode
+
+\subsection tracekeyfilter_config Filtering certain trace keys
+
+This filter allows to filter tracepoints that belong to a given trace key (or
+not). The element should contain <key> child elements each specifying a trace
+key value. In order to specify wether the filter should accept trace points
+that match the given set of keys or that do not match the given set of keys the
+'mode' attribute can be set to either 'whitelist' or 'blacklist'. The default
+value if nothing is specified is to blacklist the given keys.
+
+\code
+<tracekeyfilter mode='whitelist'>
+  <key>GUI</key>
+  <key>DataBase</key>
+</tracekeyfilter>
+\endcode
 
 \section example_config Example tracelib.xml file
 
@@ -247,6 +339,9 @@ the trace database name and an always increasing number.
       <key enabled="false">Config</key>
       <key>IPC</key>
     </tracekeys>
+    <tracepointset variables="no">
+        <matchallfilter />
+    </tracepointset>
   </process>
   <process>
     <name>tracegui.exe</name>
@@ -256,6 +351,12 @@ the trace database name and an always increasing number.
     <serializer type="plaintext">
       <option name="timestamps">yes</option>
     </serializer>
+    <tracepointset backtraces="yes">
+        <pathfilter matchingmode='wildcard'>*server*</pathfilter>
+        <tracekeyfilter mode="whitelist">
+            <key>DataBase</key>
+        <tracekeyfilter>
+    </tracepointset>
   </process>
 </tracelibConfiguration>
 \endcode
