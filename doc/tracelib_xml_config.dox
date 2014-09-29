@@ -155,11 +155,16 @@ yes or no.
 \section tracekeys_section Specifying Trace keys
 
 The <tracekeys> element allows to enable or disable the generation of trace
-entries based on the corresponding trace key that was used for them. For each
-trace key that should be explicitly enabled or disabled there needs to be a
-<key> sub element with the trace key as its text value. Using the 'enabled'
-attribute its possible to either enable or disable the trace entries matching
-the key by setting the attribute falue to true or false respectively
+entries based on the corresponding trace key that was used for them. In addition
+this entry sets the default set of filters for the user interface, each key
+mentioned here will be either enabled or disabled (depending on the enabled
+attribute) when viewing the trace.
+
+For each trace key that should be explicitly
+enabled or disabled there needs to be a <key> sub element with the trace key as
+its text value. Using the 'enabled' attribute its possible to either enable or
+disable the trace entries matching the key by setting the attribute falue to
+true or false respectively
 
 \note If the 'enabled' attribute is missing the key is considered to be enabled.
 
