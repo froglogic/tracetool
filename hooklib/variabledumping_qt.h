@@ -61,23 +61,46 @@ TRACELIB_SPECIALIZE_CONVERSION_USING_QVARIANT(QDate)
 TRACELIB_SPECIALIZE_CONVERSION_USING_QVARIANT(QDateTime)
 TRACELIB_SPECIALIZE_CONVERSION_USING_QVARIANT(QTime)
 
+QString variantMapToString( const QMap<QString, QVariant> &map );
+
+QString variantToString( const QVariant &variant ) {
+    if( variant.type() == QVariant::Map ) {
+        return variantMapToString( variant.toMap() );
+    }
+    return variant.toString();
+}
+
+QString variantMapToString( const QMap<QString, QVariant> &map ) {
+    QStringList keysandvalues;
+    QMap<QString, QVariant>::const_iterator it;
+    for( it = map.begin(); it != map.end(); ++it ) {
+#if QT_VERSION < 0x040000
+        QVariant value = it.data();
+#else
+        QVariant value = it.value();
+#endif
+        keysandvalues << ( "'" + it.key() + ": " + variantToString( value ) );
+    }
+    return QString("{%1}").arg( keysandvalues.join(", ") );
+}
+
 template <>
 inline VariableValue convertVariable( QMap<QString, QVariant> val ) {
-    return VariableValue::stringValue( qtTypeToUtf8Char( val ) );
+    return VariableValue::stringValue( qtTypeToUtf8Char( variantMapToString( val ) ) );
 }
 
 template <>
 inline VariableValue convertVariable( QMap<QString, QString> val ) {
-    QStringList keysandvalues;
+    QMap<QString, QVariant> dummymap;
     QMap<QString, QString>::const_iterator it;
     for( it = val.begin(); it != val.end(); ++it ) {
 #if QT_VERSION < 0x040000
-        keysandvalues << ( it.key() + ": '" + it.data() + "'" );
+        dummymap[it.key()] = it.data();
 #else
-        keysandvalues << ( it.key() + ": '" + it.value() + "'" );
+        dummymap[it.key()] = it.value();
 #endif
     }
-    return convertVariable( QString("{%1}").arg( keysandvalues.join(", ") ) );
+    return convertVariable( dummymap );
 }
 
 #undef qtTypeToUtf8Char
