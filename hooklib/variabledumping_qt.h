@@ -68,12 +68,16 @@ inline VariableValue convertVariable( QMap<QString, QVariant> val ) {
 
 template <>
 inline VariableValue convertVariable( QMap<QString, QString> val ) {
-    QMap<QString, QVariant> dummymap;
+    QStringList keysandvalues;
     QMap<QString, QString>::const_iterator it;
     for( it = val.begin(); it != val.end(); ++it ) {
-        dummymap[it.key()] = it.value();
+#if QT_VERSION < 0x040000
+        keysandvalues << ( it.key() + ": '" + it.data() + "'" );
+#else
+        keysandvalues << ( it.key() + ": '" + it.value() + "'" );
+#endif
     }
-    return convertVariable( dummymap );
+    return convertVariable( QString("{%1}").arg( keysandvalues.join(", ") ) );
 }
 
 #undef qtTypeToUtf8Char
