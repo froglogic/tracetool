@@ -61,16 +61,16 @@ TRACELIB_SPECIALIZE_CONVERSION_USING_QVARIANT(QDate)
 TRACELIB_SPECIALIZE_CONVERSION_USING_QVARIANT(QDateTime)
 TRACELIB_SPECIALIZE_CONVERSION_USING_QVARIANT(QTime)
 
-QString variantMapToString( const QMap<QString, QVariant> &map );
+inline QString variantMapToString( const QMap<QString, QVariant> &map );
 
-QString variantToString( const QVariant &variant ) {
+inline QString variantToString( const QVariant &variant ) {
     if( variant.type() == QVariant::Map ) {
         return variantMapToString( variant.toMap() );
     }
     return variant.toString();
 }
 
-QString variantMapToString( const QMap<QString, QVariant> &map ) {
+inline QString variantMapToString( const QMap<QString, QVariant> &map ) {
     QStringList keysandvalues;
     QMap<QString, QVariant>::const_iterator it;
     for( it = map.begin(); it != map.end(); ++it ) {
