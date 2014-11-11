@@ -132,10 +132,10 @@ void XMLSerializer::setBeautifiedOutput( bool beautifiedOutput )
 static std::string splitCDataEndToken( const std::string& input )
 {
     std::string copy = input;
-    static const std::string endToken = "]]>";
-    static const std::string splitEndToken = "]]]]><![CDATA[>";
-    static const size_t endTokenLength = endToken.length();
-    static const size_t splitEndTokenLength = splitEndToken.length();
+    static const char endToken[] = "]]>";
+    static const char splitEndToken[] = "]]]]><![CDATA[>";
+    static const size_t endTokenLength = strlen( endToken );
+    static const size_t splitEndTokenLength = strlen( splitEndToken );
     size_t pos = 0;
     while ( ( pos = copy.find( endToken, pos ) ) != std::string::npos ) {
         copy.replace( pos, endTokenLength, splitEndToken );
