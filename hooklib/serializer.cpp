@@ -9,6 +9,8 @@
 #include "configuration.h"
 #include "timehelper.h" // for timeToString
 
+#include <algorithm> // for std::replace
+
 #include <sstream>
 
 #include <assert.h>
@@ -127,6 +129,21 @@ void XMLSerializer::setBeautifiedOutput( bool beautifiedOutput )
     m_beautifiedOutput = beautifiedOutput;
 }
 
+static std::string splitCDataEndToken( const std::string& input )
+{
+    std::string copy = input;
+    static const std::string endToken = "]]>";
+    static const std::string splitEndToken = "]]]]><![CDATA[>";
+    static const size_t endTokenLength = endToken.length();
+    static const size_t splitEndTokenLength = splitEndToken.length();
+    size_t pos = 0;
+    while ( ( pos = copy.find( endToken, pos ) ) != std::string::npos ) {
+        copy.replace( pos, endTokenLength, splitEndToken );
+        pos += splitEndTokenLength;
+    }
+    return copy;
+}
+
 vector<char> XMLSerializer::serialize( const TraceEntry &entry )
 {
     ostringstream str;
@@ -138,7 +155,7 @@ vector<char> XMLSerializer::serialize( const TraceEntry &entry )
     }
 
     static string myProcessName = Configuration::currentProcessName();
-    str << indent << "<processname><![CDATA[" << myProcessName << "]]></processname>";
+    str << indent << "<processname><![CDATA[" << splitCDataEndToken( myProcessName ) << "]]></processname>";
 
     str << indent << "<stackposition>" << entry.stackPosition << "</stackposition>";
     if ( entry.tracePoint->groupName ) {
@@ -151,7 +168,7 @@ vector<char> XMLSerializer::serialize( const TraceEntry &entry )
         }
         vector<TraceKey>::const_iterator it, end = entry.process.availableTraceKeys.end();
         for ( it = entry.process.availableTraceKeys.begin(); it != end; ++it ) {
-            str << indent << "<key enabled=\"" << ( it->enabled ? "true" : "false" ) << "\"><![CDATA[" << it->name << "]]></key>";
+            str << indent << "<key enabled=\"" << ( it->enabled ? "true" : "false" ) << "\"><![CDATA[" << splitCDataEndToken( it->name ) << "]]></key>";
         }
         if ( m_beautifiedOutput ) {
             indent = "\n  ";
@@ -159,8 +176,8 @@ vector<char> XMLSerializer::serialize( const TraceEntry &entry )
         str << indent << "</tracekeys>";
     }
     str << indent << "<type>" << entry.tracePoint->type << "</type>";
-    str << indent << "<location lineno=\"" << entry.tracePoint->lineno << "\"><![CDATA[" << entry.tracePoint->sourceFile << "]]></location>";
-    str << indent << "<function><![CDATA[" << entry.tracePoint->functionName << "]]></function>";
+    str << indent << "<location lineno=\"" << entry.tracePoint->lineno << "\"><![CDATA[" << splitCDataEndToken( entry.tracePoint->sourceFile ) << "]]></location>";
+    str << indent << "<function><![CDATA[" << splitCDataEndToken( entry.tracePoint->functionName ) << "]]></function>";
     if ( entry.variables ) {
         str << indent << "<variables>";
         if ( m_beautifiedOutput ) {
@@ -189,9 +206,9 @@ vector<char> XMLSerializer::serialize( const TraceEntry &entry )
             if ( m_beautifiedOutput ) {
                 indent = "\n      ";
             }
-            str << indent << "<module><![CDATA[" << frame.module << "]]></module>";
-            str << indent << "<function offset=\"" << frame.functionOffset << "\"><![CDATA[" << frame.function << "]]></function>";
-            str << indent << "<location lineno=\"" << frame.lineNumber << "\"><![CDATA[" << frame.sourceFile << "]]></location>";
+            str << indent << "<module><![CDATA[" << splitCDataEndToken( frame.module ) << "]]></module>";
+            str << indent << "<function offset=\"" << frame.functionOffset << "\"><![CDATA[" << splitCDataEndToken( frame.function ) << "]]></function>";
+            str << indent << "<location lineno=\"" << frame.lineNumber << "\"><![CDATA[" << splitCDataEndToken( frame.sourceFile ) << "]]></location>";
 
             if ( m_beautifiedOutput ) {
                 indent = "\n    ";
@@ -205,7 +222,7 @@ vector<char> XMLSerializer::serialize( const TraceEntry &entry )
     }
 
     if ( entry.message ) {
-        str << indent << "<message><![CDATA[" << entry.message << "]]></message>";
+        str << indent << "<message><![CDATA[" << splitCDataEndToken( entry.message ) << "]]></message>";
     }
 
     str << indent << "<storageconfiguration"
@@ -215,7 +232,7 @@ vector<char> XMLSerializer::serialize( const TraceEntry &entry )
     if ( m_beautifiedOutput ) {
         indent += "  ";
     }
-    str << indent << "<![CDATA[" << m_cfg.archiveDirectoryName << "]]>";
+    str << indent << "<![CDATA[" << splitCDataEndToken( m_cfg.archiveDirectoryName ) << "]]>";
     if ( m_beautifiedOutput ) {
         indent = "\n  ";
     }
@@ -239,7 +256,7 @@ vector<char> XMLSerializer::serialize( const ProcessShutdownEvent &ev )
     str << "<shutdownevent pid=\"" << ev.process->id << "\" starttime=\"" << ev.process->startTime << "\" endtime=\"" << ev.shutdownTime << "\">";
 
     static string myProcessName = Configuration::currentProcessName();
-    str << "<![CDATA[" << myProcessName << "]]>";
+    str << "<![CDATA[" << splitCDataEndToken( myProcessName ) << "]]>";
 
     str << "</shutdownevent>";
 
@@ -253,7 +270,7 @@ string XMLSerializer::convertVariable( const char *n, const VariableValue &v ) c
     str << "<variable name=\"" << n << "\" ";
     switch ( v.type() ) {
         case VariableType::String:
-            str << "type=\"string\"><![CDATA[" << v.asString() << "]]>";
+            str << "type=\"string\"><![CDATA[" << splitCDataEndToken( v.asString() ) << "]]>";
             break;
         case VariableType::Number:
             str << "type=\"number\">";
