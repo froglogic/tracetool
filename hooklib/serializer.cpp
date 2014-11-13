@@ -9,7 +9,7 @@
 #include "configuration.h"
 #include "timehelper.h" // for timeToString
 
-#include <algorithm> // for std::replace
+#include <string.h> // for strlen
 
 #include <sstream>
 
