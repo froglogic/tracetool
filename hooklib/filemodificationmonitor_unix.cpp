@@ -126,6 +126,13 @@ public:
 TimerEventObserver::TimerEventObserver( UnixFileModificationMonitor *m )
     : modification_monitor( m ), modification_time( 0 )
 {
+    struct stat st;
+
+    std::string fn = modification_monitor->fileName();
+    int success = ::stat( fn.c_str(), &st );
+    if( success == 0 ) {
+        modification_time = st.st_mtime;
+    }
     EventThreadUnix::self()->postTask( new TimerTask( 5000, this ) );
 }
 
