@@ -222,7 +222,7 @@ inline TracePointVisitor &operator<<( TracePointVisitor &lhs, AbstractVariable *
     return lhs.addVariable( rhs );
 }
 
-inline void operator<<( TracePointVisitor &lhs, const StreamEnd &rhs ) {
+inline void operator<<( TracePointVisitor &lhs, const StreamEnd & ) {
     lhs.flush();
 }
 
