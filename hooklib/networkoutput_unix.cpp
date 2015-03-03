@@ -7,6 +7,7 @@
 #include "log.h"
 #include "eventthread_unix.h"
 
+#include <arpa/inet.h>
 #include <string.h>
 #include <assert.h>
 #include <errno.h>
@@ -15,10 +16,6 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <netdb.h>
-
-#ifdef __FreeBSD__
-#  include <netinet/in.h>
-#endif
 
 #include <list>
 
