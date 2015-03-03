@@ -86,11 +86,11 @@ if(HOOKLIB_ONLY)
     set(CPACK_PACKAGE_NAME "tracelib-hooklib")
 endif()
 set(PACKAGE_SYSTEM_NAME_SUFFIX "")
-# At least on my linux system CMake does not append -i686 to system name and even if it would
-# the value would be wrong. So use sizeof(void*) to add 32/64 to the package name
 if(CMAKE_CROSSCOMPILING)
     set(PACKAGE_SYSTEM_NAME_SUFFIX "-${CMAKE_SYSTEM_PROCESSOR}")
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux" OR CMAKE_SYSTEM_NAME STREQUAL "Windows")
+# At least on my linux system CMake does not append -i686 to system name and even if it would
+# the value would be wrong. So use sizeof(void*) to add 32/64 to the package name
     if(CMAKE_SIZEOF_VOID_P EQUAL 4)
         set(PACKAGE_SYSTEM_NAME_SUFFIX "-x86")
     else()
