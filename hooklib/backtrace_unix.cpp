@@ -11,7 +11,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
-#ifdef __GNUC__
+#if defined(__GNUC__) && defined(HAVE_EXECINFO_H)
 # include <execinfo.h>
 # if __GNUC__ - 0 > 2
 #  include <cxxabi.h>
@@ -144,9 +144,10 @@ static bool bfdAddressInfo( bfd_vma addr, StackFrame *frame )
 }
 #endif
 
+#if defined(__GNUC__) && defined(HAVE_EXECINFO_H)
 static bool parseLine( const string line, StackFrame *frame )
 {
-# if defined(__GNUC__) && __GNUC__ - 0 > 2
+# if __GNUC__ - 0 > 2
     size_t pb = line.find( '(' );
     if (pb != string::npos ) {
         size_t pe = line.find( ')', pb + 1 );
@@ -181,6 +182,7 @@ static bool parseLine( const string line, StackFrame *frame )
 # endif
     return false;
 }
+#endif
 
 static void readBacktrace( std::vector<StackFrame> &trace, size_t skip
 #ifdef __sun
@@ -188,7 +190,7 @@ static void readBacktrace( std::vector<StackFrame> &trace, size_t skip
 #endif
 )
 {
-#if __GNUC__
+#if defined(__GNUC__) && defined(HAVE_EXECINFO_H)
     void *array[50];
     size_t size = backtrace(array, sizeof(array)/sizeof(void*));
     if ( size > 0 && size < sizeof ( array ) / sizeof ( void* ) ) {

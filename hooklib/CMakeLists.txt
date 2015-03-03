@@ -28,7 +28,7 @@ IF(NOT WIN32)
         CHECK_INCLUDE_FILE(execinfo.h HAVE_EXECINFO_H)
         FIND_LIBRARY(LIB_EXECINFO execinfo)
         IF(NOT HAVE_EXECINFO_H OR NOT LIB_EXECINFO)
-            MESSAGE(FATAL_ERROR
+            MESSAGE(WARNING
                     "Could not find libexecinfo.so, which is needed for backtrace generation.")
         ENDIF(NOT HAVE_EXECINFO_H OR NOT LIB_EXECINFO)
     ENDIF(NOT HAS_EXECINFO)
