@@ -8,6 +8,7 @@
 
 #include "tracelib_config.h"
 
+#include <stdio.h>
 #include <string>
 #include <vector>
 
