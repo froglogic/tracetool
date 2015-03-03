@@ -19,13 +19,13 @@ ENDIF(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD")
 ADD_DEFINITIONS(-DPCRE_STATIC -DTIXML_USE_STL -DTRACELIB_MAKEDLL)
 
 IF(NOT WIN32)
+    CHECK_INCLUDE_FILE(execinfo.h HAVE_EXECINFO_H)
     # If we cannot use execinfo.h and backtrace() out of the box, try to find
     # libexecinfo which provides (roughly) the same functionality.
     TRY_COMPILE(HAS_EXECINFO
                 ${PROJECT_BINARY_DIR}/config-tests
                 ${PROJECT_SOURCE_DIR}/config-tests/execinfo.c)
     IF(NOT HAS_EXECINFO)
-        CHECK_INCLUDE_FILE(execinfo.h HAVE_EXECINFO_H)
         FIND_LIBRARY(LIB_EXECINFO execinfo)
         IF(NOT HAVE_EXECINFO_H OR NOT LIB_EXECINFO)
             MESSAGE(WARNING
