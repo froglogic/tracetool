@@ -10,8 +10,8 @@
 
 #include "timehelper.h"
 
-#include <cstdarg>
-#include <cstdio>
+#include <stdarg.h>
+#include <stdio.h>
 #include <iosfwd>
 #include <string>
 #include <vector>
