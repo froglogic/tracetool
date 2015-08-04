@@ -79,7 +79,7 @@ inline QString variantMapToString( const QMap<QString, QVariant> &map ) {
 #else
         QVariant value = it.value();
 #endif
-        keysandvalues << ( "'" + it.key() + ": " + variantToString( value ) );
+        keysandvalues << ( "'" + it.key() + "': " + variantToString( value ) );
     }
     return QString("{%1}").arg( keysandvalues.join(", ") );
 }
