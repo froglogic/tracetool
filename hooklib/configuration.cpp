@@ -465,6 +465,7 @@ Output *Configuration::createOutputFromElement( TiXmlElement *e )
 
     if ( outputType == "file" ) {
         std::string filename;
+        bool overwriteExistingFile = true;
         for ( TiXmlElement *optionElement = e->FirstChildElement(); optionElement; optionElement = optionElement->NextSiblingElement() ) {
             if ( optionElement->ValueStr() != "option" ) {
                 m_log->writeError( "Tracelib Configuration: while reading %s: Unexpected element '%s' in <output> element of type file found.", m_fileName.c_str(), optionElement->Value() );
@@ -479,6 +480,8 @@ Output *Configuration::createOutputFromElement( TiXmlElement *e )
 
             if ( optionName == "filename" ) {
                 filename = getText( optionElement ); // XXX Consider encoding issues
+            } else if ( optionName == "overwriteExistingFile" ) {
+                overwriteExistingFile = getText( optionElement ) == "true";
             } else {
                 m_log->writeError( "Tracelib Configuration: while reading %s: Unknown <option> element with name '%s' found in file output; ignoring this.", m_fileName.c_str(), optionName.c_str() );
                 continue;
@@ -489,7 +492,18 @@ Output *Configuration::createOutputFromElement( TiXmlElement *e )
             m_log->writeError( "Tracelib Configuration: while reading %s: No 'filename' option specified for <output> element of type filename.", m_fileName.c_str() );
             return 0;
         }
-
+        if( !overwriteExistingFile ) {
+            string basename = filename.substr(0, filename.rfind("."));
+            string ext = filename.substr(filename.rfind(".")+1);
+            int cnt = 1;
+            while( fileExists( filename ) )
+            {
+                std::stringstream sstr;
+                sstr << basename << "_" << cnt << "." << ext;
+                cnt += 1;
+                filename = sstr.str();
+            }
+        }
         m_log->writeStatus( "Tracelib Configuration: using file output to %s", filename.c_str() );
         return new FileOutput( m_log, filename );
     }
