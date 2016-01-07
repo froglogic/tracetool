@@ -75,12 +75,6 @@ int main( int argc, char **argv )
         return Error::None;
     }
 
-    if ( xmlFile.isEmpty() ) {
-        fprintf(stderr, "Missing input xml trace filename\n");
-        printHelp( opt.appName() );
-        return Error::CommandLineArgs;
-    }
-
     if ( traceFile.isEmpty() ) {
         fprintf(stderr, "Missing output trace database filename\n");
         printHelp( opt.appName() );
