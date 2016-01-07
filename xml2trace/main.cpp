@@ -75,6 +75,18 @@ int main( int argc, char **argv )
         return Error::None;
     }
 
+    if ( xmlFile.isEmpty() ) {
+        fprintf(stderr, "Missing input xml trace filename\n");
+        printHelp( opt.appName() );
+        return Error::CommandLineArgs;
+    }
+
+    if ( traceFile.isEmpty() ) {
+        fprintf(stderr, "Missing output trace database filename\n");
+        printHelp( opt.appName() );
+        return Error::CommandLineArgs;
+    }
+
     QString errMsg;
     QSqlDatabase db;
     if (QFile::exists(traceFile)) {
@@ -83,7 +95,7 @@ int main( int argc, char **argv )
         db = Database::create(traceFile, &errMsg);
     }
     if (!db.isValid()) {
-        fprintf( stderr, "Open error: %s\n", qPrintable( errMsg ));
+        fprintf( stderr, "Failed to open output trace database %s: %s\n", qPrintable( traceFile ), qPrintable( errMsg ));
         return Error::Open;
     }
 
