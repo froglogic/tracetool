@@ -25,7 +25,7 @@ namespace Error
 
 static void printHelp( const QString &app )
 {
-    fprintf( stdout, "Usage: %s [options] XMLFILE\n"
+    fprintf( stdout, "Usage: %s [--help | -o TRACEDBFILE XMLFILE]\n"
             "Options:\n"
             "  -o, --output FILE   Writes trace database to FILE\n"
 	    "  --help              Print this help\n"
