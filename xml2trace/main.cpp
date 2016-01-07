@@ -25,10 +25,13 @@ namespace Error
 
 static void printHelp( const QString &app )
 {
-    fprintf( stdout, "Usage: %s [--help | -o TRACEDBFILE XMLFILE]\n"
+    fprintf( stdout, "Usage: %s [--help | -o TRACEDBFILE [XMLFILE]]\n"
             "Options:\n"
             "  -o, --output FILE   Writes trace database to FILE\n"
 	    "  --help              Print this help\n"
+            "\n"
+            "If the XMLFILE argument is omitted the xml trace log should be passed\n"
+            "on the standard input channel\n"
         "\n", qPrintable( app ));
 }
 
