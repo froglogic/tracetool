@@ -124,7 +124,7 @@ void FilterForm::restoreSettings()
 bool FilterForm::traceKeyDefaultState( const QString &key ) const
 {
     QMap<QString, bool>::ConstIterator it = m_traceKeyDefaultState.find( key );
-    return it != m_traceKeyDefaultState.end() && *it;
+    return it == m_traceKeyDefaultState.end() || *it;
 }
 
 void FilterForm::enableTraceKeyByDefault( const QString &name, bool enabled )
