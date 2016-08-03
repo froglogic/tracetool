@@ -86,6 +86,18 @@ directory of the process when the first trace point is generating an entry.
 </output>
 \endcode
 
+In addition to the 'filename' option one can specify wether the file should be
+overwritten if it already exists upon starting the tracing. The option
+'overwriteExistingFile' can be set to the value 'false' to keep existing files
+and create a new one by appending a number to the base name each time the process
+is being launched.
+
+\code {.xml}
+<output type="file">
+  <option name="overwriteExistingFile">false</option>
+</output>
+\endcode
+
 \subsubsection stdout_config Standard output stream output
 
 The stdout output type generates the trace information on the stdout stream of
@@ -352,6 +364,7 @@ value if nothing is specified is to blacklist the given keys.
     <name>tracegui.exe</name>
     <output type="file">
       <option name="filename">trace.log</option>
+      <option name="overwriteExistingFile">false</option>
     </output>
     <serializer type="plaintext">
       <option name="timestamps">yes</option>
