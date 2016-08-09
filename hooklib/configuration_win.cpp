@@ -6,6 +6,12 @@
 #include "configuration.h"
 
 #include <windows.h>
+#include <assert.h>
+#  include <shlobj.h> // SHGetFolderPath
+// Fixup outdated windows headers on older MinGW
+#  ifndef CSIDL_FLAG_CREATE
+#    define CSIDL_FLAG_CREATE 0x8000
+#  endif
 
 using namespace std;
 
@@ -49,6 +55,25 @@ string Configuration::currentProcessName()
         lastSeparator = strrchr( buf, '\\' );
     }
     return lastSeparator + 1;
+}
+
+bool Configuration::isAbsolute( const string &filename )
+{
+    return !filename.empty() && filename.size() > 2 && filename[1] == ':' && filename[2] == '\\';
+}
+
+string Configuration::pathSeparator()
+{
+    return "\\";
+}
+
+string Configuration::userHome()
+{
+    char path[MAX_PATH] = { 0 };
+    HRESULT result = SHGetFolderPath( 0, CSIDL_PROFILE, NULL, SHGFP_TYPE_CURRENT, path );
+    assert( result == S_OK );
+
+    return path;
 }
 
 TRACELIB_NAMESPACE_END

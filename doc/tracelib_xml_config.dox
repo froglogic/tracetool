@@ -77,8 +77,9 @@ The file output generates a file on the local disk of the machine running the
 application. It has a mandatory 'filename' option that specifies the filename
 to use. The filename can be either an absolute path to a file or a relative
 one. Specifying a relative path will let the operating system decide where the
-file is generated, on many platforms this will use the current working
-directory of the process when the first trace point is generating an entry.
+file is generated unless the option 'relativeToUserHome' is set to true, on
+many platforms this will use the current working directory of the process when
+the first trace point is generating an entry.
 
 \code {.xml}
 <output type="file">
@@ -86,11 +87,23 @@ directory of the process when the first trace point is generating an entry.
 </output>
 \endcode
 
-In addition to the 'filename' option one can specify wether the file should be
-overwritten if it already exists upon starting the tracing. The option
-'overwriteExistingFile' can be set to the value 'false' to keep existing files
-and create a new one by appending a number to the base name each time the process
-is being launched.
+In cases where the working directory of the process is not writable or when it
+is desired to share the configuration across platforms you can specify the
+option 'relativeToUserHome' to indicate that the relative path should be
+relative to the users 'home' directory. The default value for this option is
+'false'.
+
+\code {.xml}
+<output type="file">
+  <option name="relativeToUserHome">true</option>
+</output>
+\endcode
+
+In addition to the 'filename' and 'relativeToUserHome' options one can specify
+wether the file should be overwritten if it already exists upon starting the
+tracing. The option 'overwriteExistingFile' can be set to the value 'false' to
+keep existing files and create a new one by appending a number to the base name
+each time the process is being launched.
 
 \code {.xml}
 <output type="file">

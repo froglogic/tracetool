@@ -10,6 +10,7 @@
 #include <limits.h>
 #include <string.h>
 #include <cassert>
+#include <pwd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
@@ -130,6 +131,22 @@ string Configuration::currentProcessName()
     if ( s )
         return s + 1;
     return pn;
+}
+
+bool Configuration::isAbsolute( const string &filename )
+{
+    return !filename.empty() && filename[0] == '/';
+}
+
+string Configuration::pathSeparator()
+{
+    return "/";
+}
+
+string Configuration::userHome()
+{
+    passwd *userdata = getpwuid( getuid() );
+    return userdata->pw_dir;
 }
 
 TRACELIB_NAMESPACE_END
