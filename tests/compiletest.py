@@ -200,7 +200,7 @@ def verifyOutput(compiler, arch, srcdir, tracelibdir):
     open(os.path.join(srcdir, "tracelib.xml"), "w").write("""
 <tracelibConfiguration>
 <process>
-    <name>%s</name>
+    <name>compiletest</name>
     <output type="file">
         <option name="filename">%s</option>
     </output>
