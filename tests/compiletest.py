@@ -212,7 +212,7 @@ def verifyOutput(compiler, arch, srcdir, tracelibdir):
     </tracepointset>
 </process>
 </tracelibConfiguration>
-""" % (compiletestexe, compiletestlog))
+""" % (compiletestlog))
     env = os.environ
     if is_windows:
         env["PATH"] += os.pathsep + os.path.join(tracelibdir, "bin")
