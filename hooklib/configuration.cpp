@@ -102,16 +102,18 @@ bool Configuration::loadFrom( TiXmlDocument *xmlDoc )
                 return false;
             }
 
+            string processBaseName = getText( nameElement );
+            string platformProcessName = executableName( processBaseName );
 
             // XXX Consider encoding issues (e.g. if myProcessName contains umlauts)
 #ifdef _WIN32
             const bool isMyProcessElement = _stricmp( myProcessName.c_str(),
-                                                      getText( nameElement ).c_str() ) == 0;
+                                                      platformProcessName.c_str() ) == 0;
 #else
-            const bool isMyProcessElement = getText( nameElement ) == myProcessName;
+            const bool isMyProcessElement = platformProcessName == myProcessName;
 #endif
             if ( isMyProcessElement ) {
-                m_log->writeStatus( "Tracelib Configuration: found configuration for process %s", myProcessName.c_str() );
+                m_log->writeStatus( "Tracelib Configuration: found configuration for process %s (matches executable: %s)", processBaseName.c_str(), myProcessName.c_str() );
                 return readProcessElement( e );
             }
             continue;

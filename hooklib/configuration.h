@@ -50,6 +50,7 @@ public:
     static std::string pathSeparator();
     static std::string userHome();
     static bool isAbsolute( const std::string &filename );
+    static std::string executableName( const std::string &basename );
 
     static Configuration *fromFile( const std::string &fileName, Log *log );
     static Configuration *fromMarkup( const std::string &markup, Log *log );

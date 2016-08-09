@@ -76,5 +76,10 @@ string Configuration::userHome()
     return path;
 }
 
+string Configuration::executableName( const string &basename )
+{
+    return basename + ".exe";
+}
+
 TRACELIB_NAMESPACE_END
 

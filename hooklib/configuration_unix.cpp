@@ -149,5 +149,10 @@ string Configuration::userHome()
     return userdata->pw_dir;
 }
 
+string Configuration::executableName( const string &basename )
+{
+    return basename;
+}
+
 TRACELIB_NAMESPACE_END
 

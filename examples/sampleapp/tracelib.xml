@@ -1,6 +1,6 @@
 <tracelibConfiguration>
 <process>
-    <name>sampleapp.exe</name>
+    <name>sampleapp</name>
     <output type="stdout"/>
     <serializer type="xml">
         <option name="beautifiedOutput">yes</option>

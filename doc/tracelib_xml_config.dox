@@ -26,13 +26,13 @@ Each <process> element configures the behaviour of tracelib for all processes
 of a given name. That way a single configuration can be used to setup tracing
 of multiple different applications.
 
-The <name> child element specifies the executable name (without path) of the
+The <name> child element specifies the executable name (without path and suffix) of the
 process to configure trace output for. Using the <serializer>, <output> and
 <tracepointset> child elements the specific output configuration can be set.
 
 \code {.xml}
 <process>
-  <name>tracegui.exe</name>
+  <name>tracegui</name>
   <output>...</output>
   <serializer>...</serializer>
   <tracepointset>...</tracepointset>
