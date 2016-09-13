@@ -8,11 +8,9 @@ IF(MSVC)
 ENDIF(MSVC)
 
 ADD_EXECUTABLE(trace2xml MACOSX_BUNDLE ${TRACE2XML_SOURCES})
-TARGET_LINK_LIBRARIES(trace2xml ${QT_LIBRARIES})
+TARGET_LINK_LIBRARIES(trace2xml Qt5::Sql)
 
 INSTALL(TARGETS trace2xml RUNTIME DESTINATION bin COMPONENT applications
                           LIBRARY DESTINATION lib COMPONENT applications
                           BUNDLE  DESTINATION bin COMPONENT applications
                           ARCHIVE DESTINATION lib COMPONENT applications)
-# Make trace2xml self-contained wrt. Qt
-INSTALL_QT4_EXECUTABLE("bin/trace2xml${execext}" "qsqlite" "" "${QT_BINARY_DIR}" "plugins" TRUE applications)
