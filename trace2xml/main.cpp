@@ -19,6 +19,7 @@
 
 #include "../hooklib/tracelib.h"
 #include "../server/database.h"
+#include "config.h"
 
 #include <cstdio>
 #include <QCommandLineParser>
@@ -215,6 +216,7 @@ static bool toXml(const QSqlDatabase db, FILE *output, QString *errMsg)
 int main(int argc, char **argv)
 {
     QCoreApplication a(argc, argv);
+    a.setApplicationVersion(QLatin1String(TRACELIB_VERSION_STR));
 
     QCommandLineParser opt;
     QCommandLineOption output(QStringList() << "o" << "output", "Output File to write XML into, if not specified writes to stdout", "file");

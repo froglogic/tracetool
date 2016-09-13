@@ -6,6 +6,7 @@
 #include "../hooklib/tracelib.h"
 #include "../server/xmlcontenthandler.h"
 #include "../server/databasefeeder.h"
+#include "config.h"
 
 #include <cstdio>
 #include <QCommandLineParser>
@@ -20,18 +21,6 @@ namespace Error
     const int Open = 2;
     const int File = 3;
     const int Transformation = 4;
-}
-
-static void printHelp( const QString &app )
-{
-    fprintf( stdout, "Usage: %s [--help | -o TRACEDBFILE [XMLFILE]]\n"
-            "Options:\n"
-            "  -o, --output FILE   Writes trace database to FILE\n"
-	    "  --help              Print this help\n"
-            "\n"
-            "If the XMLFILE argument is omitted the xml trace log should be passed\n"
-            "on the standard input channel\n"
-        "\n", qPrintable( app ));
 }
 
 static bool fromXml( QSqlDatabase &db, QFile &input, QString *errMsg )
@@ -54,6 +43,7 @@ static bool fromXml( QSqlDatabase &db, QFile &input, QString *errMsg )
 int main( int argc, char **argv )
 {
     QCoreApplication a( argc, argv );
+    a.setApplicationVersion(QLatin1String(TRACELIB_VERSION_STR));
 
     QCommandLineParser opt;
     QCommandLineOption inputOption(QStringList() << "i" << "input", "XML input file to read from, if not specified reads from stdin", "file");

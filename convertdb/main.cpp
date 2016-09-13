@@ -19,6 +19,7 @@
 
 
 #include "../server/database.h"
+#include "config.h"
 
 #include <cstdio>
 #include <QCommandLineParser>
@@ -66,6 +67,7 @@ static int downgradeDatabase(const QString &downgradeFile)
 int main(int argc, char **argv)
 {
     QCoreApplication a(argc, argv);
+    a.setApplicationVersion(QLatin1String(TRACELIB_VERSION_STR));
 
     QCommandLineParser opt;
     QCommandLineOption acceptDataLoss("accept-data-loss", "Accept possible data loss that might occur on downgrades");

@@ -21,6 +21,7 @@
 
 #include "database.h"
 #include "../hooklib/tracelib_config.h"
+#include "config.h"
 
 #include <QCommandLineParser>
 #include <QCoreApplication>
@@ -83,6 +84,7 @@ int main( int argc, char **argv )
 #endif
 
     QCoreApplication app( argc, argv );
+    app.setApplicationVersion(QLatin1String(TRACELIB_VERSION_STR));
 
     QCommandLineParser opt;
     QCommandLineOption portOption(QStringList() << "p" << "port", "Listening Port for the trace library to connect to.",

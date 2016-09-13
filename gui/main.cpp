@@ -22,6 +22,7 @@
 #include <QFile>
 #include <QMessageBox>
 
+#include "config.h"
 #include "mainwindow.h"
 #include "settings.h"
 #include "../server/database.h"
@@ -49,6 +50,7 @@ int main(int argc, char **argv)
 #endif
 
     QApplication a(argc, argv);
+    a.setApplicationVersion(QLatin1String(TRACELIB_VERSION_STR));
 
     QCommandLineParser opt;
     opt.setApplicationDescription("GUI for analyzing trace files");
