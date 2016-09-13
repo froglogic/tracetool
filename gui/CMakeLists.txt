@@ -14,7 +14,6 @@ SET(GUI_SOURCES
   watchtree.cpp
   applicationtable.cpp
   searchwidget.cpp
-  ../convertdb/getopt.cpp
   ../server/database.cpp)
 
 SET(GUI_MOCABLES

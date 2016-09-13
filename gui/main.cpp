@@ -17,13 +17,13 @@
  * along with tracetool.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <QCommandLineParser>
 #include <QApplication>
 #include <QFile>
 #include <QMessageBox>
 
 #include "mainwindow.h"
 #include "settings.h"
-#include "../convertdb/getopt.h"
 #include "../server/database.h"
 #ifdef Q_OS_WIN
 #  include "jobobject.h"
@@ -41,12 +41,6 @@ namespace Error
 
 using namespace std;
 
-static void printUsage(const string &app)
-{
-    cout << "Usage: " << app << " --help" << endl
-         << "       " << app << " <.trace-file>" << endl;
-}
-
 int main(int argc, char **argv)
 {
 #ifdef Q_OS_WIN
@@ -56,20 +50,19 @@ int main(int argc, char **argv)
 
     QApplication a(argc, argv);
 
-    GetOpt opt;
-    bool help;
+    QCommandLineParser opt;
+    opt.setApplicationDescription("GUI for analyzing trace files");
+    opt.addHelpOption();
+    opt.addVersionOption();
+    opt.addPositionalArgument(".trace-file", "Trace file to load");
+    opt.process(a);
+    
+    QStringList positionalArguments = opt.positionalArguments();
     QString traceFile;
-    opt.addSwitch("help", &help);
-    opt.addOptionalArgument("trace_file", &traceFile);
-    if (!opt.parse()) {
-        cout << "Invalid command line argument. Try --help." << endl;
-        return Error::CommandLineArgs;
+    if ( positionalArguments.size() > 0 ) {
+        traceFile = positionalArguments.at(0);
     }
 
-    if (help) {
-        printUsage(argv[0]);
-        return Error::None;
-    }
     QString errMsg;
     if (!traceFile.isEmpty() &&
         !Database::isValidFileName(traceFile, &errMsg)) {
