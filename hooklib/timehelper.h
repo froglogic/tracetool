@@ -1,5 +1,5 @@
 /* tracetool - a framework for tracing the execution of C++ programs
- * Copyright 2010-2016 froglogic GmbH
+ * Copyright 2013-2016 froglogic GmbH
  *
  * This file is part of tracetool.
  *
