@@ -25,7 +25,7 @@ Building the framework requires
 The actual build is the merely a matter of running the commands
 
 ```
-cmake -DQt5_DIR=<path_to_Qt>/lib/cmake/Qt5
+cmake -DCMAKE_PREFIX_PATH=<path_to_Qt>
 make
 ```
 
