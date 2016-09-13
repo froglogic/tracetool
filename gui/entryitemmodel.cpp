@@ -508,9 +508,10 @@ void EntryItemModel::resume()
 
 void EntryItemModel::clear()
 {
+    beginResetModel();
     m_numNewEntries = 0;
     m_numMatchingEntries = 0;
-    reset();
+    endResetModel();
 }
 
 unsigned int EntryItemModel::idForIndex(const QModelIndex &index)
