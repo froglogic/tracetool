@@ -10,10 +10,10 @@
 
 #include "dialog.h"
 #include "lineedit.h"
-#include <QtGui/QGridLayout>
-#include <QtGui/QHBoxLayout>
-#include <QtGui/QLabel>
-#include <QtGui/QPushButton>
+#include <QGridLayout>
+#include <QHBoxLayout>
+#include <QLabel>
+#include <QPushButton>
 
 
 Dialog::Dialog(QWidget *parent)

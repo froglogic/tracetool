@@ -10,8 +10,8 @@
     the KDE's license.
 */
 
-#include <QtGui/QDialog>
-#include <QtGui/QLineEdit>
+#include <QDialog>
+#include <QLineEdit>
 
 QT_BEGIN_NAMESPACE
 class QPushButton;

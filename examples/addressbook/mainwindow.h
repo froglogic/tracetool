@@ -10,8 +10,8 @@
     the KDE's license.
 */
 
-#include <QtGui/QMainWindow>
-#include <QtCore/QString>
+#include <QMainWindow>
+#include <QString>
 
 QT_BEGIN_NAMESPACE
 class QAction;
