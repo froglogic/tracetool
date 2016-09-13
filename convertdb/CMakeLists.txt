@@ -1,6 +1,5 @@
 SET(CONVERTDB_SOURCES
         main.cpp
-        getopt.cpp
         ../server/database.cpp)
 
 ADD_EXECUTABLE(convertdb MACOSX_BUNDLE ${CONVERTDB_SOURCES})

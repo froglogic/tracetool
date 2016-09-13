@@ -2,7 +2,6 @@ SET(TRACE2XML_SOURCES
         main.cpp
         ../server/xmlcontenthandler.cpp
         ../server/databasefeeder.cpp
-        ../convertdb/getopt.cpp
         ../server/database.cpp)
 
 IF(MSVC)

@@ -17,12 +17,11 @@
  * along with tracetool.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../convertdb/getopt.h"
-
 #include "../hooklib/tracelib.h"
 #include "../server/database.h"
 
 #include <cstdio>
+#include <QCommandLineParser>
 #include <QCoreApplication>
 #include <QSqlDatabase>
 #include <QSqlError>
@@ -36,15 +35,6 @@ namespace Error
     const int Open = 2;
     const int File = 3;
     const int Transformation = 4;
-}
-
-static void printHelp(const QString &app)
-{
-    fprintf(stdout, "Usage: %s [options] DATABASE\n"
-            "Options:\n"
-            "  -o, --output FILE   Writes XML to FILE\n"
-	    "  --help              Print this help\n"
-	    "\n", qPrintable(app));
 }
 
 //TODO: remove codedupl./copied from entryitemmodel.cpp
@@ -226,28 +216,20 @@ int main(int argc, char **argv)
 {
     QCoreApplication a(argc, argv);
 
-    GetOpt opt;
-    bool help;
-    QString traceFile, outputFile;
-    opt.addSwitch("help", &help);
-    opt.addOption('o', "output", &outputFile);
-    opt.addArgument("traceDb", &traceFile);
-    if (!opt.parse()) {
-        if (help) {
-            //TODO: bad, since GetOpt.parse() already prints
-            //'Lacking required argument' warning
-            printHelp(opt.appName());
-            return Error::None;
-        }
-        fprintf(stderr, "Invalid command line argument. Try --help.\n");
-	return Error::CommandLineArgs;
-    }
+    QCommandLineParser opt;
+    QCommandLineOption output(QStringList() << "o" << "output", "Output File to write XML into, if not specified writes to stdout", "file");
+    opt.addHelpOption();
+    opt.addVersionOption();
+    opt.setApplicationDescription("Converts trace databases into xml files");
+    opt.addOption(output);
+    opt.addPositionalArgument(".trace-file", "Trace database to convert");
+    opt.process(a);
 
-    if (help) {
-        printHelp(opt.appName());
-        return Error::None;
+    if( opt.positionalArguments().isEmpty() ) {
+        fprintf(stderr, "Missing command line argument.\n");
+        opt.showHelp(Error::CommandLineArgs);
     }
-
+    QString traceFile = opt.positionalArguments().at(0);
     QString errMsg;
     QSqlDatabase db = Database::open(traceFile, &errMsg);
     if (!db.isValid()) {
@@ -256,9 +238,10 @@ int main(int argc, char **argv)
     }
 
     FILE *outputStream;
-    if (outputFile.isNull()) {
+    if (!opt.isSet(output)) {
         outputStream = stdout;
     } else {
+        QString outputFile = opt.value(output);
         outputStream = fopen(qPrintable(outputFile), "w");
         if (outputStream == NULL) {
             fprintf(stderr, "File '%s' cannot be opened for writing.\n", qPrintable(outputFile));

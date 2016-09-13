@@ -3,13 +3,12 @@
 ** All rights reserved.
 **********************************************************************/
 
-#include "../convertdb/getopt.h"
-
 #include "../hooklib/tracelib.h"
 #include "../server/xmlcontenthandler.h"
 #include "../server/databasefeeder.h"
 
 #include <cstdio>
+#include <QCommandLineParser>
 #include <QCoreApplication>
 #include <QFile>
 #include <QSqlDatabase>
@@ -56,33 +55,21 @@ int main( int argc, char **argv )
 {
     QCoreApplication a( argc, argv );
 
-    GetOpt opt;
-    bool help;
-    QString traceFile, xmlFile;
-    opt.addSwitch("help", &help );
-    opt.addOption('o', "output", &traceFile );
-    opt.addArgument("xmlTrace", &xmlFile );
-    if (!opt.parse()) {
-        if ( help ) {
-            //TODO: bad, since GetOpt.parse() already prints
-            //'Lacking required argument' warning
-            printHelp( opt.appName());
-            return Error::None;
-        }
-        fprintf( stderr, "Invalid command line argument. Try --help.\n");
-        return Error::CommandLineArgs;
-    }
+    QCommandLineParser opt;
+    QCommandLineOption inputOption(QStringList() << "i" << "input", "XML input file to read from, if not specified reads from stdin", "file");
+    opt.setApplicationDescription("Converts xml files into trace databases.");
+    opt.addHelpOption();
+    opt.addVersionOption();
+    opt.addOption(inputOption);
+    opt.addPositionalArgument(".trace-file", "Trace database output file to write into.");
+    opt.process(a);
 
-    if ( help ) {
-        printHelp( opt.appName());
-        return Error::None;
-    }
-
-    if ( traceFile.isEmpty() ) {
+    if ( opt.positionalArguments().isEmpty() ) {
         fprintf(stderr, "Missing output trace database filename\n");
-        printHelp( opt.appName() );
-        return Error::CommandLineArgs;
+        opt.showHelp(Error::CommandLineArgs);
     }
+
+    QString traceFile = opt.positionalArguments().at(1);
 
     QString errMsg;
     QSqlDatabase db;
@@ -97,9 +84,10 @@ int main( int argc, char **argv )
     }
 
     QFile input;
-    if ( xmlFile.isNull()) {
+    if ( !opt.isSet( inputOption ) ) {
         input.open( stdin, QIODevice::ReadOnly );
     } else {
+        QString xmlFile = opt.value( inputOption );
         input.setFileName( xmlFile );
         if (!input.open( QIODevice::ReadOnly )) {
             fprintf( stderr, "File '%s' cannot be opened for writing.\n", qPrintable( xmlFile ));

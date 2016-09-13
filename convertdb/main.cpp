@@ -17,11 +17,11 @@
  * along with tracetool.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "getopt.h"
 
 #include "../server/database.h"
 
 #include <cstdio>
+#include <QCommandLineParser>
 #include <QCoreApplication>
 #include <QSqlDatabase>
 
@@ -31,16 +31,6 @@ namespace Error
     const int CommandLineArgs = 1;
     const int Open = 2;
     const int Conversion = 3;
-}
-
-static void printHelp(const QString &app)
-{
-    fprintf(stdout, "%s:\n"
-	    "    --help                  Print this help\n"
-	    "    --upgrade <database>    Upgrade to current version\n"
-	    "    --downgrade <database>  Downgrade to current version\n"
-	    "    --accept-data-loss      Accept possible data loss that might occur on downgrades\n"
-	    "\n", qPrintable(app));
 }
 
 static int upgradeDatabase(const QString &upgradeFile)
@@ -77,32 +67,26 @@ int main(int argc, char **argv)
 {
     QCoreApplication a(argc, argv);
 
-    GetOpt opt;
-    bool help, acceptDataLoss;
-    QString upgradeFile, downgradeFile;
-    opt.addSwitch("help", &help);
-    opt.addOption(0, "upgrade", &upgradeFile);
-    opt.addOption(0, "downgrade", &downgradeFile);
-    opt.addSwitch("accept-data-loss", &acceptDataLoss);
-    if (!opt.parse()) {
-        fprintf(stderr, "Invalid command line argument. Try --help.\n");
-	return Error::CommandLineArgs;
-    }
-
-
-    if (help) {
-        printHelp(opt.appName());
-        return 0;
-    }
-    if (!upgradeFile.isNull() && !downgradeFile.isNull()) {
+    QCommandLineParser opt;
+    QCommandLineOption acceptDataLoss("accept-data-loss", "Accept possible data loss that might occur on downgrades");
+    QCommandLineOption upgradeFile("upgrade", "Upgrade to current version", "database");
+    QCommandLineOption downgradeFile("downgrade", "Downgrade to current version", "database");
+    opt.setApplicationDescription("Converts trace databases between different versions");
+    opt.addOption(acceptDataLoss);
+    opt.addOption(upgradeFile);
+    opt.addOption(downgradeFile);
+    opt.addHelpOption();
+    opt.addVersionOption();
+    opt.process(a);
+    if (opt.isSet(upgradeFile) && opt.isSet(upgradeFile)) {
 	fprintf(stderr, "Sorry, cannot upgrade and downgrade at the "
 		"same time.\n");
 	return Error::CommandLineArgs;
     }
-    if (!upgradeFile.isNull()) {
-	return upgradeDatabase(upgradeFile);
-    } else if (!downgradeFile.isNull()) {
-	if (!acceptDataLoss) {
+    if (opt.isSet(upgradeFile)) {
+    return upgradeDatabase(opt.value(upgradeFile));
+    } else if (opt.isSet(downgradeFile)) {
+    if (!opt.isSet(acceptDataLoss)) {
 	    fprintf(stderr,
 "Downgrade operations can result in loss of extra information\n"
 "stored in newer versions. Specify the --accept-data-loss switch\n"
@@ -110,9 +94,9 @@ int main(int argc, char **argv)
 "perform this operation on a copy of the database.\n");
             return Error::CommandLineArgs;
 	}
-	return downgradeDatabase(downgradeFile);
+    return downgradeDatabase(opt.value(downgradeFile));
     } else {
-        fprintf(stderr, "Missing command line argument. Try --help.\n");
-        return Error::CommandLineArgs;
+        fprintf(stderr, "Missing command line argument.\n");
+        opt.showHelp(Error::CommandLineArgs);
     }
 }

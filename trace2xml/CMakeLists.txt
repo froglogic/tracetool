@@ -1,6 +1,5 @@
 SET(TRACE2XML_SOURCES
         main.cpp
-        ../convertdb/getopt.cpp
         ../server/database.cpp)
 
 IF(MSVC)

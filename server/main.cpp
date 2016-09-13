@@ -21,8 +21,8 @@
 
 #include "database.h"
 #include "../hooklib/tracelib_config.h"
-#include "../convertdb/getopt.h"
 
+#include <QCommandLineParser>
 #include <QCoreApplication>
 #include <QFile>
 
@@ -84,52 +84,43 @@ int main( int argc, char **argv )
 
     QCoreApplication app( argc, argv );
 
-    GetOpt opt;
-    bool help;
-    QString traceFile, portStr, guiPortStr;
-    opt.addSwitch("help", &help);
-    opt.addOption('p', "port", &portStr);
-    opt.addOption('g', "guiport", &guiPortStr);
-    opt.addOptionalArgument("trace_file", &traceFile);
-    if (!opt.parse()) {
-	cout << "Invalid command line argument. Try --help." << endl;
-	return Error::CommandLineArgs;
-    }
+    QCommandLineParser opt;
+    QCommandLineOption portOption(QStringList() << "p" << "port", "Listening Port for the trace library to connect to.",
+                                  "port", QString::number(TRACELIB_DEFAULT_PORT));
+    QCommandLineOption guiportOption(QStringList() << "g" << "guiport", "Listening Port for the trace gui to connect to.",
+                                     "guiport", QString::number(TRACELIB_DEFAULT_PORT + 1));
+    opt.addHelpOption();
+    opt.addVersionOption();
+    opt.setApplicationDescription("Listens for trace library connections to store trace entries into a database");
+    opt.addOption(portOption);
+    opt.addOption(guiportOption);
+    opt.addPositionalArgument(".trace_file", "Trace database to store the trace entries into");
+    opt.process(app);
 
-    if (help) {
-	printUsage(argv[0]);
-	return Error::None;
+    if (opt.positionalArguments().isEmpty()) {
+        fprintf(stderr, "Missing command line argument.\n");
+        opt.showHelp(Error::CommandLineArgs);
     }
-    if (traceFile.isEmpty()) {
-	cout << "Missing trace file argument. Try --help." << endl;
-	return Error::CommandLineArgs;
-    }
+    QString traceFile = opt.positionalArguments().at(0);
     QString errMsg;
     if (!Database::isValidFileName(traceFile, &errMsg)) {
         cout << errMsg.toLocal8Bit().constData() << endl;
         return Error::CommandLineArgs;
     }
-    int port = TRACELIB_DEFAULT_PORT;
-    if (!portStr.isEmpty()) {
 	bool ok;
-	port = portStr.toInt(&ok);
+    int port = opt.value(portOption).toInt(&ok);
 	if (!ok) {
 	    cout << "Invalid port number '"
-		 << portStr.toLocal8Bit().constData()
+         << opt.value(portOption).toLocal8Bit().constData()
 		 << "' given." << endl;
 	    return Error::CommandLineArgs;
-	}
     }
-    int guiport = port + 1;
-    if (!guiPortStr.isEmpty()) {
-	bool ok;
-	guiport = guiPortStr.toInt(&ok);
+    int guiport = opt.value(guiportOption).toInt(&ok);
 	if (!ok) {
-	    cout << "Invalid port number '"
-		 << guiPortStr.toLocal8Bit().constData()
+        cout << "Invalid gui port number '"
+         << opt.value(guiportOption).toLocal8Bit().constData()
 		 << "' given." << endl;
 	    return Error::CommandLineArgs;
-	}
     }
     if (port == guiport) {
 	cout << "Trace port and GUI port have to be different." << endl;

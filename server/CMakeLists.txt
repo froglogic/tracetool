@@ -3,8 +3,7 @@ SET(SERVER_SOURCES
         database.cpp
         server.cpp
         databasefeeder.cpp
-        xmlcontenthandler.cpp
-        ../convertdb/getopt.cpp)
+        xmlcontenthandler.cpp)
 
 SET(SERVER_MOCABLES
         server.h)
