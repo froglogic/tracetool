@@ -40,6 +40,9 @@
 #include <QtGui>
 #include <QtSql>
 #include <QtNetwork>
+#if QT_VERSION >= 0x050000
+#  include <QtWidgets>
+#endif
 
 #include "../hooklib/tracelib.h"
 #include "../server/database.h"
