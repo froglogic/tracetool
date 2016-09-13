@@ -21,6 +21,7 @@
 
 #include <cassert>
 #include <stdexcept>
+#include <QDataStream>
 #include <QDebug>
 #include <QFile>
 #include <QSqlDatabase>
