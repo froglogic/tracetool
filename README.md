@@ -18,7 +18,7 @@ Installation
 Building the framework requires
 
 * A C++ compiler, e.g. GCC or [Microsoft Visual Studio 2008 or newer](https://www.visualstudio.com/en-us/downloads/download-visual-studio-vs.aspx)
-* [CMake](http://www.cmake.org) 2.8.9
+* [CMake](http://www.cmake.org) 3.0.0 or newer
 * [Qt](https://www.qt.io/) 5.6
 * For building the documentation, [Doxygen](http://www.stack.nl/~dimitri/doxygen/) is needed.
 
