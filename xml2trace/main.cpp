@@ -73,7 +73,7 @@ int main( int argc, char **argv )
         opt.showHelp(Error::CommandLineArgs);
     }
 
-    QString traceFile = opt.positionalArguments().at(1);
+    QString traceFile = opt.positionalArguments().at(0);
 
     QString errMsg;
     QSqlDatabase db;
