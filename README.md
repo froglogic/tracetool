@@ -5,6 +5,9 @@ inspecting its state. This is achieved by instrumenting the source code of the
 target program and linking the recompiled sources against a shared `tracelib`
 library.
 
+![Image Of TraceTool GUI]
+(http://blog.froglogic.com/wp-content/uploads/Screen-Shot-2016-09-15-at-13.39.37.png)
+
 License
 -------
 tracetool is free software: you can redistribute it and/or modify it under the
