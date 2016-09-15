@@ -54,19 +54,18 @@ IF(NOT WIN32 AND NOT APPLE)
     endif()
 ENDIF()
 
-FIND_PACKAGE(Qt4 4.6 COMPONENTS QtGui QtCore QtSql QtNetwork QtXml QtSql REQUIRED)
-INCLUDE(${QT_USE_FILE})
-QT4_WRAP_CPP(TESTSESSION_MOC_SOURCES ../gui/columnsinfo.h)
+FIND_PACKAGE(Qt5 COMPONENTS Gui Core Sql Network Xml Sql REQUIRED)
+QT5_WRAP_CPP(TESTSESSION_MOC_SOURCES ../gui/columnsinfo.h)
 ADD_EXECUTABLE(test_session test_session.cpp
                             ../gui/columnsinfo.cpp
                             ${TESTSESSION_MOC_SOURCES})
-TARGET_LINK_LIBRARIES(test_session ${QT_LIBRARIES})
+TARGET_LINK_LIBRARIES(test_session Qt5::Core)
 
-QT4_WRAP_CPP(TESTGUICONF_MOC_SOURCES ../gui/configuration.h)
+QT5_WRAP_CPP(TESTGUICONF_MOC_SOURCES ../gui/configuration.h)
 ADD_EXECUTABLE(test_guiconf test_guiconf.cpp
                             ../gui/configuration.cpp
                             ${TESTGUICONF_MOC_SOURCES})
-TARGET_LINK_LIBRARIES(test_guiconf ${QT_LIBRARIES})
+TARGET_LINK_LIBRARIES(test_guiconf Qt5::Core)
 
 ENABLE_TESTING()
 ADD_TEST(NAME test_filter COMMAND test_filter)

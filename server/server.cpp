@@ -22,6 +22,7 @@
 #include "database.h"
 #include "datagramtypes.h"
 
+#include <QDataStream>
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>

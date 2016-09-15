@@ -11,8 +11,8 @@
 */
 
 
-#include <QtGui/QLineEdit>
-#include <QtGui/QRegExpValidator>
+#include <QLineEdit>
+#include <QRegExpValidator>
 
 
 class LineEdit : public QLineEdit

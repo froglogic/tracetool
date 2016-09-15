@@ -409,7 +409,7 @@ QModelIndex EntryItemModel::index(int row, int column,
     if (!hasIndex(row, column, parent))
         return QModelIndex();
 
-    return createIndex(row, column, 0);
+    return createIndex(row, column, static_cast<void *>(0));
 }
 
 const QVariant &EntryItemModel::getValue(int row, int column) const
@@ -508,9 +508,10 @@ void EntryItemModel::resume()
 
 void EntryItemModel::clear()
 {
+    beginResetModel();
     m_numNewEntries = 0;
     m_numMatchingEntries = 0;
-    reset();
+    endResetModel();
 }
 
 unsigned int EntryItemModel::idForIndex(const QModelIndex &index)
@@ -557,8 +558,8 @@ void EntryItemModel::highlightEntries(const QString &term,
             m_highlightedEntryIds.clear();
             // XXX Is there a more elegant way to have the views repaint
             // their visible range?
-            emit dataChanged( createIndex( 0, 0, 0 ),
-                              createIndex( rowCount() - 1, columnCount() - 1, 0 ) );
+            emit dataChanged( createIndex( 0, 0, static_cast<void *>( 0 ) ),
+                              createIndex( rowCount() - 1, columnCount() - 1, static_cast<void *>( 0 ) ) );
         }
         return;
     }
@@ -644,8 +645,8 @@ void EntryItemModel::updateHighlightedEntries()
 
         // XXX Is there a more elegant way to have the views repaint
         // their visible range?
-        emit dataChanged( createIndex( 0, 0, 0 ),
-                          createIndex( rowCount() - 1, columnCount() - 1, 0 ) );
+        emit dataChanged( createIndex( 0, 0, static_cast<void *>( 0 ) ),
+                          createIndex( rowCount() - 1, columnCount() - 1, static_cast<void *>( 0 ) ) );
     }
 }
 

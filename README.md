@@ -18,14 +18,14 @@ Installation
 Building the framework requires
 
 * A C++ compiler, e.g. GCC or [Microsoft Visual Studio 2008 or newer](https://www.visualstudio.com/en-us/downloads/download-visual-studio-vs.aspx)
-* [CMake](http://www.cmake.org) 2.8.9
-* [Qt](https://www.qt.io/) 4.8
+* [CMake](http://www.cmake.org) 3.0.0 or newer
+* [Qt](https://www.qt.io/) 5.6
 * For building the documentation, [Doxygen](http://www.stack.nl/~dimitri/doxygen/) is needed.
 
 The actual build is the merely a matter of running the commands
 
 ```
-cmake -DQT_QMAKE_EXECUTABLE=<path_to_qmake>
+cmake -DCMAKE_PREFIX_PATH=<path_to_Qt>
 make
 ```
 
