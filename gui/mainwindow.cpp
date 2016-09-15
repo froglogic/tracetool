@@ -494,7 +494,7 @@ void MainWindow::helpAbout()
                            "<br><br>"
                            "Built with Qt %3 on %4.")
         .arg(TRACELIB_VERSION_STR)
-        .arg("2010, 2011")
+        .arg("2010-2016")
         .arg(QT_VERSION_STR)
         .arg(__DATE__);
     QMessageBox::information(this, title, txt);
