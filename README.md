@@ -1,9 +1,9 @@
 tracetool - a configurable and efficient logging framework for C++
 ---------------------------------------------------------------
-tracetool is a framework for tracing the execution of a C or C++ program and
-inspecting its state. This is achieved by instrumenting the source code of the
-target program and linking the recompiled sources against a shared `tracelib`
-library.
+tracetool is a framework created by [froglogic](http://www.froglogic.com) for
+tracing the execution of a C or C++ program and inspecting its state. This is
+achieved by instrumenting the source code of the target program and linking
+the recompiled sources against a shared `tracelib` library.
 
 ![Image Of TraceTool GUI]
 (http://blog.froglogic.com/wp-content/uploads/Screen-Shot-2016-09-15-at-13.39.37.png)
