@@ -9,4 +9,4 @@ compiler:
     - clang
     - gcc
 script:
-    - mkdir build && pushd build && cmake -G "Ninja" .. && ninja
+    - mkdir build && pushd build && cmake -G "Ninja" .. && ninja && ninja test && ninja package
