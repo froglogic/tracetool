@@ -1,0 +1,12 @@
+language: cpp
+sudo: required
+dist: trusty
+install: true
+before_install:
+    - sudo apt-get -qq update
+    - sudo apt-get install -y qtbase5-dev qttools5-dev-tools qttools5-dev ninja-build doxygen
+compiler:
+    - clang
+    - gcc
+script:
+    - mkdir build && pushd build && cmake -G "Ninja" .. && ninja
