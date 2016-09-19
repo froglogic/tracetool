@@ -150,7 +150,7 @@ fi
 
 if [ $do2 = yes ] ; then
   echo "Test 2: API, errors, internals, and non-Perl stuff"
-  $valgrind ./pcretest -q $testdata/testinput2 testtry
+  $valgrind ./pcretest -S 16 -q $testdata/testinput2 testtry
   if [ $? = 0 ] ; then
     $cf $testdata/testoutput2 testtry
     if [ $? != 0 ] ; then exit 1; fi
