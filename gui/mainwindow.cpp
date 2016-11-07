@@ -191,8 +191,10 @@ MainWindow::MainWindow(Settings *settings,
     m_applicationTable = new ApplicationTable;
     tabWidget->addTab(m_applicationTable, tr("Traced Applications"));
 
+#ifndef Q_OS_MAC
     connect(tracePointsView, SIGNAL(doubleClicked(const QModelIndex &)),
             this, SLOT(traceEntryDoubleClicked(const QModelIndex &)));
+#endif
     // replacing standard header for performance reasons
     FixedHeaderView *hv = new FixedHeaderView(9, // ### dynamic
                                               Qt::Vertical,
