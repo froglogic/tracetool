@@ -148,14 +148,14 @@ def qmake_path(qtver):
     if is_windows:
         return os.path.join(qt_base_path(), compiler, arch, qtver, "bin", "qmake.exe")
     elif is_mac:
-        return "/Users/andreas/qt/4.8.5-full/bin/qmake"
+        return os.path.join(qt_base_path(), arch, qtver+"-frameworks", "bin", "qmake")
     else:
         return os.path.join(qt_base_path(), arch, qtver, "bin", "qmake")
 
 def parseArchitecture(arch):
-    if arch in ["x86", "x64", "universal"]:
+    if arch in ["x86", "x64"]:
         return arch
-    raise Exception("Unknown architecture %s (supported: x86, x64, universal)" % arch)
+    raise Exception("Unknown architecture %s (supported: x86, x64)" % arch)
 
 def compiler():
     if is_windows:
@@ -168,7 +168,7 @@ def qt_version():
         return "4.8.0"
     elif is_mac:
         # does not matter at the moment, see qt_path
-        return "4.8.0"
+        return "4.8.7"
     else:
         return "4.8.0"
 
@@ -231,12 +231,6 @@ def main():
     # on at least windows
     if is_windows or not is_mac:
         cmake_args.append("-DARCH_LIB_SUFFIX=%s" % arch)
-
-    # Do a multi-arch binary on MacOSX
-    if do_package and arch=='universal':
-        cmake_args.append("-DCMAKE_OSX_ARCHITECTURES=i386;x86_64")
-    elif is_mac:
-        cmake_args.append("-DCMAKE_OSX_ARCHITECTURES=i386")
 
     packageInWindowsTemp = do_package and is_windows
     packagingDir = ""
