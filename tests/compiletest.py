@@ -264,7 +264,7 @@ def main():
     if is_windows:
         architectures = ["x86", "x64"]
     elif is_mac:
-        architectures = ["x86"]
+        architectures = ["x64"]
     else:
         architectures = ["native"]
 
