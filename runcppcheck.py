@@ -51,7 +51,10 @@ def main():
             "xml2trace"
             ]
 
-    cppcheck_args = [ "cppcheck",
+    cppcheckbinary = "cppcheck"
+    if "CPPCHECK_PATH" in os.environ:
+        cppcheckbinary = os.path.join(os.environ["CPPCHECK_PATH"], "cppcheck")
+    cppcheck_args = [ cppcheckbinary,
             "--enable=all",
             "--quiet",
             "--xml",
