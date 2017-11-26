@@ -172,6 +172,11 @@ def qt_version():
     else:
         return "4.8.0"
 
+def getExecutableFromCMake(executableName):
+    if 'CMAKE_PATH' in os.environ:
+        return os.path.join(os.environ['CMAKE_PATH'], 'bin', executableName)
+    return find_exe_in_path(executableName)
+
 def main():
     global arch, compiler
 
@@ -209,12 +214,7 @@ def main():
 
     verify_path(binpkg)
 
-    if 'CMAKE_PATH' in os.environ:
-        cmake_args = [os.path.join(os.environ['CMAKE_PATH'], 'cmake')]
-    else:
-        cmake_args = [find_exe_in_path('cmake')]
-
-    cmake_args.append("-G")
+    cmake_args = [getExecutableFromCMake('cmake'), '-G']
 
     if is_windows:
         cmake_args.append("NMake Makefiles")
@@ -279,11 +279,7 @@ def main():
     subprocess.check_call(make_args, env=run_env, cwd=builddir)
 
     if do_package:
-        if 'CMAKE_PATH' in os.environ:
-            cpack_args = [os.path.join(os.environ['CMAKE_PATH'], 'cpack')]
-        else:
-            cpack_args = [find_exe_in_path('cpack')]
-        cpack_args += ["-V", "--config", "CPackConfig.cmake"]
+        cpack_args = [getExecutableFromCMake('cpack'), "-V", "--config", "CPackConfig.cmake"]
         myprint("\nCalling %s\n" % "\n ".join(cpack_args))
         subprocess.check_call(cpack_args, env=run_env, cwd=builddir)
     else:
@@ -293,11 +289,7 @@ def main():
         myprint("Cleaning up %s if it exists: %s" %(testingDir, os.path.exists(testingDir)))
         if os.path.exists(testingDir):
             shutil.rmtree(testingDir)
-        if 'CMAKE_PATH' in os.environ:
-            ctest_args = [os.path.join(os.environ['CMAKE_PATH'], 'ctest')]
-        else:
-            ctest_args = [find_exe_in_path('ctest')]
-        ctest_args += ["--no-compress-output", "-T", "Test"]
+        ctest_args = [getExecutableFromCMake('ctest'), "--no-compress-output", "-T", "Test"]
         myprint("\nCalling %s\n" % "\n ".join(ctest_args))
         subprocess.call(ctest_args, env=run_env, cwd=builddir)
 
