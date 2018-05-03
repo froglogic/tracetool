@@ -25,6 +25,7 @@
 #include <QSqlDatabase>
 #include <QTcpSocket>
 #include <QStyledItemDelegate>
+#include <QMessageBox>
 #include "ui_mainwindow.h"
 #include "settings.h"
 
@@ -39,6 +40,21 @@ struct ProcessShutdownEvent;
 class QLabel;
 class QProcess;
 class JobObject;
+
+class BacktraceMessageBox : public QMessageBox {
+    Q_OBJECT
+public:
+    BacktraceMessageBox( QWidget *parent, const QString &title, const QString &text )
+        : QMessageBox( QMessageBox::Information, title, text, QMessageBox::Ok, parent ) {
+        setTextInteractionFlags(Qt::TextSelectableByMouse);
+    }
+    virtual ~BacktraceMessageBox() {}
+protected:
+    virtual void resizeEvent(QResizeEvent *event) {
+        setMinimumSize(minimumSizeHint());
+        QWidget::resizeEvent( event );
+    }
+};
 
 class ServerSocket : public QTcpSocket
 {
