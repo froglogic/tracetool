@@ -127,7 +127,11 @@ void XmlContentHandler::handleEndElement()
         m_currentEntry.groupName = m_s.trimmed();
         m_s.clear();
     } else if ( m_xmlReader.name() == QLatin1String( "function" ) ) {
-        m_currentEntry.function = m_s.trimmed();
+        if ( m_inFrameElement ) {
+            m_currentFrame.function = m_s.trimmed();
+        } else {
+            m_currentEntry.function = m_s.trimmed();
+        }
         m_s.clear();
     } else if ( m_xmlReader.name() == QLatin1String( "message" ) ) {
         m_currentEntry.message = m_s.trimmed();

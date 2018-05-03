@@ -815,10 +815,10 @@ void MainWindow::traceEntryDoubleClicked(const QModelIndex &index)
 
         lines.append( line );
     }
-
-    QMessageBox::information( this,
-                              tr( "Backtrace" ),
-                              QString( "<pre>%1</pre>" ).arg( lines.join( "\n" ) ) );
+    BacktraceMessageBox bmb( this, 
+                             tr( "Backtrace" ), 
+                             QString( "<pre>%1</pre>" ).arg( lines.join( "\n" ) ) );
+    bmb.exec();
 }
 
 #if 0
