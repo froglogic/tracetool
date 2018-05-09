@@ -65,7 +65,7 @@ int main( int argc, char **argv )
     opt.addHelpOption();
     opt.addVersionOption();
     opt.addOption(inputOption);
-    opt.addPositionalArgument(".trace-file", "Trace database output file to write into.");
+    opt.addPositionalArgument(".trace-file", "Trace database output file to write into (.trace suffix will be appended if missing).");
     opt.process(a);
 
     if ( opt.positionalArguments().isEmpty() ) {
@@ -77,6 +77,9 @@ int main( int argc, char **argv )
 
     QString errMsg;
     QSqlDatabase db;
+    if (!traceFile.endsWith(".trace")) {
+        traceFile += ".trace";
+    }
     if (QFile::exists(traceFile)) {
         db = Database::open(traceFile, &errMsg);
     } else {
