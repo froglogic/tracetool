@@ -132,7 +132,10 @@ def doxygen_path():
     if is_windows:
         return os.path.join(binpkg_arch_path("doxygen", "x86", ""), bin_name("doxygen"))
     elif is_mac:
-        return os.path.join("/Applications/Utilities/Doxygen.app/Contents/Resources/doxygen")
+        doxygen = find_exe_in_path("doxygen")
+        if not doxygen:
+            return os.path.join("/Applications/Utilities/Doxygen.app/Contents/Resources/doxygen")
+        return doxygen
     else:
         return "/usr/bin/doxygen"
 
