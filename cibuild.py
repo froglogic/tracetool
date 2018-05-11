@@ -187,11 +187,12 @@ def main():
     qtver = qt_version()
 
     if len(sys.argv) < 2:
-        myprint("Usage: %s arch [package]" % sys.argv[0])
+        myprint("Usage: %s arch [package|package_lib]" % sys.argv[0])
         return 1
 
     arch = parseArchitecture(sys.argv[1])
-    do_package = len(sys.argv) > 2 and sys.argv[2] == 'package'
+    do_package = len(sys.argv) > 2 and sys.argv[2] == 'package' or sys.argv[2] == 'package_lib'
+    only_lib = len(sys.argv) > 2 and sys.argv[2] == 'package_lib'
 
     buildtype = "ci" if not do_package else "pkg"
     builddir_name = "%sbuild_%s" % (buildtype, arch)
@@ -199,7 +200,8 @@ def main():
 
     myprint("Compiler        : %s" % compiler)
     myprint("Architecture    : %s" % arch)
-    myprint("Qt Version      : %s" % qtver)
+    if not only_lib:
+        myprint("Qt Version      : %s" % qtver)
     myprint("Source directory: %s" % srcdir)
     myprint("Build directory : %s" % builddir)
 
@@ -227,6 +229,8 @@ def main():
     # potential test execution that follows to get useful crash info
     if do_package:
         cmake_args.append("-DCMAKE_BUILD_TYPE=Release")
+        if only_lib:
+            cmake_args.append("-DHOOKLIB_ONLY=1")
     else:
         cmake_args.append("-DCMAKE_BUILD_TYPE=RelWithDebInfo")
     # on Linux and Windows we specify a special bitness suffix
@@ -251,9 +255,11 @@ def main():
         os.makedirs(packagingDir)
         cmake_args.append("-DCPACK_PACKAGE_DIRECTORY=%s" % packagingDir.replace("\\", "\\\\"))
 
-    qmake_exe = verify_path(qmake_path(qtver))
+    if not only_lib:
+        qmake_exe = verify_path(qmake_path(qtver))
+        cmake_args.append("-DQT_QMAKE_EXECUTABLE=%s" % qmake_exe)
+
     cmake_args.append("-DDOXYGEN_EXECUTABLE=%s" % verify_path(doxygen_path()))
-    cmake_args.append("-DQT_QMAKE_EXECUTABLE=%s" % qmake_exe)
     cmake_args.append("-DCMAKE_INSTALL_PREFIX=%s" % os.path.join(builddir, "..", "install"))
 
     if is_windows:
