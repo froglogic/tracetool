@@ -179,7 +179,13 @@ TRACELIB_SPECIALIZE_CONVERSION_USING_SSTREAM(std::string)
 template <>
 inline VariableValue convertVariable( const void *val ) {
     std::vector<char> buf( 11 );
-    snprintf( &buf[0], 11, "0x%08X", (ptrdiff_t)val );
+#if defined(_MSC_VER)
+#  define TYPE_SPECIFIER_PTRDIFF_T "Ix"
+#else
+#  define TYPE_SPECIFIER_PTRDIFF_T "tx"
+#endif
+    snprintf( &buf[0], 11, "0x%08" TYPE_SPECIFIER_PTRDIFF_T, (ptrdiff_t)val );
+#undef TYPE_SPECIFIED_PTRDIFF_T
     return convertVariable( &buf[0] );
 }
 #if defined(_MSC_VER)
