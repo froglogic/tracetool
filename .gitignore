@@ -4,3 +4,4 @@ CMakeLists.txt.user
 *.kdev4
 cibuild_*/
 pkgbuild_*/
+.vscode
