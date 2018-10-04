@@ -21,11 +21,14 @@ if(NOT HOOKLIB_ONLY)
 else()
     set(HAVE_QT 0)
 endif()
+
 IF(WIN32)
     SET(execext ".exe")
 elseif(APPLE)
     set(execext ".app")
 ENDIF()
+
+SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 INCLUDE_DIRECTORIES(${PROJECT_BINARY_DIR})
 
