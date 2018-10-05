@@ -86,5 +86,7 @@ INSTALL(TARGETS tracegui RUNTIME DESTINATION bin COMPONENT applications
 IF(WIN32)
     GET_TARGET_PROPERTY(_qmake_path Qt5::qmake IMPORTED_LOCATION)
     GET_FILENAME_COMPONENT(_qt_bindir ${_qmake_path} DIRECTORY)
-    INSTALL(CODE "EXECUTE_PROCESS(COMMAND \"${_qt_bindir}/windeployqt.exe\" \"${CMAKE_INSTALL_PREFIX}/bin/tracegui.exe\")")
+    INSTALL(
+        CODE "EXECUTE_PROCESS(COMMAND \"${_qt_bindir}/windeployqt.exe\" \"\${CMAKE_INSTALL_PREFIX}/bin/tracegui.exe\")"
+        COMPONENT applications)
 ENDIF()
