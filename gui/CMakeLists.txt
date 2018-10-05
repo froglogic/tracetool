@@ -82,5 +82,9 @@ INSTALL(TARGETS tracegui RUNTIME DESTINATION bin COMPONENT applications
                          LIBRARY DESTINATION lib COMPONENT applications
                          BUNDLE  DESTINATION bin COMPONENT applications
                          ARCHIVE DESTINATION lib COMPONENT applications)
-# Make tracegui self-contained wrt. Qt
-# INSTALL_QT4_EXECUTABLE("bin/tracegui${execext}" "qsqlite" "" "${QT_BINARY_DIR}" "plugins" TRUE applications)
+# Make tracegui (and other executables in same directory) self-contained wrt. Qt
+IF(WIN32)
+    GET_TARGET_PROPERTY(_qmake_path Qt5::qmake IMPORTED_LOCATION)
+    GET_FILENAME_COMPONENT(_qt_bindir ${_qmake_path} DIRECTORY)
+    INSTALL(CODE "EXECUTE_PROCESS(COMMAND \"${_qt_bindir}/windeployqt.exe\" \"${CMAKE_INSTALL_PREFIX}/bin/tracegui.exe\")")
+ENDIF()
