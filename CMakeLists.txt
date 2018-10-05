@@ -9,6 +9,8 @@ ENABLE_TESTING()
 
 SET(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" ${PROJECT_SOURCE_DIR}/cmake/modules)
 OPTION(HOOKLIB_ONLY "Build only the hook library" OFF)
+OPTION(ENABLE_INSTALL_RPATH "Enable setting of CMAKE_INSTALL_RPATH_USE_LINK_PATH, useful for local installations, but problematic when creating packages as buildsystem paths may leak into packages. Defaults to ON" ON)
+
 
 if(NOT HOOKLIB_ONLY)
     FIND_PACKAGE(Qt5 COMPONENTS Core Network Xml Sql LinguistTools REQUIRED)
@@ -28,7 +30,9 @@ elseif(APPLE)
     set(execext ".app")
 ENDIF()
 
-SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+IF(ENABLE_INSTALL_RPATH)
+    SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+ENDIF()
 
 INCLUDE_DIRECTORIES(${PROJECT_BINARY_DIR})
 
