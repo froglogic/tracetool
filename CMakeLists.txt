@@ -10,6 +10,7 @@ ENABLE_TESTING()
 SET(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" ${PROJECT_SOURCE_DIR}/cmake/modules)
 OPTION(HOOKLIB_ONLY "Build only the hook library" OFF)
 OPTION(ENABLE_INSTALL_RPATH "Enable setting of CMAKE_INSTALL_RPATH_USE_LINK_PATH, useful for local installations, but problematic when creating packages as buildsystem paths may leak into packages. Defaults to ON" ON)
+OPTION(BUNDLE_QT "Bundle the Qt libraries/plugins in the installation folder" OFF)
 
 
 if(NOT HOOKLIB_ONLY)

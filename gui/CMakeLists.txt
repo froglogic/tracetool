@@ -89,4 +89,29 @@ IF(WIN32)
     INSTALL(
         CODE "EXECUTE_PROCESS(COMMAND \"${_qt_bindir}/windeployqt.exe\" \"\${CMAKE_INSTALL_PREFIX}/bin/tracegui.exe\")"
         COMPONENT applications)
+ELSEIF(NOT WIN32 AND NOT APPLE AND BUNDLE_QT)
+    FUNCTION(install_qt5_plugin pluginTargetName)
+        STRING(TOUPPER ${CMAKE_BUILD_TYPE} _buildType_UC)
+        GET_TARGET_PROPERTY(_qtplugin_path ${pluginTargetName} IMPORTED_LOCATION_${_buildType_UC})
+        GET_FILENAME_COMPONENT(_qtplugin_name "${_qtplugin_path}" NAME)
+        GET_FILENAME_COMPONENT(_qtplugin_dir "${_qtplugin_path}" DIRECTORY)
+        GET_FILENAME_COMPONENT(_qtplugin_type "${_qtplugin_dir}" NAME)
+        SET(${installPathVar} "\${CMAKE_INSTALL_PREFIX}/plugins/${_qtplugin_type}/${_qtplugin_name}")
+        INSTALL(FILES "${_qtplugin_path}" DESTINATION "plugins/${_qtplugin_type}" COMPONENT applications)
+    ENDFUNCTION()
+    STRING(TOUPPER ${CMAKE_BUILD_TYPE} _buildType_UC)
+    GET_TARGET_PROPERTY(_qtcorelib Qt5::Core IMPORTED_LOCATION_${_buildType_UC})
+    GET_FILENAME_COMPONENT(_qt_libdir "${_qtcorelib}" DIRECTORY)
+    INSTALL_QT5_PLUGIN_AND_GET_INSTALL_PATH(_qtxcbplugin_install_path Qt5::QXcbIntegrationPlugin)
+    INSTALL_QT5_PLUGIN_AND_GET_INSTALL_PATH(_qtsqliteplugin_install_path Qt5::QSQLiteDriverPlugin)
+    SET(_qtplugins "${_qtxcbplugin_install_path}" "${_qtsqliteplugin_install_path}")
+    INSTALL(
+        CODE "FILE(WRITE \"\${CMAKE_INSTALL_PREFIX}/bin/qt.conf\" \"[Paths]\nLibraries=.\nPlugins=plugins\")"
+        COMPONENT applications )
+    INSTALL(
+        CODE "
+            INCLUDE(BundleUtilities)
+            fixup_bundle(\"\${CMAKE_INSTALL_PREFIX}/bin/tracegui\" \"${_qtplugins}\" \"${_qt_libdir}\")
+            "
+        COMPONENT applications )
 ENDIF()
