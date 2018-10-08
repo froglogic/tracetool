@@ -5,3 +5,4 @@ CMakeLists.txt.user
 cibuild_*/
 pkgbuild_*/
 .vscode
+.*.swp
