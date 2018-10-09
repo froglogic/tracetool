@@ -58,7 +58,7 @@ def main():
             "--enable=all",
             "--quiet",
             "--xml",
-            "-j2",
+            "--xml-version=2",
             ]
     cppcheck_args.extend(["-U" + u for u in undefines])
     cppcheck_args.extend(["-D" + d for d in defines])
