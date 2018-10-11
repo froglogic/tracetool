@@ -89,6 +89,20 @@ INSTALL(EXPORT tracelibTargets
               NAMESPACE tracelibImport__
               FILE tracelibTargets.cmake)
 
+# Add cppcheck target
+FIND_PROGRAM(CPPCHECK_EXE cppcheck)
+IF(CPPCHECK_EXE)
+    SET(cppcheck_include_paths -Ihooklib -Iserver -Igui)
+    SET(cppcheck_ignore_paths -i3rdparty)
+    SET(cppcheck_paths hooklib server gui tests examples convertdb trace2xml xml2trace)
+    ADD_CUSTOM_TARGET(cppcheck
+        COMMAND ${CPPCHECK_EXE} --enable=all --quiet --xml --xml-version=2
+                ${cppcheck_include_paths} ${cppcheck_ignore_paths}
+                ${cppcheck_paths}
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+        COMMENT "Runs cppcheck on the sources")
+ENDIF()
+
 ## Package Creation Setup
 # See http://www.paraview.org/Wiki/CMake:CPackConfiguration for documentation of variables
 SET(CPACK_PACKAGE_VERSION_MAJOR ${TRACELIB_VERSION_MAJOR})
