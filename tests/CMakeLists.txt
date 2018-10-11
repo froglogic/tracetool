@@ -1,5 +1,4 @@
 INCLUDE_DIRECTORIES(
-        ${PROJECT_SOURCE_DIR}
         ${PROJECT_SOURCE_DIR}/hooklib
         ${PROJECT_SOURCE_DIR}/3rdparty/pcre-8.10
 )

@@ -7,6 +7,11 @@ PROJECT(tracelib)
 # earlier.
 ENABLE_TESTING()
 
+SET(CMAKE_AUTOMOC ON)
+SET(CMAKE_AUTOUIC ON)
+SET(CMAKE_AUTORCC ON)
+SET(CMAKE_INCLUDE_CURRENT_DIR ON)
+
 SET(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" ${PROJECT_SOURCE_DIR}/cmake/modules)
 OPTION(HOOKLIB_ONLY "Build only the hook library" OFF)
 OPTION(ENABLE_INSTALL_RPATH "Enable setting of CMAKE_INSTALL_RPATH_USE_LINK_PATH, useful for local installations, but problematic when creating packages as buildsystem paths may leak into packages. Defaults to ON" ON)
@@ -15,10 +20,6 @@ OPTION(BUNDLE_QT "Bundle the Qt libraries/plugins in the installation folder" OF
 
 if(NOT HOOKLIB_ONLY)
     FIND_PACKAGE(Qt5 COMPONENTS Core Network Xml Sql LinguistTools REQUIRED)
-    INCLUDE_DIRECTORIES(${Qt5Core_INCLUDE_DIRS})
-    INCLUDE_DIRECTORIES(${Qt5Network_INCLUDE_DIRS})
-    INCLUDE_DIRECTORIES(${Qt5Xml_INCLUDE_DIRS})
-    INCLUDE_DIRECTORIES(${Qt5Sql_INCLUDE_DIRS})
     # Used in the cmake-config.h.in file
     set(HAVE_QT 1)
 else()
@@ -35,7 +36,7 @@ IF(ENABLE_INSTALL_RPATH)
     SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 ENDIF()
 
-INCLUDE_DIRECTORIES(${PROJECT_BINARY_DIR})
+INCLUDE_DIRECTORIES(${PROJECT_BINARY_DIR} ${PROJECT_SOURCE_DIR})
 
 IF(CMAKE_COMPILER_IS_GNUCC)
     # TODO: consider adding -Wconversion
