@@ -55,6 +55,12 @@ IF(WIN32)
     INSTALL(
         CODE "EXECUTE_PROCESS(COMMAND \"${_qt_bindir}/windeployqt.exe\" \"\${CMAKE_INSTALL_PREFIX}/bin/tracegui.exe\")"
         COMPONENT applications)
+ELSEIF(APPLE AND BUNDLE_QT)
+    GET_TARGET_PROPERTY(_qmake_path Qt5::qmake IMPORTED_LOCATION)
+    GET_FILENAME_COMPONENT(_qt_bindir ${_qmake_path} DIRECTORY)
+    INSTALL(
+        CODE "EXECUTE_PROCESS(COMMAND \"${_qt_bindir}/macdeployqt\" \"\${CMAKE_INSTALL_PREFIX}/bin/tracegui.app\")"
+        COMPONENT applications)
 ELSEIF(NOT WIN32 AND NOT APPLE AND BUNDLE_QT)
     FUNCTION(install_qt5_plugin pluginTargetName)
         STRING(TOUPPER ${CMAKE_BUILD_TYPE} _buildType_UC)
