@@ -54,16 +54,12 @@ IF(NOT WIN32 AND NOT APPLE)
 ENDIF()
 
 FIND_PACKAGE(Qt5 COMPONENTS Gui Core Sql Network Xml Sql REQUIRED)
-QT5_WRAP_CPP(TESTSESSION_MOC_SOURCES ../gui/columnsinfo.h)
 ADD_EXECUTABLE(test_session test_session.cpp
-                            ../gui/columnsinfo.cpp
-                            ${TESTSESSION_MOC_SOURCES})
+                            ../gui/columnsinfo.cpp)
 TARGET_LINK_LIBRARIES(test_session Qt5::Core)
 
-QT5_WRAP_CPP(TESTGUICONF_MOC_SOURCES ../gui/configuration.h)
 ADD_EXECUTABLE(test_guiconf test_guiconf.cpp
-                            ../gui/configuration.cpp
-                            ${TESTGUICONF_MOC_SOURCES})
+                            ../gui/configuration.cpp)
 TARGET_LINK_LIBRARIES(test_guiconf Qt5::Core)
 
 ENABLE_TESTING()

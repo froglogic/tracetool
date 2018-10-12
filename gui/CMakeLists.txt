@@ -31,7 +31,7 @@ ENDIF()
 # Make sure QtGui is available by finding Qt again
 FIND_PACKAGE(Qt5 COMPONENTS Core Network Xml Sql Gui Widgets REQUIRED)
 
-QT5_CREATE_TRANSLATION( GUI_QM ${GUI_SOURCES} ${GUI_RCCS} ${GUI_UIS} ${GUI_TS} )
+QT5_CREATE_TRANSLATION( GUI_QM ${GUI_SOURCES} ${GUI_TS} )
 
 # Locate generated ui_*.f files in build directory
 
