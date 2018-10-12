@@ -7,13 +7,25 @@ compiler:
     - gcc
 sudo: required
 dist: trusty
+services: docker
 install: true
 before_install:
-    - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
-    - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install doxygen qt5 ninja; fi
-    - if [[ "$TRAVIS_OS_NAME" != "osx" ]]; then sudo apt-get -qq update; fi
-    - if [[ "$TRAVIS_OS_NAME" != "osx" ]]; then sudo apt-get install -y qtbase5-dev qttools5-dev-tools qttools5-dev ninja-build doxygen; fi
-env:
-    - CMAKE_PREFIX_PATH=/usr/local/opt/qt5
+    - ./install_requirements.sh $TRAVIS_OS_NAME
 script:
-    - mkdir build && pushd build && cmake -G "Ninja" .. && ninja && ninja test && ninja package
+    - ./build.sh ${TRAVIS_OS_NAME} ${TRAVIS_TAG}
+
+deploy:
+  provider: releases
+  api_key:
+    secure: nOa+1vEbF4u/6vayQ/E7DERqgoARzrCoyBvpcCaSQCXtLEF6NLMUD6jWuhA/bTyt9B6Qr1Jrf9PtCkan3O97Y1xmVwgrn4jJxsNfdJYVZcvNnS3VoUFSnuiJoZnGHhVVNcJ9i5NETMElA2koOC1TiUI3Pwa0t8LsvCv3RKmGTcKQFhNtjEjePl9brzpHgebzqNMU/BGP4ySrUQeDV8Qd7HOBdc45OHb3p4rIj7g4nsr87Ja/zpaeM3mk3nksdFA77+/WB/h7wXbJ1XzLt5DdiVLgfLFGYuI5ACdyyjG1WjGzYwfvMwTC9POT1Tf3VsgBapeMPTk/06sTJQJUsMGqbVmjoJPORY7IEfiReSHVO/Cfums1Gwoo71eyH0OUncCtwqBCFmDLXZk+Zv2dG5+HDjdonWzINoEu+yKdIMmeCE8v945Yf5q2UGWhkTZ0vE9ykCvcnRra42CEFLYld11na63dE0wNjBuoXRm90uZiH7Vlf0zNQyNqinsVqy/EAuCqIFbwLfyKPeZZ/+sidPgigcl2V2hvb/FNuWtOLI9diYdEeSCnj6JPp6eEQGoJRP7oO8HQ6kBrKe8qa2RsrkjT4YSr79m75GW+ZwT4Yxm45YPdTqACSekSYoSAzMKntRUYA2BBOoAQEuklEnXDUAOZDwjCXDCJzFFBOwRstrtUpro=
+  file_glob: true
+  file:
+      - "build/tracelib-*Tools*"
+      - "build/tracelib-*Documentation*"
+      - "build/tracelib-*Library*"
+  skip_cleanup: true
+  on:
+    tags: true
+    condition: $TRAVIS_COMPILER = clang
+    repo: froglogic/tracetool
+
