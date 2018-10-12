@@ -14,6 +14,7 @@ INCLUDE_DIRECTORIES(${Qt5Widgets_INCLUDE_DIRS} ${TRACELIB_INCLUDE_DIR})
 SET(ADDRESSBOOK_SOURCES
   main.cpp
   dialog.cpp
+  lineedit.cpp
   mainwindow.cpp)
 
 SET(ADDRESSBOOK_TS

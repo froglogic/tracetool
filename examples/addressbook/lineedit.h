@@ -10,22 +10,14 @@
     the KDE's license.
 */
 
-
 #include <QLineEdit>
-#include <QRegExpValidator>
-
 
 class LineEdit : public QLineEdit
 {
     Q_OBJECT
 
-public:
-    LineEdit(QWidget *parent=0)
-        : QLineEdit(parent)
-    {
-        QRegExp regex("^[^|]*$");
-        setValidator(new QRegExpValidator(regex, this));
-    }
+  public:
+    LineEdit(QWidget *parent = 0);
 };
 
 #endif // LINEEDIT_H
