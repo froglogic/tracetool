@@ -22,11 +22,11 @@ RUN apt install -y --no-install-recommends \
 # Taken from https://github.com/benlau/qtci/blob/master/bin/extract-qt-installer#4991cf6
 COPY extract-qt-installer.sh /opt
 
-RUN curl -Lo /opt/installer.run https://download.qt.io/official_releases/qt/$(echo "${QT_VERSION}" | cut -d. -f 1-2)/${QT_VERSION}/qt-opensource-linux-x64-${QT_VERSION}.run
-RUN QT_CI_PACKAGES=qt.$(echo "$QT_VERSION" | tr -d .).gcc_64 /opt/extract-qt-installer.sh /opt/installer.run $QT_PATH
-RUN rm -r /opt/installer.run /opt/extract-qt-installer.sh
-RUN rm -r $QT_PATH/InstallationLog.txt $QT_PATH/MaintenanceTool* $QT_PATH/Tools $QT_PATH/components.xml \
-    $QT_PATH/dist $QT_PATH/network.xml $QT_PATH/Docs $QT_PATH/Examples
+RUN curl -Lo /opt/installer.run https://download.qt.io/official_releases/qt/$(echo "${QT_VERSION}" | cut -d. -f 1-2)/${QT_VERSION}/qt-opensource-linux-x64-${QT_VERSION}.run &&\
+    QT_CI_PACKAGES=qt.$(echo "$QT_VERSION" | tr -d .).gcc_64 /opt/extract-qt-installer.sh /opt/installer.run $QT_PATH && \
+    rm -r /opt/installer.run /opt/extract-qt-installer.sh && \
+    rm -r $QT_PATH/InstallationLog.txt $QT_PATH/MaintenanceTool* $QT_PATH/Tools $QT_PATH/components.xml \
+        $QT_PATH/dist $QT_PATH/network.xml $QT_PATH/Docs $QT_PATH/Examples
 
 WORKDIR /tracer
 
