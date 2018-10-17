@@ -33,7 +33,10 @@
 #      define TRACELIB_EXPORT __declspec(dllimport)
 #    endif
 #  elif __GNUC__
-#    define TRACELIB_EXPORT
+#    if __GNUC__ - 0 > 3
+#      define TRACELIB_EXPORT __attribute__ ((visibility("default"))
+#    else
+#      define TRACELIB_EXPORT
 #  else
 #    error "Unsupported compiler!"
 #  endif
