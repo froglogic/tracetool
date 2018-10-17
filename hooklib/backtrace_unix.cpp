@@ -30,7 +30,7 @@
 # if __GNUC__ - 0 > 2
 #  include <cxxabi.h>
 # endif
-#else
+#elif defined(__sun)
 # include <ucontext.h>
 # include <dlfcn.h>
 #endif
