@@ -211,7 +211,7 @@ bool Configuration::readTraceKeysElement( TiXmlElement *traceKeysElem )
             TraceKey k;
             k.name = getText( e );
             std::string enabledValue = "true";
-            if ( e->QueryStringAttribute( "enabled", &enabledValue ) == TIXML_SUCCESS ) {
+            if ( e->QueryValueAttribute( "enabled", &enabledValue ) == TIXML_SUCCESS ) {
                 k.enabled = enabledValue == "true";
             }
             m_configuredTraceKeys.push_back( k );
@@ -282,7 +282,7 @@ Filter *Configuration::createFilterFromElement( TiXmlElement *e )
     if ( e->ValueStr() == "pathfilter" ) {
         MatchingMode matchingMode;
         string matchingModeValue = "strict";
-        if ( e->QueryStringAttribute( "matchingmode", &matchingModeValue ) == TIXML_SUCCESS ) {
+        if ( e->QueryValueAttribute( "matchingmode", &matchingModeValue ) == TIXML_SUCCESS ) {
             if ( matchingModeValue == "strict" ) {
                 matchingMode = StrictMatch;
             } else if ( matchingModeValue == "regexp" ) {
@@ -304,7 +304,7 @@ Filter *Configuration::createFilterFromElement( TiXmlElement *e )
     if ( e->ValueStr() == "functionfilter" ) {
         MatchingMode matchingMode;
         string matchingModeValue = "strict";
-        if ( e->QueryStringAttribute( "matchingmode", &matchingModeValue ) == TIXML_SUCCESS ) {
+        if ( e->QueryValueAttribute( "matchingmode", &matchingModeValue ) == TIXML_SUCCESS ) {
             if ( matchingModeValue == "strict" ) {
                 matchingMode = StrictMatch;
             } else if ( matchingModeValue == "regexp" ) {
@@ -327,7 +327,7 @@ Filter *Configuration::createFilterFromElement( TiXmlElement *e )
         GroupFilter::Mode mode = GroupFilter::Whitelist;
 
         string modeValue;
-        if ( e->QueryStringAttribute( "mode", &modeValue ) == TIXML_SUCCESS ) {
+        if ( e->QueryValueAttribute( "mode", &modeValue ) == TIXML_SUCCESS ) {
             if ( modeValue == "whitelist" ) {
                 mode = GroupFilter::Whitelist;
             } else if ( modeValue == "blacklist" ) {
@@ -360,7 +360,7 @@ Filter *Configuration::createFilterFromElement( TiXmlElement *e )
 Serializer *Configuration::createSerializerFromElement( TiXmlElement *e )
 {
     string serializerType;
-    if ( e->QueryStringAttribute( "type", &serializerType ) != TIXML_SUCCESS ) {
+    if ( e->QueryValueAttribute( "type", &serializerType ) != TIXML_SUCCESS ) {
         m_log->writeError( "Tracelib Configuration: while reading %s: Failed to read type property of <serializer> element.", m_fileName.c_str() );
         return 0;
     }
@@ -375,7 +375,7 @@ Serializer *Configuration::createSerializerFromElement( TiXmlElement *e )
             }
 
             string optionName;
-            if ( optionElement->QueryStringAttribute( "name", &optionName ) != TIXML_SUCCESS ) {
+            if ( optionElement->QueryValueAttribute( "name", &optionName ) != TIXML_SUCCESS ) {
                 m_log->writeError( "Tracelib Configuration: while reading %s: Failed to read name property of <option> element; ignoring this.", m_fileName.c_str() );
                 continue;
             }
@@ -400,7 +400,7 @@ Serializer *Configuration::createSerializerFromElement( TiXmlElement *e )
             }
 
             string optionName;
-            if ( optionElement->QueryStringAttribute( "name", &optionName ) != TIXML_SUCCESS ) {
+            if ( optionElement->QueryValueAttribute( "name", &optionName ) != TIXML_SUCCESS ) {
                 m_log->writeError( "Tracelib Configuration: while reading %s: Failed to read name property of <serializer> element; ignoring this.", m_fileName.c_str() );
                 continue;
             }
@@ -425,14 +425,14 @@ Serializer *Configuration::createSerializerFromElement( TiXmlElement *e )
 TracePointSet *Configuration::createTracePointSetFromElement( TiXmlElement *e )
 {
     string backtracesAttr = "no";
-    e->QueryStringAttribute( "backtraces", &backtracesAttr );
+    e->QueryValueAttribute( "backtraces", &backtracesAttr );
     if ( backtracesAttr != "yes" && backtracesAttr != "no" ) {
         m_log->writeError( "Tracelib Configuration: while reading %s: Invalid value '%s' for backtraces= attribute of <tracepointset> element", m_fileName.c_str(), backtracesAttr.c_str() );
         return 0;
     }
 
     string variablesAttr = "no";
-    e->QueryStringAttribute( "variables", &variablesAttr );
+    e->QueryValueAttribute( "variables", &variablesAttr );
     if ( variablesAttr != "yes" && variablesAttr != "no" ) {
         m_log->writeError( "Tracelib Configuration: while reading %s: Invalid value '%s' for variables= attribute of <tracepointset> element", m_fileName.c_str(), variablesAttr.c_str() );
         return 0;
@@ -469,7 +469,7 @@ TracePointSet *Configuration::createTracePointSetFromElement( TiXmlElement *e )
 Output *Configuration::createOutputFromElement( TiXmlElement *e )
 {
     string outputType;
-    if ( e->QueryStringAttribute( "type", &outputType ) == TIXML_NO_ATTRIBUTE ) {
+    if ( e->QueryValueAttribute( "type", &outputType ) == TIXML_NO_ATTRIBUTE ) {
         m_log->writeError( "Tracelib Configuration: while reading %s: No type= attribute specified for <output> element", m_fileName.c_str() );
         return 0;
     }
@@ -490,7 +490,7 @@ Output *Configuration::createOutputFromElement( TiXmlElement *e )
             }
 
             string optionName;
-            if ( optionElement->QueryStringAttribute( "name", &optionName ) != TIXML_SUCCESS ) {
+            if ( optionElement->QueryValueAttribute( "name", &optionName ) != TIXML_SUCCESS ) {
                 m_log->writeError( "Tracelib Configuration: while reading %s: Failed to read name property of <option> element; ignoring this.", m_fileName.c_str() );
                 continue;
             }
@@ -540,7 +540,7 @@ Output *Configuration::createOutputFromElement( TiXmlElement *e )
             }
 
             string optionName;
-            if ( optionElement->QueryStringAttribute( "name", &optionName ) != TIXML_SUCCESS ) {
+            if ( optionElement->QueryValueAttribute( "name", &optionName ) != TIXML_SUCCESS ) {
                 m_log->writeError( "Tracelib Configuration: while reading %s: Failed to read name property of <option> element; ignoring this.", m_fileName.c_str() );
                 continue;
             }
