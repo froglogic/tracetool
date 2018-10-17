@@ -34,9 +34,10 @@
 #    endif
 #  elif __GNUC__
 #    if __GNUC__ - 0 > 3
-#      define TRACELIB_EXPORT __attribute__ ((visibility("default"))
+#      define TRACELIB_EXPORT __attribute__ ((visibility("default")))
 #    else
 #      define TRACELIB_EXPORT
+#    endif
 #  else
 #    error "Unsupported compiler!"
 #  endif
