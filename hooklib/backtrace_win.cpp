@@ -19,12 +19,16 @@
 
 #include "backtrace.h"
 
+#ifdef USE_STACKWALKER
 #include "3rdparty/stackwalker/StackWalker.h"
+#endif
+#include <windows.h>
 
 using namespace std;
 
 namespace {
 
+#ifdef USE_STACKWALKER
 class MyStackWalker : public StackWalker
 {
 public:
@@ -73,6 +77,7 @@ void MyStackWalker::OnCallstackEntry( CallstackEntryType type, CallstackEntry &e
         m_frames.push_back( frame );
     }
 }
+#endif
 
 }
 
@@ -96,11 +101,16 @@ BacktraceGenerator::~BacktraceGenerator()
 
 Backtrace BacktraceGenerator::generate( size_t skipInnermostFrames )
 {
+#ifdef USE_STACKWALKER
     ::EnterCriticalSection( &d->generationSection );
     static MyStackWalker stackWalker;
     stackWalker.setFramesToSkip( 2 /* ShowCallstack() + generate() */ + skipInnermostFrames );
     stackWalker.ShowCallstack();
     Backtrace bt( stackWalker.frames() );
+#else
+    vector<TRACELIB_NAMESPACE_IDENT(StackFrame)> empty;
+    Backtrace bt( empty );
+#endif
     ::LeaveCriticalSection( &d->generationSection );
     return bt;
 }

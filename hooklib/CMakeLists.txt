@@ -1,7 +1,7 @@
 INCLUDE(CheckIncludeFile)
 
 IF(MSVC)
-    ADD_DEFINITIONS(-D_CRT_SECURE_NO_DEPRECATE)
+    ADD_DEFINITIONS(-D_CRT_SECURE_NO_DEPRECATE -DUSE_STACKWALKER)
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc")
     #on windows we link the C runtime statically so that our trace library
     #does not interfere with the users c runtime
