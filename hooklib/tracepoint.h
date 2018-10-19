@@ -6,7 +6,7 @@
 
 TRACELIB_NAMESPACE_BEGIN
 
-struct TRACELIB_EXPORT TracePointType {
+struct TracePointType {
     enum Value {
         None = 0
 #define TRACELIB_TRACEPOINTTYPE(name) ,name
