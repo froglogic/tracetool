@@ -56,7 +56,7 @@ if(NOT HOOKLIB_ONLY)
     ADD_SUBDIRECTORY(examples/addressbook)
     ADD_SUBDIRECTORY(examples)
 endif()
-set(PCRE_BUILD_TESTS OFF)
+set(PCRE_BUILD_TESTS OFF CACHE BOOL "Build the tests")
 set(PCRE_BUILD_PCREGREP OFF)
 ADD_SUBDIRECTORY(3rdparty/pcre-8.10)
 
