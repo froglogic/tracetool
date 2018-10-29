@@ -1,3 +1,0 @@
-Configure commandline used to configure Qt 4.8.5 on MacOSX for a universal build suitable to create tracelib binary packages against:
-
-configure -prefix /Users/andreas/qt/4.8.5-full -nomake examples -nomake demos -arch x86 -arch x86_64 -arch ppc -arch ppc64 -release -sdk /Developer/SDKs/MacOSX10.5.sdk -confirm-license
