@@ -163,7 +163,6 @@ ADD_LIBRARY(tracelib SHARED ${TRACELIB_SOURCES})
 
 # Allow to co-install 32 and 64bit tracelib libraries in the same directory
 # if the cmake-invocation has a corresponding flag set.
-message(STATUS "${ARCH_LIB_SUFFIX}")
 if( ARCH_LIB_SUFFIX )
     message(STATUS "Change output name")
     set_target_properties(tracelib PROPERTIES OUTPUT_NAME tracelib${ARCH_LIB_SUFFIX})

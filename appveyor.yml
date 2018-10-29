@@ -1,19 +1,32 @@
-branches:
-    only:
-        - master
+version: '{build}'
+environment:
+    matrix:
+        - TRACETOOL_ARCH: x86
+        - TRACETOOL_ARCH: x64
+matrix:
+    fast_finish: true
+
+cache:
+  - C:\ProgramData\chocolatey\bin -> appveyor.yml
+  - C:\ProgramData\chocolatey\lib -> appveyor.yml
+  - C:\Program Files\doxygen\ -> appveyor.yml
 
 install:
     - cinst ninja doxygen.install
-    - call "%ProgramFiles(x86)%\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" x86
-    # Check compiler version
-    - cl
-    - set CMAKE_PREFIX_PATH=C:\Qt\5.6\msvc2013
 
 build_script:
-    - mkdir build 
-    - cd build
-    - cmake -G "Ninja" ..
-    - ninja
+    - call build.cmd %TRACETOOL_ARCH% %APPVEYOR_REPO_TAG%
 
 test_script:
-    - ninja test
+    - call test.cmd
+
+artifacts:
+    path: 'build\tracelib-*.zip'
+
+deploy:
+    provider: GitHub
+    artifact: /tracelib-.*zip/
+    auth_token:
+        secure: J9ZboY/ekwPeMbof4MM8DwYSmgSJVbzrqtxHKYZ6cKFzSKymXLHyWPi1QRS6Eo38
+    on:
+        APPVEYOR_REPO_TAG: true
