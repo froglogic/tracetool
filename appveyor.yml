@@ -27,6 +27,6 @@ deploy:
     provider: GitHub
     artifact: /tracelib-.*zip/
     auth_token:
-        secure: J9ZboY/ekwPeMbof4MM8DwYSmgSJVbzrqtxHKYZ6cKFzSKymXLHyWPi1QRS6Eo38
+        secure: GrqKmmmfswKC5v/gUBcZfcNIQ0ay8rwl70ppM/xwi0E5a4gVxcZcMObKmxohIBI9
     on:
         APPVEYOR_REPO_TAG: true
