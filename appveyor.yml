@@ -30,3 +30,7 @@ deploy:
         secure: GrqKmmmfswKC5v/gUBcZfcNIQ0ay8rwl70ppM/xwi0E5a4gVxcZcMObKmxohIBI9
     on:
         APPVEYOR_REPO_TAG: true
+
+notifications:
+    - provider: Email
+      on_build_success: false
