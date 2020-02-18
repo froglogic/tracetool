@@ -44,6 +44,18 @@ void XmlContentHandler::continueParsing()
             case QXmlStreamReader::EndElement:
                 handleEndElement();
                 break;
+            case QXmlStreamReader::Invalid:
+            {
+                if ( m_xmlReader.error() == QXmlStreamReader::PrematureEndOfDocumentError ) {
+                    break;
+                }
+                throw XmlParseException( QString::fromLatin1( "Invalid XML encountered at line: %1, column: %2, characterOffset: %3" )
+                                            .arg( m_xmlReader.lineNumber() )
+                                            .arg( m_xmlReader.columnNumber() )
+                                            .arg( m_xmlReader.characterOffset() ),
+                                        m_xmlReader.errorString(),
+                                        m_xmlReader.error() );
+            }
             default:
                 break;
         }

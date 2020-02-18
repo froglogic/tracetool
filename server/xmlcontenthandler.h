@@ -37,6 +37,25 @@ struct StorageConfiguration
     QString archiveDir;
 };
 
+class XmlParseException : public std::runtime_error
+{
+public:
+    XmlParseException( const QString &what, const QString &msg, int code )
+        : std::runtime_error( what.toUtf8().constData() ),
+        m_msg( msg ),
+        m_code( code )
+    {
+    }
+    ~XmlParseException() throw() { }
+
+    const QString &parserMessage() const { return m_msg; }
+    int parserCode() const { return m_code; }
+
+private:
+    QString m_msg;
+    int m_code;
+};
+
 class XmlParseEventsHandler
 {
     friend class XmlContentHandler;

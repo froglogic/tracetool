@@ -49,6 +49,9 @@ static bool fromXml( QSqlDatabase &db, QFile &input, QString *errMsg )
         } catch( const SQLTransactionException &ex ) {
             *errMsg = "Database error: " + QString::fromLatin1( ex.what() ) + ", driver message: " + ex.driverMessage() + "(" + QString::number(ex.driverCode()) + ")";
             return false;
+        } catch( const XmlParseException &ex ) {
+            *errMsg = "XML error: " + QString::fromLatin1( ex.what() ) + ", driver message: " + ex.parserMessage() + "(" + QString::number(ex.parserCode()) + ")";
+            return false;
         }
     }
     return true;
