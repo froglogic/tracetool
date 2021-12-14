@@ -164,6 +164,7 @@ VariableSnapshot::VariableSnapshot()
 
 VariableSnapshot::~VariableSnapshot()
 {
+    delete m_variables;
 }
 
 
