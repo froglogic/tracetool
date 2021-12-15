@@ -238,7 +238,15 @@ public:
     TRACELIB_EXPORT AbstractVariable *&operator[]( size_t idx );
 
 private:
-    std::auto_ptr<std::vector<AbstractVariable *> > m_variables;
+#if __cplusplus >= 201103L
+    VariableSnapshot( const VariableSnapshot & ) = delete;
+    VariableSnapshot& operator=( const VariableSnapshot& ) = delete;
+#else
+    VariableSnapshot( const VariableSnapshot & );
+    VariableSnapshot& operator=( const VariableSnapshot& );
+#endif
+
+    std::vector<AbstractVariable *> *m_variables;
 };
 
 TRACELIB_NAMESPACE_END
